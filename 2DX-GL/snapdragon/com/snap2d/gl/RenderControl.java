@@ -172,6 +172,7 @@ public class RenderControl {
 
 		g2.drawImage(rjob.bi, rjob.x, rjob.y, null);
 		g2.dispose();
+		
 		/*
 		 * int x = rdata.x, y = rdata.x; BufferedImage src = rdata.img; int[]
 		 * sdata = ((DataBufferInt)src.getRaster().getDataBuffer()).getData();
