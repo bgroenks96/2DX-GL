@@ -1,22 +1,17 @@
 package com.snap2d.gl;
 
-import java.awt.Color;
-import java.awt.Dimension;
-import java.awt.Graphics;
-import java.awt.RenderingHints;
-import java.awt.Toolkit;
-import java.awt.event.KeyEvent;
-import java.awt.image.BufferedImage;
-import java.io.File;
-import java.io.IOException;
+import java.awt.*;
+import java.awt.event.*;
+import java.awt.image.*;
+import java.io.*;
+import java.util.*;
 
-import javax.imageio.ImageIO;
-import javax.swing.JFrame;
+import javax.imageio.*;
+import javax.swing.*;
 
-import bg.x2d.ImageUtils;
+import bg.x2d.*;
 
-import com.snap2d.gl.RenderControl.Job;
-import com.snap2d.input.InputDispatch;
+import com.snap2d.input.*;
 import com.snap2d.input.InputDispatch.KeyEventClient;
 
 public class Display {
@@ -104,10 +99,10 @@ public class Display {
 			}
 
 		});
-		rc = new RenderControl(2);
-		rc.setFrameSleep(0);
+		rc = new RenderControl(3);
+		Random r = new Random();
 		rc.addRenderable(new TestRenderBack(1, 1), RenderControl.LAST);
-		rc.addRenderable(new TestRenderObj(0, 0), RenderControl.LAST);
+		rc.addRenderable(new TestRenderObj(r.nextInt(400), r.nextInt(400)), RenderControl.LAST);
 		rc.setRenderOp(RenderingHints.KEY_ANTIALIASING,
 				RenderingHints.VALUE_ANTIALIAS_ON);
 		rc.startRenderLoop();
@@ -116,37 +111,37 @@ public class Display {
 
 	static class TestRenderObj implements Renderable {
 
-		Job rjob;
 		BufferedImage img;
+		int[] data;
+		volatile int x, y;
+		boolean started;
 
 		public TestRenderObj(int x, int y) {
-			rjob = new Job();
-			rjob.x = x;
-			rjob.y = y;
-
+			this.x = x;
+			this.y = y;
 			try {
 				img = ImageIO.read(new File(
-						"C:\\Users\\Brian\\Pictures\\fractal01.png"));
+						"C:\\Users\\Brian\\Pictures\\upload.png"));
 				img = ImageUtils.convertBufferedImage(img,
 						BufferedImage.TYPE_INT_ARGB);
+				data = ((DataBufferInt)img.getRaster().getDataBuffer()).getData();
 			} catch (IOException e) {
 				e.printStackTrace();
 			}
-			rjob.bi = img;
 		}
 
 		long last = System.currentTimeMillis();
 
 		@Override
-		public void render() {
+		public void render(RenderControl rc) {
 
-			if (System.currentTimeMillis() - last > 2) {
-				rjob.x++;
-				rjob.y++;
+			if (System.currentTimeMillis() - last >= 20) {
+				x+=4;
+				y+=4;
 				last = System.currentTimeMillis();
 			}
-
-			rc.render(rjob);
+			
+			rc.render(x, y, img.getWidth(), img.getHeight(), data);
 		}
 
 		@Override
@@ -158,24 +153,27 @@ public class Display {
 
 	static class TestRenderBack implements Renderable {
 
-		Job rjob;
+		int[] data;
+		int wt, ht;
 
 		public TestRenderBack(int wt, int ht) {
-			rjob = new Job();
 			setup(wt, ht);
 		}
 
 		private void setup(int wt, int ht) {
-			rjob.bi = new BufferedImage(wt, ht, BufferedImage.TYPE_INT_ARGB);
-			Graphics g = rjob.bi.createGraphics();
+			BufferedImage bi = new BufferedImage(wt, ht, BufferedImage.TYPE_INT_ARGB);
+			Graphics g = bi.getGraphics();
 			g.setColor(Color.BLACK);
 			g.fillRect(0, 0, wt, ht);
 			g.dispose();
+			data = ((DataBufferInt)bi.getRaster().getDataBuffer()).getData();
+			this.wt = wt;
+			this.ht = ht;
 		}
 
 		@Override
-		public void render() {
-			rc.render(rjob);
+		public void render(RenderControl rc) {
+			rc.render(0, 0, wt, ht, data);
 		}
 
 		@Override

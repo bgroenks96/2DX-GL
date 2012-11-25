@@ -1,30 +1,17 @@
 package com.snap2d.gl;
 
-import java.awt.Canvas;
-import java.awt.Color;
-import java.awt.Dimension;
-import java.awt.Graphics2D;
-import java.awt.RenderingHints;
+import java.awt.*;
 import java.awt.RenderingHints.Key;
-import java.awt.event.ComponentEvent;
-import java.awt.event.ComponentListener;
-import java.awt.event.FocusEvent;
-import java.awt.event.FocusListener;
-import java.awt.geom.AffineTransform;
-import java.awt.image.BufferStrategy;
-import java.awt.image.BufferedImage;
-import java.awt.image.ImageObserver;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.Iterator;
+import java.awt.event.*;
+import java.awt.image.*;
+import java.lang.reflect.*;
+import java.util.*;
 import java.util.List;
-import java.util.Map;
-import java.util.concurrent.Future;
+import java.util.concurrent.*;
 
-import bg.x2d.ImageUtils;
+import javax.swing.*;
 
-import com.snap2d.ThreadManager;
+import com.snap2d.*;
 
 public class RenderControl {
 
@@ -36,23 +23,30 @@ public class RenderControl {
 
 	protected Canvas canvas;
 	protected volatile BufferedImage pri, light;
-	protected volatile boolean auto, valid, updateHints;
+	protected volatile boolean auto, updateHints;
+
 	protected List<Renderable> rtasks = Collections
 			.synchronizedList(new ArrayList<Renderable>());
 	protected RenderLoop loop;
+	protected AutoResize resize;
 	protected Future<?> taskCallback;
 	protected int buffs;
-	protected AutoResize autoResize;
 	protected Map<RenderingHints.Key, Object> renderOps;
+	protected int[] pixels;
+
+	private RenderControl inst;
 
 	public RenderControl(int buffs) {
-		canvas = new Canvas();
+		this.canvas = new Canvas();
 		this.buffs = buffs;
+		this.inst = this;
+
 		renderOps = new HashMap<RenderingHints.Key, Object>();
 		loop = new RenderLoop();
-		autoResize = new AutoResize();
 		auto = true;
-		canvas.addComponentListener(autoResize);
+		resize = new AutoResize();
+
+		canvas.addComponentListener(resize);
 		canvas.addFocusListener(new FocusListener() {
 
 			@Override
@@ -64,7 +58,6 @@ public class RenderControl {
 			public void focusLost(FocusEvent e) {
 				loop.active = false;
 			}
-
 		});
 	}
 
@@ -89,10 +82,6 @@ public class RenderControl {
 				break;
 			}
 		}
-	}
-
-	public void setFrameSleep(long milis) {
-		loop.sleepTime = milis;
 	}
 
 	public int getCurrentFPS() {
@@ -164,29 +153,40 @@ public class RenderControl {
 		return renderOps.get(key);
 	}
 
-	public void render(Job rjob) {
-		Graphics2D g2 = pri.createGraphics();
-		if (rjob.bi.getType() != pri.getType()) {
-			rjob.bi = ImageUtils.convertBufferedImage(rjob.bi, pri.getType());
+	public synchronized void render(int xpos, int ypos, int wt, int ht, int[] colors) {
+		for(int y = 0; y < ht; y++) {
+
+			int yp = ypos + y;
+
+			if(yp >= pri.getHeight() || yp < 0)
+				continue;
+			for(int x = 0; x < wt; x++) {
+
+				int xp = xpos + x;
+
+				if(xp >= pri.getWidth() || xp < 0)
+					continue;
+
+				pixels[yp * pri.getWidth() + xp ] = colors[y*wt + x];
+			}
+		}
+	}
+
+	protected void render() {
+		BufferStrategy bs = canvas.getBufferStrategy();
+		if(bs == null) {
+			canvas.createBufferStrategy(buffs);
+			canvas.requestFocus();
+			return;
 		}
 
-		g2.drawImage(rjob.bi, rjob.x, rjob.y, null);
-		g2.dispose();
-		
-		/*
-		 * int x = rdata.x, y = rdata.x; BufferedImage src = rdata.img; int[]
-		 * sdata = ((DataBufferInt)src.getRaster().getDataBuffer()).getData();
-		 * int[] pdata =
-		 * ((DataBufferInt)pri.getRaster().getDataBuffer()).getData(); for (int
-		 * cy = 0; cy < src.getHeight(); cy++) { int yPixel = cy + y; if (yPixel
-		 * < 0 || yPixel >= pri.getHeight()) continue; for (int cx = 0; cx <
-		 * src.getWidth(); cx++) { int xPixel = cx + x; if (xPixel < 0 || xPixel
-		 * >= pri.getWidth()) continue; int srcPixel = sdata[cx + cy *
-		 * src.getWidth()]; if ((srcPixel >> 24) < 255 && (srcPixel >> 24) > 0)
-		 * pdata[xPixel + yPixel * pri.getWidth()] = (pdata[xPixel + yPixel *
-		 * pri.getWidth()] + srcPixel) / 2; else if(srcPixel != 0) pdata[xPixel
-		 * + yPixel * pri.getWidth()] = srcPixel; } }
-		 */
+		Graphics2D g = (Graphics2D) bs.getDrawGraphics();
+		g.setRenderingHints(renderOps);
+		g.setColor(CANVAS_BACK);
+		g.fillRect(0, 0, canvas.getWidth(), canvas.getHeight());
+		g.drawImage(pri, 0, 0, null);
+		g.dispose();
+		bs.show();
 	}
 
 	protected void renderLight() {
@@ -194,23 +194,33 @@ public class RenderControl {
 	}
 
 	protected class RenderLoop implements Runnable {
+		
+		final int FPS_MAX = 60, FPS_MIN = 20;
 
 		volatile int frames;
-		volatile long sleepTime;
+		volatile long sleepTime, last, lastMsg;
 		volatile boolean running, active;
 
 		@Override
 		public void run() {
 			Thread.currentThread().setName("snap2d-render_loop");
+			/*
 			Thread t = new Thread(new Runnable() {
 
 				@Override
 				public void run() {
+					long last = 0;
+					int prevFrames = 0;
 					while (running) {
-						System.out.println(frames + " fps");
-						frames = 0;
+						if(System.currentTimeMillis() - last >= 1000) {
+							System.out.println(frames + " fps @ " + (System.currentTimeMillis() - last));
+							last = System.currentTimeMillis();
+							frames = 0;
+						}
+
 						try {
-							Thread.sleep(1000);
+							Thread.yield();
+							Thread.sleep(100);
 						} catch (InterruptedException e) {
 							e.printStackTrace();
 						}
@@ -221,65 +231,59 @@ public class RenderControl {
 			t.setName("snap2d-render_monitor");
 			t.setDaemon(true);
 			t.start();
+			 */
+			last = System.nanoTime();
 			while (running) {
 
 				if (active && (canvas.getWidth() > 0 && canvas.getHeight() > 0)) {
 
-					if (canvas.getBufferStrategy() == null) {
-						canvas.createBufferStrategy(buffs);
-						continue;
+					if(pri == null || light == null) {
+						pri = new BufferedImage(canvas.getWidth(), canvas.getHeight(), BufferedImage.TYPE_INT_ARGB);
+						light = new BufferedImage(canvas.getWidth(), canvas.getHeight(), BufferedImage.TYPE_INT_ARGB);
+						pixels = ((DataBufferInt)pri.getRaster().getDataBuffer()).getData();
 					}
 
-					if (pri == null || light == null) {
-						valid = false;
+					synchronized(rtasks) {
+						Iterator<Renderable> tasks = rtasks.iterator();
+						while(tasks.hasNext())
+							tasks.next().render(inst);
 					}
 
-					BufferStrategy bs = canvas.getBufferStrategy();
-					Graphics2D g2d = (Graphics2D) bs.getDrawGraphics();
+					try {
+						SwingUtilities.invokeAndWait(new Runnable() {
 
-					if (!valid) {
-						pri = new BufferedImage(canvas.getWidth(),
-								canvas.getHeight(), BufferedImage.TYPE_INT_ARGB);
-						light = new BufferedImage(canvas.getWidth(),
-								canvas.getHeight(), BufferedImage.TYPE_INT_ARGB);
-						valid = true;
+							@Override
+							public void run() {
+								render();
+							}
+
+						});
+					} catch (InterruptedException e1) {
+						e1.printStackTrace();
+					} catch (InvocationTargetException e1) {
+						e1.printStackTrace();
 					}
-
-					g2d.setColor(CANVAS_BACK);
-					g2d.fillRect(0, 0, canvas.getWidth(), canvas.getHeight()); // draw
-																				// back
-																				// canvas
-																				// (prevents
-																				// flashing)
-
-					synchronized (rtasks) {
-
-						Iterator<Renderable> itr = rtasks.listIterator();
-						while (itr.hasNext()) {
-							itr.next().render();
-						}
-
-					}
-
-					renderLight();
-
-					if (updateHints) {
-						g2d.setRenderingHints(renderOps);
-						updateHints = false;
-					}
-					g2d.drawRenderedImage(pri, new AffineTransform());
-					g2d.dispose();
-
-					bs.show();
 
 					frames++;
-				}
 
-				Thread.yield();
-				try {
-					Thread.sleep(sleepTime);
-				} catch (InterruptedException e) {
-					e.printStackTrace();
+					long diff = System.nanoTime() - last;
+					last = System.nanoTime();
+					int fps = (int) Math.round(1000000000.0 / diff);
+					if(System.currentTimeMillis() - lastMsg >= 1000) {
+						System.out.println(fps + " fps @ " + sleepTime + " sleep");
+						lastMsg = System.currentTimeMillis();
+					}
+					
+					if(fps > FPS_MAX)
+						sleepTime++;
+					else if(fps < FPS_MIN)
+						sleepTime--;
+					
+					try {
+						Thread.sleep(sleepTime);
+					} catch (InterruptedException e) {
+						e.printStackTrace();
+					}
 				}
 			}
 		}
@@ -330,15 +334,7 @@ public class RenderControl {
 			}
 			this.wt = wt;
 			this.ht = ht;
-			valid = false;
 		}
 
-	}
-
-	public static class Job {
-
-		public volatile BufferedImage bi;
-		public volatile int x, y;
-		public volatile ImageObserver monitor;
 	}
 }

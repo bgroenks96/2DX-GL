@@ -4,7 +4,7 @@ import java.awt.Dimension;
 
 public interface Renderable {
 
-	public void render();
+	public void render(RenderControl rc);
 
 	public void onResize(Dimension oldSize, Dimension newSize);
 }
