@@ -1,0 +1,314 @@
+package com.snap2d.gl;
+
+import java.awt.Canvas;
+import java.awt.Color;
+import java.awt.Dimension;
+import java.awt.Graphics2D;
+import java.awt.event.ComponentEvent;
+import java.awt.event.ComponentListener;
+import java.awt.image.BufferStrategy;
+import java.awt.image.BufferedImage;
+import java.lang.reflect.InvocationTargetException;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Iterator;
+import java.util.List;
+import java.util.concurrent.Future;
+
+import javax.swing.SwingUtilities;
+
+import bg.x2d.ImageUtils;
+
+import com.snap2d.ThreadManager;
+
+public class RenderControl {
+
+	public static final int LAST = 0x07FFFFFFF;
+	public static final Color CANVAS_BACK = Color.WHITE;
+	public static final Color LIGHT_COLOR = Color.BLACK;
+
+	protected Canvas canvas;
+	protected volatile BufferedImage pri, light;
+	protected int[] data, cacheData;
+	protected volatile boolean running, active, auto, keepRatio, valid;
+	protected List<Renderable> rtasks = Collections.synchronizedList(new ArrayList<Renderable>());
+	protected RenderLoop loop;
+	protected Future<?> taskCallback;
+	protected int buffs;
+	protected AutoResize autoResize;
+
+	public RenderControl(int buffs) {
+		canvas = new Canvas();
+		this.buffs = buffs;
+		autoResize = new AutoResize();
+		auto = true;
+		canvas.addComponentListener(autoResize);
+	}
+
+	public void startRenderLoop() {
+		running = true;
+		active = true;
+		loop = new RenderLoop();
+		taskCallback = ThreadManager.submitJob(loop);
+	}
+
+	/**
+	 * Registers the Renderable object with this RenderControl to be rendered on screen.  The render() method will be called and the RenderData
+	 * object used to show the image on screen.
+	 * @param r the Renderable object to be called when rendering.
+	 * @param pos the position in the rendering queue to be placed. 0 is the first to be rendered on each frame and LAST is provided as a convenience field to
+	 * insert at position size - 1 (aka the end of the queue, thus last to be rendered on each frame).
+	 */
+	public synchronized void addRenderable(Renderable r, int pos) {
+		if(pos == LAST)
+			pos = rtasks.size();
+		rtasks.add(pos, r);
+	}
+
+	/**
+	 * Removes the Renderable object from the queue, if it exists.
+	 * @param r removes the Renderable from the queue.
+	 */
+	public synchronized void removeRenderable(Renderable r) {
+		rtasks.remove(r);
+	}
+
+	/**
+	 * Fetches List.size() for the rendering queue.
+	 * @return
+	 */
+	public int getRenderQueueSize() {
+		return rtasks.size();
+	}
+
+	public synchronized void addLight() {
+
+	}
+
+	public synchronized void removeLight() {
+
+	}
+
+	public void setAutoResize(boolean resize, boolean aspectRatio) {
+		auto = resize;
+		keepRatio = aspectRatio;
+	}
+
+	protected void render(RenderData rdata) {
+		Graphics2D g2 = pri.createGraphics();
+		g2.drawImage(rdata.img, rdata.x, rdata.y, rdata.obsv);
+		g2.dispose();
+		/*
+		try {
+			int[] colors = rdata.pixels;
+			int tcx = rdata.x, tcy = rdata.y;
+			xloop:
+				for(int cx = rdata.x;cx < (rdata.x + rdata.wt);cx++) {
+					for(int cy = rdata.y;cy < (rdata.y + rdata.ht);cy++) {
+						// Bounds checking ----
+						if(cy >= pri.getHeight())
+							break;
+						else if(cy < 0)
+							continue;
+						if(cx >= pri.getWidth())
+							break xloop;
+						else if(cx < 0)
+							continue xloop;
+						// -----------
+
+						int pval = colors[(cx - tcx)*rdata.ht + (cy - tcy)];
+						if(pval != rdata.ctrl)
+							data[cx*pri.getHeight() + cy] = pval;
+					}
+				}
+		} catch(Throwable t) {
+			t.printStackTrace();
+		}
+		 */
+	}
+
+	protected void render() {
+		/*
+		try {
+			xloop:
+				for(int cx = 0;cx < pri.getWidth();cx++) {
+					for(int cy = 0;cy < pri.getHeight();cy++) {
+						// Bounds checking ----
+						if(cy >= pri.getHeight())
+							break;
+						else if(cy < 0)
+							continue;
+						if(cx >= pri.getWidth())
+							break xloop;
+						else if(cx < 0)
+							continue xloop;
+						// -----------
+
+						int pval = data[cx*pri.getHeight() + cy];
+						if(pval != cacheData[cx*pri.getHeight() + cy]) {
+							pri.getRaster().setPixel(cx, cy, ColorUtils.unpackInt(pval, ColorUtils.TYPE_ARGB));
+							cacheData[cx*pri.getHeight() + cy] = pval;
+						}
+					}
+				}
+		} catch(Throwable t) {
+			t.printStackTrace();
+		}
+		 */
+	}
+
+	protected void renderLight() {
+
+	}
+
+	protected class RenderLoop implements Runnable {
+
+		int fps;
+
+		public void run() {
+			Thread.currentThread().setName("snap2d-render_loop");
+			long last = System.currentTimeMillis();
+			while(running) {
+
+				if(System.currentTimeMillis() - last > 1000) {
+					System.out.println(fps + " fps");
+					fps = 0;
+					last = System.currentTimeMillis();
+				}
+
+				if(active && (canvas.getWidth() > 0 && canvas.getHeight() > 0)) {
+
+					if(canvas.getBufferStrategy() == null)
+						canvas.createBufferStrategy(buffs);
+
+					if(pri == null || light == null)
+						valid = false;
+
+					if(!valid) {
+						pri = ImageUtils.getNativeImage(canvas.getWidth(), canvas.getHeight(), canvas.getBufferStrategy().getDrawGraphics());
+						light = new BufferedImage(canvas.getWidth(), canvas.getHeight(), BufferedImage.TYPE_INT_ARGB);
+						valid = true;
+					}
+						
+
+					Graphics2D prigrph = pri.createGraphics();
+					prigrph.setColor(CANVAS_BACK);
+					prigrph.fillRect(0, 0, pri.getWidth(), pri.getHeight());  // clear the previous screen
+					prigrph.dispose();
+
+					BufferStrategy bs = canvas.getBufferStrategy();
+					Graphics2D g2d = (Graphics2D) bs.getDrawGraphics();
+					g2d.setColor(CANVAS_BACK);
+					g2d.fillRect(0, 0, canvas.getWidth(), canvas.getHeight());  // draw back canvas (prevents flashing)
+					
+					synchronized(rtasks) {
+						Iterator<Renderable> itr = rtasks.listIterator();
+						while(itr.hasNext()) {
+							RenderData data = itr.next().render();
+							render(data);
+							renderLight();
+						}
+					}
+					
+					g2d.drawImage(pri, 0, 0, null);
+					//g2d.drawImage(light, 0, 0, canvas.getWidth(), canvas.getHeight(), null);
+					g2d.dispose();
+
+					submit(new ShowBuffer(bs));
+
+					fps++;
+
+					Thread.yield();
+					try {
+						Thread.sleep(3);
+					} catch (InterruptedException e) {
+						e.printStackTrace();
+					}
+				}
+			}
+		}
+
+		private void submit(Runnable r) {
+			try {
+				SwingUtilities.invokeAndWait(r);
+			} catch (InterruptedException e) {
+				e.printStackTrace();
+			} catch (InvocationTargetException e) {
+				e.printStackTrace();
+			}
+		}
+
+		private class ShowBuffer implements Runnable {
+			BufferStrategy toShow;
+			ShowBuffer(BufferStrategy toShow) {
+				this.toShow = toShow;
+			}
+			@Override
+			public void run() {
+				toShow.show();
+			}
+		}
+	}
+
+	protected class AutoResize implements ComponentListener {
+
+		@Override
+		public void componentResized(ComponentEvent e) {
+			synchronized(rtasks) {
+				Iterator<Renderable> itr = rtasks.listIterator();
+				while(itr.hasNext()) {
+					itr.next().onResize(new Dimension(e.getComponent().getWidth(), e.getComponent().getHeight()));
+				}
+			}
+			if(keepRatio && auto) {
+				int oldwt = pri.getWidth();
+				int oldht = pri.getHeight();
+				int diffwt = e.getComponent().getWidth() - oldwt;
+				int diffht = e.getComponent().getHeight() - oldht;
+				if(diffwt > diffht) {
+					double ratio = (double) oldwt / oldht;
+					int nht = (int) Math.round(ratio * e.getComponent().getHeight());
+					int nwt = e.getComponent().getWidth();
+					resize(nwt, nht);
+				} else if(diffht > diffwt) {
+					double ratio = (double) oldht / oldwt;
+					int nwt = (int) Math.round(ratio * e.getComponent().getWidth());
+					int nht = e.getComponent().getHeight();
+					resize(nwt, nht);
+				} else {
+					int nwt = e.getComponent().getWidth();
+					int nht = e.getComponent().getHeight();
+					resize(nwt, nht);
+				}
+			} else if(auto){
+				int nwt = e.getComponent().getWidth();
+				int nht = e.getComponent().getHeight();
+				resize(nwt, nht);
+			}
+		}
+
+		@Override
+		public void componentMoved(ComponentEvent e) {
+
+		}
+
+		@Override
+		public void componentShown(ComponentEvent e) {
+
+		}
+
+		@Override
+		public void componentHidden(ComponentEvent e) {
+
+		}
+
+		protected void resize(int wt, int ht) {
+			if(wt <= 0)
+				wt = 1;
+			if(ht <= 0)
+				ht = 1;
+			valid = false;
+		}
+
+	}
+}
