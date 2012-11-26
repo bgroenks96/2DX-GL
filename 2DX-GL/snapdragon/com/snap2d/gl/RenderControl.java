@@ -4,18 +4,15 @@ import java.awt.*;
 import java.awt.RenderingHints.Key;
 import java.awt.event.*;
 import java.awt.image.*;
-import java.lang.reflect.*;
 import java.util.*;
 import java.util.List;
 import java.util.concurrent.*;
-
-import javax.swing.*;
 
 import com.snap2d.*;
 
 public class RenderControl {
 
-	public static final int LAST = 0x07FFFFFFF;
+	public static final int POSITION_LAST = 0x07FFFFFFF;
 	public static final Color CANVAS_BACK = Color.WHITE;
 	public static final Color LIGHT_COLOR = Color.BLACK;
 
@@ -25,8 +22,8 @@ public class RenderControl {
 	protected volatile BufferedImage pri, light;
 	protected volatile boolean auto, updateHints;
 
-	protected List<Renderable> rtasks = Collections
-			.synchronizedList(new ArrayList<Renderable>());
+	protected List<Renderable> rtasks = new ArrayList<Renderable>(), delQueue = new Vector<Renderable>();
+	protected Map<Integer, Renderable> addQueue = new ConcurrentSkipListMap<Integer, Renderable>();
 	protected RenderLoop loop;
 	protected AutoResize resize;
 	protected Future<?> taskCallback;
@@ -51,12 +48,12 @@ public class RenderControl {
 
 			@Override
 			public void focusGained(FocusEvent e) {
-				loop.active = true;
+				setRenderActive(true);
 			}
 
 			@Override
 			public void focusLost(FocusEvent e) {
-				loop.active = false;
+				setRenderActive(false);
 			}
 		});
 	}
@@ -84,8 +81,63 @@ public class RenderControl {
 		}
 	}
 
+	/**
+	 * Fully releases system resources used by this RenderControl object and clears all registered Renderables.
+	 * Note that once this method is called, the object is unusable and should be released for garbage collection.
+	 * Continued use of a disposed RenderControl object will cause errors.
+	 */
+	public void dispose() {
+		stopRenderLoop();
+		BufferStrategy bs = canvas.getBufferStrategy();
+		if(bs != null)
+			bs.dispose();
+		rtasks.clear();
+		addQueue.clear();
+		delQueue.clear();
+		renderOps.clear();
+		pri.flush();
+		light.flush();
+
+		// nullify references to potentially significant resource holders so that they are available
+		// for garbage collection.
+		canvas = null;
+		loop = null;
+		pri = null;
+		light = null;
+		resize = null;
+		taskCallback = null;
+	}
+
+	/**
+	 * Gets the last recorded number of frames rendered per second.
+	 * @return
+	 */
 	public int getCurrentFPS() {
-		return loop.frames;
+		return loop.fps;
+	}
+
+	/**
+	 * Gets the last recorded number of updates per second.
+	 * @return
+	 */
+	public int getCurrentTPS() {
+		return loop.tps;
+	}
+
+	/**
+	 * Checks to see if this RenderControl has a loop that is actively rendering/updating.
+	 * @return true if active, false otherwise.
+	 */
+	public boolean isActive() {
+		return loop.active;
+	}
+
+	/**
+	 * Checks to see if this RenderControl has a currently running loop.
+	 * @return true if a loop is running, false otherwise.
+	 */
+	public boolean isRunning() {
+		return loop.running;
 	}
 
 	/**
@@ -102,10 +154,10 @@ public class RenderControl {
 	 *            of the queue, thus last to be rendered on each frame).
 	 */
 	public synchronized void addRenderable(Renderable r, int pos) {
-		if (pos == LAST) {
-			pos = rtasks.size();
+		if (pos == POSITION_LAST) {
+			pos = (addQueue.size() == 0) ? rtasks.size():rtasks.size() + addQueue.size();
 		}
-		rtasks.add(pos, r);
+		addQueue.put(Integer.valueOf(pos), r);
 	}
 
 	/**
@@ -115,7 +167,7 @@ public class RenderControl {
 	 *            removes the Renderable from the queue.
 	 */
 	public synchronized void removeRenderable(Renderable r) {
-		rtasks.remove(r);
+		delQueue.add(r);
 	}
 
 	/**
@@ -135,6 +187,10 @@ public class RenderControl {
 
 	}
 
+	/**
+	 * Set whether or not this RenderControl should attempt to auto-resize it's components when it is resized.
+	 * @param resize
+	 */
 	public void setAutoResize(boolean resize) {
 		auto = resize;
 	}
@@ -154,14 +210,15 @@ public class RenderControl {
 	}
 
 	public synchronized void render(int xpos, int ypos, int wt, int ht, int[] colors) {
+		System.out.println(xpos);
 		for(int y = 0; y < ht; y++) {
 
 			int yp = ypos + y;
 
 			if(yp >= pri.getHeight() || yp < 0)
 				continue;
-			for(int x = 0; x < wt; x++) {
 
+			for(int x = 0; x < wt; x++) {
 				int xp = xpos + x;
 
 				if(xp >= pri.getWidth() || xp < 0)
@@ -172,7 +229,7 @@ public class RenderControl {
 		}
 	}
 
-	protected void render() {
+	protected synchronized void render() {
 		BufferStrategy bs = canvas.getBufferStrategy();
 		if(bs == null) {
 			canvas.createBufferStrategy(buffs);
@@ -185,105 +242,114 @@ public class RenderControl {
 		g.setColor(CANVAS_BACK);
 		g.fillRect(0, 0, canvas.getWidth(), canvas.getHeight());
 		g.drawImage(pri, 0, 0, null);
+		g.drawImage(light, 0, 0, null);
 		g.dispose();
 		bs.show();
 	}
 
-	protected void renderLight() {
+	protected synchronized void renderLight() {
 
 	}
 
 	protected class RenderLoop implements Runnable {
-		
-		final int FPS_MAX = 60, FPS_MIN = 20;
 
-		volatile int frames;
-		volatile long sleepTime, last, lastMsg;
+		final double TARGET_FPS = 60, TARGET_TIME_BETWEEN_RENDERS = 1000000000.0 / TARGET_FPS, TICK_HERTZ = TARGET_FPS / 2, 
+				TIME_BETWEEN_UPDATES = 1000000000.0 / TICK_HERTZ, MAX_UPDATES_BEFORE_RENDER = 3;
+
+		volatile int fps, tps;
 		volatile boolean running, active;
 
 		@Override
 		public void run() {
 			Thread.currentThread().setName("snap2d-render_loop");
-			/*
-			Thread t = new Thread(new Runnable() {
+
+			ThreadManager.newDaemon(new Runnable() {
 
 				@Override
 				public void run() {
-					long last = 0;
-					int prevFrames = 0;
-					while (running) {
-						if(System.currentTimeMillis() - last >= 1000) {
-							System.out.println(frames + " fps @ " + (System.currentTimeMillis() - last));
-							last = System.currentTimeMillis();
-							frames = 0;
-						}
-
-						try {
-							Thread.yield();
-							Thread.sleep(100);
-						} catch (InterruptedException e) {
-							e.printStackTrace();
-						}
-					}
-				}
-
-			});
-			t.setName("snap2d-render_monitor");
-			t.setDaemon(true);
-			t.start();
-			 */
-			last = System.nanoTime();
-			while (running) {
-
-				if (active && (canvas.getWidth() > 0 && canvas.getHeight() > 0)) {
-
-					if(pri == null || light == null) {
-						pri = new BufferedImage(canvas.getWidth(), canvas.getHeight(), BufferedImage.TYPE_INT_ARGB);
-						light = new BufferedImage(canvas.getWidth(), canvas.getHeight(), BufferedImage.TYPE_INT_ARGB);
-						pixels = ((DataBufferInt)pri.getRaster().getDataBuffer()).getData();
-					}
-
-					synchronized(rtasks) {
-						Iterator<Renderable> tasks = rtasks.iterator();
-						while(tasks.hasNext())
-							tasks.next().render(inst);
-					}
-
+					Thread.currentThread().setName("snap2d-sleeper_thread");
 					try {
-						SwingUtilities.invokeAndWait(new Runnable() {
-
-							@Override
-							public void run() {
-								render();
-							}
-
-						});
-					} catch (InterruptedException e1) {
-						e1.printStackTrace();
-					} catch (InvocationTargetException e1) {
-						e1.printStackTrace();
-					}
-
-					frames++;
-
-					long diff = System.nanoTime() - last;
-					last = System.nanoTime();
-					int fps = (int) Math.round(1000000000.0 / diff);
-					if(System.currentTimeMillis() - lastMsg >= 1000) {
-						System.out.println(fps + " fps @ " + sleepTime + " sleep");
-						lastMsg = System.currentTimeMillis();
-					}
-					
-					if(fps > FPS_MAX)
-						sleepTime++;
-					else if(fps < FPS_MIN)
-						sleepTime--;
-					
-					try {
-						Thread.sleep(sleepTime);
+						Thread.sleep(Long.MAX_VALUE);
 					} catch (InterruptedException e) {
 						e.printStackTrace();
 					}
+				}
+			});
+
+			double lastUpdateTime = System.nanoTime();
+			double lastRenderTime = System.nanoTime();
+			int lastSecondTime = (int) (lastUpdateTime / 1000000000);
+			int frameCount = 0, ticks = 0;
+			while (running) {
+				try {
+
+					if(addQueue.size() > 0) {
+
+						for(Integer i:addQueue.keySet()) {
+							rtasks.add(i, addQueue.get(i));
+						}
+						addQueue.clear();
+					}
+
+					if(delQueue.size() > 0) {
+						for(Renderable r:delQueue) {
+							rtasks.remove(r);
+						}
+						delQueue.clear();
+					}
+					
+					double now = System.nanoTime();
+					if (active && (canvas.getWidth() > 0 && canvas.getHeight() > 0)) {
+
+						if(pri == null || light == null) {
+							pri = new BufferedImage(canvas.getWidth(), canvas.getHeight(), BufferedImage.TYPE_INT_ARGB);
+							light = new BufferedImage(canvas.getWidth(), canvas.getHeight(), BufferedImage.TYPE_INT_ARGB);
+							pixels = ((DataBufferInt)pri.getRaster().getDataBuffer()).getData();
+						}
+
+						int updateCount = 0;
+
+						while( now - lastUpdateTime > TIME_BETWEEN_UPDATES && updateCount < MAX_UPDATES_BEFORE_RENDER ) {
+							Iterator<Renderable> tasks = rtasks.iterator();
+							while(tasks.hasNext())
+								tasks.next().update();
+							System.out.println("after");
+							lastUpdateTime += TIME_BETWEEN_UPDATES;
+							updateCount++;
+							ticks++;
+						}
+
+						if ( now - lastUpdateTime > TIME_BETWEEN_UPDATES)
+						{
+							lastUpdateTime = now - TIME_BETWEEN_UPDATES;
+						}
+
+						float interpolation = Math.min(1.0f, (float) ((now - lastUpdateTime) / TIME_BETWEEN_UPDATES));
+						Iterator<Renderable> tasks = rtasks.iterator();
+						while(tasks.hasNext())
+							tasks.next().render(inst, interpolation);
+						render();
+						lastRenderTime = now;
+						frameCount++;
+
+						int thisSecond = (int) (lastUpdateTime / 1000000000);
+						if (thisSecond > lastSecondTime) {
+							fps = frameCount;
+							tps = ticks;
+							System.out.println(fps + " fps " + tps + " ticks");
+							frameCount = 0;
+							ticks = 0;
+							lastSecondTime = thisSecond;
+						}
+					}
+
+					while (now - lastRenderTime < TARGET_TIME_BETWEEN_RENDERS && now - lastUpdateTime < TIME_BETWEEN_UPDATES) {
+						Thread.yield();
+
+						now = System.nanoTime();
+					}
+				} catch(Exception e) {
+					e.printStackTrace();
 				}
 			}
 		}
@@ -295,14 +361,12 @@ public class RenderControl {
 
 		@Override
 		public void componentResized(ComponentEvent e) {
-			synchronized (rtasks) {
-				Iterator<Renderable> itr = rtasks.listIterator();
-				while (itr.hasNext()) {
-					itr.next().onResize(
-							new Dimension(wt, ht),
-							new Dimension(e.getComponent().getWidth(), e
-									.getComponent().getHeight()));
-				}
+			Iterator<Renderable> itr = rtasks.listIterator();
+			while (itr.hasNext()) {
+				itr.next().onResize(
+						new Dimension(wt, ht),
+						new Dimension(e.getComponent().getWidth(), e
+								.getComponent().getHeight()));
 			}
 			if (auto) {
 				resize(e.getComponent().getWidth(), e.getComponent()

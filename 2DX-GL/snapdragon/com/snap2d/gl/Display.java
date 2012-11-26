@@ -70,13 +70,12 @@ public class Display {
 	}
 
 	public void hide() {
-		// TODO: once render control methods are implemented, pause rendering
+		rc.setRenderActive(false);
 		frame.setVisible(false);
 	}
 
 	public void dispose() {
-		// TODO: once render control methods are implemented, dispose render
-		// control
+		rc.dispose();
 		frame.dispose();
 	}
 
@@ -101,27 +100,37 @@ public class Display {
 		});
 		rc = new RenderControl(3);
 		Random r = new Random();
-		rc.addRenderable(new TestRenderBack(1, 1), RenderControl.LAST);
-		rc.addRenderable(new TestRenderObj(r.nextInt(400), r.nextInt(400)), RenderControl.LAST);
-		rc.setRenderOp(RenderingHints.KEY_ANTIALIASING,
-				RenderingHints.VALUE_ANTIALIAS_ON);
+		rc.addRenderable(new TestRenderBack(1, 1), RenderControl.POSITION_LAST);
+		rc.addRenderable(new TestRenderObj(r.nextInt(200), r.nextInt(200)), RenderControl.POSITION_LAST);
+		rc.setRenderOp(RenderingHints.KEY_INTERPOLATION, RenderingHints.VALUE_INTERPOLATION_BICUBIC);
 		rc.startRenderLoop();
 		disp.show(rc);
+		new Thread(new Runnable() {
+
+			@Override
+			public void run() {
+				try {
+					Thread.sleep(500);
+				} catch (InterruptedException e) {
+					e.printStackTrace();
+				}
+			}
+			
+		}).start();
 	}
 
 	static class TestRenderObj implements Renderable {
 
 		BufferedImage img;
 		int[] data;
-		volatile int x, y;
-		boolean started;
+		int x, y, lx, ly;
 
 		public TestRenderObj(int x, int y) {
 			this.x = x;
 			this.y = y;
 			try {
 				img = ImageIO.read(new File(
-						"C:\\Users\\Brian\\Pictures\\upload.png"));
+						"C:\\Users\\Brian\\Pictures\\fnrr_flag.png"));
 				img = ImageUtils.convertBufferedImage(img,
 						BufferedImage.TYPE_INT_ARGB);
 				data = ((DataBufferInt)img.getRaster().getDataBuffer()).getData();
@@ -130,23 +139,23 @@ public class Display {
 			}
 		}
 
-		long last = System.currentTimeMillis();
-
 		@Override
-		public void render(RenderControl rc) {
+		public void render(RenderControl rc, float interpolation) {
 
-			if (System.currentTimeMillis() - last >= 20) {
-				x+=4;
-				y+=4;
-				last = System.currentTimeMillis();
-			}
-			
-			rc.render(x, y, img.getWidth(), img.getHeight(), data);
+			rc.render((int) Math.round((x - lx) * interpolation + lx), (int) Math.round((y - ly) * interpolation + ly), img.getWidth(), img.getHeight(), data);
+			lx = x;
+			ly = y;
 		}
 
 		@Override
 		public void onResize(Dimension oldSize, Dimension newSize) {
 
+		}
+
+		@Override
+		public void update() {
+			x+=6;
+			y+=2;
 		}
 
 	}
@@ -172,7 +181,7 @@ public class Display {
 		}
 
 		@Override
-		public void render(RenderControl rc) {
+		public void render(RenderControl rc, float interpolation) {
 			rc.render(0, 0, wt, ht, data);
 		}
 
@@ -181,6 +190,11 @@ public class Display {
 			if (newSize.getWidth() > 0 && newSize.getHeight() > 0) {
 				setup((int) newSize.getWidth(), (int) newSize.getHeight());
 			}
+		}
+
+		@Override
+		public void update() {
+			//
 		}
 
 	}
