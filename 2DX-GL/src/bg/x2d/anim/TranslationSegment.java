@@ -1,5 +1,5 @@
 /*
- * Copyright © 2011-2012 Brian Groenke
+ * Copyright ï¿½ 2011-2012 Brian Groenke
  * All rights reserved.
  * 
  *  This file is part of the 2DX Graphics Library.
@@ -32,7 +32,7 @@ import java.awt.geom.AffineTransform;
 public class TranslationSegment implements Segment {
 
 	private long duration, start = -1, last;
-	private int deltax, deltay, hyp;
+	private int hyp;
 	private double dxint, dyint, hyint;
 
 	/**
@@ -54,8 +54,6 @@ public class TranslationSegment implements Segment {
 		dyint = (double) deltay / duration;
 
 		this.duration = duration;
-		this.deltax = deltax;
-		this.deltay = deltay;
 	}
 
 	@Override

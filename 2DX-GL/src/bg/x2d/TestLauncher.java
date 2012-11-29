@@ -1,24 +1,13 @@
 package bg.x2d;
 
-import java.awt.Canvas;
-import java.awt.Color;
-import java.awt.Dimension;
-import java.awt.GradientPaint;
-import java.awt.Graphics2D;
-import java.awt.Point;
-import java.awt.image.BufferStrategy;
-import java.awt.image.BufferedImage;
-import java.util.HashSet;
+import java.awt.*;
+import java.awt.image.*;
+import java.util.*;
 
-import javax.swing.JFrame;
+import javax.swing.*;
 
-import bg.x2d.anim.Animation;
-import bg.x2d.anim.ComboSegment;
-import bg.x2d.anim.CurveSegment;
-import bg.x2d.anim.DilationSegment;
-import bg.x2d.anim.Drawable;
-import bg.x2d.anim.Segment;
-import bg.x2d.geo.Octagon2D;
+import bg.x2d.anim.*;
+import bg.x2d.geo.*;
 
 abstract class TestLauncher {
 
@@ -34,6 +23,8 @@ abstract class TestLauncher {
 	private static Dimension panel = new Dimension(1, 1);
 
 	public static void main(String[] args) {
+		Vector2f vec = new Vector2f(10.0f, 10.0f);
+		System.exit(0);
 		frame = new JFrame();
 		frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 		frame.setSize(1000, 800);

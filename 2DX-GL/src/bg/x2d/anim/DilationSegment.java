@@ -1,5 +1,5 @@
 /*
- * Copyright © 2011-2012 Brian Groenke
+ * Copyright ï¿½ 2011-2012 Brian Groenke
  * All rights reserved.
  * 
  *  This file is part of the 2DX Graphics Library.
@@ -34,7 +34,7 @@ import java.awt.geom.AffineTransform;
 public class DilationSegment implements Segment {
 
 	private long duration, start = -1, last;
-	private double scalex, scaley, sxi, syi;
+	private double sxi, syi;
 	private Dimension contextSize;
 
 	/**
@@ -50,8 +50,6 @@ public class DilationSegment implements Segment {
 	 */
 	public DilationSegment(double scalex, double scaley, Dimension contextSize,
 			long duration) {
-		this.scalex = scalex;
-		this.scaley = scaley;
 		this.duration = duration;
 		this.contextSize = contextSize;
 

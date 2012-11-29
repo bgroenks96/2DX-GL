@@ -1,5 +1,5 @@
 /*
- * Copyright © 2011-2012 Brian Groenke
+ * Copyright ï¿½ 2011-2012 Brian Groenke
  * All rights reserved.
  * 
  *  This file is part of the 2DX Graphics Library.
@@ -33,7 +33,6 @@ import java.awt.geom.Point2D;
 public class RotationSegment implements Segment {
 
 	private long duration, start = -1, last;
-	private int deltaTheta;
 	private double dtInt;
 	private Point2D anchor;
 
@@ -53,7 +52,6 @@ public class RotationSegment implements Segment {
 	 */
 	public RotationSegment(int deltaTheta, long duration, Point2D anchor) {
 		dtInt = (double) deltaTheta / duration;
-		this.deltaTheta = deltaTheta;
 		this.duration = duration;
 		this.anchor = anchor;
 	}

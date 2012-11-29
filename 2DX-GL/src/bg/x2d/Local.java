@@ -1,5 +1,5 @@
 /*
- * Copyright © 2011-2012 Brian Groenke
+ * Copyright ï¿½ 2011-2012 Brian Groenke
  * All rights reserved.
  * 
  *  This file is part of the 2DX Graphics Library.
@@ -23,7 +23,7 @@
  */
 package bg.x2d;
 
-import java.util.Calendar;
+import java.util.*;
 
 /**
  * A convenience class consisting entirely of static methods regarding system

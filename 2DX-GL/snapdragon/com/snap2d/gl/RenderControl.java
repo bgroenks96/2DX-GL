@@ -1,14 +1,28 @@
 package com.snap2d.gl;
 
-import java.awt.*;
+import java.awt.Canvas;
+import java.awt.Color;
+import java.awt.Dimension;
+import java.awt.Graphics2D;
+import java.awt.RenderingHints;
 import java.awt.RenderingHints.Key;
-import java.awt.event.*;
-import java.awt.image.*;
-import java.util.*;
+import java.awt.event.ComponentEvent;
+import java.awt.event.ComponentListener;
+import java.awt.event.FocusEvent;
+import java.awt.event.FocusListener;
+import java.awt.image.BufferStrategy;
+import java.awt.image.BufferedImage;
+import java.awt.image.DataBufferInt;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Iterator;
 import java.util.List;
-import java.util.concurrent.*;
+import java.util.Map;
+import java.util.Vector;
+import java.util.concurrent.ConcurrentSkipListMap;
+import java.util.concurrent.Future;
 
-import com.snap2d.*;
+import com.snap2d.ThreadManager;
 
 public class RenderControl {
 
@@ -210,7 +224,6 @@ public class RenderControl {
 	}
 
 	public synchronized void render(int xpos, int ypos, int wt, int ht, int[] colors) {
-		System.out.println(xpos);
 		for(int y = 0; y < ht; y++) {
 
 			int yp = ypos + y;
@@ -312,8 +325,7 @@ public class RenderControl {
 						while( now - lastUpdateTime > TIME_BETWEEN_UPDATES && updateCount < MAX_UPDATES_BEFORE_RENDER ) {
 							Iterator<Renderable> tasks = rtasks.iterator();
 							while(tasks.hasNext())
-								tasks.next().update();
-							System.out.println("after");
+								tasks.next().update((long) lastUpdateTime);
 							lastUpdateTime += TIME_BETWEEN_UPDATES;
 							updateCount++;
 							ticks++;

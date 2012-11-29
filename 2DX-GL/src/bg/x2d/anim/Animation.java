@@ -1,5 +1,5 @@
 /*
- * Copyright © 2011-2012 Brian Groenke
+ * Copyright ï¿½ 2011-2012 Brian Groenke
  * All rights reserved.
  * 
  *  This file is part of the 2DX Graphics Library.
@@ -20,9 +20,9 @@
 
 package bg.x2d.anim;
 
-import java.awt.Graphics2D;
-import java.awt.geom.AffineTransform;
-import java.util.LinkedList;
+import java.awt.*;
+import java.awt.geom.*;
+import java.util.*;
 import java.util.List;
 
 /**
