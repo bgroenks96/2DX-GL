@@ -1,5 +1,5 @@
 /*
- * Copyright © 2011-2012 Brian Groenke
+ * Copyright ï¿½ 2011-2012 Brian Groenke
  * All rights reserved.
  * 
  *  This file is part of the 2DX Graphics Library.
@@ -20,8 +20,8 @@
 
 package bg.x2d.geo;
 
-import java.awt.Point;
-import java.awt.geom.Point2D;
+import java.awt.*;
+import java.awt.geom.*;
 
 public class PointLD extends Point {
 
@@ -55,6 +55,18 @@ public class PointLD extends Point {
 	@Override
 	public double getY() {
 		return y;
+	}
+	
+	@Override
+	public void setLocation(double x, double y) {
+		this.x = x;
+		this.y = y;
+	}
+	
+	@Override
+	public void setLocation(Point2D p) {
+		this.x = p.getX();
+		this.y = p.getY();
 	}
 
 	public long getLongX() {

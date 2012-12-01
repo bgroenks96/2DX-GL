@@ -20,8 +20,7 @@
 
 package bg.x2d.anim;
 
-import java.awt.geom.AffineTransform;
-import java.awt.geom.Point2D;
+import java.awt.geom.*;
 
 /**
  * Segment that rotates the AffineTransform a specified number of degrees, over
@@ -91,7 +90,6 @@ public class RotationSegment implements Segment {
 		long curr = System.currentTimeMillis();
 		long diff = 0;
 		if (isValid() && (diff = curr - last) > 0) {
-			System.out.println(affine.getTranslateX());
 			if (anchor != null) {
 				affine.rotate(Math.toRadians(dtInt * diff), anchor.getX(),
 						anchor.getY());

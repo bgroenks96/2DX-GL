@@ -1,13 +1,12 @@
 package bg.x2d.geo;
 
-import static bg.x2d.math.MathUtils.*;
 import static java.lang.Math.*;
 
 import java.awt.geom.*;
 
 public class Vector2d {
 	
-	public double x, y, mag, angle;
+	public volatile double x, y, mag, angle;
 	
 	/**
 	 * 
@@ -31,7 +30,7 @@ public class Vector2d {
 	
 	private void init() {
 		mag = sqrt(pow(x, 2) + pow(y, 2));
-		angle = terminal(x, y);
+		angle = GeoUtils.terminal(x, y);
 	}
 	
 	public double degs() {
@@ -122,7 +121,7 @@ public class Vector2d {
 	 * @param angle rotation value IN RADIANS
 	 * @return this vector for chain calls.
 	 */
-	public Vector2d rotate(float rads) {
+	public Vector2d rotate(double rads) {
 		Point2D p = GeoUtils.rotatePoint(new PointLD(x,y), new PointLD(0,0), toDegrees(rads));
 		this.x = p.getX();
 		this.y = p.getY();
@@ -135,7 +134,7 @@ public class Vector2d {
 	 * @param theta
 	 * @return
 	 */
-	public Vector2d rotateNew(float theta) {
+	public Vector2d rotateNew(double theta) {
 		Point2D p = GeoUtils.rotatePoint(new PointLD(x,y), new PointLD(0,0), toDegrees(theta));
 		double x = p.getX();
 		double y = p.getY();
@@ -160,5 +159,10 @@ public class Vector2d {
 		norm = (1.0/Math.sqrt(this.x * this.x + this.y * this.y));
 		this.x *= norm;
 		this.y *= norm;
+	}
+	
+	public Point2D applyTo(Point2D p, double multiplier) {
+		p.setLocation(p.getX() + (x * multiplier), p.getY() + (y * multiplier));
+		return p;
 	}
 }

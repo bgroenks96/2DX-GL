@@ -20,8 +20,8 @@
 
 package bg.x2d.anim;
 
-import java.awt.Dimension;
-import java.awt.geom.AffineTransform;
+import java.awt.*;
+import java.awt.geom.*;
 
 /**
  * Segment that scales the AffineTransform of this Graphics object based on x,y

@@ -1,6 +1,5 @@
 package bg.x2d.geo;
 
-import static bg.x2d.math.MathUtils.*;
 import static java.lang.Math.*;
 
 import java.awt.geom.*;
@@ -12,13 +11,12 @@ import java.awt.geom.*;
  */
 public class Vector2f {
 
-	public float x, y, mag, angle;
+	public volatile float x, y, mag, angle;
 
 	/**
 	 * 
 	 * @param x
 	 * @param y
-	 * @param angle
 	 */
 	public Vector2f(float x, float y) {
 		this.x = x;
@@ -36,7 +34,7 @@ public class Vector2f {
 
 	private void init() {
 		mag = (float) sqrt(pow(x, 2) + pow(y, 2));
-		angle = (float) terminal(x, y);
+		angle = (float) GeoUtils.terminal(x, y);
 	}
 
 	public float degs() {
@@ -166,5 +164,9 @@ public class Vector2f {
 		float x = -this.x;
 		float y = -this.y;
 		return new Vector2f(x,y);
+	}
+	
+	public Point2D.Float applyTo(Point2D.Float p, float multiplier) {
+		return new Point2D.Float(p.x + (x * multiplier), p.y + (y * multiplier));
 	}
 }

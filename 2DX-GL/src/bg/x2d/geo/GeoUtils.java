@@ -1,5 +1,5 @@
 /*
- * Copyright © 2011-2012 Brian Groenke
+ * Copyright ï¿½ 2011-2012 Brian Groenke
  * All rights reserved.
  * 
  *  This file is part of the 2DX Graphics Library.
@@ -20,10 +20,10 @@
 
 package bg.x2d.geo;
 
-import java.awt.Graphics2D;
-import java.awt.Paint;
-import java.awt.Polygon;
-import java.awt.geom.Point2D;
+import static java.lang.Math.*;
+
+import java.awt.*;
+import java.awt.geom.*;
 
 /**
  * Contains static convenience method for Geometric operations.
@@ -32,6 +32,8 @@ import java.awt.geom.Point2D;
  * 
  */
 public class GeoUtils {
+
+	public static volatile boolean degrees;
 
 	private GeoUtils() {
 	}
@@ -86,19 +88,22 @@ public class GeoUtils {
 
 	/**
 	 * Algorithm that uses an algebraic rotation formula to transform a point
-	 * from its current location x degrees to a new position on the coordinate
+	 * from its current location x rads/degrees to a new position on the coordinate
 	 * plane.
 	 * 
 	 * @param p
 	 *            point to be rotated
 	 * @param origin
 	 *            point to rotate around
-	 * @param degrees
-	 *            angle measure to rotate (theta); in degrees
+	 * @param angle
+	 *            angle measure to rotate (theta); in degrees or radians depending
+	 *            on the GeoUtils 'degrees' value.
 	 * @return the rotated Point object.
 	 */
 	public static Point2D.Double rotatePoint(Point2D point, Point2D origin,
-			double degrees) {
+			double angle) {
+		if(degrees)
+			angle = Math.toRadians(angle);
 		double x = point.getX();
 		double y = point.getY();
 		double x0 = origin.getX();
@@ -106,14 +111,60 @@ public class GeoUtils {
 		double wx = x - x0;
 		double wy = y - y0;
 		/* xprime = x*cos(theta) - y*sin(toRadians(theta)) */
-		double xresult = (wx * (Math.cos(Math.toRadians(degrees))))
-				- (wy * (Math.sin(Math.toRadians(degrees))));
+		double xresult = (wx * (Math.cos(angle)))
+				- (wy * (Math.sin(angle)));
 		/* yprime = x*sin(theta) + y*cos(toRadians(theta)) */
-		double yresult = (wx * (Math.sin(Math.toRadians(degrees))))
-				+ (wy * (Math.cos(Math.toRadians(degrees))));
+		double yresult = (wx * (Math.sin(angle)))
+				+ (wy * (Math.cos(angle)));
 
 		double x2 = xresult + x0;
 		double y2 = yresult + y0;
 		return new Point2D.Double(x2, y2);
+	}
+
+	/**
+	 * Computes the terminal position of an angle using the given x, y coordinates drawn from the origin.
+	 * The value returned from this method will be 0-2pi or 0-360 degrees.
+	 * @param x
+	 * @param y
+	 * @return
+	 */
+	public static double terminal(double x, double y) {
+		double ref = PI / 2;
+		if(x != 0)
+			ref = abs(atan(y / x));
+		int quad = GeoUtils.quadrant(x, y) - 1;
+		return GeoUtils.chk((quad * (PI / 2)) + ref);
+	}
+
+	/**
+	 * Computes the quadrant the given point lies in based on the origin (0, 0).
+	 * @param x x-coord of the point
+	 * @param y y-coord of the point
+	 * @return int value 1, 2, 3 or 4 representing the point's quadrant based on the origin.
+	 */
+	public static int quadrant(double x, double y) {
+		if(x >= 0 && y>= 0)
+			return 1;
+		else if(x <= 0 && y >= 0)
+			return 2;
+		else if(x <= 0 && y <= 0)
+			return 3;
+		else if(x >= 0 && y <= 0)
+			return 4;
+		else
+			return 0;
+	}
+
+	/**
+	 * Checks the 'degrees' boolean to see if the given angle should be converted to degrees.
+	 * @param angle
+	 * @return
+	 */
+	private static double chk(double angle) {
+		if(GeoUtils.degrees)
+			return toDegrees(angle);
+		else
+			return angle;
 	}
 }

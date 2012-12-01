@@ -20,7 +20,7 @@
 
 package bg.x2d.anim;
 
-import java.awt.geom.AffineTransform;
+import java.awt.geom.*;
 
 /**
  * Segment that translates the AffineTransform the specified amounts on the x
@@ -91,6 +91,7 @@ public class TranslationSegment implements Segment {
 		if (isValid() && (diff = curr - last) > 0) {
 			double dxm = diff * dxint;
 			double dym = diff * dyint;
+			//FIXME
 			affine.translate(dxm, dym);
 			last = curr;
 		}
