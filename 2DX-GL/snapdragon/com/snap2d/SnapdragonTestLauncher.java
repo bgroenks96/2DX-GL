@@ -36,6 +36,8 @@ public class SnapdragonTestLauncher {
 
 		});
 		rc = new RenderControl(3);
+		rc.addRenderable(new TestRenderBack(1,1), RenderControl.POSITION_LAST);
+		rc.addRenderable(new TestRenderObj(0, 0), RenderControl.POSITION_LAST);
 		rc.setRenderOp(RenderingHints.KEY_INTERPOLATION, RenderingHints.VALUE_INTERPOLATION_BICUBIC);
 		rc.startRenderLoop();
 		disp.show(rc);
@@ -52,7 +54,7 @@ public class SnapdragonTestLauncher {
 
 		}).start();
 	}
-	
+
 	static class TestRenderObj implements Renderable {
 
 		BufferedImage img;
@@ -64,7 +66,7 @@ public class SnapdragonTestLauncher {
 			this.y = y;
 			try {
 				img = ImageIO.read(new File(
-						"/media/WIN7/Users/Brian/Pictures/fnrr_flag.png"));
+						"C:/Users/Brian/Pictures/fractal01.png"));
 				img = ImageUtils.convertBufferedImage(img,
 						BufferedImage.TYPE_INT_ARGB);
 				data = ((DataBufferInt)img.getRaster().getDataBuffer()).getData();
@@ -88,8 +90,10 @@ public class SnapdragonTestLauncher {
 
 		@Override
 		public void update(long last) {
-			x+=6;
-			y+=2;
+			if(System.nanoTime() - last > 1000000) {
+				x+=4;
+				y+=2;
+			}
 		}
 
 	}

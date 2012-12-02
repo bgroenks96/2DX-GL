@@ -1,9 +1,8 @@
 package com.snap2d.gl;
 
-import java.awt.Dimension;
-import java.awt.Toolkit;
+import java.awt.*;
 
-import javax.swing.JFrame;
+import javax.swing.*;
 
 /**
  * 
@@ -43,6 +42,8 @@ public class Display {
 			frame.setLocationRelativeTo(null);
 			break;
 		}
+		
+		frame.getContentPane().setBackground(RenderControl.CANVAS_BACK);
 	}
 
 	public void setTitle(String str) {

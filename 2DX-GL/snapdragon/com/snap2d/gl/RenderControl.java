@@ -1,28 +1,17 @@
 package com.snap2d.gl;
 
-import java.awt.Canvas;
-import java.awt.Color;
-import java.awt.Dimension;
-import java.awt.Graphics2D;
-import java.awt.RenderingHints;
+import java.awt.*;
 import java.awt.RenderingHints.Key;
-import java.awt.event.ComponentEvent;
-import java.awt.event.ComponentListener;
-import java.awt.event.FocusEvent;
-import java.awt.event.FocusListener;
-import java.awt.image.BufferStrategy;
-import java.awt.image.BufferedImage;
-import java.awt.image.DataBufferInt;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.Iterator;
+import java.awt.event.*;
+import java.awt.geom.*;
+import java.awt.image.*;
+import java.util.*;
 import java.util.List;
-import java.util.Map;
-import java.util.Vector;
-import java.util.concurrent.ConcurrentSkipListMap;
-import java.util.concurrent.Future;
+import java.util.concurrent.*;
 
-import com.snap2d.ThreadManager;
+import bg.x2d.*;
+
+import com.snap2d.*;
 
 public class RenderControl {
 
@@ -31,10 +20,25 @@ public class RenderControl {
 	public static final Color LIGHT_COLOR = Color.BLACK;
 
 	public static int stopTimeout = 2000;
+	
+	private static final long RESIZE_TIMER = 1 * (long) Math.pow(10, 8);
+
+	public volatile boolean
+	/**
+	 * Determines whether or not auto-resizing should be used.  True by default.
+	 */
+	auto = true, 
+	/**
+	 * True if hardware acceleration (VolatileImage) should be used, false otherwise.
+	 */
+	accelerated = true;
 
 	protected Canvas canvas;
 	protected volatile BufferedImage pri, light;
-	protected volatile boolean auto, updateHints;
+	protected volatile VolatileImage disp;
+	protected volatile int[] pixels;
+	protected volatile long lastResizeFinish;
+	protected volatile boolean updateHints;
 
 	protected List<Renderable> rtasks = new ArrayList<Renderable>(), delQueue = new Vector<Renderable>();
 	protected Map<Integer, Renderable> addQueue = new ConcurrentSkipListMap<Integer, Renderable>();
@@ -43,7 +47,6 @@ public class RenderControl {
 	protected Future<?> taskCallback;
 	protected int buffs;
 	protected Map<RenderingHints.Key, Object> renderOps;
-	protected int[] pixels;
 
 	private RenderControl inst;
 
@@ -54,7 +57,6 @@ public class RenderControl {
 
 		renderOps = new HashMap<RenderingHints.Key, Object>();
 		loop = new RenderLoop();
-		auto = true;
 		resize = new AutoResize();
 
 		canvas.addComponentListener(resize);
@@ -73,8 +75,6 @@ public class RenderControl {
 	}
 
 	public void startRenderLoop() {
-		loop.running = true;
-		loop.active = true;
 		taskCallback = ThreadManager.submitJob(loop);
 	}
 
@@ -111,6 +111,7 @@ public class RenderControl {
 		renderOps.clear();
 		pri.flush();
 		light.flush();
+		disp.flush();
 
 		// nullify references to potentially significant resource holders so that they are available
 		// for garbage collection.
@@ -118,6 +119,7 @@ public class RenderControl {
 		loop = null;
 		pri = null;
 		light = null;
+		disp = null;
 		resize = null;
 		taskCallback = null;
 	}
@@ -131,11 +133,38 @@ public class RenderControl {
 	}
 
 	/**
-	 * Gets the last recorded number of updates per second.
+	 * Gets the last recorded number of updates (ticks) per second.
 	 * @return
 	 */
 	public int getCurrentTPS() {
 		return loop.tps;
+	}
+
+	/**
+	 * Sets the frame rate that the rendering algorithm will target when
+	 * interpolating.
+	 * @param fps frames per second
+	 */
+	public void setTargetFPS(int fps) {
+		loop.setTargetFPS(fps);
+	}
+
+	/**
+	 * Sets the frequency per second at which the Renderable.update method is called.
+	 * @param tps ticks per second
+	 */
+	public void setTargetTPS(int tps) {
+		loop.setTargetTPS(tps);
+	}
+
+	/**
+	 * Sets the max number of times updates can be issued before a render must occur.
+	 * If animations are "chugging" or skipping, it may help to set this value to a very
+	 * low value (0-2).  Higher values will prevent the game updates from freezing.
+	 * @param maxUpdates max number of updates to be sent before rendering.
+	 */
+	public void setMaxUpdates(int maxUpdates) {
+		loop.setMaxUpdates(maxUpdates);
 	}
 
 	/**
@@ -201,14 +230,6 @@ public class RenderControl {
 
 	}
 
-	/**
-	 * Set whether or not this RenderControl should attempt to auto-resize it's components when it is resized.
-	 * @param resize
-	 */
-	public void setAutoResize(boolean resize) {
-		auto = resize;
-	}
-
 	public void setRenderOp(Key key, Object value) {
 		renderOps.put(key, value);
 		updateHints = true;
@@ -223,6 +244,14 @@ public class RenderControl {
 		return renderOps.get(key);
 	}
 
+	/**
+	 * Renders pixel data to the display buffer (not yet shown at the time of this call).
+	 * @param xpos
+	 * @param ypos
+	 * @param wt
+	 * @param ht
+	 * @param colors
+	 */
 	public synchronized void render(int xpos, int ypos, int wt, int ht, int[] colors) {
 		for(int y = 0; y < ht; y++) {
 
@@ -237,12 +266,24 @@ public class RenderControl {
 				if(xp >= pri.getWidth() || xp < 0)
 					continue;
 
-				pixels[yp * pri.getWidth() + xp ] = colors[y*wt + x];
+				int pos = yp * pri.getWidth() + xp;
+				if(pos < 0 || pos >= pixels.length)
+					continue;
+				
+				pixels[pos] = colors[y*wt + x];
 			}
 		}
 	}
 
+	/**
+	 * Internal method that is called by RenderLoop to draw rendered data to the screen.
+	 * If hardware acceleration is enabled, the buffer's data is drawn to a VolatileImage.
+	 * Otherwise, the buffer image itself is drawn.
+	 */
 	protected synchronized void render() {
+		// If the component was being resized, cancel rendering until finished (prevents flickering).
+		if(System.nanoTime() - lastResizeFinish < RESIZE_TIMER)
+			return;
 		BufferStrategy bs = canvas.getBufferStrategy();
 		if(bs == null) {
 			canvas.createBufferStrategy(buffs);
@@ -251,10 +292,43 @@ public class RenderControl {
 		}
 
 		Graphics2D g = (Graphics2D) bs.getDrawGraphics();
+
+		if(accelerated) {
+			// Check the status of the VolatileImage and update/re-create it if neccessary.
+			if(disp == null || disp.getWidth() != pri.getWidth() || disp.getHeight() != pri.getHeight()) {
+				disp = ImageUtils.createVolatileImage(pri.getWidth(), pri.getHeight(), g);
+				Graphics2D img = disp.createGraphics();
+				img.drawRenderedImage(pri, new AffineTransform());
+				img.dispose();
+			}
+			int stat = 0;
+			do {
+				if((stat=ImageUtils.validateVI(disp, g)) != VolatileImage.IMAGE_OK) {
+					if(stat == VolatileImage.IMAGE_INCOMPATIBLE) {
+						disp = ImageUtils.createVolatileImage(pri.getWidth(), pri.getHeight(), g);
+					}
+				}
+
+				Graphics2D img = disp.createGraphics();
+				img.drawRenderedImage(pri, new AffineTransform());
+				img.dispose();
+			} while(disp.contentsLost());
+		} else {
+			// If acceleration is now disabled but was previously enabled, release system resources held by
+			// VolatileImage and set the reference to null.
+			if(disp != null) {
+				disp.flush();
+				disp = null;
+			}
+		}
+
 		g.setRenderingHints(renderOps);
 		g.setColor(CANVAS_BACK);
 		g.fillRect(0, 0, canvas.getWidth(), canvas.getHeight());
-		g.drawImage(pri, 0, 0, null);
+		if(disp != null)
+			g.drawImage(disp, 0, 0, null);
+		else
+			g.drawImage(pri, 0, 0, null);
 		g.drawImage(light, 0, 0, null);
 		g.dispose();
 		bs.show();
@@ -264,10 +338,25 @@ public class RenderControl {
 
 	}
 
+	private void createImages(int wt, int ht) {
+		pri = new BufferedImage(wt, ht, BufferedImage.TYPE_INT_ARGB);
+		light = new BufferedImage(wt, ht, BufferedImage.TYPE_INT_ARGB);
+		pixels = ((DataBufferInt)pri.getRaster().getDataBuffer()).getData();
+	}
+
+	/**
+	 * Loop where render/update logic is executed.
+	 * @author Brian Groenke
+	 *
+	 */
 	protected class RenderLoop implements Runnable {
 
-		final double TARGET_FPS = 60, TARGET_TIME_BETWEEN_RENDERS = 1000000000.0 / TARGET_FPS, TICK_HERTZ = TARGET_FPS / 2, 
+		// Default values
+		private final double TARGET_FPS = 60, TARGET_TIME_BETWEEN_RENDERS = 1000000000.0 / TARGET_FPS, TICK_HERTZ = 30, 
 				TIME_BETWEEN_UPDATES = 1000000000.0 / TICK_HERTZ, MAX_UPDATES_BEFORE_RENDER = 3;
+
+		private double targetFPS = TARGET_FPS, targetTimeBetweenRenders = TARGET_TIME_BETWEEN_RENDERS, tickHertz = TICK_HERTZ, 
+				timeBetweenUpdates = TIME_BETWEEN_UPDATES, maxUpdates = MAX_UPDATES_BEFORE_RENDER;
 
 		volatile int fps, tps;
 		volatile boolean running, active;
@@ -293,6 +382,8 @@ public class RenderControl {
 			double lastRenderTime = System.nanoTime();
 			int lastSecondTime = (int) (lastUpdateTime / 1000000000);
 			int frameCount = 0, ticks = 0;
+			running = true;
+			active = true;
 			while (running) {
 				try {
 
@@ -310,33 +401,31 @@ public class RenderControl {
 						}
 						delQueue.clear();
 					}
-					
+
 					double now = System.nanoTime();
 					if (active && (canvas.getWidth() > 0 && canvas.getHeight() > 0)) {
 
 						if(pri == null || light == null) {
-							pri = new BufferedImage(canvas.getWidth(), canvas.getHeight(), BufferedImage.TYPE_INT_ARGB);
-							light = new BufferedImage(canvas.getWidth(), canvas.getHeight(), BufferedImage.TYPE_INT_ARGB);
-							pixels = ((DataBufferInt)pri.getRaster().getDataBuffer()).getData();
+							createImages(canvas.getWidth(), canvas.getHeight());
 						}
 
 						int updateCount = 0;
 
-						while( now - lastUpdateTime > TIME_BETWEEN_UPDATES && updateCount < MAX_UPDATES_BEFORE_RENDER ) {
+						while( now - lastUpdateTime > timeBetweenUpdates && updateCount < maxUpdates ) {
 							Iterator<Renderable> tasks = rtasks.iterator();
 							while(tasks.hasNext())
 								tasks.next().update((long) lastUpdateTime);
-							lastUpdateTime += TIME_BETWEEN_UPDATES;
+							lastUpdateTime += timeBetweenUpdates;
 							updateCount++;
 							ticks++;
 						}
 
-						if ( now - lastUpdateTime > TIME_BETWEEN_UPDATES)
+						if ( now - lastUpdateTime > timeBetweenUpdates)
 						{
-							lastUpdateTime = now - TIME_BETWEEN_UPDATES;
+							lastUpdateTime = now - timeBetweenUpdates;
 						}
 
-						float interpolation = Math.min(1.0f, (float) ((now - lastUpdateTime) / TIME_BETWEEN_UPDATES));
+						float interpolation = Math.min(1.0f, (float) ((now - lastUpdateTime) / timeBetweenUpdates));
 						Iterator<Renderable> tasks = rtasks.iterator();
 						while(tasks.hasNext())
 							tasks.next().render(inst, interpolation);
@@ -355,7 +444,7 @@ public class RenderControl {
 						}
 					}
 
-					while (now - lastRenderTime < TARGET_TIME_BETWEEN_RENDERS && now - lastUpdateTime < TIME_BETWEEN_UPDATES) {
+					while (now - lastRenderTime < targetTimeBetweenRenders && now - lastUpdateTime < timeBetweenUpdates) {
 						Thread.yield();
 
 						now = System.nanoTime();
@@ -365,40 +454,46 @@ public class RenderControl {
 				}
 			}
 		}
+
+		protected void setTargetFPS(int fps) {
+			if(fps < 0)
+				return;
+			targetFPS = fps;
+			targetTimeBetweenRenders = 1000000000.0 / targetFPS;
+		}
+
+		protected void setTargetTPS(int tps) {
+			if(tps < 0)
+				return;
+			tickHertz = tps;
+			timeBetweenUpdates = 1000000000.0 / tickHertz;
+		}
+
+		protected void setMaxUpdates(int max) {
+			if(max >= 0)
+				maxUpdates = max;
+		}
 	}
 
-	protected class AutoResize implements ComponentListener {
+	protected class AutoResize extends ComponentAdapter {
 
 		private int wt, ht;
 
 		@Override
 		public void componentResized(ComponentEvent e) {
-			Iterator<Renderable> itr = rtasks.listIterator();
-			while (itr.hasNext()) {
-				itr.next().onResize(
-						new Dimension(wt, ht),
-						new Dimension(e.getComponent().getWidth(), e
-								.getComponent().getHeight()));
-			}
 			if (auto) {
 				resize(e.getComponent().getWidth(), e.getComponent()
 						.getHeight());
+				Iterator<Renderable> itr = rtasks.listIterator();
+				while (itr.hasNext()) {
+					itr.next().onResize(
+							new Dimension(wt, ht),
+							new Dimension(e.getComponent().getWidth(), e
+									.getComponent().getHeight()));
+				}
+				
+				lastResizeFinish = System.nanoTime();
 			}
-		}
-
-		@Override
-		public void componentMoved(ComponentEvent e) {
-
-		}
-
-		@Override
-		public void componentShown(ComponentEvent e) {
-
-		}
-
-		@Override
-		public void componentHidden(ComponentEvent e) {
-
 		}
 
 		protected void resize(int wt, int ht) {
@@ -408,6 +503,8 @@ public class RenderControl {
 			if (ht <= 0) {
 				ht = 1;
 			}
+
+			createImages(wt, ht);
 			this.wt = wt;
 			this.ht = ht;
 		}
