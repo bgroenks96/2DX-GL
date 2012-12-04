@@ -3,5 +3,8 @@
 	<classpathentry kind="src" path="src"/>
 	<classpathentry kind="src" path="snapdragon"/>
 	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER/org.eclipse.jdt.internal.debug.ui.launcher.StandardVMType/JavaSE-1.6"/>
+	<classpathentry kind="lib" path="C:/Users/Brian/Java Workspace/libs/SoundSystem/SoundSystem.jar"/>
+	<classpathentry kind="lib" path="C:/Users/Brian/Java Workspace/libs/SoundSystem/custom_combo/Codecs.jar"/>
+	<classpathentry kind="lib" path="C:/Users/Brian/Java Workspace/libs/SoundSystem/custom_combo/LibraryJavaSound.jar"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>
