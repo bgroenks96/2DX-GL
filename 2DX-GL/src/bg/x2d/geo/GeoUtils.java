@@ -104,6 +104,7 @@ public class GeoUtils {
 			double angle) {
 		if(degrees)
 			angle = Math.toRadians(angle);
+		
 		double x = point.getX();
 		double y = point.getY();
 		double x0 = origin.getX();

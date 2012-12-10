@@ -1,3 +1,23 @@
+/*
+ * Copyright © 2011-2012 Brian Groenke
+ * All rights reserved.
+ * 
+ *  This file is part of the 2DX Graphics Library.
+ *
+ *  2DX is free software: you can redistribute it and/or modify
+ *  it under the terms of the GNU General Public License as published by
+ *  the Free Software Foundation, either version 3 of the License, or
+ *  (at your option) any later version.
+ *
+ *  2DX is distributed in the hope that it will be useful,
+ *  but WITHOUT ANY WARRANTY; without even the implied warranty of
+ *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ *  GNU General Public License for more details.
+ *
+ *  You should have received a copy of the GNU General Public License
+ *  along with 2DX.  If not, see <http://www.gnu.org/licenses/>.
+ */
+
 package com.snap2d.gl;
 
 import java.awt.*;
@@ -20,7 +40,7 @@ public class RenderControl {
 	public static final Color LIGHT_COLOR = Color.BLACK;
 
 	public static int stopTimeout = 2000;
-	
+
 	private static final long RESIZE_TIMER = 1 * (long) Math.pow(10, 8);
 
 	public volatile boolean
@@ -34,9 +54,9 @@ public class RenderControl {
 	accelerated = true;
 
 	protected Canvas canvas;
-	protected volatile BufferedImage pri, light;
+	protected volatile BufferedImage pri, light, buff;
 	protected volatile VolatileImage disp;
-	protected volatile int[] pixels;
+	protected volatile int[] pixelData, buffData;
 	protected volatile long lastResizeFinish;
 	protected volatile boolean updateHints;
 
@@ -50,6 +70,13 @@ public class RenderControl {
 
 	private RenderControl inst;
 
+	/**
+	 * Creates a RenderControl object that can be used to render data to a Display.
+	 * A Canvas object is created internally with a managed BufferStrategy.
+	 * @param buffs the number of buffers the BufferStrategy should be created with.
+	 *        Note that RenderControl already uses it's own back buffer, so a double or triple
+	 *        buffered BufferStrategy may or may not be necessary.
+	 */
 	public RenderControl(int buffs) {
 		this.canvas = new Canvas();
 		this.buffs = buffs;
@@ -110,14 +137,18 @@ public class RenderControl {
 		delQueue.clear();
 		renderOps.clear();
 		pri.flush();
+		buff.flush();
 		light.flush();
 		disp.flush();
 
 		// nullify references to potentially significant resource holders so that they are available
 		// for garbage collection.
+		pixelData = null;
+		buffData = null;
 		canvas = null;
 		loop = null;
 		pri = null;
+		buff = null;
 		light = null;
 		disp = null;
 		resize = null;
@@ -245,40 +276,39 @@ public class RenderControl {
 	}
 
 	/**
-	 * Renders pixel data to the display buffer (not yet shown at the time of this call).
-	 * @param xpos
-	 * @param ypos
-	 * @param wt
-	 * @param ht
-	 * @param colors
+	 * Blends a translucent pixel with an opaque destination value.
+	 * @param srcA
+	 * @param srcValue
+	 * @param dstValue
+	 * @return
 	 */
-	public synchronized void render(int xpos, int ypos, int wt, int ht, int[] colors) {
-		for(int y = 0; y < ht; y++) {
+	protected int blend(float srcA, int srcValue, int dstValue) {
 
-			int yp = ypos + y;
+		float srcR = ((srcValue & 0x00ff0000) >>> 16) / 255f;
+		float srcG = ((srcValue & 0x0000ff00) >>> 8) / 255f;
+		float srcB = ((srcValue & 0x000000ff)) / 255f;
 
-			if(yp >= pri.getHeight() || yp < 0)
-				continue;
+		//float dstA = ((dstValue & 0xff000000) >>> 24) / 255f;
+		float dstR = ((dstValue & 0x00ff0000) >>> 16) / 255f;
+		float dstG = ((dstValue & 0x0000ff00) >>> 8) / 255f;
+		float dstB = ((dstValue & 0x000000ff)) / 255f;
 
-			for(int x = 0; x < wt; x++) {
-				int xp = xpos + x;
+		srcR *= srcA;
+		srcG *= srcA;
+		srcB *= srcA;
 
-				if(xp >= pri.getWidth() || xp < 0)
-					continue;
+		//final output
+		float R = srcR + dstR*(1-srcA);
+		float G = srcG + dstG*(1-srcA);
+		float B = srcB + dstB*(1-srcA);
 
-				int pos = yp * pri.getWidth() + xp;
-				if(pos < 0 || pos >= pixels.length)
-					continue;
-				
-				pixels[pos] = colors[y*wt + x];
-			}
-		}
+		return ((int)(R * 255) << 16) | ((int)(G * 255) << 8) | (int)(B * 255);
 	}
 
 	/**
 	 * Internal method that is called by RenderLoop to draw rendered data to the screen.
-	 * If hardware acceleration is enabled, the buffer's data is drawn to a VolatileImage.
-	 * Otherwise, the buffer image itself is drawn.
+	 * The back buffer's data is copied to the main image which, if hardware acceleration is enabled,
+	 * is drawn to a VolatileImage.  Otherwise, the BufferedImage itself is drawn.
 	 */
 	protected synchronized void render() {
 		// If the component was being resized, cancel rendering until finished (prevents flickering).
@@ -292,6 +322,35 @@ public class RenderControl {
 		}
 
 		Graphics2D g = (Graphics2D) bs.getDrawGraphics();
+
+		for(int y = 0; y < buff.getHeight(); y++) {
+
+			if(y >= pri.getHeight() || y < 0)
+				continue;
+
+			for(int x = 0; x < buff.getWidth(); x++) {
+
+				if(x >= pri.getWidth() || x < 0)
+					continue;
+
+				int pos = y * pri.getWidth() + x;
+				if(pos < 0 || pos >= pixelData.length)
+					continue;
+
+				//get foreground pixels (source)
+				int srcValue = buffData[y * buff.getWidth() + x];
+				
+				/*
+				 * We don't currently need to blend because the Graphics object will do it for us. 
+				float srcA = ((srcValue & 0xff000000) >>> 24) / 255f;
+				if(srcA < 1f) {
+					pixelData[pos] = blend(srcA, srcValue, pixelData[pos]);
+				} else
+				 */
+				
+				pixelData[pos] = srcValue;
+			}
+		}
 
 		if(accelerated) {
 			// Check the status of the VolatileImage and update/re-create it if neccessary.
@@ -322,9 +381,10 @@ public class RenderControl {
 			}
 		}
 
-		g.setRenderingHints(renderOps);
-		g.setColor(CANVAS_BACK);
-		g.fillRect(0, 0, canvas.getWidth(), canvas.getHeight());
+		if(updateHints) {
+			g.setRenderingHints(renderOps);
+			updateHints = false;
+		}
 		if(disp != null)
 			g.drawImage(disp, 0, 0, null);
 		else
@@ -332,6 +392,7 @@ public class RenderControl {
 		g.drawImage(light, 0, 0, null);
 		g.dispose();
 		bs.show();
+		Arrays.fill(pixelData, CANVAS_BACK.getRGB());
 	}
 
 	protected synchronized void renderLight() {
@@ -339,9 +400,11 @@ public class RenderControl {
 	}
 
 	private void createImages(int wt, int ht) {
-		pri = new BufferedImage(wt, ht, BufferedImage.TYPE_INT_ARGB);
+		pri = new BufferedImage(wt, ht, BufferedImage.TYPE_INT_RGB);
+		buff = new BufferedImage(wt, ht, BufferedImage.TYPE_INT_RGB);
 		light = new BufferedImage(wt, ht, BufferedImage.TYPE_INT_ARGB);
-		pixels = ((DataBufferInt)pri.getRaster().getDataBuffer()).getData();
+		pixelData = ((DataBufferInt)pri.getRaster().getDataBuffer()).getData();
+		buffData = ((DataBufferInt)buff.getRaster().getDataBuffer()).getData();
 	}
 
 	/**
@@ -354,6 +417,8 @@ public class RenderControl {
 		// Default values
 		private final double TARGET_FPS = 60, TARGET_TIME_BETWEEN_RENDERS = 1000000000.0 / TARGET_FPS, TICK_HERTZ = 30, 
 				TIME_BETWEEN_UPDATES = 1000000000.0 / TICK_HERTZ, MAX_UPDATES_BEFORE_RENDER = 3;
+
+		private final long SLEEP_WHILE_INACTIVE = 100;
 
 		private double targetFPS = TARGET_FPS, targetTimeBetweenRenders = TARGET_TIME_BETWEEN_RENDERS, tickHertz = TICK_HERTZ, 
 				timeBetweenUpdates = TIME_BETWEEN_UPDATES, maxUpdates = MAX_UPDATES_BEFORE_RENDER;
@@ -411,24 +476,23 @@ public class RenderControl {
 
 						int updateCount = 0;
 
-						while( now - lastUpdateTime > timeBetweenUpdates && updateCount < maxUpdates ) {
-							Iterator<Renderable> tasks = rtasks.iterator();
-							while(tasks.hasNext())
-								tasks.next().update((long) lastUpdateTime);
+						while(now - lastUpdateTime > timeBetweenUpdates && updateCount < maxUpdates ) {
+							for(Renderable r:rtasks)
+								r.update((long)lastUpdateTime);
 							lastUpdateTime += timeBetweenUpdates;
 							updateCount++;
 							ticks++;
 						}
 
-						if ( now - lastUpdateTime > timeBetweenUpdates)
-						{
+						if (now - lastUpdateTime > timeBetweenUpdates) {
 							lastUpdateTime = now - timeBetweenUpdates;
 						}
 
 						float interpolation = Math.min(1.0f, (float) ((now - lastUpdateTime) / timeBetweenUpdates));
-						Iterator<Renderable> tasks = rtasks.iterator();
-						while(tasks.hasNext())
-							tasks.next().render(inst, interpolation);
+						Graphics2D g = buff.createGraphics();
+						for(Renderable r:rtasks)
+							r.render(g, interpolation);
+						g.dispose();
 						render();
 						lastRenderTime = now;
 						frameCount++;
@@ -446,9 +510,13 @@ public class RenderControl {
 
 					while (now - lastRenderTime < targetTimeBetweenRenders && now - lastUpdateTime < timeBetweenUpdates) {
 						Thread.yield();
-
 						now = System.nanoTime();
 					}
+
+					if(!active)
+						// preserve CPU if loop is currently is currently inactive.
+						// the constant can be lowered to reduce latency when re-focusing.
+						Thread.sleep(SLEEP_WHILE_INACTIVE);
 				} catch(Exception e) {
 					e.printStackTrace();
 				}
@@ -491,7 +559,7 @@ public class RenderControl {
 							new Dimension(e.getComponent().getWidth(), e
 									.getComponent().getHeight()));
 				}
-				
+
 				lastResizeFinish = System.nanoTime();
 			}
 		}

@@ -4,6 +4,7 @@ import java.awt.*;
 import java.awt.event.*;
 import java.awt.image.*;
 import java.io.*;
+import java.util.*;
 
 import javax.imageio.*;
 
@@ -33,12 +34,13 @@ public class SnapdragonTestLauncher {
 					System.exit(0);
 				}
 			}
-
 		});
-		rc = new RenderControl(3);
+		rc = new RenderControl(2);
+		Random r = new Random();
 		rc.addRenderable(new TestRenderBack(1,1), RenderControl.POSITION_LAST);
-		rc.addRenderable(new TestRenderObj(0, 0), RenderControl.POSITION_LAST);
-		rc.setRenderOp(RenderingHints.KEY_INTERPOLATION, RenderingHints.VALUE_INTERPOLATION_BICUBIC);
+		rc.addRenderable(new TestStaticRenderObj(200, 200), RenderControl.POSITION_LAST);
+		rc.addRenderable(new TestRenderObj(r.nextInt(300), r.nextInt(300)), RenderControl.POSITION_LAST);
+		rc.setMaxUpdates(2);
 		rc.startRenderLoop();
 		disp.show(rc);
 		new Thread(new Runnable() {
@@ -66,7 +68,7 @@ public class SnapdragonTestLauncher {
 			this.y = y;
 			try {
 				img = ImageIO.read(new File(
-						"C:/Users/Brian/Pictures/fractal01.png"));
+						"/media/WIN7/Users/Brian/Pictures/fractal01.png"));
 				img = ImageUtils.convertBufferedImage(img,
 						BufferedImage.TYPE_INT_ARGB);
 				data = ((DataBufferInt)img.getRaster().getDataBuffer()).getData();
@@ -76,9 +78,10 @@ public class SnapdragonTestLauncher {
 		}
 
 		@Override
-		public void render(RenderControl rc, float interpolation) {
+		public void render(Graphics2D g, float interpolation) {
 
-			rc.render((int) Math.round((x - lx) * interpolation + lx), (int) Math.round((y - ly) * interpolation + ly), img.getWidth(), img.getHeight(), data);
+			//rc.render((int)((x - lx) * interpolation + lx), (int) ((y - ly) * interpolation + ly), img.getWidth(), img.getHeight(), data);
+			g.drawImage(img, (int)((x - lx) * interpolation + lx), (int) ((y - ly) * interpolation + ly), null);
 			lx = x;
 			ly = y;
 		}
@@ -89,18 +92,58 @@ public class SnapdragonTestLauncher {
 		}
 
 		@Override
-		public void update(long last) {
-			if(System.nanoTime() - last > 1000000) {
-				x+=4;
-				y+=2;
-			}
+		public void update(long lastUpdate) {
+			x+=5;
+			y+=2;
 		}
 
+	}
+	
+	static class TestStaticRenderObj implements Renderable {
+		
+		BufferedImage img;
+		int[] data;
+		int x, y, lx, ly;
+		
+		public TestStaticRenderObj(int x, int y) {
+			this.x = x;
+			this.y = y;
+			try {
+				img = ImageIO.read(new File(
+						"/media/WIN7/Users/Brian/Pictures/fnrr_flag.png"));
+				img = ImageUtils.convertBufferedImage(img,
+						BufferedImage.TYPE_INT_ARGB);
+				data = ((DataBufferInt)img.getRaster().getDataBuffer()).getData();
+			} catch (IOException e) {
+				e.printStackTrace();
+			}
+		}
+		
+		@Override
+		public void render(Graphics2D g, float interpolation) {
+			
+			//rc.render((int) Math.round((x - lx) * interpolation + lx), (int) Math.round((y - ly) * interpolation + ly), img.getWidth(), img.getHeight(), data);
+			g.drawImage(img, (int)((x - lx) * interpolation + lx), (int) ((y - ly) * interpolation + ly), null);
+			lx = x;
+			ly = y;
+		}
+		
+		@Override
+		public void onResize(Dimension oldSize, Dimension newSize) {
+			
+		}
+		
+		@Override
+		public void update(long last) {
+			
+		}
+		
 	}
 
 	static class TestRenderBack implements Renderable {
 
-		int[] data;
+		BufferedImage bi;
+		//int[] data;
 		int wt, ht;
 
 		public TestRenderBack(int wt, int ht) {
@@ -108,19 +151,20 @@ public class SnapdragonTestLauncher {
 		}
 
 		private void setup(int wt, int ht) {
-			BufferedImage bi = new BufferedImage(wt, ht, BufferedImage.TYPE_INT_ARGB);
+			bi = new BufferedImage(wt, ht, BufferedImage.TYPE_INT_RGB);
 			Graphics g = bi.getGraphics();
 			g.setColor(Color.BLACK);
 			g.fillRect(0, 0, wt, ht);
 			g.dispose();
-			data = ((DataBufferInt)bi.getRaster().getDataBuffer()).getData();
+			//data = ((DataBufferInt)bi.getData().getDataBuffer()).getData();
 			this.wt = wt;
 			this.ht = ht;
 		}
 
 		@Override
-		public void render(RenderControl rc, float interpolation) {
-			rc.render(0, 0, wt, ht, data);
+		public void render(Graphics2D g, float interpolation) {
+			//rc.render(0, 0, wt, ht, data);
+			g.drawImage(bi, 0, 0, null);
 		}
 
 		@Override
