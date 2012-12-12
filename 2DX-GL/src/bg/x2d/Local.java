@@ -63,6 +63,7 @@ public abstract class Local {
 
 	static {
 		checkNativeSupport();
+		loadNative("Local");
 	}
 
 	/**
@@ -120,6 +121,17 @@ public abstract class Local {
 	public static String getJavaArch() {
 		return (getJVM().toLowerCase().contains("64-bit")) ? JVM_X64:JVM_X86;
 	}
+	
+	/**
+	 * Attempts to determine the human-readable identifier (usually the name/model) of this machine's graphics card.
+	 * @return the human-readable name as a String or null if unable to be determined (i.e an error occurred or 2DX
+	 * doesn't support native operations on this platform).
+	 */
+	public static native String getGraphicsDevice();
+	
+	public static native long getSystemAvailableRAM();
+	
+	public static native long getSystemTotalRAM();
 	
 	/**
 	 * 

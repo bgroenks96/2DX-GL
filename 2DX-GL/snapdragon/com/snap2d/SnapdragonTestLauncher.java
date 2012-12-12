@@ -19,7 +19,8 @@ public class SnapdragonTestLauncher {
 	RenderControl rc;
 
 	public static void main(String[] args) {
-		new SnapdragonTestLauncher().init(args);
+		System.out.println(Local.getGraphicsDevice());
+		//new SnapdragonTestLauncher().init(args);
 	}
 
 	public void init(String[] args) {

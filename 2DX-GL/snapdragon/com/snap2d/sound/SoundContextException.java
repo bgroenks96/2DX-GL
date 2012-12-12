@@ -20,27 +20,44 @@
 
 package com.snap2d.sound;
 
-import java.awt.*;
-import java.util.*;
-
-import paulscode.sound.*;
-
-
 /**
  * @author Brian Groenke
  *
  */
-public class SoundMap {
-	
-	static final int Z = 10;
-	
-	SoundSystem sound;
-	Point listener;
-	HashMap<String, Point> sources = new HashMap<String, Point>();
-	
-	public SoundMap(Sound2D context) throws SoundContextException {
-		if(!context.isInitialized())
-			throw(new SoundContextException());
-		sound = context.soundSystem();
+public class SoundContextException extends Exception {
+
+	/**
+	 * 
+	 */
+	private static final long serialVersionUID = 389563910801777238L;
+
+	/**
+	 * 
+	 */
+	public SoundContextException() {
+		super();
 	}
+
+	/**
+	 * @param message
+	 */
+	public SoundContextException(String message) {
+		super(message);
+	}
+
+	/**
+	 * @param cause
+	 */
+	public SoundContextException(Throwable cause) {
+		super(cause);
+	}
+
+	/**
+	 * @param message
+	 * @param cause
+	 */
+	public SoundContextException(String message, Throwable cause) {
+		super(message, cause);
+	}
+
 }

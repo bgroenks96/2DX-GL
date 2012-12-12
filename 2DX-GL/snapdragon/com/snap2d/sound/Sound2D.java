@@ -32,6 +32,11 @@ import com.snap2d.sound.libs.*;
  * Main class for the Snapdragon2D Sound API.  Allows you to initialize and shutdown the sound system, as well
  * as configure master-settings about Sound processing.
  * 
+ * Note that this class internally manages Paul Lamb's SoundSystem, and ONLY subclasses and other classes within this packages should
+ * have access to it.  Only one SoundSystem object should exist per application process, so it is HIGHLY recommended that you do not
+ * attempt to use SoundSystem or any corresponding libraries within Snapdragon2D directly, unless you are overriding Sound2D with your
+ * own implementation.
+ * 
  * Snapdragon2D Sound supports the following audio formats: Ogg Vorbis (.ogg), Waveform (.wav), NeXT/Sun AU (.au), Apple AIFF (.aiff).
  * @author Brian Groenke
  *
@@ -40,20 +45,18 @@ public class Sound2D {
 
 	static Sound2D sound2d;
 	
-	SoundSystem sound;
-
-	static {
-		sound2d = new Sound2D();
-	}
+	private SoundSystem sound;
 
 	/**
 	 * Block constructor access.  Only one instance of Sound2D should exist.
 	 */
-	private Sound2D() {
+	protected Sound2D() {
 		//
 	}
 
 	public static Sound2D getInstance() {
+		if(sound2d == null)
+			sound2d = new Sound2D();
 		return sound2d;
 	}
 	
@@ -72,6 +75,10 @@ public class Sound2D {
 		}
 		sound = new SoundSystem();
 	}
+	
+	public boolean isInitialized() {
+		return sound != null;
+	}
 
 	public void shutdown() {
 		if(sound == null)
@@ -89,20 +96,56 @@ public class Sound2D {
 			SoundSystemConfig.setSoundFilesPackage(jarPkg);
 	}
 	
+	/**
+	 * Plays ambient background music independent of world position.
+	 * @param id
+	 * @param fileName classpath or http url to file.
+	 * @param loop
+	 */
 	public void playBackgroundMusic(String id, String fileName, boolean loop) {
 		if(sound == null)
 			return;
 		sound.backgroundMusic(id, fileName, loop);
 	}
 	
-	
+	/**
+	 * Typically should be used to stop currently playing background music, although because the
+	 * same SoundSystem is used, passing an identifier to a sound source created elsewhere will still
+	 * cause the sound to be stopped.
+	 * @param id
+	 */
 	public void stopSound(String id) {
 		if(sound == null)
 			return;
 		sound.stop(id);
 	}
+	
+	/**
+	 * Pre-load a sound file into memory so it can be quickly played later.
+	 * @param fileName
+	 */
+	public void load(String fileName) {
+		sound.loadSound(fileName);
+	}
+	
+	/**
+	 * Unload a sound file from memory.
+	 * @param fileName
+	 */
+	public void unload(String fileName) {
+		sound.unloadSound(fileName);
+	}
+	
+	/**
+	 * Internal method for subclass implementations and/or classes within Snapdragon2D's sound API.  Retrieves the underlying
+	 * SoundSystem object from third party libraries that controls 3D audio mapping/playback.
+	 * @return the SoundSystem object (http://www.paulscode.com)
+	 */
+	protected SoundSystem soundSystem() {
+		return sound;
+	}
 
-	static float x,y,z;
+	static float x=2f,y,z=0;
 	public static void main(String[] args) {
 		final Sound2D s2d = Sound2D.getInstance();
 		s2d.initSystem();
@@ -110,24 +153,22 @@ public class Sound2D {
 		s2d.sound.setListenerPosition(0, 0, 0);
 		s2d.sound.newStreamingSource(false, "elipse", "Elipse.ogg", false, x, y, z, SoundSystemConfig.ATTENUATION_ROLLOFF, 0.2f);
 		s2d.sound.play("elipse");
-		new Thread(new Runnable() {
-
-			@Override
-			public void run() {
-				while(SoundSystem.initialized()) {
-					//s2d.sound.setPosition("elipse", x+=1, y+=1, z);
-					try {
-						Thread.sleep(500);
-					} catch (InterruptedException e) {
-						e.printStackTrace();
-					}
-				}
-			}
-			
-		}).start();
 		//s2d.playBackgroundMusic("elipse", "Elipse.ogg", false);
 		Scanner sc = new Scanner(System.in);
-		sc.nextLine();
+		String line = null;
+		while((line=sc.nextLine()) != null) {
+			if(line.equals("q"))
+				break;
+			else if(line.equals("r"))
+				x++;
+			else if(line.equals("l"))
+				x--;
+			else if(line.equals("u"))
+				y++;
+			else if(line.equals("d"))
+				y--;
+			s2d.sound.setPosition("elipse", x, y, z);
+		}
 		s2d.shutdown();
 	}
 }
