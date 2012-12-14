@@ -123,14 +123,27 @@ public abstract class Local {
 	}
 	
 	/**
-	 * Attempts to determine the human-readable identifier (usually the name/model) of this machine's graphics card.
+	 * Attempts to determine the human-readable identifier of the graphics device installed on this machine.
+	 * Usually this method returns the name of either the video hardware or software depending on what information
+	 * the underlying system provides.  On Windows, the returned value tends to be the former, on Linux, the latter.
 	 * @return the human-readable name as a String or null if unable to be determined (i.e an error occurred or 2DX
 	 * doesn't support native operations on this platform).
 	 */
 	public static native String getGraphicsDevice();
 	
+	/**
+	 * Fetches the amount of RAM the system has available.  As opposed to the built in Java functions, this method
+	 * obtains the amount of free RAM system-wide, outside of the virtual machine.
+	 * @return free system RAM in bytes.
+	 */
 	public static native long getSystemAvailableRAM();
 	
+	/**
+	 * Fetches the total amount of RAM installed on the system.  As opposed to the built in Java funcitons, this method
+	 * obtains the total amount of RAM installed on the hardware.  The accuracy of the result may vary depending on the
+	 * platform.
+	 * @return total system installed RAM in bytes.
+	 */
 	public static native long getSystemTotalRAM();
 	
 	/**

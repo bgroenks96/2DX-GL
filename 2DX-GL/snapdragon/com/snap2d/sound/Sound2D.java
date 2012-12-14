@@ -109,9 +109,23 @@ public class Sound2D {
 	}
 	
 	/**
+	 * Typically should be used to pause currently playing background music, although because the
+	 * same SoundSystem is used, passing an identifier to a sound source created elsewhere will still
+	 * cause the sound to be paused (although this behavior isn't recommended - you should pause the sound
+	 * from the same place where it was created).
+	 * @param id
+	 */
+	public void pauseSound(String id) {
+		if(sound == null)
+			return;
+		sound.pause(id);
+	}
+	
+	/**
 	 * Typically should be used to stop currently playing background music, although because the
 	 * same SoundSystem is used, passing an identifier to a sound source created elsewhere will still
-	 * cause the sound to be stopped.
+	 * cause the sound to be stopped (although this behavior isn't recommended - you should stop the sound
+	 * from the same place where it was created).
 	 * @param id
 	 */
 	public void stopSound(String id) {
@@ -145,7 +159,7 @@ public class Sound2D {
 		return sound;
 	}
 
-	static float x=2f,y,z=0;
+	static float x,y,z=10;
 	public static void main(String[] args) {
 		final Sound2D s2d = Sound2D.getInstance();
 		s2d.initSystem();
