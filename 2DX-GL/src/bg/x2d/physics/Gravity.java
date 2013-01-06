@@ -1,5 +1,5 @@
 /*
- * Copyright © 2011-2012 Brian Groenke
+ * Copyright ï¿½ 2011-2012 Brian Groenke
  * All rights reserved.
  * 
  *  This file is part of the 2DX Graphics Library.
@@ -23,34 +23,42 @@ package bg.x2d.physics;
 import bg.x2d.geo.*;
 
 public class Gravity extends Force {
-	
+
 	public static final float STANDARD = 9.8f;
-	
+
 	private float ga;
-	private Vector2f vecf;
-	private Vector2d vecd;
-	
+
 	public Gravity(float mpss) {
 		ga = mpss;
 		initVectors();
-	}
-	
-	private void initVectors() {
-		vecf = new Vector2f(0, ga);
-		vecd = new Vector2d(0, ga);
 	}
 	
 	public Gravity() {
 		this(STANDARD);
 	}
 
+
+	private void initVectors() {
+		vecf = new Vector2f(0, ga);
+		vecd = new Vector2d(0, ga);
+	}
 	@Override
-	public Vector2f getVecf() {
+	public void setForceVector(Vector2f vec) {
+		vecf = vec;
+	}
+
+	@Override
+	public void setForceVector(Vector2d vec) {
+		vecd = vec;
+	}
+
+	@Override
+	public Vector2f getVec2f() {
 		return vecf;
 	}
 
 	@Override
-	public Vector2d getVecd() {
+	public Vector2d getVec2d() {
 		return vecd;
 	}
 
@@ -60,7 +68,7 @@ public class Gravity extends Force {
 	 * Therefore, the force (in N) is determined by multiplying the given
 	 * mass value by the value of gravity's acceleration.
 	 * @param mass mass of the object in Kg (required).
-	 * @return the force exerted on the object wit the given mass in Newtons (N).
+	 * @return the force exerted on the object with the given mass in Newtons (N).
 	 */
 	@Override
 	public double getNewtonForce(double mass) {
@@ -76,8 +84,7 @@ public class Gravity extends Force {
 	 */
 	@Override
 	public Vector2f applyTo(float time, float mass, Vector2f vec) {
-		vec.add(vecf.multNew(time));
-		return vec;
+		return super.applyTo(time, mass, vec);
 	}
 
 	/**
@@ -90,8 +97,6 @@ public class Gravity extends Force {
 	 */
 	@Override
 	public Vector2d applyTo(double time, double mass, Vector2d vec) {
-		vec.add(vecd.multNew(time));
-		return vec;
+		return super.applyTo(time, mass, vec);
 	}
-
 }

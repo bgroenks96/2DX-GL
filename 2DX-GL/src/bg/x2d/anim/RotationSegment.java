@@ -80,7 +80,7 @@ public class RotationSegment implements Segment {
 	}
 
 	@Override
-	public void transform(AffineTransform affine) {
+	public void transform(AffineTransform affine, Transform tf) {
 		if (start >= 0 && !isValid()) {
 			throw (new IllegalArgumentException("reset() was not called."));
 		} else if (start < 0) {
@@ -91,11 +91,13 @@ public class RotationSegment implements Segment {
 		long diff = 0;
 		if (isValid() && (diff = curr - last) > 0) {
 			if (anchor != null) {
-				affine.rotate(Math.toRadians(dtInt * diff), anchor.getX(),
-						anchor.getY());
+				Point2D.Double tanchor = new Point2D.Double(anchor.getX(), anchor.getY());
+				affine.transform(anchor, tanchor);
+				affine.rotate(Math.toRadians(dtInt * diff), tanchor.getX(), tanchor.getY());
 			} else {
 				affine.rotate(Math.toRadians(dtInt * diff));
 			}
+			tf.rotation += (dtInt * diff);
 			last = curr;
 		}
 	}

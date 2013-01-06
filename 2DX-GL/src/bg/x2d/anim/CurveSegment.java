@@ -64,7 +64,7 @@ public class CurveSegment implements Segment {
 	}
 
 	@Override
-	public void transform(AffineTransform affine) {
+	public void transform(AffineTransform affine, Transform tf) {
 		if (start >= 0 && !isValid()) {
 			throw (new IllegalArgumentException("reset() was not called."));
 		} else if (start < 0) {
@@ -84,7 +84,9 @@ public class CurveSegment implements Segment {
 					* Math.pow(t, 2) * cy2 + Math.pow(t, 3) * ye);
 			int dx = nx - lx;
 			int dy = ny - ly;
+			affine.rotate(-tf.rotation);
 			affine.translate(dx, dy);
+			affine.rotate(tf.rotation);
 			lx = nx;
 			ly = ny;
 			last = curr;

@@ -79,7 +79,7 @@ public class TranslationSegment implements Segment {
 	}
 
 	@Override
-	public void transform(AffineTransform affine) {
+	public void transform(AffineTransform affine, Transform tf) {
 		if (start >= 0 && !isValid()) {
 			throw (new IllegalArgumentException("reset() was not called."));
 		} else if (start < 0) {
@@ -91,8 +91,9 @@ public class TranslationSegment implements Segment {
 		if (isValid() && (diff = curr - last) > 0) {
 			double dxm = diff * dxint;
 			double dym = diff * dyint;
-			//FIXME
+			affine.rotate(-tf.rotation);
 			affine.translate(dxm, dym);
+			affine.rotate(tf.rotation);
 			last = curr;
 		}
 	}

@@ -42,13 +42,14 @@ class TestLauncher {
 		Panel p = new Panel();
 		frame.add(p);
 		frame.setVisible(true);
-		RotationSegment rotate = new RotationSegment(270, 1000, new Point(200,200));
+		TranslationSegment trans = new TranslationSegment(100, 100, 2000);
+		RotationSegment rotate = new RotationSegment(270, 1000, new Point(20,20));
 		DilationSegment dilate = new DilationSegment(0.25, 0.25, 1000);
 		HashSet<Segment> aset1 = new HashSet<Segment>();
-		aset1.add(dilate);
+		aset1.add(trans);
 		aset1.add(rotate);
 		ComboSegment combo = new ComboSegment(aset1);
-		anim = new Animation(new Segment[] { dilate }, true);
+		anim = new Animation(new Segment[] { rotate, trans }, true);
 		new Thread(p).start();
 	}
 
@@ -64,13 +65,20 @@ class TestLauncher {
 		GradientPaint gp = new GradientPaint(0, 0, Color.blue, 300, 300,
 				Color.yellow, true);
 		Octagon2D oct = new Octagon2D(100, 100, 200, gp, true);
+		
 		Vector2d vec = new Vector2d(0, -125);
 		Gravity grav = new Gravity();
 		PointLD p = new PointLD(200.0, 779);
 
 		long last = System.nanoTime() - 20000000;
 		public void draw(Graphics2D g2) {
+			/*
 			g2.setColor(Color.RED);
+			anim.draw(g2);
+			g2.fillRect(10, 10, 20, 20);
+			anim.release(g2);
+			*/
+			
 			if(System.nanoTime() - last > 20000000) {
 				grav.applyTo((System.nanoTime() - last) / 100000000.0, 20.0, vec);
 				vec.applyTo(p, (System.nanoTime() - last) / 100000000.0);
@@ -80,6 +88,7 @@ class TestLauncher {
 				p.setLocation(p.getX(), 755.0);
 			}
 			g2.fillRect(p.getIntX(), p.getIntY(), 20, 20);
+			
 		}
 
 		@Override

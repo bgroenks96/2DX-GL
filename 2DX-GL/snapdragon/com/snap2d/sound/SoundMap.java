@@ -1,5 +1,5 @@
 /*
- * Copyright © 2011-2012 Brian Groenke
+ * Copyright ï¿½ 2011-2012 Brian Groenke
  * All rights reserved.
  * 
  *  This file is part of the 2DX Graphics Library.
@@ -55,7 +55,7 @@ public class SoundMap {
 	 */
 	ATTENUATION_LINEAR = SoundSystemConfig.ATTENUATION_LINEAR;
 
-	static final int Z = 10;
+	static final int Z = 20;
 
 	static Point2D.Float listener;
 
@@ -73,18 +73,20 @@ public class SoundMap {
 	public void moveListener(float x, float y) {
 		listener.x += x;
 		listener.y += y;
+		sound.moveListener(x, y, 0);
 	}
 
 	public void setListenerPos(float x, float y) {
 		listener.x += x;
 		listener.y += y;
+		sound.setListenerPosition(x, y, Z);
 	}
 
 	public void newSoundSource(String id, boolean priority, boolean stream, String fileUrl, float xpos, 
 			float ypos, int attValue, float fade) throws IllegalArgumentException {
 		if(attValue != ATTENUATION_ROLLOFF && attValue != ATTENUATION_LINEAR)
 			throw(new IllegalArgumentException("illegal attenuation value"));
-		SoundSource src= new SoundSource(fileUrl, priority, xpos, ypos);
+		SoundSource src= new SoundSource(priority, xpos, ypos);
 		if(stream)
 			sound.newStreamingSource(priority, id, fileUrl, false, xpos, ypos, Z, attValue, fade);
 		else
@@ -178,14 +180,13 @@ public class SoundMap {
 	}
 
 	private class SoundSource {
-		String fileUrl;
+		
 		float x,y;
 		boolean priority;
 
-		SoundSource(String url, boolean p, float x, float y) {
+		SoundSource(boolean p, float x, float y) {
 			this.x = x; this.y = y;
 			priority = p;
-			fileUrl = url;
 		}
 	}
 }

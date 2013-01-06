@@ -1,5 +1,5 @@
 /*
- * Copyright © 2011-2012 Brian Groenke
+ * Copyright ï¿½ 2011-2012 Brian Groenke
  * All rights reserved.
  * 
  *  This file is part of the 2DX Graphics Library.
@@ -151,7 +151,7 @@ public abstract class Shapes2D {
 	}
 
 	/**
-	 * Algorithm that uses an algebraic rotation formula to translate a point
+	 * Algorithm that uses a trigonometric rotation formula to translate a point
 	 * from its current location x degrees to a new position on the coordinate
 	 * plane. This method is used internally and is intended for use in
 	 * calculating Polygon coordinate values. Note: This method uses and returns

@@ -1,5 +1,5 @@
 /*
- * Copyright � 2011-2012 Brian Groenke
+ * Copyright © 2011-2012 Brian Groenke
  * All rights reserved.
  * 
  *  This file is part of the 2DX Graphics Library.
@@ -22,43 +22,73 @@ package bg.x2d.physics;
 
 import bg.x2d.geo.*;
 
-public abstract class Force {
-
-	protected Vector2f vecf;
-	protected Vector2d vecd;
+/**
+ * 
+ * @author Brian Groenke
+ *
+ */
+public class GeneralForce extends Force {
 
 	/**
-	 * Sets the vector for this force.  A vector may hold different
-	 * meanings depending on the force; i.e a force vector might be
-	 * acceleration, energy, etc. or just straight force in Newtons.
-	 * @param vec the new force direction and magnitude.
+	 * 
+	 * @param vec
 	 */
-	public abstract void setForceVector(Vector2f vec);
-	public abstract void setForceVector(Vector2d vec);
-	public abstract Vector2f getVec2f();
-	public abstract Vector2d getVec2d();
+	public GeneralForce(Vector2f vec) {
+		setForceVector(vec);
+	}
 	
 	/**
-	 * Implementation dependent.  Standard implementation for a Newton force
-	 * will simply return the Force's value regardless of the value of <code>mass</code>.
-	 * Some forces like Gravity may compute this value using F = ma.
-	 * @param mass mass of object force is being applied to.
-	 * @return the amount of force exerted on the given object.
+	 * 
+	 * @param vec
 	 */
-	public abstract double getNewtonForce(double mass);
+	public GeneralForce(Vector2d vec) {
+		setForceVector(vec);
+	}
 
+	@Override
+	public void setForceVector(Vector2f vec) {
+		if(vec != null)
+			vecf = vec;
+	}
+
+	@Override
+	public void setForceVector(Vector2d vec) {
+		if(vec != null)
+			vecd = vec;
+	}
+
+	@Override
+	public Vector2f getVec2f() {
+		return vecf;
+	}
+
+	@Override
+	public Vector2d getVec2d() {
+		return vecd;
+	}
+
+	@Override
+	public double getNewtonForce(double mass) {
+		return (vecf != null) ? vecf.mag:vecd.mag;
+	}
+	
+	@Override
 	/**
-	 * Applies this force to the given Vector2f.
+	 * Applies this force to the given Vector2f.  The resulting acceleration
+	 * amount is determined by the equation a = F/m (such that a is acceleration, 
+	 * F is Newton force, and m is mass in grams.
 	 * @param time seconds to accelerate the given vector
 	 * @param mass of the object in Kg
 	 * @param vec velocity vector to be accelerated by force.
 	 * @return the modified Vector2f object (allows for chain calls).
 	 */
 	public Vector2f applyTo(float time, float mass, Vector2f vec) {
+		Vector2f vecf = this.vecf.divNew(mass);
 		vec.add(vecf.multNew(time));
 		return vec;
 	}
 
+	@Override
 	/**
 	 * Applies this force to the given Vector2d.
 	 * @param time seconds to accelerate the given vector
@@ -67,7 +97,9 @@ public abstract class Force {
 	 * @return the modified Vector2f object (allows for chain calls).
 	 */
 	public Vector2d applyTo(double time, double mass, Vector2d vec) {
+		Vector2d vecd = this.vecd.divNew(mass);
 		vec.add(vecd.multNew(time));
 		return vec;
 	}
+
 }

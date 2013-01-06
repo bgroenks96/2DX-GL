@@ -20,12 +20,17 @@
 
 package com.snap2d.sound;
 
-import java.util.*;
+import java.awt.*;
+import java.awt.event.*;
+
+import javax.swing.*;
 
 import paulscode.sound.*;
 import paulscode.sound.codecs.*;
 import paulscode.sound.libraries.*;
 
+import com.snap2d.input.*;
+import com.snap2d.input.InputDispatch.KeyEventClient;
 import com.snap2d.sound.libs.*;
 
 /**
@@ -160,29 +165,75 @@ public class Sound2D {
 	}
 
 	static float x,y,z=10;
-	public static void main(String[] args) {
-		final Sound2D s2d = Sound2D.getInstance();
-		s2d.initSystem();
-		s2d.setSoundFilesPackage("com/snap2d/sound/libs/");
-		s2d.sound.setListenerPosition(0, 0, 0);
-		s2d.sound.newStreamingSource(false, "elipse", "Elipse.ogg", false, x, y, z, SoundSystemConfig.ATTENUATION_ROLLOFF, 0.2f);
-		s2d.sound.play("elipse");
-		//s2d.playBackgroundMusic("elipse", "Elipse.ogg", false);
-		Scanner sc = new Scanner(System.in);
-		String line = null;
-		while((line=sc.nextLine()) != null) {
-			if(line.equals("q"))
-				break;
-			else if(line.equals("r"))
-				x++;
-			else if(line.equals("l"))
-				x--;
-			else if(line.equals("u"))
-				y++;
-			else if(line.equals("d"))
-				y--;
-			s2d.sound.setPosition("elipse", x, y, z);
+	public static void main(String[] args) throws SoundContextException {
+		JFrame frame = new JFrame();
+		frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+		frame.setContentPane(new TestClass());
+		frame.setSize(800, 800);
+		frame.setVisible(true);
+	}
+	
+	private static class TestClass extends JPanel {
+		
+		/**
+		 * 
+		 */
+		private static final long serialVersionUID = -1225292075422922856L;
+		Sound2D s2d;
+		SoundMap soundMap;
+		InputDispatch input = new InputDispatch(true);
+		
+		int x, y, ox = 350, oy = 350;
+		
+		TestClass() throws SoundContextException {
+			s2d = Sound2D.getInstance();
+			s2d.initSystem();
+			Runtime.getRuntime().addShutdownHook(new Thread(new Runnable() {
+
+				@Override
+				public void run() {
+					s2d.shutdown();
+				}
+				
+			}));
+			s2d.setSoundFilesPackage("com/snap2d/sound/libs/");
+			soundMap = new SoundMap(s2d, x, y);
+			soundMap.newSoundSource("elipse", true, true, "Elipse.ogg", ox, oy, SoundMap.ATTENUATION_ROLLOFF, 0.1f);
+			input.registerKeyClient(new KeyEventClient() {
+
+				@Override
+				public void processKeyEvent(KeyEvent e) {
+					int lx = x, ly =y ;
+					switch(e.getKeyCode()) {
+					case KeyEvent.VK_W:
+						y-=5;
+						break;
+					case KeyEvent.VK_A:
+						x-=5;
+						break;
+					case KeyEvent.VK_S:
+						y+=5;
+						break;
+					case KeyEvent.VK_D:
+						x+=5;
+					}
+				
+					soundMap.moveListener(x - lx, y - ly);
+					repaint();
+				}
+				
+			});
+			soundMap.play("elipse", true);
 		}
-		s2d.shutdown();
+		
+		@Override
+		public void paintComponent(Graphics g) {
+			g.setColor(Color.BLACK);
+			g.fillRect(0, 0, getWidth(), getHeight());
+			g.setColor(Color.RED);
+			g.fillRect(ox, oy, 20, 20);
+			g.setColor(Color.BLUE);
+			g.fillRect(x, y, 20, 20);
+		}
 	}
 }

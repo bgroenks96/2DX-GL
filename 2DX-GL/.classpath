@@ -10,6 +10,6 @@
 	<classpathentry kind="lib" path="/media/WIN7/Users/Brian/Documents/GitHub/2DX-GL/2DX-GL/snapdragon/com/snap2d/sound/libs/Codecs.jar"/>
 	<classpathentry kind="lib" path="/media/WIN7/Users/Brian/Documents/GitHub/2DX-GL/2DX-GL/snapdragon/com/snap2d/sound/libs/SoundSystem.jar"/>
 	<classpathentry kind="lib" path="/media/WIN7/Users/Brian/Documents/GitHub/2DX-GL/2DX-GL/snapdragon/com/snap2d/sound/libs/LibraryJavaSound.jar"/>
-	<classpathentry kind="lib" path="natives.jar"/>
+	<classpathentry kind="lib" path="/media/WIN7/Users/Brian/Documents/GitHub/2DX-GL/2DX-GL/natives.jar"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>

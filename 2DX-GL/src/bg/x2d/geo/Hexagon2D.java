@@ -1,5 +1,5 @@
 /*
- * Copyright © 2011-2012 Brian Groenke
+ * Copyright ï¿½ 2011-2012 Brian Groenke
  * All rights reserved.
  * 
  *  This file is part of the 2DX Graphics Library.
@@ -29,7 +29,7 @@ import bg.x2d.Background;
 
 public class Hexagon2D extends Shapes2D {
 
-	@SuppressWarnings("deprecation")
+	@Deprecated
 	public Hexagon2D(Graphics g, Background b) {
 		super(g, b);
 	}

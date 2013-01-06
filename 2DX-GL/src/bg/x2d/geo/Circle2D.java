@@ -1,5 +1,5 @@
 /*
- * Copyright © 2011-2012 Brian Groenke
+ * Copyright ï¿½ 2011-2012 Brian Groenke
  * All rights reserved.
  * 
  *  This file is part of the 2DX Graphics Library.
@@ -28,7 +28,7 @@ import bg.x2d.Background;
 
 public class Circle2D extends Shapes2D {
 
-	@SuppressWarnings("deprecation")
+	@Deprecated
 	public Circle2D(Graphics g, Background b) {
 		super(g, b);
 	}
@@ -37,7 +37,6 @@ public class Circle2D extends Shapes2D {
 		super(x, y, size, p, fill);
 	}
 
-	@SuppressWarnings("deprecation")
 	@Deprecated
 	public void drawCircle(int x, int y, int size, Paint p, boolean fill) {
 		canvas.setPaint(p);
@@ -48,7 +47,6 @@ public class Circle2D extends Shapes2D {
 		}
 	}
 
-	@SuppressWarnings("deprecation")
 	@Deprecated
 	public void drawOval(int x, int y, int width, int height, Paint p,
 			boolean fill) {
