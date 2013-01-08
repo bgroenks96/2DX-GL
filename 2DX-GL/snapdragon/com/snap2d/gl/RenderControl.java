@@ -1,5 +1,5 @@
 /*
- * Copyright © 2011-2012 Brian Groenke
+ * Copyright ï¿½ 2011-2012 Brian Groenke
  * All rights reserved.
  * 
  *  This file is part of the 2DX Graphics Library.
@@ -41,7 +41,7 @@ public class RenderControl {
 
 	public static int stopTimeout = 2000;
 
-	private static final long RESIZE_TIMER = 1 * (long) Math.pow(10, 8);
+	private static final long RESIZE_TIMER = (long) 1.0E8;
 
 	public volatile boolean
 	/**
@@ -58,7 +58,6 @@ public class RenderControl {
 	protected volatile VolatileImage disp;
 	protected volatile int[] pixelData, buffData;
 	protected volatile long lastResizeFinish;
-	protected volatile boolean updateHints;
 
 	protected List<Renderable> rtasks = new ArrayList<Renderable>(), delQueue = new Vector<Renderable>();
 	protected Map<Integer, Renderable> addQueue = new ConcurrentSkipListMap<Integer, Renderable>();
@@ -67,8 +66,6 @@ public class RenderControl {
 	protected Future<?> taskCallback;
 	protected int buffs;
 	protected Map<RenderingHints.Key, Object> renderOps;
-
-	private RenderControl inst;
 
 	/**
 	 * Creates a RenderControl object that can be used to render data to a Display.
@@ -80,12 +77,12 @@ public class RenderControl {
 	public RenderControl(int buffs) {
 		this.canvas = new Canvas();
 		this.buffs = buffs;
-		this.inst = this;
 
 		renderOps = new HashMap<RenderingHints.Key, Object>();
 		loop = new RenderLoop();
 		resize = new AutoResize();
 
+		canvas.setIgnoreRepaint(true);
 		canvas.addComponentListener(resize);
 		canvas.addFocusListener(new FocusListener() {
 
@@ -105,10 +102,6 @@ public class RenderControl {
 		taskCallback = ThreadManager.submitJob(loop);
 	}
 
-	public void setRenderActive(boolean active) {
-		loop.active = active;
-	}
-
 	public void stopRenderLoop() {
 		loop.running = false;
 		loop.active = false;
@@ -120,6 +113,24 @@ public class RenderControl {
 				break;
 			}
 		}
+	}
+
+	/**
+	 * If true, the rendering loop will actively render to the screen and execute
+	 * update logic.  Otherwise, the loop will sleep until it is stopped or set to
+	 * active again.
+	 * @param active true to enable active rendering/updates, false to disable rendering/updates
+	 */
+	public void setRenderActive(boolean active) {
+		loop.active = active;
+	}
+
+	/**
+	 * Enable/disable hardware accelerated rendering of images.
+	 * @param accelerated
+	 */
+	public void setUseHardwareAcceleration(boolean accelerated) {
+		this.accelerated = accelerated;
 	}
 
 	/**
@@ -139,7 +150,8 @@ public class RenderControl {
 		pri.flush();
 		buff.flush();
 		light.flush();
-		disp.flush();
+		if(disp != null)
+			disp.flush();
 
 		// nullify references to potentially significant resource holders so that they are available
 		// for garbage collection.
@@ -263,12 +275,10 @@ public class RenderControl {
 
 	public void setRenderOp(Key key, Object value) {
 		renderOps.put(key, value);
-		updateHints = true;
 	}
 
 	public void setRenderOps(Map<Key, ?> hints) {
 		renderOps.putAll(hints);
-		updateHints = true;
 	}
 
 	public Object getRenderOpValue(Key key) {
@@ -277,6 +287,7 @@ public class RenderControl {
 
 	/**
 	 * Blends a translucent pixel with an opaque destination value.
+	 * Currently unused.
 	 * @param srcA
 	 * @param srcValue
 	 * @param dstValue
@@ -321,77 +332,81 @@ public class RenderControl {
 			return;
 		}
 
-		Graphics2D g = (Graphics2D) bs.getDrawGraphics();
+		Graphics2D g = null;
+		try {
+			g = (Graphics2D) bs.getDrawGraphics();
 
-		for(int y = 0; y < buff.getHeight(); y++) {
+			for(int y = 0; y < buff.getHeight(); y++) {
 
-			if(y >= pri.getHeight() || y < 0)
-				continue;
-
-			for(int x = 0; x < buff.getWidth(); x++) {
-
-				if(x >= pri.getWidth() || x < 0)
+				if(y >= pri.getHeight() || y < 0)
 					continue;
 
-				int pos = y * pri.getWidth() + x;
-				if(pos < 0 || pos >= pixelData.length)
-					continue;
+				for(int x = 0; x < buff.getWidth(); x++) {
 
-				//get foreground pixels (source)
-				int srcValue = buffData[y * buff.getWidth() + x];
-				
-				/*
-				 * We don't currently need to blend because the Graphics object will do it for us. 
+					if(x >= pri.getWidth() || x < 0)
+						continue;
+
+					int pos = y * pri.getWidth() + x;
+					if(pos < 0 || pos >= pixelData.length)
+						continue;
+
+					//get foreground pixels (source)
+					int srcValue = buffData[y * buff.getWidth() + x];
+
+					/*
+					 * We don't currently need to blend because the Graphics object will do it for us. 
 				float srcA = ((srcValue & 0xff000000) >>> 24) / 255f;
 				if(srcA < 1f) {
 					pixelData[pos] = blend(srcA, srcValue, pixelData[pos]);
 				} else
-				 */
-				
-				pixelData[pos] = srcValue;
-			}
-		}
+					 */
 
-		if(accelerated) {
-			// Check the status of the VolatileImage and update/re-create it if neccessary.
-			if(disp == null || disp.getWidth() != pri.getWidth() || disp.getHeight() != pri.getHeight()) {
-				disp = ImageUtils.createVolatileImage(pri.getWidth(), pri.getHeight(), g);
-				Graphics2D img = disp.createGraphics();
-				img.drawRenderedImage(pri, new AffineTransform());
-				img.dispose();
-			}
-			int stat = 0;
-			do {
-				if((stat=ImageUtils.validateVI(disp, g)) != VolatileImage.IMAGE_OK) {
-					if(stat == VolatileImage.IMAGE_INCOMPATIBLE) {
-						disp = ImageUtils.createVolatileImage(pri.getWidth(), pri.getHeight(), g);
-					}
+					pixelData[pos] = srcValue;
 				}
-
-				Graphics2D img = disp.createGraphics();
-				img.drawRenderedImage(pri, new AffineTransform());
-				img.dispose();
-			} while(disp.contentsLost());
-		} else {
-			// If acceleration is now disabled but was previously enabled, release system resources held by
-			// VolatileImage and set the reference to null.
-			if(disp != null) {
-				disp.flush();
-				disp = null;
 			}
-		}
 
-		if(updateHints) {
+			if(accelerated) {
+				// Check the status of the VolatileImage and update/re-create it if neccessary.
+				if(disp == null || disp.getWidth() != pri.getWidth() || disp.getHeight() != pri.getHeight()) {
+					disp = ImageUtils.createVolatileImage(pri.getWidth(), pri.getHeight());
+					disp.setAccelerationPriority(1.0f);
+					Graphics2D img = disp.createGraphics();
+					img.drawRenderedImage(pri, new AffineTransform());
+					img.dispose();
+				}
+				int stat = 0;
+				do {
+					if((stat=ImageUtils.validateVI(disp, g)) != VolatileImage.IMAGE_OK) {
+						if(stat == VolatileImage.IMAGE_INCOMPATIBLE) {
+							disp = ImageUtils.createVolatileImage(pri.getWidth(), pri.getHeight());
+							disp.setAccelerationPriority(1.0f);
+						}
+					}
+
+					Graphics2D img = disp.createGraphics();
+					img.drawRenderedImage(pri, new AffineTransform());
+					img.dispose();
+				} while(disp.contentsLost());
+			} else {
+				// If acceleration is now disabled but was previously enabled, release system resources held by
+				// VolatileImage and set the reference to null.
+				if(disp != null) {
+					disp.flush();
+					disp = null;
+				}
+			}
+
 			g.setRenderingHints(renderOps);
-			updateHints = false;
+			if(disp != null)
+				g.drawImage(disp, 0, 0, null);
+			else
+				g.drawImage(pri, 0, 0, null);
+			g.drawImage(light, 0, 0, null);
+		} finally {
+			g.dispose();
 		}
-		if(disp != null)
-			g.drawImage(disp, 0, 0, null);
-		else
-			g.drawImage(pri, 0, 0, null);
-		g.drawImage(light, 0, 0, null);
-		g.dispose();
-		bs.show();
+		if(!bs.contentsLost())
+			bs.show();
 		Arrays.fill(pixelData, CANVAS_BACK.getRGB());
 	}
 
@@ -400,8 +415,12 @@ public class RenderControl {
 	}
 
 	private void createImages(int wt, int ht) {
+		/*
 		pri = new BufferedImage(wt, ht, BufferedImage.TYPE_INT_RGB);
 		buff = new BufferedImage(wt, ht, BufferedImage.TYPE_INT_RGB);
+		 */
+		pri = ImageUtils.getNativeImage(wt, ht);
+		buff = ImageUtils.getNativeImage(wt, ht);
 		light = new BufferedImage(wt, ht, BufferedImage.TYPE_INT_ARGB);
 		pixelData = ((DataBufferInt)pri.getRaster().getDataBuffer()).getData();
 		buffData = ((DataBufferInt)buff.getRaster().getDataBuffer()).getData();
@@ -424,7 +443,7 @@ public class RenderControl {
 				timeBetweenUpdates = TIME_BETWEEN_UPDATES, maxUpdates = MAX_UPDATES_BEFORE_RENDER;
 
 		volatile int fps, tps;
-		volatile boolean running, active;
+		volatile boolean running, active, printFrames;
 
 		@Override
 		public void run() {
@@ -443,12 +462,33 @@ public class RenderControl {
 				}
 			});
 
+			ThreadManager.newDaemon(new Runnable() {
+
+				@Override
+				public void run() {
+					Thread.currentThread().setName("snap2d-fps_out_thread");
+					while(running) {
+						try {
+							Thread.sleep(800);
+							while(!printFrames);
+							System.out.println(fps + " fps " + tps + " ticks");
+						} catch (InterruptedException e) {
+							e.printStackTrace();
+						}
+					}
+				}
+
+			});
+
 			double lastUpdateTime = System.nanoTime();
 			double lastRenderTime = System.nanoTime();
 			int lastSecondTime = (int) (lastUpdateTime / 1000000000);
 			int frameCount = 0, ticks = 0;
 			running = true;
 			active = true;
+			Renderable[] renderables = new Renderable[0];
+			System.runFinalization();
+			System.gc();
 			while (running) {
 				try {
 
@@ -458,6 +498,8 @@ public class RenderControl {
 							rtasks.add(i, addQueue.get(i));
 						}
 						addQueue.clear();
+
+						renderables = rtasks.toArray(new Renderable[rtasks.size()]);
 					}
 
 					if(delQueue.size() > 0) {
@@ -477,7 +519,7 @@ public class RenderControl {
 						int updateCount = 0;
 
 						while(now - lastUpdateTime > timeBetweenUpdates && updateCount < maxUpdates ) {
-							for(Renderable r:rtasks)
+							for(Renderable r:renderables)
 								r.update((long)lastUpdateTime);
 							lastUpdateTime += timeBetweenUpdates;
 							updateCount++;
@@ -490,7 +532,7 @@ public class RenderControl {
 
 						float interpolation = Math.min(1.0f, (float) ((now - lastUpdateTime) / timeBetweenUpdates));
 						Graphics2D g = buff.createGraphics();
-						for(Renderable r:rtasks)
+						for(Renderable r:renderables)
 							r.render(g, interpolation);
 						g.dispose();
 						render();
@@ -501,7 +543,7 @@ public class RenderControl {
 						if (thisSecond > lastSecondTime) {
 							fps = frameCount;
 							tps = ticks;
-							System.out.println(fps + " fps " + tps + " ticks");
+							printFrames = true;
 							frameCount = 0;
 							ticks = 0;
 							lastSecondTime = thisSecond;

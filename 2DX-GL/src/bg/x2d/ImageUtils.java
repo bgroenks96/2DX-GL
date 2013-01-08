@@ -35,7 +35,7 @@ public class ImageUtils {
 
 	// Construction is NOT allowed
 	private ImageUtils() {
-		
+
 	}
 
 	/**
@@ -268,9 +268,9 @@ public class ImageUtils {
 	 *            Graphics object to obtain the device configuration from
 	 * @return the newly created BufferedImage object
 	 */
-	public static BufferedImage getNativeImage(int wt, int ht, Graphics g) {
-		return ((Graphics2D) g).getDeviceConfiguration().createCompatibleImage(
-				wt, ht, Transparency.TRANSLUCENT);
+	public static BufferedImage getNativeImage(int wt, int ht) {
+		return GraphicsEnvironment.getLocalGraphicsEnvironment().getDefaultScreenDevice()
+				.getDefaultConfiguration().createCompatibleImage(wt, ht, Transparency.TRANSLUCENT);
 	}
 
 	/**
@@ -285,9 +285,10 @@ public class ImageUtils {
 	 *            Graphics object to obtain the device configuration from
 	 * @return the newly created BufferedImage object
 	 */
-	public static BufferedImage getNativeImage(Image orig, Graphics g) {
-		BufferedImage nimg = ((Graphics2D) g).getDeviceConfiguration()
-				.createCompatibleImage(orig.getWidth(null),
+	public static BufferedImage getNativeImage(Image orig) {
+		GraphicsDevice d = GraphicsEnvironment.getLocalGraphicsEnvironment().getDefaultScreenDevice();
+		GraphicsConfiguration c = d.getDefaultConfiguration();
+		BufferedImage nimg = c.createCompatibleImage(orig.getWidth(null),
 						orig.getHeight(null), Transparency.TRANSLUCENT);
 		Graphics2D g2 = nimg.createGraphics();
 		g2.drawImage(orig, 0, 0, null);
@@ -297,13 +298,14 @@ public class ImageUtils {
 
 	static int nativeType = Integer.MIN_VALUE;
 
-	public static int getNativeImageType(Graphics g) {
+	public static int getNativeImageType() {
 		if (nativeType != Integer.MIN_VALUE) {
 			return nativeType;
 		}
 
-		BufferedImage nat = ((Graphics2D) g).getDeviceConfiguration()
-				.createCompatibleImage(1, 1, Transparency.TRANSLUCENT);
+		GraphicsDevice d = GraphicsEnvironment.getLocalGraphicsEnvironment().getDefaultScreenDevice();
+		GraphicsConfiguration c = d.getDefaultConfiguration();
+		BufferedImage nat = c.createCompatibleImage(1, 1, Transparency.TRANSLUCENT);
 		return (nativeType = nat.getType());
 	}
 
@@ -315,15 +317,13 @@ public class ImageUtils {
 	 *            the width of the new image
 	 * @param ht
 	 *            the height of the new image
-	 * @param g
-	 *            the Graphics object to obtain device configuration data from.
 	 * @return the newly created, fully compatible VolatileImage.
 	 * @see VolatileImage
 	 */
-	public static VolatileImage createVolatileImage(int wt, int ht, Graphics g) {
-		Graphics2D g2d = (Graphics2D) g;
-		return g2d.getDeviceConfiguration().createCompatibleVolatileImage(wt,
-				ht);
+	public static VolatileImage createVolatileImage(int wt, int ht) {
+		GraphicsDevice d = GraphicsEnvironment.getLocalGraphicsEnvironment().getDefaultScreenDevice();
+		GraphicsConfiguration c = d.getDefaultConfiguration();
+		return c.createCompatibleVolatileImage(wt, ht);
 	}
 
 	/**

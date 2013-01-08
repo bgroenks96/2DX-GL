@@ -1,5 +1,5 @@
 /*
- * Copyright © 2011-2012 Brian Groenke
+ * Copyright ï¿½ 2011-2012 Brian Groenke
  * All rights reserved.
  * 
  *  This file is part of the 2DX Graphics Library.
@@ -52,7 +52,6 @@ public class Display {
 		case FULLSCREEN:
 			frame = new JFrame();
 			frame.setUndecorated(true);
-			frame.setSize(getScreenSize());
 			frame.setLocation(0, 0);
 			break;
 		case WINDOWED:
@@ -62,12 +61,17 @@ public class Display {
 			frame.setLocationRelativeTo(null);
 			break;
 		}
-		
+
+		frame.setIgnoreRepaint(true);
 		frame.getContentPane().setBackground(RenderControl.CANVAS_BACK);
 	}
 
 	public void setTitle(String str) {
 		frame.setTitle(str);
+	}
+	
+	public void setLocation(int x, int y) {
+		frame.setLocation(x, y);
 	}
 
 	/**
@@ -84,15 +88,28 @@ public class Display {
 		rc = render;
 		frame.add(rc.canvas);
 		frame.setVisible(true);
+		GraphicsDevice d = GraphicsEnvironment.getLocalGraphicsEnvironment().getDefaultScreenDevice();
+		if(d.isFullScreenSupported())
+			d.setFullScreenWindow(frame);
+		else
+			frame.setSize(getScreenSize());
+	}
+
+	public Graphics2D getRawGraphics() {
+		return (Graphics2D) frame.getContentPane().getGraphics();
 	}
 
 	public void hide() {
 		rc.setRenderActive(false);
+		GraphicsDevice d = GraphicsEnvironment.getLocalGraphicsEnvironment().getDefaultScreenDevice();
+		d.setFullScreenWindow(null);
 		frame.setVisible(false);
 	}
 
 	public void dispose() {
 		rc.dispose();
+		GraphicsDevice d = GraphicsEnvironment.getLocalGraphicsEnvironment().getDefaultScreenDevice();
+		d.setFullScreenWindow(null);
 		frame.dispose();
 	}
 
