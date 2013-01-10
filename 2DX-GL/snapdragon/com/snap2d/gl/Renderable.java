@@ -1,5 +1,5 @@
 /*
- * Copyright © 2011-2012 Brian Groenke
+ * Copyright ï¿½ 2011-2012 Brian Groenke
  * All rights reserved.
  * 
  *  This file is part of the 2DX Graphics Library.
@@ -26,7 +26,7 @@ public interface Renderable {
 
 	public void render(Graphics2D g, float interpolation);
 	
-	public void update(long nanosSinceLastUpdate);
+	public void update(long nanoTimeNow, long nanosSinceLastUpdate);
 
 	public void onResize(Dimension oldSize, Dimension newSize);
 }

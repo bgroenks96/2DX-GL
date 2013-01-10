@@ -520,7 +520,7 @@ public class RenderControl {
 
 						while(now - lastUpdateTime > timeBetweenUpdates && updateCount < maxUpdates ) {
 							for(Renderable r:renderables)
-								r.update((long)lastUpdateTime);
+								r.update((long) now, (long)lastUpdateTime);
 							lastUpdateTime += timeBetweenUpdates;
 							updateCount++;
 							ticks++;
@@ -529,7 +529,7 @@ public class RenderControl {
 						if (now - lastUpdateTime > timeBetweenUpdates) {
 							lastUpdateTime = now - timeBetweenUpdates;
 						}
-
+						
 						float interpolation = Math.min(1.0f, (float) ((now - lastUpdateTime) / timeBetweenUpdates));
 						Graphics2D g = buff.createGraphics();
 						for(Renderable r:renderables)
@@ -580,7 +580,7 @@ public class RenderControl {
 		}
 
 		protected void setMaxUpdates(int max) {
-			if(max >= 0)
+			if(max > 0)
 				maxUpdates = max;
 		}
 	}

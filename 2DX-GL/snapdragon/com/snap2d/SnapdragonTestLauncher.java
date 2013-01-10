@@ -43,9 +43,11 @@ public class SnapdragonTestLauncher {
 		rc.addRenderable(new TestRenderObj(r.nextInt(300), r.nextInt(300)), RenderControl.POSITION_LAST);
 		rc.addRenderable(new TestRenderObj(r.nextInt(300), r.nextInt(300)), RenderControl.POSITION_LAST);
 		rc.addRenderable(new TestRenderObj(r.nextInt(300), r.nextInt(300)), RenderControl.POSITION_LAST);
-		rc.setMaxUpdates(1);
+		rc.addRenderable(new TestRenderObj(r.nextInt(300), r.nextInt(300)), RenderControl.POSITION_LAST);
+		rc.addRenderable(new TestRenderObj(r.nextInt(300), r.nextInt(300)), RenderControl.POSITION_LAST);
+		rc.setMaxUpdates(2);
 		rc.setRenderOp(RenderingHints.KEY_RENDERING, RenderingHints.VALUE_RENDER_QUALITY);
-		rc.setRenderOp(RenderingHints.KEY_INTERPOLATION, RenderingHints.VALUE_INTERPOLATION_BILINEAR);
+		rc.setRenderOp(RenderingHints.KEY_INTERPOLATION, RenderingHints.VALUE_INTERPOLATION_BICUBIC);
 		rc.setUseHardwareAcceleration(true);
 		rc.startRenderLoop();
 		disp.show(rc);
@@ -55,7 +57,8 @@ public class SnapdragonTestLauncher {
 
 		BufferedImage img;
 		int[] data;
-		int x, y, lx, ly, limitx, limity, ox;
+		int limitx, limity, ox;
+		float x, y, lx, ly;
 		boolean reverse;
 
 		public TestRenderObj(int x, int y) {
@@ -67,7 +70,7 @@ public class SnapdragonTestLauncher {
 			
 			try {
 				img = ImageIO.read(new File(
-						"/media/WIN7/Users/Brian/Pictures/upload.png"));
+						"/media/WIN7/Users/Brian/Pictures/test_alpha.png"));
 				img = ImageUtils.convertBufferedImage(img,
 						BufferedImage.TYPE_INT_ARGB);
 				data = ((DataBufferInt)img.getRaster().getDataBuffer()).getData();
@@ -81,9 +84,9 @@ public class SnapdragonTestLauncher {
 			
 
 			//rc.render((int)((x - lx) * interpolation + lx), (int) ((y - ly) * interpolation + ly), img.getWidth(), img.getHeight(), data);
-			g.drawImage(img, (int) Math.round((x - lx) * interpolation + lx), (int) Math.round((y - ly) * interpolation + ly), null);
-			lx = x;
-			ly = y;
+			float x1 = (x - lx) * interpolation + lx;
+			float y1 = (y - ly) * interpolation + ly;
+			g.drawImage(img, Math.round(x1), Math.round(y1), null);
 		}
 
 		@Override
@@ -91,23 +94,28 @@ public class SnapdragonTestLauncher {
 
 		}
 
-		long last;
+		double last;
+		final double INTERVAL = 3.333E7;
 		@Override
-		public void update(long lastUpdate) {
-			if(System.nanoTime() - last > 2.5E7) {
+		public void update(long now, long lastUpdate) {
+			if(last == 0)
+				last = now;
+			if(now - last > INTERVAL) {
+				lx = x;
+				ly = y;
 				if(reverse) {
 					if(x == ox)
 						reverse =  false;
-					x-=7;
-					y-=4;
+					x-= 10;
+					y-= 8;
 				} else {
 					if(x >= limitx)
 						reverse = true;
-					x+=7;
-					y+=4;
+					x+= 10;
+					y+= 8;
 				}
 				
-				last = System.nanoTime();
+				last += INTERVAL;
 			}
 		}
 
@@ -148,7 +156,7 @@ public class SnapdragonTestLauncher {
 		}
 
 		@Override
-		public void update(long last) {
+		public void update(long now, long last) {
 
 		}
 
@@ -189,7 +197,7 @@ public class SnapdragonTestLauncher {
 		}
 
 		@Override
-		public void update(long last) {
+		public void update(long now, long last) {
 			//
 		}
 
