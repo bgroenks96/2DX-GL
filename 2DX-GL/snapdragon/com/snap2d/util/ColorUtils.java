@@ -20,8 +20,7 @@
 
 package com.snap2d.util;
 
-import java.awt.image.BufferedImage;
-import java.awt.image.DataBufferInt;
+import java.awt.image.*;
 
 public class ColorUtils {
 
@@ -57,6 +56,7 @@ public class ColorUtils {
 	}
 
 	public static int packInt(int... rgbs) {
+
 		if (rgbs.length != 3 && rgbs.length != 4) {
 			throw (new IllegalArgumentException(
 					"args must be valid RGB, ARGB or RGBA value."));
@@ -68,13 +68,12 @@ public class ColorUtils {
 		return color;
 	}
 
-	public static int[] getImageBuffer(BufferedImage bi) {
-		return ((DataBufferInt) bi.getData().getDataBuffer()).getData();
-	}
-
-	public static void main(String[] args) {
-		for (int i : unpackInt(packInt(100, 0, 0), TYPE_RGB)) {
-			System.out.print(i + " ");
-		}
+	/**
+	 * Assumes the image to be of integer-pixel format.
+	 * @param bi
+	 * @return
+	 */
+	public static int[] getImageData(BufferedImage bi) {
+		return ((DataBufferInt) bi.getRaster().getDataBuffer()).getData();
 	}
 }

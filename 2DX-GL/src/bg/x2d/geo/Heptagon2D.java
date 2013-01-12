@@ -20,19 +20,9 @@
 
 package bg.x2d.geo;
 
-import java.awt.Graphics;
-import java.awt.Paint;
-import java.awt.Point;
-import java.awt.Polygon;
-
-import bg.x2d.Background;
+import java.awt.*;
 
 public class Heptagon2D extends Shapes2D {
-
-	@Deprecated
-	public Heptagon2D(Graphics g, Background b) {
-		super(g, b);
-	}
 
 	public Heptagon2D(int x, int y, int size, Paint p, boolean fill) {
 		super(x, y, size, p, fill);

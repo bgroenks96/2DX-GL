@@ -1,5 +1,5 @@
 /*
- * Copyright © 2011-2012 Brian Groenke
+ * Copyright Â© 2011-2012 Brian Groenke
  * All rights reserved.
  * 
  *  This file is part of the 2DX Graphics Library.
@@ -33,6 +33,7 @@ import java.awt.geom.*;
  */
 public class GeoUtils {
 
+	@Deprecated
 	public static volatile boolean degrees;
 
 	private GeoUtils() {
@@ -135,7 +136,7 @@ public class GeoUtils {
 		if(x != 0)
 			ref = abs(atan(y / x));
 		int quad = GeoUtils.quadrant(x, y) - 1;
-		return GeoUtils.chk((quad * (PI / 2)) + ref);
+		return (quad * (PI / 2)) + ref;
 	}
 
 	/**
@@ -155,17 +156,5 @@ public class GeoUtils {
 			return 4;
 		else
 			return 0;
-	}
-
-	/**
-	 * Checks the 'degrees' boolean to see if the given angle should be converted to degrees.
-	 * @param angle
-	 * @return
-	 */
-	private static double chk(double angle) {
-		if(GeoUtils.degrees)
-			return toDegrees(angle);
-		else
-			return angle;
 	}
 }

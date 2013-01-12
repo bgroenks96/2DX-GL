@@ -1,5 +1,5 @@
 /*
- * Copyright Â© 2011-2012 Brian Groenke
+ * Copyright © 2011-2012 Brian Groenke
  * All rights reserved.
  * 
  *  This file is part of the 2DX Graphics Library.
@@ -18,20 +18,32 @@
  *  along with 2DX.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-package bg.x2d.physics;
+package com.snap2d;
 
-import bg.x2d.geo.*;
+import java.awt.*;
 
-public interface PhysicsNode {
-	
-	public Vector2f getVelocity2f();
-	public Vector2d getVelocity2d();
-	public double getVelocity();
-	public void setVelocity(Vector2f vec);
-	public void setVelocity(Vector2d vec);
-	public void setMass(double kg);
-	public Vector2f collide(float velFactor);
-	public Vector2d collide(double velFactor);
-	public Vector2f applyForces(float time, Force... f);
-	public Vector2d applyForces(double time, Force... f);
+import com.snap2d.gl.*;
+
+/**
+ * @author Brian Groenke
+ *
+ */
+public class World implements Renderable {
+
+	@Override
+	public void render(Graphics2D g, float interpolation) {
+		// TODO Auto-generated method stub
+
+	}
+
+	@Override
+	public void update(long nanoTimeNow, long nanosSinceLastUpdate) {
+		
+	}
+
+	@Override
+	public void onResize(Dimension oldSize, Dimension newSize) {
+		
+	}
+
 }

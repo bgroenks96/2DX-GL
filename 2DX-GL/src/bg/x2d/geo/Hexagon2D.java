@@ -20,35 +20,12 @@
 
 package bg.x2d.geo;
 
-import java.awt.Graphics;
-import java.awt.Paint;
-import java.awt.Point;
-import java.awt.Polygon;
-
-import bg.x2d.Background;
+import java.awt.*;
 
 public class Hexagon2D extends Shapes2D {
 
-	@Deprecated
-	public Hexagon2D(Graphics g, Background b) {
-		super(g, b);
-	}
-
 	public Hexagon2D(int x, int y, int size, Paint p, boolean fill) {
 		super(x, y, size, p, fill);
-	}
-
-	public void drawHexagon(int x, int y, int size, Paint p, boolean fill) {
-
-		Polygon hex = drawRegularPolygon(new Point(x, y), new Point(x
-				+ (size / 2), y), size, p, fill, true, 6);
-
-		shape = hex;
-		filled = fill;
-		locx = x;
-		locy = y;
-		polySize = size;
-		paint = p;
 	}
 
 	@Override

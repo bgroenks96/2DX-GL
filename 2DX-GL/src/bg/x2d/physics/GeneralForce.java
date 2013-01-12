@@ -36,7 +36,7 @@ public class GeneralForce extends Force {
 	public GeneralForce(Vector2f vec) {
 		setForceVector(vec);
 	}
-	
+
 	/**
 	 * 
 	 * @param vec
@@ -47,14 +47,18 @@ public class GeneralForce extends Force {
 
 	@Override
 	public void setForceVector(Vector2f vec) {
-		if(vec != null)
+		if(vec != null) {
+			vecd = null;
 			vecf = vec;
+		}
 	}
 
 	@Override
 	public void setForceVector(Vector2d vec) {
-		if(vec != null)
+		if(vec != null) {
+			vecf = null;
 			vecd = vec;
+		}
 	}
 
 	@Override
@@ -71,7 +75,7 @@ public class GeneralForce extends Force {
 	public double getNewtonForce(double mass) {
 		return (vecf != null) ? vecf.mag:vecd.mag;
 	}
-	
+
 	@Override
 	/**
 	 * Applies this force to the given Vector2f.  The resulting acceleration

@@ -1,5 +1,5 @@
 /*
- * Copyright © 2011-2012 Brian Groenke
+ * Copyright ï¿½ 2011-2012 Brian Groenke
  * All rights reserved.
  * 
  *  This file is part of the 2DX Graphics Library.
@@ -24,7 +24,7 @@ import bg.x2d.geo.*;
 
 public class Gravity extends Force {
 
-	public static final float STANDARD = 9.8f;
+	public static final float STANDARD = -9.807f;
 
 	private float ga;
 
@@ -42,14 +42,21 @@ public class Gravity extends Force {
 		vecf = new Vector2f(0, ga);
 		vecd = new Vector2d(0, ga);
 	}
+	
 	@Override
+	/**
+	 * Gravity implementation does nothing.
+	 */
 	public void setForceVector(Vector2f vec) {
-		vecf = vec;
+		//
 	}
 
 	@Override
+	/**
+	 * Gravity implementation does nothing.
+	 */
 	public void setForceVector(Vector2d vec) {
-		vecd = vec;
+		//
 	}
 
 	@Override

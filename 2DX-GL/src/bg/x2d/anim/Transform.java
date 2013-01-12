@@ -20,6 +20,8 @@
 
 package bg.x2d.anim;
 
+import java.awt.geom.*;
+
 /**
  * Holds data used by Segments when running in an ongoing animation.
  * @author Brian Groenke
@@ -28,4 +30,5 @@ package bg.x2d.anim;
 public class Transform {
 
 	public double rotation;
+	public Point2D.Double rotationAnchor = new Point2D.Double();
 }

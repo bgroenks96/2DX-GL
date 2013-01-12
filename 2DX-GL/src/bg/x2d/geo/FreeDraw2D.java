@@ -37,40 +37,44 @@ import bg.x2d.Background;
 
 public abstract class FreeDraw2D {
 
+	@Deprecated
 	Background background;
+	@Deprecated
 	Graphics2D canvas;
-
-	protected FreeDraw2D(Graphics2D g) {
-		canvas = g;
+	
+	Paint paint;
+	
+	public void setCanvasPaint(Paint p) {
+		if(p != null)
+			paint = p;
 	}
 
-	protected FreeDraw2D(Graphics g) {
-		this((Graphics2D) g);
-	}
-
+	
+	// ----- DEPRECATED ------ //
+	@Deprecated
 	public void setBackground(Background b) {
 		if (b != null) {
 			background = b;
 		}
 	}
 
+	@Deprecated
 	public Background getBackground() {
 		return background;
 	}
 
+	@Deprecated
 	public Graphics2D getCanvas() {
 		return canvas;
 	}
 
+	@Deprecated
 	public void setGraphics(Graphics g) {
 		setGraphics((Graphics2D) g);
 	}
 
+	@Deprecated
 	public void setGraphics(Graphics2D g2) {
 		canvas = g2;
-	}
-
-	public void setCanvasPaint(Paint p) {
-		canvas.setPaint(p);
 	}
 }

@@ -20,42 +20,12 @@
 
 package bg.x2d.geo;
 
-import java.awt.Graphics;
-import java.awt.Graphics2D;
-import java.awt.Paint;
-
-import bg.x2d.Background;
+import java.awt.*;
 
 public class Circle2D extends Shapes2D {
 
-	@Deprecated
-	public Circle2D(Graphics g, Background b) {
-		super(g, b);
-	}
-
 	public Circle2D(int x, int y, int size, Paint p, boolean fill) {
 		super(x, y, size, p, fill);
-	}
-
-	@Deprecated
-	public void drawCircle(int x, int y, int size, Paint p, boolean fill) {
-		canvas.setPaint(p);
-		if (fill) {
-			canvas.fillOval(x, y, size, size);
-		} else {
-			canvas.drawOval(x, y, size, size);
-		}
-	}
-
-	@Deprecated
-	public void drawOval(int x, int y, int width, int height, Paint p,
-			boolean fill) {
-		canvas.setPaint(p);
-		if (fill) {
-			canvas.fillOval(x, y, width, height);
-		} else {
-			canvas.drawOval(x, y, width, height);
-		}
 	}
 
 	/**

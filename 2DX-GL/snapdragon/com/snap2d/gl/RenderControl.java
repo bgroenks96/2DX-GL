@@ -1,5 +1,5 @@
 /*
- * Copyright � 2011-2012 Brian Groenke
+ * Copyright © 2011-2012 Brian Groenke
  * All rights reserved.
  * 
  *  This file is part of the 2DX Graphics Library.
@@ -32,6 +32,7 @@ import java.util.concurrent.*;
 import bg.x2d.*;
 
 import com.snap2d.*;
+import com.snap2d.util.*;
 
 public class RenderControl {
 
@@ -365,6 +366,8 @@ public class RenderControl {
 				}
 			}
 
+			buff.flush();
+
 			if(accelerated) {
 				// Check the status of the VolatileImage and update/re-create it if neccessary.
 				if(disp == null || disp.getWidth() != pri.getWidth() || disp.getHeight() != pri.getHeight()) {
@@ -407,7 +410,7 @@ public class RenderControl {
 		}
 		if(!bs.contentsLost())
 			bs.show();
-		Arrays.fill(pixelData, CANVAS_BACK.getRGB());
+		//Arrays.fill(pixelData, CANVAS_BACK.getRGB());
 	}
 
 	protected synchronized void renderLight() {
@@ -422,8 +425,8 @@ public class RenderControl {
 		pri = ImageUtils.getNativeImage(wt, ht);
 		buff = ImageUtils.getNativeImage(wt, ht);
 		light = new BufferedImage(wt, ht, BufferedImage.TYPE_INT_ARGB);
-		pixelData = ((DataBufferInt)pri.getRaster().getDataBuffer()).getData();
-		buffData = ((DataBufferInt)buff.getRaster().getDataBuffer()).getData();
+		pixelData = ColorUtils.getImageData(pri);
+		buffData = ColorUtils.getImageData(buff);
 	}
 
 	/**
@@ -529,7 +532,7 @@ public class RenderControl {
 						if (now - lastUpdateTime > timeBetweenUpdates) {
 							lastUpdateTime = now - timeBetweenUpdates;
 						}
-						
+
 						float interpolation = Math.min(1.0f, (float) ((now - lastUpdateTime) / timeBetweenUpdates));
 						Graphics2D g = buff.createGraphics();
 						for(Renderable r:renderables)

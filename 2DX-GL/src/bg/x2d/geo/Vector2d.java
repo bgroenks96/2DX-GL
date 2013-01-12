@@ -1,5 +1,5 @@
 /*
- * Copyright © 2011-2012 Brian Groenke
+ * Copyright ï¿½ 2011-2012 Brian Groenke
  * All rights reserved.
  * 
  *  This file is part of the 2DX Graphics Library.
@@ -142,7 +142,7 @@ public class Vector2d {
 	 * @return this vector for chain calls.
 	 */
 	public Vector2d rotate(double rads) {
-		Point2D p = GeoUtils.rotatePoint(new PointLD(x,y), new PointLD(0,0), toDegrees(rads));
+		Point2D p = GeoUtils.rotatePoint(new PointLD(x,y), new PointLD(0,0), rads);
 		this.x = p.getX();
 		this.y = p.getY();
 		init();
@@ -155,7 +155,7 @@ public class Vector2d {
 	 * @return
 	 */
 	public Vector2d rotateNew(double theta) {
-		Point2D p = GeoUtils.rotatePoint(new PointLD(x,y), new PointLD(0,0), toDegrees(theta));
+		Point2D p = GeoUtils.rotatePoint(new PointLD(x,y), new PointLD(0,0), theta);
 		double x = p.getX();
 		double y = p.getY();
 		return new Vector2d(x, y);

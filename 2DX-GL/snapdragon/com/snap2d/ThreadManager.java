@@ -31,14 +31,9 @@ public final class ThreadManager {
 	private static DaemonThreadFactory dtf = new DaemonThreadFactory();
 	private static ExecutorService threadPool = Executors.newFixedThreadPool(n);
 	private static ExecutorService daemons = Executors.newCachedThreadPool(dtf);
-	private static volatile boolean running;
 
 	// Prevent instantiation
 	private ThreadManager() {
-	}
-
-	static {
-		running = true;
 	}
 
 	public static synchronized Future<?> submitJob(Runnable r) {
@@ -84,15 +79,15 @@ public final class ThreadManager {
 	 *            cached thread pool will be created.
 	 */
 	public static void setThreadCount(int nthreads) {
+		threadPool.shutdown();
+		
 		if (nthreads < 1) {
 			n = 0;
-			threadPool.shutdown();
 			threadPool = Executors.newCachedThreadPool();
 			return;
 		}
 
 		n = nthreads;
-		threadPool.shutdown();
 		threadPool = Executors.newFixedThreadPool(n);
 	}
 

@@ -20,10 +20,8 @@
 
 package bg.x2d.geo;
 
-import java.awt.Graphics;
-import java.awt.Graphics2D;
-import java.awt.Polygon;
-import java.util.ArrayList;
+import java.awt.*;
+import java.util.*;
 
 /**
  * Paintbrush provides an easy to use utility to draw figures and polygons.
@@ -76,14 +74,25 @@ import java.util.ArrayList;
 public class Paintbrush2D extends FreeDraw2D {
 
 	ArrayList<int[]> coords;
+	
+	public Paintbrush2D() {
+		coords = new ArrayList<int[]> ();
+	}
 
+	@Deprecated
 	public Paintbrush2D(int width, int height, Graphics g) {
-		super(g);
+		//super(g);
 		coords = new ArrayList<int[]>();
 	}
 
+	@Deprecated
+	/**
+	 * @param width never used
+	 * @param height never used
+	 * @param g
+	 */
 	public Paintbrush2D(int width, int height, Graphics2D g) {
-		super(g);
+		//super(g);
 		coords = new ArrayList<int[]>();
 	}
 
@@ -100,17 +109,17 @@ public class Paintbrush2D extends FreeDraw2D {
 	 * @see #drawStrokes()
 	 */
 
-	public void nextStroke(int x, int y, boolean draw) {
+	public void nextStroke(int x, int y, boolean draw, Graphics canvas) {
 		if (coords.size() == 0) {
 			int[] xy = { x, y };
 			coords.add(xy);
 		} else {
 			int[] xy = { x, y };
-			coords.add(xy);
 			if (draw) {
 				int[] last = lastStroke();
 				canvas.drawLine(last[0], last[1], x, y);
 			}
+			coords.add(xy);
 		}
 	}
 
@@ -149,7 +158,7 @@ public class Paintbrush2D extends FreeDraw2D {
 	 * @see #drawPolygon(boolean fill)
 	 */
 
-	public void drawStrokes() {
+	public void drawStrokes(Graphics canvas) {
 		for (int i = 0; i < coords.size(); i++) {
 			if (i == 0) {
 				continue;
@@ -171,7 +180,7 @@ public class Paintbrush2D extends FreeDraw2D {
 	 * @see java.awt.Polygon
 	 */
 
-	public Polygon drawPolygon(boolean fill) throws GeoException {
+	public Polygon drawPolygon(Graphics canvas, boolean fill) throws GeoException {
 		if (coords.size() == 0) {
 			throw (new GeoException("Empty coordinate data."));
 		} else {
@@ -207,7 +216,7 @@ public class Paintbrush2D extends FreeDraw2D {
 	}
 
 	/**
-	 * Retrieves the specified stroke if existant.
+	 * Retrieves the specified stroke if existent.
 	 * 
 	 * @param index
 	 * @return an int array representing a x and y coordinate.
@@ -230,7 +239,7 @@ public class Paintbrush2D extends FreeDraw2D {
 	}
 
 	/**
-	 * Clears this Paintbrush object's coordinate/stroke data.
+	 * Clears this Paintbrush object's coordinate/stroke data.  Does nothing to the screen.
 	 * 
 	 * @see #isCleared()
 	 */

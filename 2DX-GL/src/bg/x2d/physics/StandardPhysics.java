@@ -31,69 +31,104 @@ import bg.x2d.geo.*;
 public class StandardPhysics implements PhysicsNode {
 	
 	Gravity g = new Gravity();
+	
+	Vector2f vecf;
+	Vector2d vecd;
+	
+	double mass;
 
-	public StandardPhysics() {
-		// TODO Auto-generated constructor stub
+	public StandardPhysics(Vector2f vec, double objMass) {
+		this.mass = objMass;
+		vecf = vec;
+	}
+	
+	public StandardPhysics(Vector2d vec, double objMass) {
+		this.mass = objMass;
+		vecd = vec;
 	}
 
 	@Override
 	public Vector2f getVelocity2f() {
-		// TODO Auto-generated method stub
-		return null;
+		return vecf;
 	}
 
 	@Override
 	public Vector2d getVelocity2d() {
-		// TODO Auto-generated method stub
-		return null;
+		return vecd;
 	}
 
 	@Override
 	public double getVelocity() {
-		// TODO Auto-generated method stub
-		return 0;
+		return (vecd != null) ? vecd.mag:vecf.mag;
 	}
 
 	@Override
 	public void setVelocity(Vector2f vec) {
-		// TODO Auto-generated method stub
-
+		vecd = null;
+		vecf = vec;
 	}
 
 	@Override
 	public void setVelocity(Vector2d vec) {
-		// TODO Auto-generated method stub
-
+		vecf = null;
+		vecd = vec;
 	}
 
 	@Override
 	public void setMass(double kg) {
-		// TODO Auto-generated method stub
-
-	}
-
-	@Override
-	public Vector2f collideWith2f(PhysicsNode coll) {
-		// TODO Auto-generated method stub
-		return null;
-	}
-
-	@Override
-	public Vector2d collideWith2d(PhysicsNode coll) {
-		// TODO Auto-generated method stub
-		return null;
+		mass = kg;
 	}
 
 	@Override
 	public Vector2f applyForces(float time, Force... f) {
-		// TODO Auto-generated method stub
-		return null;
+		g.applyTo(time, (float)mass, vecf);
+		for(Force force:f) {
+			force.applyTo(time, (float)mass, vecf);
+		}
+		return vecf;
 	}
 
 	@Override
 	public Vector2d applyForces(double time, Force... f) {
-		// TODO Auto-generated method stub
-		return null;
+		g.applyTo(time, mass, vecd);
+		for(Force force:f) {
+			force.applyTo(time, mass, vecd);
+		}
+		return vecd;
+	}
+
+	@Override
+	public Vector2f collide(float velFactor) {
+		int q = GeoUtils.quadrant(vecf.x, vecf.y);
+		
+		float rotation;
+		if(q == 1 || q == 3) {
+			rotation = (float) -Math.PI;
+		} else {
+			rotation = (float) Math.PI;
+		}
+		
+		vecf.rotate(rotation);
+		vecf.mult(velFactor);
+		
+		return vecf;
+	}
+
+	@Override
+	public Vector2d collide(double velFactor) {
+		int q = GeoUtils.quadrant(vecf.x, vecf.y);
+		
+		float rotation;
+		if(q == 1 || q == 3) {
+			rotation = (float) -Math.PI;
+		} else {
+			rotation = (float) Math.PI;
+		}
+		
+		vecd.rotate(rotation);
+		vecd.mult(velFactor);
+		
+		return vecd;
 	}
 
 }

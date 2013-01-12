@@ -23,13 +23,9 @@
  */
 package bg.x2d.geo;
 
-import java.awt.Graphics;
-import java.awt.Graphics2D;
-import java.awt.Paint;
-import java.awt.Point;
-import java.awt.Polygon;
+import java.awt.*;
 
-import bg.x2d.Background;
+import bg.x2d.*;
 
 /**
  * The superclass class for all generic 2-Dimensional figures. Subclasses of
@@ -40,12 +36,6 @@ import bg.x2d.Background;
  */
 public abstract class Shapes2D {
 
-	@Deprecated
-	Graphics2D canvas;
-
-	@Deprecated
-	Background background;
-
 	int locx, locy, polySize;
 	Paint paint;
 	Polygon shape;
@@ -54,17 +44,15 @@ public abstract class Shapes2D {
 	@Deprecated
 	/**
 	 * Replaced with a more logical and OO-friendly constructor.
+	 * Note: This deprecated constructor currently does nothing.
 	 * @param g
 	 * @param b
 	 */
 	public Shapes2D(Graphics g, Background b) {
-		canvas = (Graphics2D) g;
-		background = b;
 	}
 
 	@Deprecated
 	public Shapes2D(Background b) {
-		background = b;
 	}
 
 	/**
@@ -90,6 +78,11 @@ public abstract class Shapes2D {
 		locx = x;
 		locy = y;
 	}
+	
+	public void setPaint(Paint p) {
+		if(p != null)
+			this.paint = p;
+	}
 
 	public void draw(Graphics2D g) {
 		g.setPaint(paint);
@@ -98,36 +91,6 @@ public abstract class Shapes2D {
 		} else {
 			g.drawPolygon(shape);
 		}
-	}
-
-	public Background getBackground() {
-		return background;
-	}
-
-	@Deprecated
-	public void undraw(Paint p) {
-
-	}
-
-	/**
-	 * Returns the Graphics2D object currently associated with the Shapes2D
-	 * object.
-	 * 
-	 * @return the Graphics2D object being painted on.
-	 */
-	public Graphics2D getCanvas() {
-		return canvas;
-	}
-
-	public void setBackground(Background b) {
-		if (b != null) {
-			background = b;
-		}
-	}
-
-	@Deprecated
-	public void undraw() {
-		background.redraw(canvas);
 	}
 
 	public Polygon getShape() {

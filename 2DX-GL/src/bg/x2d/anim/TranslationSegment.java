@@ -91,9 +91,9 @@ public class TranslationSegment implements Segment {
 		if (isValid() && (diff = curr - last) > 0) {
 			double dxm = diff * dxint;
 			double dym = diff * dyint;
-			affine.rotate(-tf.rotation);
+			//affine.rotate(-tf.rotation, tf.rotationAnchor.getX(), tf.rotationAnchor.getY());
 			affine.translate(dxm, dym);
-			affine.rotate(tf.rotation);
+			//affine.rotate(tf.rotation, tf.rotationAnchor.getX(), tf.rotationAnchor.getY());
 			last = curr;
 		}
 	}

@@ -91,9 +91,7 @@ public class RotationSegment implements Segment {
 		long diff = 0;
 		if (isValid() && (diff = curr - last) > 0) {
 			if (anchor != null) {
-				Point2D.Double tanchor = new Point2D.Double(anchor.getX(), anchor.getY());
-				affine.transform(anchor, tanchor);
-				affine.rotate(Math.toRadians(dtInt * diff), tanchor.getX(), tanchor.getY());
+				affine.rotate(Math.toRadians(dtInt * diff), anchor.getX(), anchor.getY());
 			} else {
 				affine.rotate(Math.toRadians(dtInt * diff));
 			}

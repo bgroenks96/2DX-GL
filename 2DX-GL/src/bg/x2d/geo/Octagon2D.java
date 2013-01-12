@@ -20,35 +20,12 @@
 
 package bg.x2d.geo;
 
-import java.awt.Graphics;
-import java.awt.Paint;
-import java.awt.Point;
-import java.awt.Polygon;
-
-import bg.x2d.Background;
+import java.awt.*;
 
 public class Octagon2D extends Shapes2D {
 
-	@Deprecated
-	public Octagon2D(Graphics g, Background b) {
-		super(g, b);
-	}
-
 	public Octagon2D(int x, int y, int size, Paint p, boolean fill) {
 		super(x, y, size, p, fill);
-	}
-
-	public void drawOctagon(int x, int y, int size, Paint p, boolean fill) {
-
-		Polygon oct = drawRegularPolygon(new Point(x, y), new Point(x
-				+ (size / 2), y), size, p, fill, true, 8);
-
-		shape = oct;
-		polySize = size;
-		locx = x;
-		locy = y;
-		paint = p;
-		filled = fill;
 	}
 
 	@Override

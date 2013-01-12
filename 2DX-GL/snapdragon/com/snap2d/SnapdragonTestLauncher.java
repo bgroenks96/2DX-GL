@@ -9,10 +9,12 @@ import java.util.*;
 import javax.imageio.*;
 
 import bg.x2d.*;
+import bg.x2d.geo.*;
 
 import com.snap2d.gl.*;
 import com.snap2d.input.*;
 import com.snap2d.input.InputDispatch.KeyEventClient;
+import com.snap2d.util.*;
 
 public class SnapdragonTestLauncher {
 
@@ -23,6 +25,13 @@ public class SnapdragonTestLauncher {
 	}
 
 	public void init(String[] args) {
+		int NITR = 1000000;
+		double t1 = System.nanoTime();
+		for(int i=0;i<NITR;i++) {
+			ColorUtils.packInt(ColorUtils.unpackInt(0xFFFFF, ColorUtils.TYPE_ARGB));
+		}
+		double t2 = System.nanoTime();
+		System.out.println((t2 - t1) / NITR + " ns (avg)");
 		Display disp = new Display(800, 600, Display.Type.FULLSCREEN);
 		disp.setTitle("Snapdragon2D Engine Test (PRE-ALPHA)");
 		InputDispatch input = new InputDispatch(true);
@@ -45,6 +54,8 @@ public class SnapdragonTestLauncher {
 		rc.addRenderable(new TestRenderObj(r.nextInt(300), r.nextInt(300)), RenderControl.POSITION_LAST);
 		rc.addRenderable(new TestRenderObj(r.nextInt(300), r.nextInt(300)), RenderControl.POSITION_LAST);
 		rc.addRenderable(new TestRenderObj(r.nextInt(300), r.nextInt(300)), RenderControl.POSITION_LAST);
+		rc.addRenderable(new TestRenderObj(r.nextInt(300), r.nextInt(300)), RenderControl.POSITION_LAST);
+		rc.addRenderable(new TestRenderObj(r.nextInt(300), r.nextInt(300)), RenderControl.POSITION_LAST);
 		rc.setMaxUpdates(2);
 		rc.setRenderOp(RenderingHints.KEY_RENDERING, RenderingHints.VALUE_RENDER_QUALITY);
 		rc.setRenderOp(RenderingHints.KEY_INTERPOLATION, RenderingHints.VALUE_INTERPOLATION_BICUBIC);
@@ -55,10 +66,10 @@ public class SnapdragonTestLauncher {
 
 	static class TestRenderObj implements Renderable {
 
+		Octagon2D oct;
 		BufferedImage img;
-		int[] data;
-		int limitx, limity, ox;
-		float x, y, lx, ly;
+		int limitx, limity, ox, diag;
+		float x, y, lx, ly, theta = 10;
 		boolean reverse;
 
 		public TestRenderObj(int x, int y) {
@@ -68,12 +79,14 @@ public class SnapdragonTestLauncher {
 			this.limitx = 10*x;
 			this.limity = 10*y;
 			
+			oct = new Octagon2D(x, y, 150, Color.YELLOW, true);
+			
 			try {
 				img = ImageIO.read(new File(
 						"/media/WIN7/Users/Brian/Pictures/test_alpha.png"));
 				img = ImageUtils.convertBufferedImage(img,
 						BufferedImage.TYPE_INT_ARGB);
-				data = ((DataBufferInt)img.getRaster().getDataBuffer()).getData();
+				diag = (int) Math.ceil(Math.sqrt(Math.pow(img.getWidth(), 2) + Math.pow(img.getHeight(), 2)));
 			} catch (IOException e) {
 				e.printStackTrace();
 			}
@@ -82,11 +95,16 @@ public class SnapdragonTestLauncher {
 		@Override
 		public void render(Graphics2D g, float interpolation) {
 			
-
-			//rc.render((int)((x - lx) * interpolation + lx), (int) ((y - ly) * interpolation + ly), img.getWidth(), img.getHeight(), data);
 			float x1 = (x - lx) * interpolation + lx;
 			float y1 = (y - ly) * interpolation + ly;
-			g.drawImage(img, Math.round(x1), Math.round(y1), null);
+		    g.drawImage(img, Math.round(x1), Math.round(y1), null);
+		    
+			/*
+			oct.setLocation(Math.round(x1), Math.round(y1));
+			oct.rotate(theta, Rotation.CLOCKWISE);
+			//oct.setPaint(new GradientPaint(x, y, Color.BLACK, x + 100.0f, y + 100.0f, Color.BLUE));
+			oct.draw(g);
+			*/
 		}
 
 		@Override
@@ -115,6 +133,7 @@ public class SnapdragonTestLauncher {
 					y+= 8;
 				}
 				
+				theta += 0.1;
 				last += INTERVAL;
 			}
 		}
@@ -159,7 +178,6 @@ public class SnapdragonTestLauncher {
 		public void update(long now, long last) {
 
 		}
-
 	}
 
 	static class TestRenderBack implements Renderable {

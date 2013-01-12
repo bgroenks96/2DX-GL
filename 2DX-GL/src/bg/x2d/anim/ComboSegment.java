@@ -1,7 +1,7 @@
 package bg.x2d.anim;
 
-import java.awt.geom.AffineTransform;
-import java.util.Set;
+import java.awt.geom.*;
+import java.util.*;
 
 public class ComboSegment implements Segment {
 
