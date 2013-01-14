@@ -37,6 +37,11 @@ public class StandardPhysics implements PhysicsNode {
 	
 	double mass;
 
+	/**
+	 * 
+	 * @param vec
+	 * @param objMass
+	 */
 	public StandardPhysics(Vector2f vec, double objMass) {
 		this.mass = objMass;
 		vecf = vec;
@@ -81,7 +86,7 @@ public class StandardPhysics implements PhysicsNode {
 
 	@Override
 	public Vector2f applyForces(float time, Force... f) {
-		g.applyTo(time, (float)mass, vecf);
+		g.applyTo(time, (float) mass, vecf);
 		for(Force force:f) {
 			force.applyTo(time, (float)mass, vecf);
 		}
@@ -99,34 +104,28 @@ public class StandardPhysics implements PhysicsNode {
 
 	@Override
 	public Vector2f collide(float velFactor) {
-		int q = GeoUtils.quadrant(vecf.x, vecf.y);
+		//int q = GeoUtils.quadrant(vecf.x, vecf.y);
 		
-		float rotation;
-		if(q == 1 || q == 3) {
-			rotation = (float) -Math.PI;
-		} else {
-			rotation = (float) Math.PI;
+		if(vecf.x == 0 || vecf.y == 0)
+		    vecf.negate().mult(velFactor);
+		else {
+			float outAngle = (float) (Math.atan(vecf.y / vecf.x) + Math.PI);
+			vecf.rotate(outAngle).mult(velFactor);
 		}
-		
-		vecf.rotate(rotation);
-		vecf.mult(velFactor);
 		
 		return vecf;
 	}
 
 	@Override
 	public Vector2d collide(double velFactor) {
-		int q = GeoUtils.quadrant(vecf.x, vecf.y);
+		//int q = GeoUtils.quadrant(vecd.x, vecd.y);
 		
-		float rotation;
-		if(q == 1 || q == 3) {
-			rotation = (float) -Math.PI;
-		} else {
-			rotation = (float) Math.PI;
+		if(vecd.x == 0 || vecd.y == 0)
+		    vecd.negate().mult(velFactor);
+		else {
+			double outAngle = Math.atan(vecd.y / vecd.x) + Math.PI;
+			vecd.rotate(outAngle).mult(velFactor);
 		}
-		
-		vecd.rotate(rotation);
-		vecd.mult(velFactor);
 		
 		return vecd;
 	}

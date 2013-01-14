@@ -1,5 +1,5 @@
 /*
- * Copyright Â© 2011-2012 Brian Groenke
+ * Copyright © 2011-2012 Brian Groenke
  * All rights reserved.
  * 
  *  This file is part of the 2DX Graphics Library.
@@ -59,6 +59,7 @@ public class RenderControl {
 	protected volatile VolatileImage disp;
 	protected volatile int[] pixelData, buffData;
 	protected volatile long lastResizeFinish;
+	protected volatile boolean applyGamma, updateGamma;
 
 	protected List<Renderable> rtasks = new ArrayList<Renderable>(), delQueue = new Vector<Renderable>();
 	protected Map<Integer, Renderable> addQueue = new ConcurrentSkipListMap<Integer, Renderable>();
@@ -66,6 +67,9 @@ public class RenderControl {
 	protected AutoResize resize;
 	protected Future<?> taskCallback;
 	protected int buffs;
+	protected float gamma = 1.0f;
+
+	protected GammaTable gammaTable = new GammaTable(gamma);
 	protected Map<RenderingHints.Key, Object> renderOps;
 
 	/**
@@ -212,6 +216,21 @@ public class RenderControl {
 	}
 
 	/**
+	 * Sets the gamma value that will be applied to all pixels rendered on screen.
+	 * @param gamma a gamma value (0.0 > gamma < 1.0 = darker; gamma > 1.0 = brighter)
+	 */
+	public void setGamma(float gamma) {
+		if(gamma >= 0) {
+			this.gamma = gamma;
+			updateGamma = true;
+		}
+	}
+	
+	public void setGammaCorrectionEnabled(boolean enabled) {
+		applyGamma = enabled;
+	}
+
+	/**
 	 * Checks to see if this RenderControl has a loop that is actively rendering/updating.
 	 * @return true if active, false otherwise.
 	 */
@@ -317,6 +336,10 @@ public class RenderControl {
 		return ((int)(R * 255) << 16) | ((int)(G * 255) << 8) | (int)(B * 255);
 	}
 
+	ExecutorService renderPool = Executors.newFixedThreadPool(Runtime.getRuntime().availableProcessors()
+			, new RenderThreadFactory());
+	ArrayList<RenderRow> rowCache = new ArrayList<RenderRow>();
+
 	/**
 	 * Internal method that is called by RenderLoop to draw rendered data to the screen.
 	 * The back buffer's data is copied to the main image which, if hardware acceleration is enabled,
@@ -333,38 +356,27 @@ public class RenderControl {
 			return;
 		}
 
+		int buffHeight = buff.getHeight();
+		int priHeight = pri.getHeight();
+
 		Graphics2D g = null;
 		try {
 			g = (Graphics2D) bs.getDrawGraphics();
 
-			for(int y = 0; y < buff.getHeight(); y++) {
+			Future<?> finalRow = null;
+			for(int y = 0; y < buffHeight; y++) {
 
-				if(y >= pri.getHeight() || y < 0)
+				if(y >= priHeight || y < 0)
 					continue;
 
-				for(int x = 0; x < buff.getWidth(); x++) {
-
-					if(x >= pri.getWidth() || x < 0)
-						continue;
-
-					int pos = y * pri.getWidth() + x;
-					if(pos < 0 || pos >= pixelData.length)
-						continue;
-
-					//get foreground pixels (source)
-					int srcValue = buffData[y * buff.getWidth() + x];
-
-					/*
-					 * We don't currently need to blend because the Graphics object will do it for us. 
-				float srcA = ((srcValue & 0xff000000) >>> 24) / 255f;
-				if(srcA < 1f) {
-					pixelData[pos] = blend(srcA, srcValue, pixelData[pos]);
-				} else
-					 */
-
-					pixelData[pos] = srcValue;
-				}
+				if(y >= rowCache.size())
+					rowCache.add(new RenderRow(y));
+				Future<?> task = renderPool.submit(rowCache.get(y));
+				if(y == buffHeight - 1)
+					finalRow = task;
 			}
+
+			while(!finalRow.isDone());
 
 			buff.flush();
 
@@ -411,6 +423,45 @@ public class RenderControl {
 		if(!bs.contentsLost())
 			bs.show();
 		//Arrays.fill(pixelData, CANVAS_BACK.getRGB());
+	}
+
+	protected class RenderRow implements Runnable {
+
+		int y;
+
+		RenderRow(int y) {
+			this.y = y;
+		}
+
+		@Override
+		public void run() {
+			int buffWidth = buff.getWidth();
+			int priWidth = pri.getWidth();
+			for(int x = 0; x < buffWidth; x++) {
+
+				if(x >= priWidth || x < 0)
+					continue;
+
+				int pos = y * priWidth + x;
+				if(pos < 0 || pos >= pixelData.length)
+					continue;
+
+				//get foreground pixels (source)
+				int srcValue = buffData[y * buffWidth + x];
+
+				/*
+				 * We don't currently need to blend because the Graphics object will do it for us. 
+			float srcA = ((srcValue & 0xff000000) >>> 24) / 255f;
+			if(srcA < 1f) {
+				pixelData[pos] = blend(srcA, srcValue, pixelData[pos]);
+			} else
+				 */
+
+				pixelData[pos] = (applyGamma) ? 
+						gammaTable.applyGamma(srcValue, ColorUtils.TYPE_ARGB, null) : srcValue;
+			}
+		}
+
 	}
 
 	protected synchronized void renderLight() {
@@ -475,6 +526,7 @@ public class RenderControl {
 							Thread.sleep(800);
 							while(!printFrames);
 							System.out.println(fps + " fps " + tps + " ticks");
+							printFrames = false;
 						} catch (InterruptedException e) {
 							e.printStackTrace();
 						}
@@ -510,6 +562,10 @@ public class RenderControl {
 							rtasks.remove(r);
 						}
 						delQueue.clear();
+					}
+
+					if(updateGamma) {
+						gammaTable.setGamma(gamma);
 					}
 
 					double now = System.nanoTime();
@@ -622,5 +678,26 @@ public class RenderControl {
 			this.ht = ht;
 		}
 
+	}
+
+	protected static class RenderThreadFactory implements ThreadFactory {
+
+		volatile static int poolNum;
+
+		RenderThreadFactory() {
+			poolNum++;
+		}
+
+		int nthreads;
+
+		@Override
+		public Thread newThread(Runnable arg0) {
+			Thread t = new Thread(arg0);
+			t.setName("snap2d_render_pool-"+poolNum+"_0"+nthreads);
+			t.setDaemon(true);
+			t.setPriority(Thread.MAX_PRIORITY);
+			nthreads++;
+			return t;
+		}
 	}
 }

@@ -189,4 +189,9 @@ public class Vector2f {
 	public Point2D.Float applyTo(Point2D.Float p, float multiplier) {
 		return new Point2D.Float(p.x + (x * multiplier), p.y + (y * multiplier));
 	}
+	
+	@Override
+	public String toString() {
+		return "mag="+mag+" theta="+Math.toDegrees(angle)+" ["+x+", "+y+"]";
+	}
 }

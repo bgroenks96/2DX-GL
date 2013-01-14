@@ -1,5 +1,5 @@
 /*
- * Copyright © 2011-2012 Brian Groenke
+ * Copyright ï¿½ 2011-2012 Brian Groenke
  * All rights reserved.
  * 
  *  This file is part of the 2DX Graphics Library.
@@ -83,6 +83,14 @@ public class PointLD extends Point {
 
 	public int getIntY() {
 		return (int) Math.round(y);
+	}
+	
+	public Point2D.Double getDoublePoint() {
+		return new Point2D.Double(x, y);
+	}
+	
+	public Point2D.Float getFloatPoint() {
+		return new Point2D.Float((float)x, (float)y);
 	}
 
 	@Override

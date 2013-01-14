@@ -14,7 +14,6 @@ import bg.x2d.geo.*;
 import com.snap2d.gl.*;
 import com.snap2d.input.*;
 import com.snap2d.input.InputDispatch.KeyEventClient;
-import com.snap2d.util.*;
 
 public class SnapdragonTestLauncher {
 
@@ -25,13 +24,6 @@ public class SnapdragonTestLauncher {
 	}
 
 	public void init(String[] args) {
-		int NITR = 1000000;
-		double t1 = System.nanoTime();
-		for(int i=0;i<NITR;i++) {
-			ColorUtils.packInt(ColorUtils.unpackInt(0xFFFFF, ColorUtils.TYPE_ARGB));
-		}
-		double t2 = System.nanoTime();
-		System.out.println((t2 - t1) / NITR + " ns (avg)");
 		Display disp = new Display(800, 600, Display.Type.FULLSCREEN);
 		disp.setTitle("Snapdragon2D Engine Test (PRE-ALPHA)");
 		InputDispatch input = new InputDispatch(true);
@@ -40,6 +32,7 @@ public class SnapdragonTestLauncher {
 			@Override
 			public void processKeyEvent(KeyEvent e) {
 				if (e.getKeyCode() == KeyEvent.VK_ESCAPE) {
+					rc.dispose();
 					System.exit(0);
 				}
 			}

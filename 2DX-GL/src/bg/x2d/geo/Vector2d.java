@@ -185,4 +185,9 @@ public class Vector2d {
 		p.setLocation(p.getX() + (x * multiplier), p.getY() + (y * multiplier));
 		return p;
 	}
+	
+	@Override
+	public String toString() {
+		return "mag="+mag+" theta="+Math.toDegrees(angle)+" ["+x+", "+y+"]";
+	}
 }

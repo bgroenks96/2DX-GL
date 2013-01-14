@@ -1,5 +1,5 @@
 /*
- * Copyright © 2011-2012 Brian Groenke
+ * Copyright ï¿½ 2011-2012 Brian Groenke
  * All rights reserved.
  * 
  *  This file is part of the 2DX Graphics Library.
@@ -54,13 +54,35 @@ public class ColorUtils {
 		}
 		return vals;
 	}
+	
+	public static int[] unpackInt(int[] vals, int argb) {
+		switch (vals.length) {
+		case 3:
+			vals[0] = argb >> 16 & 0xFF;
+			vals[1] = argb >> 8 & 0xFF;
+			vals[2] = argb & 0xFF;
+			break;
+		case 4:
+			vals[3] = argb & 0xFF;
+			vals[2] = argb >> 8 & 0xFF;
+			vals[1] = argb >> 16 & 0xFF;
+			vals[0] = argb >> 24 & 0xFF;
+			break;
+		default:
+			throw (new IllegalArgumentException(
+					"type must be a valid field defined by ColorUtils class"));
+		}
+		return vals;
+	}
 
 	public static int packInt(int... rgbs) {
 
+		
 		if (rgbs.length != 3 && rgbs.length != 4) {
 			throw (new IllegalArgumentException(
 					"args must be valid RGB, ARGB or RGBA value."));
 		}
+		
 		int color = rgbs[0];
 		for (int i = 1; i < rgbs.length; i++) {
 			color = (color << 8) + rgbs[i];

@@ -28,8 +28,8 @@ import bg.x2d.geo.*;
  */
 public class Friction extends Force {
 	
-	private float fsx, fsy, fkx, fky, fg;
-	private double dsx, dsy, dkx, dky, dg;
+	public float fsx, fsy, fkx, fky, fg;
+	public double dsx, dsy, dkx, dky, dg;
 
 	/**
 	 * 
@@ -106,13 +106,15 @@ public class Friction extends Force {
 	
 	public Vector2f applyTo(float time, float mass, Vector2f vec) {
 		Vector2f neg = vec.negateNew();
-		float sx = fsx * mass * fg;
-		if(vec.x > sx)
+		
+		float sx = Math.abs(fsx * mass * fg);
+		if(Math.abs(vec.x) > sx)
 			vecf.x = fkx * mass * fg * Math.signum(neg.x);
 		else
 			vecf.x = neg.x;
-		float sy = fsy * mass * fg;
-		if(vec.y > sy)
+		
+		float sy = Math.abs(fsy * mass * fg);
+		if(Math.abs(vec.y) > sy)
 			vecf.y = fky * mass * fg * Math.signum(neg.y);
 		else
 			vecf.y = neg.y;
@@ -122,11 +124,13 @@ public class Friction extends Force {
 
 	public Vector2d applyTo(double time, double mass, Vector2d vec) {
 		Vector2d neg = vec.negateNew();
+		
 		double sx = Math.abs(dsx * mass * dg);
 		if(Math.abs(vec.x) > sx)
 			vecd.x = dkx * mass * dg * Math.signum(neg.x);
 		else
 			vecd.x = neg.x;
+		
 		double sy = Math.abs(dsy * mass * dg);
 		if(Math.abs(vec.y) > sy)
 			vecd.y = dky * mass * dg * Math.signum(neg.y);

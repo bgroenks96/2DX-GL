@@ -103,7 +103,7 @@ class TestLauncher {
 		}
 
 		StandardPhysics node = new StandardPhysics(vec, 1.0);
-		GeneralForce normal = new GeneralForce(new Vector2d(0,-9.807*1.0));
+		GeneralForce normal = new GeneralForce(new Vector2d(0,9.807*1.0));
 		GeneralForce xf = new GeneralForce(new Vector2d(15,0));
 		Friction f = new Friction(0.5, 0.5, 0.4, 0.4, new Gravity());
 		long i = System.currentTimeMillis();
