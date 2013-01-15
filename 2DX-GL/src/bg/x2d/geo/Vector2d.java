@@ -41,6 +41,12 @@ public class Vector2d {
 		init();
 	}
 	
+	public static Vector2d fromPolar(double mag, double angle) {
+		double x = mag * cos(angle);
+		double y = mag * sin(angle);
+		return new Vector2d(x, y);
+	}
+	
 	public Vector2d(Vector2d copy) {
 		x = copy.x;
 		y = copy.y;
@@ -172,6 +178,18 @@ public class Vector2d {
 		double x = -this.x;
 		double y = -this.y;
 		return new Vector2d(x,y);
+	}
+	
+	public Vector2d negateX() {
+		x = -x;
+		init();
+		return this;
+	}
+	
+	public Vector2d negateY() {
+		y = -y;
+		init();
+		return this;
 	}
 	
 	public final void normalize() {

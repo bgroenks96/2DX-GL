@@ -44,6 +44,12 @@ public class Vector2f {
 
 		init();
 	}
+	
+	public static Vector2f fromPolar(float mag, float angle) {
+		float x = (float) (mag * cos(angle));
+		float y = (float) (mag * sin(angle));
+		return new Vector2f(x, y);
+	}
 
 	public Vector2f(Vector2f copy) {
 		x = copy.x;
@@ -184,6 +190,18 @@ public class Vector2f {
 		float x = -this.x;
 		float y = -this.y;
 		return new Vector2f(x,y);
+	}
+	
+	public Vector2f negateX() {
+		x = -x;
+		init();
+		return this;
+	}
+	
+	public Vector2f negateY() {
+		y = -y;
+		init();
+		return this;
 	}
 	
 	public Point2D.Float applyTo(Point2D.Float p, float multiplier) {

@@ -27,7 +27,7 @@ import java.awt.geom.*;
 
 /**
  * Contains static convenience method for Geometric operations.
- * 
+ * All angular operations take and return values in radians.
  * @author Brian Groenke
  * 
  */
@@ -89,7 +89,7 @@ public class GeoUtils {
 
 	/**
 	 * Algorithm that uses an algebraic rotation formula to transform a point
-	 * from its current location x rads/degrees to a new position on the coordinate
+	 * from its current location x rads to a new position on the coordinate
 	 * plane.
 	 * 
 	 * @param p
@@ -97,8 +97,7 @@ public class GeoUtils {
 	 * @param origin
 	 *            point to rotate around
 	 * @param angle
-	 *            angle measure to rotate (theta); in degrees or radians depending
-	 *            on the GeoUtils 'degrees' value.
+	 *            angle measure to rotate (theta), in radians.
 	 * @return the rotated Point object.
 	 */
 	public static Point2D.Double rotatePoint(Point2D point, Point2D origin,
@@ -126,7 +125,7 @@ public class GeoUtils {
 
 	/**
 	 * Computes the terminal position of an angle using the given x, y coordinates drawn from the origin.
-	 * The value returned from this method will be 0-2pi or 0-360 degrees.
+	 * The value returned from this method will be 0-2pi.
 	 * @param x
 	 * @param y
 	 * @return
@@ -137,6 +136,29 @@ public class GeoUtils {
 			ref = abs(atan(y / x));
 		int quad = GeoUtils.quadrant(x, y) - 1;
 		return (quad * (PI / 2)) + ref;
+	}
+	
+	/**
+	 * Shorthand method for calling <code>terminal</code>
+	 * @param x
+	 * @param y
+	 * @return
+	 */
+	public static double term(double x, double y) {
+		return terminal(x, y);
+	}
+	
+	/**
+	 * Computes the reference angle for the given x, y coordinates drawn from the origin.
+	 * The value returned from this method will be between -pi/2 and pi/2.
+	 * @param x
+	 * @param y
+	 * @return
+	 */
+	public static double ref(double x, double y) {
+		double term = term(x, y);
+		int quad = GeoUtils.quadrant(x, y) - 1;
+		return term - (quad * (PI / 2));
 	}
 
 	/**

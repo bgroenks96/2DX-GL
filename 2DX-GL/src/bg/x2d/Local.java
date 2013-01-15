@@ -139,7 +139,7 @@ public abstract class Local {
 	public static native long getSystemAvailableRAM();
 	
 	/**
-	 * Fetches the total amount of RAM installed on the system.  As opposed to the built in Java funcitons, this method
+	 * Fetches the total amount of RAM installed on the system.  As opposed to the built in Java functions, this method
 	 * obtains the total amount of RAM installed on the hardware.  The accuracy of the result may vary depending on the
 	 * platform.
 	 * @return total system installed RAM in bytes.

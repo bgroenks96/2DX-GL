@@ -103,21 +103,44 @@ public class StandardPhysics implements PhysicsNode {
 	}
 
 	@Override
-	public Vector2f collide(float velFactor) {
+	/**
+	 * Applies a basic collision to this node's vector.
+	 * @param velFactor the factor applied to velocity on collision
+	 * @param surfaceAngle terminal angle of the colliding surface (should be between 0-PI); 
+	 *     only required for Collision.ANGLED
+	 * @param type indicates whether the collision with the X bound, Y bound, XY corner or angled surface.
+	 *     Pass a type value from enum Collision.
+	 * @return
+	 */
+	public Vector2f collide(float velFactor, float surfaceAngle, Collision type) {
 		//int q = GeoUtils.quadrant(vecf.x, vecf.y);
 		
+		if(type == Collision.X) {
+			vecf.negateY().mult(velFactor);
+		} else if(type == Collision.XY) {
+			vecf.negate().mult(velFactor);
+		} else {
+			vecf.negateX();
+			if(type == Collision.ANGLED) {
+				vecf.rotate(surfaceAngle - ((float)Math.PI / 2));
+			}
+			vecf.mult(velFactor);
+		}
+		
+		/*
 		if(vecf.x == 0 || vecf.y == 0)
 		    vecf.negate().mult(velFactor);
 		else {
 			float outAngle = (float) (Math.atan(vecf.y / vecf.x) + Math.PI);
 			vecf.rotate(outAngle).mult(velFactor);
 		}
+		*/
 		
 		return vecf;
 	}
 
 	@Override
-	public Vector2d collide(double velFactor) {
+	public Vector2d collide(double velFactor, double surfaceAngle, Collision type) {
 		//int q = GeoUtils.quadrant(vecd.x, vecd.y);
 		
 		if(vecd.x == 0 || vecd.y == 0)
