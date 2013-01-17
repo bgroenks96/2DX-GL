@@ -73,7 +73,7 @@ public class GeneralForce extends Force {
 
 	@Override
 	public double getNewtonForce(double mass) {
-		return (vecf != null) ? vecf.mag:vecd.mag;
+		return (vecf != null) ? vecf.getMagnitude():vecd.getMagnitude();
 	}
 
 	@Override
@@ -83,10 +83,11 @@ public class GeneralForce extends Force {
 	 * F is Newton force, and m is mass in grams.
 	 * @param time seconds to accelerate the given vector
 	 * @param mass of the object in Kg
+	 * @param forceSum unused in general force
 	 * @param vec velocity vector to be accelerated by force.
 	 * @return the modified Vector2f object (allows for chain calls).
 	 */
-	public Vector2f applyTo(float time, float mass, Vector2f vec) {
+	public Vector2f applyTo(float time, float mass, Vector2f forceSum, Vector2f vec) {
 		Vector2f vecf = this.vecf.divNew(mass);
 		vec.add(vecf.multNew(time));
 		return vec;
@@ -97,10 +98,11 @@ public class GeneralForce extends Force {
 	 * Applies this force to the given Vector2d.
 	 * @param time seconds to accelerate the given vector
 	 * @param mass of the object in Kg
+	 * @param forceSum unused in GeneralForce
 	 * @param vec velocity vector to be accelerated by force.
 	 * @return the modified Vector2f object (allows for chain calls).
 	 */
-	public Vector2d applyTo(double time, double mass, Vector2d vec) {
+	public Vector2d applyTo(double time, double mass, Vector2d forceSum, Vector2d vec) {
 		Vector2d vecd = this.vecd.divNew(mass);
 		vec.add(vecd.multNew(time));
 		return vec;

@@ -51,11 +51,14 @@ public abstract class Force {
 	 * Applies this force to the given Vector2f.
 	 * @param time seconds to accelerate the given vector
 	 * @param mass of the object in Kg
+	 * @param forceSum some Forces may require a sum of other forces also being applied at
+	 *     at the current time interval.  This argument is optional, thus all implementations should
+	 *     account for possible null values.
 	 * @param vec velocity vector to be accelerated by force.
 	 * @return the modified Vector2f object (allows for chain calls).
 	 */
-	public Vector2f applyTo(float time, float mass, Vector2f vec) {
-		vec.add(vecf.multNew(time));
+	public Vector2f applyTo(float time, float mass, Vector2f forceSum, Vector2f vec) {
+		vec.add(vecf.divNew(mass).mult(time));
 		return vec;
 	}
 
@@ -64,10 +67,13 @@ public abstract class Force {
 	 * @param time seconds to accelerate the given vector
 	 * @param mass of the object in Kg
 	 * @param vec velocity vector to be accelerated by force.
+	 * @param forceSum some Forces may require a sum of other forces also being applied at
+	 *     at the current time interval.  This argument is optional, thus all implementations should
+	 *     account for possible null values.
 	 * @return the modified Vector2f object (allows for chain calls).
 	 */
-	public Vector2d applyTo(double time, double mass, Vector2d vec) {
-		vec.add(vecd.multNew(time));
+	public Vector2d applyTo(double time, double mass, Vector2d forceSum, Vector2d vec) {
+		vec.add(vecd.divNew(mass).mult(time));
 		return vec;
 	}
 }

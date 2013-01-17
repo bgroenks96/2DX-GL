@@ -4,14 +4,20 @@ import java.awt.*;
 import java.awt.event.*;
 import java.awt.geom.*;
 import java.awt.image.*;
+import java.io.*;
+import java.net.*;
 import java.util.*;
 
 import javax.swing.*;
 
+import bg.x2d.ImageUtils.ScaleQuality;
 import bg.x2d.anim.*;
 import bg.x2d.geo.*;
 import bg.x2d.physics.*;
 
+import com.snap2d.*;
+
+@SuppressWarnings("unused")
 class TestLauncher {
 
 	private TestLauncher() {
@@ -105,12 +111,27 @@ class TestLauncher {
 		StandardPhysics node = new StandardPhysics(vec, 1.0);
 		GeneralForce normal = new GeneralForce(new Vector2d(0,9.807*1.0));
 		GeneralForce xf = new GeneralForce(new Vector2d(15,0));
-		Friction f = new Friction(0.5, 0.5, 0.4, 0.4, new Gravity());
+		Friction f = new Friction(0.5, 0.5, new Gravity());
 		long i = System.currentTimeMillis();
 		long last = System.nanoTime();
 		long lm = i;
+
+		BufferedImage image;
 		public void draw(Graphics2D g2) {
 
+			g2.setColor(Color.WHITE);
+			g2.fillRect(0, 0, getWidth(), getHeight());
+			if(image == null) {
+				try {
+					image = ImageLoader.load(new File("/media/WIN7/Users/Brian/Pictures/fnrr_flag.png").toURI().toURL());
+					image = ImageLoader.scaleFrom(image, new Dimension(1920, 1080), ScaleQuality.HIGH, true);
+				} catch (MalformedURLException e) {
+					e.printStackTrace();
+				}
+			}
+			g2.drawImage(image, 0, 0, null);
+
+			/*
 			PointLD p = new PointLD(rect.getLocation());
 
 			if(System.nanoTime() - last > 20000000) {
@@ -129,6 +150,7 @@ class TestLauncher {
 
 			g2.setColor(Color.CYAN);
 			g2.fillRect(rect.x, rect.y, rect.width, rect.height);
+			 */
 
 		}
 

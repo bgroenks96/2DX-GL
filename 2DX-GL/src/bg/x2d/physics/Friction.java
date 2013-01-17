@@ -21,58 +21,44 @@
 package bg.x2d.physics;
 
 import bg.x2d.geo.*;
+import bg.x2d.math.*;
 
 /**
+ * 
  * @author Brian Groenke
  *
  */
 public class Friction extends Force {
-	
-	public float fsx, fsy, fkx, fky, fg;
-	public double dsx, dsy, dkx, dky, dg;
+
+	public float fsc, fkc, fg;
+	public double dsc, dkc, dg;
 
 	/**
 	 * 
-	 * @param staticX
-	 * @param staticY
-	 * @param kineticX
-	 * @param kineticY
+	 * @param staticCoeff static friction
+	 * @param kineticCoeff kinetic friction
 	 * @param g
 	 */
-	public Friction(float staticX, float staticY, float kineticX, float kineticY, Gravity g) {
-		fsx = staticX;
-		fsy = staticY;
-		fkx = kineticX;
-		fky = kineticY;
-		fg = Math.abs(g.getVec2f().y);
+	public Friction(float staticCoeff, float kineticCoeff, Gravity g) {
+		fsc = staticCoeff;
+		fkc = kineticCoeff;
+		fg = g.getVec2f().getMagnitude();
 		vecf = new Vector2f(0,0);
 	}
-	
+
 	/**
 	 * 
-	 * @param staticX
-	 * @param staticY
-	 * @param kineticX
-	 * @param kineticY
+	 * @param staticCoeff
+	 * @param kineticCoeff
 	 * @param g
 	 */
-	public Friction(double staticX, double staticY, double kineticX, double kineticY, Gravity g) {
-		dsx = staticX;
-		dsy = staticY;
-		dkx = kineticX;
-		dky = kineticY;
-		dg = Math.abs(g.getVec2d().y);
+	public Friction(double staticCoeff, double kineticCoeff, Gravity g) {
+		dsc = staticCoeff;
+		dkc = kineticCoeff;
+		dg = g.getVec2d().getMagnitude();
 		vecd = new Vector2d(0,0);
 	}
-	
-	public Friction(float staticX, float kineticX, Gravity g) {
-		this(staticX, 0, kineticX, 0, g);
-	}
-	
-	public Friction(double staticX, double kineticX, Gravity g) {
-		this(staticX, 0, kineticX, 0, g);
-	}
-	
+
 	@Override
 	/**
 	 * Friction implementation does nothing.
@@ -101,42 +87,115 @@ public class Friction extends Force {
 
 	@Override
 	public double getNewtonForce(double mass) {
-		return (vecd != null) ? vecd.mag:vecf.mag;
-	}
-	
-	public Vector2f applyTo(float time, float mass, Vector2f vec) {
-		Vector2f neg = vec.negateNew();
-		
-		float sx = Math.abs(fsx * mass * fg);
-		if(Math.abs(vec.x) > sx)
-			vecf.x = fkx * mass * fg * Math.signum(neg.x);
-		else
-			vecf.x = neg.x;
-		
-		float sy = Math.abs(fsy * mass * fg);
-		if(Math.abs(vec.y) > sy)
-			vecf.y = fky * mass * fg * Math.signum(neg.y);
-		else
-			vecf.y = neg.y;
-		
-		return super.applyTo(time, mass, vec);
+		return (vecd != null) ? vecd.getMagnitude():vecf.getMagnitude();
 	}
 
-	public Vector2d applyTo(double time, double mass, Vector2d vec) {
-		Vector2d neg = vec.negateNew();
-		
-		double sx = Math.abs(dsx * mass * dg);
-		if(Math.abs(vec.x) > sx)
-			vecd.x = dkx * mass * dg * Math.signum(neg.x);
+	@Override
+	/**
+	 * 
+	 * @param time
+	 * @param mass
+	 * @param forceSum used in calculating static friction. null indicates an infinite force vector, in
+	 *     which case static friction will never be applied.
+	 * @param vec velocity vector being accelerated
+	 */
+	public Vector2f applyTo(float time, float mass, Vector2f forceSum, Vector2f vec) {
+
+		boolean noForceSum = (forceSum == null);
+		if(noForceSum)
+			forceSum = new Vector2f(Float.MAX_VALUE, Float.MAX_VALUE);
+
+		float sx = fsc * mass * fg;
+		if(forceSum.getMagnitude() > sx || !FloatMath.equals(vec.getMagnitude(), 0)) {
+
+			float f = fkc * mass * fg;
+
+			// set the force vector's magnitude according to kinetic friction and angle according to the current
+			// velocity.  Adding or subtracting pi doesn't technically matter, but for cleanliness we should try
+			// to prevent the value from being outside of 0-2pi.
+			float vecAngle = vec.rads();
+			vecf.setFromPolar(f, (vecAngle >= Math.PI) ? vecAngle - (float)Math.PI:vecAngle + (float)Math.PI);
+		} else {
+			vecf.setFromPolar(forceSum.getMagnitude(), forceSum.rads());
+		}
+
+		float signX = Math.signum(vec.x);
+		float signY = Math.signum(vec.y);
+		vec = super.applyTo(time, mass, (noForceSum) ? null:forceSum, vec);
+		if(Math.signum(vec.x) != signX) {
+			vec.x = 0;
+			vecf.x = 0;
+		}
+		if(Math.signum(vec.y) != signY) {
+			vec.y = 0;
+			vecf.y = 0;
+		}
+		return vec;
+
+		/*
+		boolean noForceSum = (forceSum == null);
+		if(noForceSum)
+			forceSum = new Vector2f(Float.MAX_VALUE, Float.MAX_VALUE);
+
+		Vector2f fneg = forceSum.negateNew();
+
+		float sx = Math.abs(fsx * mass * fg);
+		if(Math.abs(forceSum.x) > sx || !FloatMath.equals(vec.x, 0)) {
+			vecf.x = fkx * mass * fg * -Math.signum(vec.x);
+		} else
+			vecf.x = fneg.x;
+
+		float sy = Math.abs(fsy * mass * fg);
+		if(Math.abs(forceSum.y) > sy || !FloatMath.equals(vec.y, 0))
+			vecf.y = fky * mass * fg * -Math.signum(vec.y);
 		else
-			vecd.x = neg.x;
-		
-		double sy = Math.abs(dsy * mass * dg);
-		if(Math.abs(vec.y) > sy)
-			vecd.y = dky * mass * dg * Math.signum(neg.y);
-		else
-			vecd.y = neg.y;
-		
-		return super.applyTo(time, mass, vec);
+			vecf.y = fneg.y;
+
+		float signX = Math.signum(vec.x);
+		float signY = Math.signum(vec.y);
+	    vec = super.applyTo(time, mass, (noForceSum) ? null:forceSum, vec);
+		if(Math.signum(vec.x) != signX)
+			vec.x = 0;
+		if(Math.signum(vec.y) != signY)
+			vec.y = 0;
+		return vec;
+		 */
+	}
+
+	@Override
+	/**
+	 * 
+	 */
+	public Vector2d applyTo(double time, double mass, Vector2d forceSum, Vector2d vec) {
+		boolean noForceSum = (forceSum == null);
+		if(noForceSum)
+			forceSum = new Vector2d(Double.POSITIVE_INFINITY, Double.POSITIVE_INFINITY);
+
+		double sx = dsc * mass * dg;
+		if(forceSum.getMagnitude() > sx || !DoubleMath.equals(vec.getMagnitude(), 0)) {
+
+			double f = dkc * mass * dg;
+
+			// set the force vector's magnitude according to kinetic friction and angle according to the current
+			// velocity.  Adding or subtracting pi doesn't technically matter, but for cleanliness we should try
+			// to prevent the value from being outside of 0-2pi.
+			double vecAngle = vec.rads();
+			vecd.setFromPolar(f, (vecAngle >= Math.PI) ? vecAngle - (float)Math.PI:vecAngle + (float)Math.PI);
+		} else {
+			vecd.setFromPolar(forceSum.getMagnitude(), forceSum.rads());
+		}
+
+		double signX = Math.signum(vec.x);
+		double signY = Math.signum(vec.y);
+		vec = super.applyTo(time, mass, (noForceSum) ? null:forceSum, vec);
+		if(Math.signum(vec.x) != signX) {
+			vec.x = 0;
+			vecd.x = 0;
+		}
+		if(Math.signum(vec.y) != signY) {
+			vec.y = 0;
+			vecd.y = 0;
+		}
+		return vec;
 	}
 }

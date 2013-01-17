@@ -23,6 +23,7 @@ package bg.x2d.geo;
 import static java.lang.Math.*;
 
 import java.awt.geom.*;
+import java.math.*;
 
 /**
  * 
@@ -31,7 +32,13 @@ import java.awt.geom.*;
  */
 public class Vector2f {
 
-	public volatile float x, y, mag, angle;
+	private static int defaultPrecision = 5;
+	
+	public volatile float x, y;
+	
+	private volatile float mag, angle;
+	
+	public volatile int precision = defaultPrecision;
 
 	/**
 	 * 
@@ -44,27 +51,74 @@ public class Vector2f {
 
 		init();
 	}
-	
-	public static Vector2f fromPolar(float mag, float angle) {
-		float x = (float) (mag * cos(angle));
-		float y = (float) (mag * sin(angle));
-		return new Vector2f(x, y);
-	}
 
 	public Vector2f(Vector2f copy) {
 		x = copy.x;
 		y = copy.y;
+		checkPrecision();
 		mag = copy.mag;
 		angle = copy.angle;
 	}
+	
+	public static Vector2f fromPolar(float mag, float angle) {
+		return new Vector2f(0, 0).setFromPolar(mag, angle);
+	}
 
+	/**
+	 * Sets the number of decimal places to the right where vector math should be rounded.
+	 * All Vector2f objects will be initialized to this value.
+	 * @param precision
+	 */
+	public static void setDefaultPrecision(int precision) {
+		if(precision >= 0)
+			defaultPrecision = precision;
+	}
+	
+	/**
+	 * Returns the current decimal precision value for vector math.  Default is 5 (i.e. x.#####).
+	 * @return
+	 */
+	public static int getDecimalPrecision() {
+		return defaultPrecision;
+	}
+	
 	private void init() {
-		mag = (float) sqrt(pow(x, 2) + pow(y, 2));
 		angle = (float) GeoUtils.terminal(x, y);
+		mag = (float) sqrt(pow(x, 2) + pow(y, 2));
+	}
+	
+	private void checkPrecision() {
+		BigDecimal bd = BigDecimal.valueOf(x).setScale(precision, RoundingMode.HALF_UP);
+		x = bd.floatValue();
+		bd = BigDecimal.valueOf(y).setScale(precision, RoundingMode.HALF_UP);
+		y = bd.floatValue();
+		init();
 	}
 
 	public float degs() {
+		checkPrecision();
 		return (float) toDegrees(angle);
+	}
+	
+	public float rads() {
+		checkPrecision();
+		return angle;
+	}
+	
+	public float getMagnitude() {
+		checkPrecision();
+		return mag;
+	}
+	
+	public Vector2f setFromPolar(float mag, float angle) {
+		if(mag < 0)
+			mag = -mag;
+		x = (float) (mag * cos(angle));
+		y = (float) (mag * sin(angle));
+		this.mag = mag;
+		this.angle = angle;
+		checkPrecision();
+		return this;
 	}
 
 	/**
@@ -75,7 +129,7 @@ public class Vector2f {
 	public Vector2f add(Vector2f arg) {
 		x += arg.x;
 		y += arg.y;
-		init();
+		checkPrecision();
 		return this;
 	}
 
@@ -87,7 +141,7 @@ public class Vector2f {
 	public Vector2f sub(Vector2f arg) {
 		x -= arg.x;
 		y -= arg.y;
-		init();
+		checkPrecision();
 		return this;
 	}
 
@@ -101,7 +155,7 @@ public class Vector2f {
 	public Vector2f div(float factor) {
 		x /= factor;
 		y /= factor;
-		init();
+		checkPrecision();
 		return this;
 	}
 
@@ -127,6 +181,7 @@ public class Vector2f {
 	 * @return
 	 */
 	public float dot(Vector2f arg) {
+		checkPrecision();
 		return (float) (mag * arg.mag * cos(angleBetween(arg)));
 	}
 
@@ -144,6 +199,7 @@ public class Vector2f {
 				(1.0/Math.sqrt(this.x * this.x + this.y * this.y));
 		this.x *= norm;
 		this.y *= norm;
+		checkPrecision();
 	}
 
 	public float angleBetween(Vector2f vec) {
@@ -160,10 +216,10 @@ public class Vector2f {
 	 * @return this vector for chain calls.
 	 */
 	public Vector2f rotate(float rads) {
-		Point2D p = GeoUtils.rotatePoint(new PointLD(x,y), new PointLD(0,0), rads);
-		this.x = (float) p.getX();
-		this.y = (float) p.getY();
-		init();
+		double[] coord = GeoUtils.rotatePoint(x, y, 0, 0, rads);
+		this.x = (float) coord[0];
+		this.y = (float) coord[1];
+		checkPrecision();
 		return this;
 	}
 
@@ -172,17 +228,14 @@ public class Vector2f {
 	 * @param theta
 	 * @return
 	 */
-	public Vector2f rotateNew(float theta) {
-		Point2D p = GeoUtils.rotatePoint(new PointLD(x,y), new PointLD(0,0), theta);
-		float x = (float) p.getX();
-		float y = (float) p.getY();
-		return new Vector2f(x, y);
+	public Vector2f rotateNew(float rads) {
+		return new Vector2f(x, y).rotate(rads);
 	}
 
 	public Vector2f negate() {
 		x = -x;
 		y = -y;
-		init();
+		checkPrecision();
 		return this;
 	}
 
@@ -194,13 +247,13 @@ public class Vector2f {
 	
 	public Vector2f negateX() {
 		x = -x;
-		init();
+		checkPrecision();
 		return this;
 	}
 	
 	public Vector2f negateY() {
 		y = -y;
-		init();
+		checkPrecision();
 		return this;
 	}
 	

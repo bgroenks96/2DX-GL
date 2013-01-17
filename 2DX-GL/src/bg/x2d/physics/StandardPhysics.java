@@ -64,7 +64,7 @@ public class StandardPhysics implements PhysicsNode {
 
 	@Override
 	public double getVelocity() {
-		return (vecd != null) ? vecd.mag:vecf.mag;
+		return (vecd != null) ? vecd.getMagnitude():vecf.getMagnitude();
 	}
 
 	@Override
@@ -86,18 +86,24 @@ public class StandardPhysics implements PhysicsNode {
 
 	@Override
 	public Vector2f applyForces(float time, Force... f) {
-		g.applyTo(time, (float) mass, vecf);
+		g.applyTo(time, (float) mass, null, vecf);
+		
+		Vector2f vecSum = new Vector2f(g.getVec2f());
 		for(Force force:f) {
-			force.applyTo(time, (float)mass, vecf);
+			force.applyTo(time, (float)mass, vecSum, vecf);
+			vecSum.add(force.getVec2f());
 		}
 		return vecf;
 	}
 
 	@Override
 	public Vector2d applyForces(double time, Force... f) {
-		g.applyTo(time, mass, vecd);
+		g.applyTo(time, mass, null, vecd);
+		
+		Vector2d vecSum = new Vector2d(g.getVec2d());
 		for(Force force:f) {
-			force.applyTo(time, mass, vecd);
+			force.applyTo(time, mass, vecSum, vecd);
+			vecSum.add(force.getVec2d());
 		}
 		return vecd;
 	}
@@ -127,15 +133,6 @@ public class StandardPhysics implements PhysicsNode {
 			vecf.mult(velFactor);
 		}
 		
-		/*
-		if(vecf.x == 0 || vecf.y == 0)
-		    vecf.negate().mult(velFactor);
-		else {
-			float outAngle = (float) (Math.atan(vecf.y / vecf.x) + Math.PI);
-			vecf.rotate(outAngle).mult(velFactor);
-		}
-		*/
-		
 		return vecf;
 	}
 
@@ -143,11 +140,16 @@ public class StandardPhysics implements PhysicsNode {
 	public Vector2d collide(double velFactor, double surfaceAngle, Collision type) {
 		//int q = GeoUtils.quadrant(vecd.x, vecd.y);
 		
-		if(vecd.x == 0 || vecd.y == 0)
-		    vecd.negate().mult(velFactor);
-		else {
-			double outAngle = Math.atan(vecd.y / vecd.x) + Math.PI;
-			vecd.rotate(outAngle).mult(velFactor);
+		if(type == Collision.X) {
+			vecd.negateY().mult(velFactor);
+		} else if(type == Collision.XY) {
+			vecd.negate().mult(velFactor);
+		} else {
+			vecd.negateX();
+			if(type == Collision.ANGLED) {
+				vecd.rotate(surfaceAngle - (Math.PI / 2));
+			}
+			vecd.mult(velFactor);
 		}
 		
 		return vecd;

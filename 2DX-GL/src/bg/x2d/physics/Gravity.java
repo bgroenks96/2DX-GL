@@ -90,8 +90,8 @@ public class Gravity extends Force {
 	 * @return the modified Vector2f object (allows for chain calls).
 	 */
 	@Override
-	public Vector2f applyTo(float time, float mass, Vector2f vec) {
-		return super.applyTo(time, mass, vec);
+	public Vector2f applyTo(float time, float mass, Vector2f forceSum, Vector2f vec) {
+		return vec.add(vecf.multNew(time));
 	}
 
 	/**
@@ -103,7 +103,7 @@ public class Gravity extends Force {
 	 * @return the modified Vector2d object (allows for chain calls).
 	 */
 	@Override
-	public Vector2d applyTo(double time, double mass, Vector2d vec) {
-		return super.applyTo(time, mass, vec);
+	public Vector2d applyTo(double time, double mass, Vector2d forceSum, Vector2d vec) {
+		return vec.add(vecd.multNew(time));
 	}
 }

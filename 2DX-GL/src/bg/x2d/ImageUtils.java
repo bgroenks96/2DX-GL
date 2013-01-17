@@ -80,6 +80,7 @@ public class ImageUtils {
 		affine.rotate(Math.toRadians(degrees), img.getWidth(null) / 2,
 				img.getHeight(null) / 2);
 		g2d.drawImage(img, affine, null);
+		g2d.dispose();
 		return affine;
 	}
 
@@ -141,6 +142,7 @@ public class ImageUtils {
 					img.getHeight(null) / 2);
 		}
 		g2d.drawImage(img, affine, null);
+		g2d.dispose();
 		return affine;
 	}
 
@@ -169,52 +171,82 @@ public class ImageUtils {
 
 	/**
 	 * Takes any generic Image and scales it to a new size. The returned Image
-	 * is a casted BufferedImage upon which the scaled image is drawn upon. This
-	 * method calls upon the Image class's <code>getScaledInstance(...)</code>
-	 * method to scale the passed Image object. Smooth scaling is used and the
-	 * BufferedImage created is of TYPE_INT_ARGB.
+	 * is a BufferedImage upon which the scaled image is drawn upon. This
+	 * method calls <code>scaleImage(img, newSize, BufferedImage.TYPE_INT_ARGB, highQuality)</code>.
 	 * 
 	 * @param img
-	 *            Any generic Image or Image subclass to be scaled (result image
-	 *            may not be castable).
+	 *            Any generic Image or Image subclass to be scaled (doesn't affect the BufferedImage
+	 *            type of the returned image).
 	 * @param newSize
 	 *            the dimensions for the new Image.
-	 * @return an Image casted from a BufferedImage object.
+	 * @return a BufferedImage with the scaled Image drawn onto it.
 	 */
-	public static Image scaleImage(Image img, Dimension newSize) {
-		BufferedImage bi = new BufferedImage((int) newSize.getWidth(),
-				(int) newSize.getHeight(), BufferedImage.TYPE_INT_ARGB);
-		Image scaled = img.getScaledInstance(bi.getWidth(), bi.getHeight(),
-				Image.SCALE_SMOOTH);
-		bi.getGraphics().drawImage(scaled, 0, 0, null);
-		return bi;
+	public static BufferedImage scaleImage(Image img, Dimension newSize, ScaleQuality quality) {
+		return scaleImage(img, newSize, BufferedImage.TYPE_INT_ARGB, quality);
 	}
 
 	/**
-	 * Takes any BufferedImage and scales it to a new size. This method draws
-	 * the returned Image from <code>getScaledInstance(..)</code> to a new,
-	 * resized BufferedImage.
+	 * Legacy method.  Calls standard image scaling method with ScaleQuality.NORM.
+	 * <code>scaleImage(Image,Dimension,ScaleQuality)</code> should be preferred.
+	 * @param img
+	 * @param newSize
+	 * @return
+	 */
+	public static Image scaleImage(Image img, Dimension newSize) {
+		return scaleImage(img, newSize, ScaleQuality.NORM);
+	}
+
+	/**
+	 * Takes any Image and scales it to a new size. This method draws
+	 * the image onto a BufferedImage of the specified size.  Various rendering operations
+	 * are set depending on the value of <code>quality</cdoe>.
 	 * 
 	 * @param bi
-	 *            The BufferedImage to be scaled.
+	 *            The Image to be scaled.
 	 * @param newSize
-	 *            The new size for the BufferedImage.
+	 *            The new size for the image
 	 * @param imgType
 	 *            The new BufferedImage type (defined in the BufferedImage
 	 *            class)
-	 * @param scaleMode
-	 *            The method that should be used when scaling (defined in Image
-	 *            class)
-	 * @return the scaled BufferedImage
+	 * @param quality
+	 *            The scaling quality of the newly rendered image.
+	 * @return the image scaled and drawn onto a BufferedImage
 	 */
-	public static BufferedImage scaleBufferedImage(BufferedImage bi,
-			Dimension newSize, int imgType, int scaleMode) {
-		BufferedImage newImage = new BufferedImage((int) newSize.getWidth(),
-				(int) newSize.getHeight(), imgType);
-		Image scaled = bi.getScaledInstance(newImage.getWidth(),
-				newImage.getHeight(), scaleMode);
-		newImage.getGraphics().drawImage(scaled, 0, 0, null);
-		return newImage;
+	public static BufferedImage scaleImage(Image img, Dimension newSize, int imgType, 
+			ScaleQuality quality) {
+		BufferedImage bi = new BufferedImage((int) newSize.getWidth(),
+				(int) newSize.getHeight(), BufferedImage.TYPE_INT_ARGB);
+		Graphics2D g = bi.createGraphics();
+		g.setRenderingHint(RenderingHints.KEY_INTERPOLATION, RenderingHints.VALUE_INTERPOLATION_BILINEAR);
+		switch(quality) {
+		case HIGH:
+			g.setRenderingHint(RenderingHints.KEY_INTERPOLATION, RenderingHints.VALUE_INTERPOLATION_BICUBIC);
+			g.setRenderingHint(RenderingHints.KEY_ALPHA_INTERPOLATION, RenderingHints.VALUE_ALPHA_INTERPOLATION_QUALITY);
+			g.setRenderingHint(RenderingHints.KEY_RENDERING, RenderingHints.VALUE_RENDER_QUALITY);
+			g.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+			g.setRenderingHint(RenderingHints.KEY_COLOR_RENDERING, RenderingHints.VALUE_COLOR_RENDER_QUALITY);
+			break;
+		case SPEED:
+			g.setRenderingHint(RenderingHints.KEY_INTERPOLATION, RenderingHints.VALUE_INTERPOLATION_NEAREST_NEIGHBOR);
+			g.setRenderingHint(RenderingHints.KEY_ALPHA_INTERPOLATION, RenderingHints.VALUE_ALPHA_INTERPOLATION_SPEED);
+			g.setRenderingHint(RenderingHints.KEY_RENDERING, RenderingHints.VALUE_RENDER_SPEED);
+			g.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_OFF);
+			g.setRenderingHint(RenderingHints.KEY_COLOR_RENDERING, RenderingHints.VALUE_COLOR_RENDER_SPEED);
+		case NORM:
+			break;
+		}
+		g.drawImage(img, 0, 0, bi.getWidth(), bi.getHeight(), null);
+		g.dispose();
+		return bi;
+	}
+	
+	/**
+	 * Legacy method.  Provided for backwards compatibility.
+	 * @param scaleType Note that this argument is ignored in the modern implementation of this method.
+	 * @return BufferedImage scaled using the preferred <code>scaleImage(Image,Dimension,int,ScaleQuality)</code> method.
+	 */
+	public static BufferedImage scaleBufferedImage(BufferedImage img, Dimension newSize, int imgType, int scaleType) {
+		return scaleImage(img, newSize, imgType, ScaleQuality.NORM);
 	}
 
 	/**
@@ -252,7 +284,9 @@ public class ImageUtils {
 	public static BufferedImage convertImage(Image img, int outType) {
 		BufferedImage newImage = new BufferedImage(img.getWidth(null),
 				img.getHeight(null), outType);
-		newImage.createGraphics().drawImage(img, 0, 0, null);
+		Graphics2D g = newImage.createGraphics();
+		g.drawImage(img, 0, 0, null);
+		g.dispose();
 		return newImage;
 	}
 
@@ -289,7 +323,7 @@ public class ImageUtils {
 		GraphicsDevice d = GraphicsEnvironment.getLocalGraphicsEnvironment().getDefaultScreenDevice();
 		GraphicsConfiguration c = d.getDefaultConfiguration();
 		BufferedImage nimg = c.createCompatibleImage(orig.getWidth(null),
-						orig.getHeight(null), Transparency.TRANSLUCENT);
+				orig.getHeight(null), Transparency.TRANSLUCENT);
 		Graphics2D g2 = nimg.createGraphics();
 		g2.drawImage(orig, 0, 0, null);
 		g2.dispose();
@@ -342,5 +376,9 @@ public class ImageUtils {
 	public static int validateVI(VolatileImage vi, Graphics g) {
 		Graphics2D g2d = (Graphics2D) g;
 		return vi.validate(g2d.getDeviceConfiguration());
+	}
+	
+	public enum ScaleQuality {
+		HIGH, NORM, SPEED;
 	}
 }

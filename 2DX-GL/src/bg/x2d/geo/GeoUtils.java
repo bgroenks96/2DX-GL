@@ -92,23 +92,37 @@ public class GeoUtils {
 	 * from its current location x rads to a new position on the coordinate
 	 * plane.
 	 * 
+	 * This method is for convenience.  It uses the given points to call the actual rotatePoint
+	 * method, which takes double parameters.
+	 * 
 	 * @param p
 	 *            point to be rotated
 	 * @param origin
 	 *            point to rotate around
 	 * @param angle
-	 *            angle measure to rotate (theta), in radians.
+	 *            angle measure to rotate, in radians.
 	 * @return the rotated Point object.
 	 */
 	public static Point2D.Double rotatePoint(Point2D point, Point2D origin,
 			double angle) {
+		double[] pts = rotatePoint(point.getX(), point.getY(), origin.getX(), origin.getY(), angle);
+		return new Point2D.Double(pts[0], pts[1]);
+	}
+	
+	/**
+	 * Algorithm that uses an algebraic rotation formula to transform a point
+	 * from its current location x rads to a new position on the coordinate
+	 * plane. 
+	 * @param x x coordinate
+	 * @param y y coordinate
+	 * @param x0 x origin coordinate
+	 * @param y0 y origin coordinate
+	 * @param angle radians to rotate around the origin
+	 * @return
+	 */
+	public static double[] rotatePoint(double x, double y, double x0, double y0, double angle) {
 		if(degrees)
 			angle = Math.toRadians(angle);
-		
-		double x = point.getX();
-		double y = point.getY();
-		double x0 = origin.getX();
-		double y0 = origin.getY();
 		double wx = x - x0;
 		double wy = y - y0;
 		/* xprime = x*cos(theta) - y*sin(toRadians(theta)) */
@@ -120,7 +134,7 @@ public class GeoUtils {
 
 		double x2 = xresult + x0;
 		double y2 = yresult + y0;
-		return new Point2D.Double(x2, y2);
+		return new double[]{x2,y2};
 	}
 
 	/**
@@ -168,13 +182,13 @@ public class GeoUtils {
 	 * @return int value 1, 2, 3 or 4 representing the point's quadrant based on the origin.
 	 */
 	public static int quadrant(double x, double y) {
-		if(x >= 0 && y>= 0)
+		if(x >= 0 && y >= 0)
 			return 1;
-		else if(x <= 0 && y >= 0)
+		else if(x < 0 && y > 0)
 			return 2;
 		else if(x <= 0 && y <= 0)
 			return 3;
-		else if(x >= 0 && y <= 0)
+		else if(x > 0 && y < 0)
 			return 4;
 		else
 			return 0;

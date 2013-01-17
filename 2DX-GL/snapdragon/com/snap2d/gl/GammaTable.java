@@ -20,7 +20,7 @@
 
 package com.snap2d.gl;
 
-import com.snap2d.util.*;
+import bg.x2d.utils.*;
 
 /**
  * @author Brian Groenke

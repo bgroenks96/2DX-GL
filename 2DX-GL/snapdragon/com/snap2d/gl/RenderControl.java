@@ -1,5 +1,5 @@
 /*
- * Copyright © 2011-2012 Brian Groenke
+ * Copyright ï¿½ 2011-2012 Brian Groenke
  * All rights reserved.
  * 
  *  This file is part of the 2DX Graphics Library.
@@ -30,9 +30,9 @@ import java.util.List;
 import java.util.concurrent.*;
 
 import bg.x2d.*;
+import bg.x2d.utils.*;
 
 import com.snap2d.*;
-import com.snap2d.util.*;
 
 public class RenderControl {
 
