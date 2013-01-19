@@ -18,21 +18,17 @@
  *  along with 2DX.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-package com.snap2d;
+package bg.x2d.anim;
 
-import java.util.concurrent.ThreadFactory;
+import java.awt.geom.*;
 
 /**
- * Creates new daemon threads.
+ * Holds data used by Segments when running in an ongoing animation.
  * @author Brian Groenke
- * 
+ * @since 2DX 1.0 (1st Edition)
  */
-public class DaemonThreadFactory implements ThreadFactory {
+public class Transform {
 
-	@Override
-	public Thread newThread(Runnable r) {
-		Thread t = new Thread(r);
-		t.setDaemon(true);
-		return t;
-	}
+	public double rotation;
+	public Point2D.Double rotationAnchor = new Point2D.Double();
 }

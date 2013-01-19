@@ -1,5 +1,5 @@
 /*
- * Copyright © 2011-2012 Brian Groenke
+ * Copyright ï¿½ 2011-2012 Brian Groenke
  * All rights reserved.
  * 
  *  This file is part of the 2DX Graphics Library.
@@ -20,22 +20,12 @@
 
 package com.snap2d.sound;
 
-import java.awt.*;
-import java.awt.event.*;
-
-import javax.swing.*;
-
 import paulscode.sound.*;
-import paulscode.sound.codecs.*;
-import paulscode.sound.libraries.*;
-
-import com.snap2d.input.*;
-import com.snap2d.input.InputDispatch.KeyEventClient;
-import com.snap2d.sound.libs.*;
 
 /**
  * Main class for the Snapdragon2D Sound API.  Allows you to initialize and shutdown the sound system, as well
- * as configure master-settings about Sound processing.
+ * as configure master-settings about Sound processing.  You can obtain an instance of Sound2D through the SoundAPI
+ * class.
  * 
  * Note that this class internally manages Paul Lamb's SoundSystem, and ONLY subclasses and other classes within this packages should
  * have access to it.  Only one SoundSystem object should exist per application process, so it is HIGHLY recommended that you do not
@@ -43,48 +33,43 @@ import com.snap2d.sound.libs.*;
  * own implementation.
  * 
  * Snapdragon2D Sound supports the following audio formats: Ogg Vorbis (.ogg), Waveform (.wav), NeXT/Sun AU (.au), Apple AIFF (.aiff).
+ * 
+ * <br/><br/>
+ * <b>SoundSystem for Java - credit goes to Paul Lamb {@link http://www.paulscode.com/}
  * @author Brian Groenke
  *
  */
 public class Sound2D {
-
-	static Sound2D sound2d;
 	
 	private SoundSystem sound;
-
-	/**
-	 * Block constructor access.  Only one instance of Sound2D should exist.
-	 */
-	protected Sound2D() {
-		//
-	}
-
-	public static Sound2D getInstance() {
-		if(sound2d == null)
-			sound2d = new Sound2D();
-		return sound2d;
-	}
 	
+	/**
+	 * Blocks constructor access.  Only one instance of Sound2D should exist.  It can be obtained through SoundAPI.
+	 */
+	protected Sound2D() {}
+	
+	/**
+	 * Initializes the sound engine.
+	 */
 	public void initSystem() {
 		if(sound != null)
 			shutdown();
-		LoadSoundLibraries.load();
-		try {
-			SoundSystemConfig.addLibrary(LibraryJavaSound.class);
-			SoundSystemConfig.setCodec("ogg", CodecJOrbis.class);
-			SoundSystemConfig.setCodec("wav", CodecWav.class);
-			SoundSystemConfig.setCodec("au", CodecJSound.class);
-			SoundSystemConfig.setCodec("aiff", CodecJSound.class);
-		} catch (SoundSystemException e) {
-			System.err.println("Snapdragon2D: error configuring sound system: " + e.getMessage());
-		}
 		sound = new SoundSystem();
 	}
 	
+	/**
+	 * 
+	 * @return true if the sound system is currently initialized and running, false otherwise.
+	 */
 	public boolean isInitialized() {
 		return sound != null;
 	}
 
+	/**
+	 * Shuts down and releases all resources held by the sound system.  SoundAPI automatically calls
+	 * this method on exit, but it still may be called any time by the application.  Sound2D can be
+	 * re-initialized even after this method is called.
+	 */
 	public void shutdown() {
 		if(sound == null)
 			return;
@@ -102,7 +87,7 @@ public class Sound2D {
 	}
 	
 	/**
-	 * Plays ambient background music independent of world position.
+	 * Plays ambient background sound independent of world position.
 	 * @param id
 	 * @param fileName classpath or http url to file.
 	 * @param loop
@@ -162,78 +147,5 @@ public class Sound2D {
 	 */
 	protected SoundSystem soundSystem() {
 		return sound;
-	}
-
-	static float x,y,z=10;
-	public static void main(String[] args) throws SoundContextException {
-		JFrame frame = new JFrame();
-		frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-		frame.setContentPane(new TestClass());
-		frame.setSize(800, 800);
-		frame.setVisible(true);
-	}
-	
-	private static class TestClass extends JPanel {
-		
-		/**
-		 * 
-		 */
-		private static final long serialVersionUID = -1225292075422922856L;
-		Sound2D s2d;
-		SoundMap soundMap;
-		InputDispatch input = new InputDispatch(true);
-		
-		int x, y, ox = 350, oy = 350;
-		
-		TestClass() throws SoundContextException {
-			s2d = Sound2D.getInstance();
-			s2d.initSystem();
-			Runtime.getRuntime().addShutdownHook(new Thread(new Runnable() {
-
-				@Override
-				public void run() {
-					s2d.shutdown();
-				}
-				
-			}));
-			s2d.setSoundFilesPackage("com/snap2d/sound/libs/");
-			soundMap = new SoundMap(s2d, x, y);
-			soundMap.newSoundSource("elipse", true, true, "Elipse.ogg", ox, oy, SoundMap.ATTENUATION_ROLLOFF, 0.1f);
-			input.registerKeyClient(new KeyEventClient() {
-
-				@Override
-				public void processKeyEvent(KeyEvent e) {
-					int lx = x, ly =y ;
-					switch(e.getKeyCode()) {
-					case KeyEvent.VK_W:
-						y-=5;
-						break;
-					case KeyEvent.VK_A:
-						x-=5;
-						break;
-					case KeyEvent.VK_S:
-						y+=5;
-						break;
-					case KeyEvent.VK_D:
-						x+=5;
-					}
-				
-					soundMap.moveListener(x - lx, y - ly);
-					repaint();
-				}
-				
-			});
-			soundMap.play("elipse", true);
-		}
-		
-		@Override
-		public void paintComponent(Graphics g) {
-			g.setColor(Color.BLACK);
-			g.fillRect(0, 0, getWidth(), getHeight());
-			g.setColor(Color.RED);
-			g.fillRect(ox, oy, 20, 20);
-			g.setColor(Color.BLUE);
-			g.fillRect(x, y, 20, 20);
-		}
 	}
 }

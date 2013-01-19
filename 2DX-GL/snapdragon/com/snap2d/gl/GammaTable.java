@@ -23,6 +23,8 @@ package com.snap2d.gl;
 import bg.x2d.utils.*;
 
 /**
+ * Pre-calculates an internal table of gamma corrected RGB values and provides look-up functionality
+ * to apply the gamma to integer pixels.
  * @author Brian Groenke
  *
  */
@@ -60,6 +62,12 @@ public class GammaTable {
 		return newColor;
 	}
 
+	/**
+	 * Sets the gamma and rebuilds the internal gamma table.  The passed value
+	 * should be >= 0.0 specifying how much to darken or brighten the image, where
+	 * 1.0 has no change, < 1 is darker, and > 1 is brighter.
+	 * @param gamma the new gamma value
+	 */
 	public void setGamma(float gamma) {
 		if(gamma >= 0) {
 			this.gamma = gamma;
@@ -75,11 +83,11 @@ public class GammaTable {
 	 * Called when a new gamma value is set to rebuild the gamma table.
 	 */
 	private synchronized void buildGammaTable() {
-		table = new int[TABLE_SIZE];
+		if(table == null && table.length == TABLE_SIZE)
+			table = new int[TABLE_SIZE];
 		float ginv = 1 / gamma;
-		double colors = COLORS;
 		for(int i=0;i<table.length;i++) {
-			table[i] = (int) Math.round(colors * Math.pow(i / colors, ginv)); 
+			table[i] = (int) Math.round(COLORS * Math.pow(i / COLORS, ginv)); 
 		}
 	}
 

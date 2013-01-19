@@ -32,6 +32,7 @@ import bg.x2d.ImageUtils.ScaleQuality;
 import bg.x2d.utils.*;
 
 /**
+ * Provides static utility methods for loading and scaling image resources.
  * @author Brian Groenke
  *
  */

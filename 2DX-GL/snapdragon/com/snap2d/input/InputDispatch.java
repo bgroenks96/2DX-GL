@@ -1,5 +1,5 @@
 /*
- * Copyright © 2011-2012 Brian Groenke
+ * Copyright ï¿½ 2011-2012 Brian Groenke
  * All rights reserved.
  * 
  *  This file is part of the 2DX Graphics Library.
@@ -34,6 +34,12 @@ import java.util.List;
 
 import com.snap2d.ThreadManager;
 
+/**
+ * Receives input events directly from Java's Abstract Windowing Toolkit and dispatches them to
+ * registered listeners.
+ * @author Brian Groenke
+ *
+ */
 public class InputDispatch {
 
 	private boolean running, consume;

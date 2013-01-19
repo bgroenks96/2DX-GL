@@ -26,7 +26,7 @@ import javax.swing.*;
 
 /**
  * 
- * @author brian
+ * @author Brian Groenke
  * @since Snapdragon2D 1.0
  */
 public class Display {

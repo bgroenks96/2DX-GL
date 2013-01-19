@@ -18,21 +18,32 @@
  *  along with 2DX.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-package com.snap2d;
-
-import java.util.concurrent.ThreadFactory;
+package bg.x2d;
 
 /**
- * Creates new daemon threads.
+ * Generic exception thrown by classes in the 2DX software when internal
+ * errors occur. This class should not be extended, nor thrown by objects
+ * outside of the 2DX API itself.
  * @author Brian Groenke
- * 
+ * @since 2DX 1.0 (1st Edition)
  */
-public class DaemonThreadFactory implements ThreadFactory {
+public class TDXException extends Exception {
 
-	@Override
-	public Thread newThread(Runnable r) {
-		Thread t = new Thread(r);
-		t.setDaemon(true);
-		return t;
+	private static final long serialVersionUID = 975059383220158740L;
+
+	public TDXException() {
 	}
+
+	public TDXException(String arg0) {
+		super(arg0);
+	}
+
+	public TDXException(Throwable arg0) {
+		super(arg0);
+	}
+
+	public TDXException(String arg0, Throwable arg1) {
+		super(arg0, arg1);
+	}
+
 }

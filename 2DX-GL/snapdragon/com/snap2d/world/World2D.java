@@ -1,0 +1,156 @@
+/*
+ * Copyright � 2011-2012 Brian Groenke
+ * All rights reserved.
+ * 
+ *  This file is part of the 2DX Graphics Library.
+ *
+ *  2DX is free software: you can redistribute it and/or modify
+ *  it under the terms of the GNU General Public License as published by
+ *  the Free Software Foundation, either version 3 of the License, or
+ *  (at your option) any later version.
+ *
+ *  2DX is distributed in the hope that it will be useful,
+ *  but WITHOUT ANY WARRANTY; without even the implied warranty of
+ *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ *  GNU General Public License for more details.
+ *
+ *  You should have received a copy of the GNU General Public License
+ *  along with 2DX.  If not, see <http://www.gnu.org/licenses/>.
+ */
+
+package com.snap2d.world;
+
+import java.awt.*;
+import java.awt.geom.*;
+
+import bg.x2d.geo.*;
+
+
+/**
+ * Provides a method of interfacing between the screen and 2-dimensional world coordinate systems.
+ * World2D creates a "viewport" of a standard Cartesian coordinate system and converts points to and
+ * from the display's coordinate grid.  World2D is created with a minimum x and y value; this point
+ * corresponds in world space to the display's origin [0,0] (top, left corner).  World units can be
+ * represented on-screen to a varying scale using ppu (pixels-per-unit).  This allows the implementer
+ * to specify how many pixels should represent one full unit in the 2D world.
+ * <br/><br/>
+ * World coordinates are stored as <code>double</code> values (the Float inner-type will auto-cast to float) and
+ * are rounded to <code>int</code> values on each conversion.  It is therefore recommended that you <b>always</b>
+ * keep Entities, physics and game logic based on your 2D world coordinate system.  Repeatedly converting and
+ * back-converting between world and screen coordinates will, naturally, cause significant precision loss due to
+ * decimal rounding.
+ * @author Brian Groenke
+ * @since Snapdragon2D 1.0
+ *
+ */
+public class World2D {
+	
+	protected double minX, minY, maxX, maxY, wt, ht, ppu;
+	protected int swt, sht;
+
+	/**
+	 * Creates this World2D with the specified starting x,y coordinates and view size.
+	 * @param minX the current minimum value for x in world space; corresponds to x=0 in screen space.
+	 * @param minY the current minimum value for y in world space; corresponds to y=0 in screen space.
+	 * @param viewWidth the width of the area on screen to which world coordinates should be translated
+	 * @param viewHeight the height of the area on screen to which world coordinates should be translated.
+	 * @param ppu the number of pixels per unit in world space
+	 */
+	public World2D(double minX, double minY, int viewWidth, int viewHeight, double ppu) {
+		this.minX = minX;
+		this.minY = minY;
+		setViewSize(viewWidth, viewHeight, ppu);
+	}
+	
+	/**
+	 * 
+	 * @return the viewport of the 2D coordinate system currently on screen
+	 */
+	public Rectangle2D getBounds() {
+		return new Rectangle2D.Double(minX, minY, wt, ht);
+	}
+	
+	/**
+	 * 
+	 * @return the minimum x value in world space
+	 */
+	public double getX() {
+		return minX;
+	}
+	
+	/**
+	 * 
+	 * @return the minimum y value in world space
+	 */
+	public double getY() {
+		return minY;
+	}
+	
+	/**
+	 * Moves the world's viewport to the specified location.
+	 * @param minX the new x position in world space
+	 * @param minY the new y position in world space
+	 */
+	public void setLocation(double minX, double minY) {
+		this.minX = minX;
+		this.minY = minY;
+		this.maxX = minX + wt;
+		this.maxY = minY + ht;
+	}
+	
+	/**
+	 * Sets the dimensions and scale of the world's view.
+	 * @param viewWidth the new width of the area drawn on screen
+	 * @param viewHeight the new height of the area drawn on screen
+	 * @param ppu the new pixels per unit of world space.
+	 */
+	public void setViewSize(int viewWidth, int viewHeight, double ppu) {
+		this.swt = viewWidth;
+		this.sht = viewHeight;
+		if(ppu < 1)
+			throw(new IllegalArgumentException("illegal pixel-per-unit value: " + ppu));
+		this.ppu = ppu;
+		maxX = minX + ((double)viewWidth / ppu);
+		maxY = minY + ((double)viewHeight / ppu);
+		wt = maxX - minX;
+		ht = maxY - minY;
+		if(wt <= 0 || ht <= 0)
+			throw(new IllegalArgumentException("illegal min/max values"));
+	}
+	
+	public int getViewWidth() {
+		return swt;
+	}
+	
+	public int getViewHeight() {
+		return sht;
+	}
+	
+	public double getPixelsPerUnit() {
+		return ppu;
+	}
+	
+	/**
+	 * Converts the given coordinates from screen space to world space.
+	 * @param x x coordinate on screen
+	 * @param y y coordinate on screen
+	 * @return the corresponding point in world space
+	 */
+	public PointLD screenToWorld(int x, int y) {
+		double x1 = (x + minX) / ppu;
+		double y1 = (maxY - y) / ppu;
+		return new PointLD(x1, y1);
+	}
+	
+	/**
+	 * Converts the given coordinates from world space to screen space.
+	 * @param x x coordinate in the world
+	 * @param y y coordinate in the world
+	 * @return the corresponding point in screen space
+	 */
+	public Point worldToScreen(double x, double y) {
+		int x1 = (int) Math.round(x*ppu - minX);
+		int y1 = (int) Math.round(ht - (y*ppu - minY));
+		return new Point(x1, y1);
+	}
+}

@@ -34,6 +34,12 @@ import bg.x2d.utils.*;
 
 import com.snap2d.*;
 
+/**
+ * Controls graphics rendering on a Canvas object.  Used in conjunction with Display.
+ * @author Brian Groenke
+ * @since Snapdragon2D 1.0
+ * @see com.snap2d.gl.Display
+ */
 public class RenderControl {
 
 	public static final int POSITION_LAST = 0x07FFFFFFF;

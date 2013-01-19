@@ -14,7 +14,5 @@ To-do (next commit):
 Snapdragon2D
 Project status: Alpha
 To-do (next commit):
--Context pacakge (world and entity management, etc).
-
+-Entities and collision modeling
 -Additional scaling methods in ImageLoader
->>>>>>> Updated README

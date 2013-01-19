@@ -18,21 +18,40 @@
  *  along with 2DX.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-package com.snap2d;
+package bg.x2d.gen;
 
-import java.util.concurrent.ThreadFactory;
+import java.awt.Point;
+
+import bg.x2d.geo.PointLD;
 
 /**
- * Creates new daemon threads.
- * @author Brian Groenke
+ * Generates a random point using the given x and y bounds.
  * 
+ * @author Brian Groenke
+ * @since 2DX 1.0 (1st Edition)
  */
-public class DaemonThreadFactory implements ThreadFactory {
+public class PointGenerator implements Generator<Point> {
+
+	private double x1, x2, y1, y2;
+
+	public PointGenerator(double x1, double y1, double x2, double y2) {
+		setBounds(x1, y1, x2, y2);
+	}
 
 	@Override
-	public Thread newThread(Runnable r) {
-		Thread t = new Thread(r);
-		t.setDaemon(true);
-		return t;
+	public PointLD generate() {
+		NumberGenerator<Double> gen = new NumberGenerator<Double>(x1, x2);
+		double x = gen.generate();
+		gen.setBounds(y1, y2);
+		double y = gen.generate();
+		return new PointLD(x, y);
 	}
+
+	public void setBounds(double x1, double y1, double x2, double y2) {
+		this.x1 = x1;
+		this.y1 = y1;
+		this.x2 = x2;
+		this.y2 = y2;
+	}
+
 }

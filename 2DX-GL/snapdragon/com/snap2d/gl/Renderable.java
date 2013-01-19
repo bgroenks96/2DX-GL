@@ -22,6 +22,12 @@ package com.snap2d.gl;
 
 import java.awt.*;
 
+/**
+ * Defines a standard for objects that are rendered on screen and called on each tick
+ * of the game loop.
+ * @author Brian Groenke
+ *
+ */
 public interface Renderable {
 
 	public void render(Graphics2D g, float interpolation);
