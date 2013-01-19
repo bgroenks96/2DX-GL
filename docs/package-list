@@ -1,0 +1,14 @@
+bg.x2d
+bg.x2d.anim
+bg.x2d.gen
+bg.x2d.geo
+bg.x2d.math
+bg.x2d.physics
+bg.x2d.utils
+com.snap2d
+com.snap2d.gl
+com.snap2d.input
+com.snap2d.physics
+com.snap2d.sound
+com.snap2d.sound.libs
+com.snap2d.world
