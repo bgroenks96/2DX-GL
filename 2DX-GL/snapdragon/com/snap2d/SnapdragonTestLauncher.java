@@ -2,6 +2,7 @@ package com.snap2d;
 
 import java.awt.*;
 import java.awt.event.*;
+import java.awt.geom.*;
 import java.awt.image.*;
 import java.io.*;
 import java.util.*;
@@ -14,6 +15,8 @@ import bg.x2d.geo.*;
 import com.snap2d.gl.*;
 import com.snap2d.input.*;
 import com.snap2d.input.InputDispatch.KeyEventClient;
+import com.snap2d.physics.*;
+import com.snap2d.world.*;
 
 public class SnapdragonTestLauncher {
 
@@ -26,6 +29,7 @@ public class SnapdragonTestLauncher {
 	public void init(String[] args) {
 		Display disp = new Display(800, 600, Display.Type.FULLSCREEN);
 		disp.setTitle("Snapdragon2D Engine Test (PRE-ALPHA)");
+		rc = disp.getRenderControl(2);
 		InputDispatch input = new InputDispatch(true);
 		input.registerKeyClient(new KeyEventClient() {
 
@@ -37,7 +41,6 @@ public class SnapdragonTestLauncher {
 				}
 			}
 		});
-		rc = new RenderControl(2);
 		Random r = new Random();
 		rc.addRenderable(new TestRenderBack(1,1), RenderControl.POSITION_LAST);
 		rc.addRenderable(new TestStaticRenderObj(200, 200), RenderControl.POSITION_LAST);
@@ -61,7 +64,7 @@ public class SnapdragonTestLauncher {
 
 		Octagon2D oct;
 		BufferedImage img;
-		int limitx, limity, ox, diag;
+		int limitx, limity, ox;
 		float x, y, lx, ly, theta = 10;
 		boolean reverse;
 
@@ -71,15 +74,14 @@ public class SnapdragonTestLauncher {
 			this.ox = x;
 			this.limitx = 10*x;
 			this.limity = 10*y;
-			
+
 			oct = new Octagon2D(x, y, 150, Color.YELLOW, true);
-			
+
 			try {
 				img = ImageIO.read(new File(
 						"/media/WIN7/Users/Brian/Pictures/test_alpha.png"));
 				img = ImageUtils.convertBufferedImage(img,
 						BufferedImage.TYPE_INT_ARGB);
-				diag = (int) Math.ceil(Math.sqrt(Math.pow(img.getWidth(), 2) + Math.pow(img.getHeight(), 2)));
 			} catch (IOException e) {
 				e.printStackTrace();
 			}
@@ -87,17 +89,17 @@ public class SnapdragonTestLauncher {
 
 		@Override
 		public void render(Graphics2D g, float interpolation) {
-			
+
 			float x1 = (x - lx) * interpolation + lx;
 			float y1 = (y - ly) * interpolation + ly;
-		    g.drawImage(img, Math.round(x1), Math.round(y1), null);
-		    
+			g.drawImage(img, Math.round(x1), Math.round(y1), null);
+
 			/*
 			oct.setLocation(Math.round(x1), Math.round(y1));
 			oct.rotate(theta, Rotation.CLOCKWISE);
 			//oct.setPaint(new GradientPaint(x, y, Color.BLACK, x + 100.0f, y + 100.0f, Color.BLUE));
 			oct.draw(g);
-			*/
+			 */
 		}
 
 		@Override
@@ -125,7 +127,7 @@ public class SnapdragonTestLauncher {
 					x+= 10;
 					y+= 8;
 				}
-				
+
 				theta += 0.1;
 				last += INTERVAL;
 			}
@@ -138,6 +140,42 @@ public class SnapdragonTestLauncher {
 		BufferedImage img;
 		int[] data;
 		int x, y, lx, ly;
+
+		Entity e = new Entity(new Rectangle2D.Double(0,0,10,10), new World2D(-250, -250, 500, 500, 5)) {
+
+			@Override
+			public void render(Graphics2D g, float interpolation) {
+
+			}
+
+			@Override
+			public void update(long nanoTimeNow, long nanosSinceLastUpdate) {
+
+			}
+
+			@Override
+			public void onResize(Dimension oldSize, Dimension newSize) {
+
+			}
+
+			@Override
+			public void setAllowRender(boolean render) {
+
+			}
+
+			@Override
+			public GamePhysics getPhysics() {
+				// TODO Auto-generated method stub
+				return null;
+			}
+
+			@Override
+			public CollisionModel getCollisionModel() {
+				// TODO Auto-generated method stub
+				return null;
+			}
+
+		};
 
 		public TestStaticRenderObj(int x, int y) {
 			this.x = x;
@@ -169,7 +207,7 @@ public class SnapdragonTestLauncher {
 
 		@Override
 		public void update(long now, long last) {
-
+			e.setWorldLoc(e.getWorldX() + 1, e.getWorldY() + 1);
 		}
 	}
 

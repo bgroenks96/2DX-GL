@@ -37,71 +37,72 @@ public class PointLD extends Point {
 	 */
 	private static final long serialVersionUID = 6891695259903881318L;
 
-	private double x, y;
+	public double dx, dy;
 
 	public PointLD(double x, double y) {
-		this.x = x;
-		this.y = y;
+		this.dx = x;
+		this.dy = y;
 	}
 
 	public PointLD(long x, long y) {
-		this.x = x;
-		this.y = y;
+		this.dx = x;
+		this.dy = y;
 	}
 
 	public PointLD(Point2D p2d) {
-		x = p2d.getX();
-		y = p2d.getY();
+		dx = p2d.getX();
+		dy = p2d.getY();
 	}
 
 	@Override
 	public double getX() {
-		return x;
+		return dx;
 	}
 
 	@Override
 	public double getY() {
-		return y;
+		return dy;
 	}
 	
 	@Override
 	public void setLocation(double x, double y) {
-		this.x = x;
-		this.y = y;
+		this.dx = x;
+		this.dy = y;
+		super.x = getIntX();
+		super.y = getIntY();
 	}
 	
 	@Override
 	public void setLocation(Point2D p) {
-		this.x = p.getX();
-		this.y = p.getY();
+		setLocation(p.getX(), p.getY());
 	}
 
 	public long getLongX() {
-		return Math.round(x);
+		return Math.round(dx);
 	}
 
 	public long getLongY() {
-		return Math.round(y);
+		return Math.round(dy);
 	}
 
 	public int getIntX() {
-		return (int) Math.round(x);
+		return (int) Math.round(dx);
 	}
 
 	public int getIntY() {
-		return (int) Math.round(y);
+		return (int) Math.round(dy);
 	}
 	
 	public Point2D.Double getDoublePoint() {
-		return new Point2D.Double(x, y);
+		return new Point2D.Double(dx, dy);
 	}
 	
 	public Point2D.Float getFloatPoint() {
-		return new Point2D.Float((float)x, (float)y);
+		return new Point2D.Float((float)dx, (float)dy);
 	}
 
 	@Override
 	public String toString() {
-		return new String("[" + x + ", " + y + "]");
+		return new String("[" + dx + ", " + dy + "]");
 	}
 }

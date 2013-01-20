@@ -85,7 +85,7 @@ public class RenderControl {
 	 *        Note that RenderControl already uses it's own back buffer, so a double or triple
 	 *        buffered BufferStrategy may or may not be necessary.
 	 */
-	public RenderControl(int buffs) {
+	protected RenderControl(int buffs) {
 		this.canvas = new Canvas();
 		this.buffs = buffs;
 

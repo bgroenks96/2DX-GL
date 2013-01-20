@@ -34,17 +34,16 @@ import bg.x2d.geo.*;
  * represented on-screen to a varying scale using ppu (pixels-per-unit).  This allows the implementer
  * to specify how many pixels should represent one full unit in the 2D world.
  * <br/><br/>
- * World coordinates are stored as <code>double</code> values (the Float inner-type will auto-cast to float) and
- * are rounded to <code>int</code> values on each conversion.  It is therefore recommended that you <b>always</b>
- * keep Entities, physics and game logic based on your 2D world coordinate system.  Repeatedly converting and
- * back-converting between world and screen coordinates will, naturally, cause significant precision loss due to
- * decimal rounding.
+ * World coordinates are stored as <code>double</code> values and are rounded to <code>int</code> values on each conversion.  
+ * It is therefore recommended that you <b>always</b> keep Entities, physics and game logic based on your 2D world 
+ * coordinate system.  Repeatedly converting and back-converting between world and screen coordinates will, naturally, 
+ * cause significant precision loss due to decimal rounding.
  * @author Brian Groenke
  * @since Snapdragon2D 1.0
  *
  */
 public class World2D {
-	
+
 	protected double minX, minY, maxX, maxY, wt, ht, ppu;
 	protected int swt, sht;
 
@@ -61,7 +60,7 @@ public class World2D {
 		this.minY = minY;
 		setViewSize(viewWidth, viewHeight, ppu);
 	}
-	
+
 	/**
 	 * 
 	 * @return the viewport of the 2D coordinate system currently on screen
@@ -69,7 +68,7 @@ public class World2D {
 	public Rectangle2D getBounds() {
 		return new Rectangle2D.Double(minX, minY, wt, ht);
 	}
-	
+
 	/**
 	 * 
 	 * @return the minimum x value in world space
@@ -77,7 +76,7 @@ public class World2D {
 	public double getX() {
 		return minX;
 	}
-	
+
 	/**
 	 * 
 	 * @return the minimum y value in world space
@@ -85,7 +84,7 @@ public class World2D {
 	public double getY() {
 		return minY;
 	}
-	
+
 	/**
 	 * Moves the world's viewport to the specified location.
 	 * @param minX the new x position in world space
@@ -97,7 +96,7 @@ public class World2D {
 		this.maxX = minX + wt;
 		this.maxY = minY + ht;
 	}
-	
+
 	/**
 	 * Sets the dimensions and scale of the world's view.
 	 * @param viewWidth the new width of the area drawn on screen
@@ -117,19 +116,46 @@ public class World2D {
 		if(wt <= 0 || ht <= 0)
 			throw(new IllegalArgumentException("illegal min/max values"));
 	}
-	
+
 	public int getViewWidth() {
 		return swt;
 	}
-	
+
 	public int getViewHeight() {
 		return sht;
 	}
-	
+
 	public double getPixelsPerUnit() {
 		return ppu;
 	}
-	
+
+	/**
+	 * Checks for a collision between the two rectangles and returns the calculated area
+	 * of collision (if one exists).
+	 * @param r1 rectangle to test for collision with second
+	 * @param r2 rectangle to test for collision with first
+	 * @return a rectangle representing the overlap of the two rectangles in world space.
+	 */
+	public Rectangle2D.Double checkCollision(Rectangle2D r1, Rectangle2D r2) {
+		double x1 = r1.getMinX();
+		double x1m = r1.getMaxX();
+		double y1 = r1.getMinY();
+		double y1m = r1.getMaxY();
+		double x2 = r2.getMinX();
+		double x2m = r2.getMaxX();
+		double y2 = r2.getMinY();
+		double y2m = r2.getMaxY();
+
+		double xOverlap = Math.max(0, Math.min(x1m, x2m) - Math.max(x1, x2));
+		double yOverlap = Math.max(0, Math.min(y1m, y2m) - Math.max(y1, y2));
+		
+		
+		if(xOverlap == 0 || yOverlap == 0)
+			return null;
+		else
+			return new Rectangle2D.Double(Math.max(x1, x2), Math.min(y1, y2), xOverlap, yOverlap);
+	}
+
 	/**
 	 * Converts the given coordinates from screen space to world space.
 	 * @param x x coordinate on screen
@@ -141,7 +167,7 @@ public class World2D {
 		double y1 = (maxY - y) / ppu;
 		return new PointLD(x1, y1);
 	}
-	
+
 	/**
 	 * Converts the given coordinates from world space to screen space.
 	 * @param x x coordinate in the world

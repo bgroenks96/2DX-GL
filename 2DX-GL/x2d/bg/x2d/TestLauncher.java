@@ -11,6 +11,7 @@ import bg.x2d.anim.*;
 import bg.x2d.geo.*;
 import bg.x2d.physics.*;
 
+import com.snap2d.physics.*;
 import com.snap2d.world.*;
 
 @SuppressWarnings("unused")
@@ -74,31 +75,32 @@ class TestLauncher {
 		}
 		
 		
-		double xw = -100, yw = -50;
+		double xw = -100, yw = -200, xw2 = -85, yw2 = -215;
 		
 		World2D world;
 		BufferedImage image;
 		long last = System.currentTimeMillis();
 		long zl = System.currentTimeMillis();
-		double ppu = 1;
+		double ppu = 3;
 		public void draw(Graphics2D g2) {
 
 			if(world == null) {
 				world = new World2D(-getWidth()/2, -getHeight()/2, getWidth(), getHeight(), ppu);
 			}
-			if(System.currentTimeMillis() - last > 20) {
-				xw++;
-				yw--;
-				last = System.currentTimeMillis();
-			}
 			
-			if(System.currentTimeMillis() - zl > 1000) {
-				world.setViewSize(getWidth(), getHeight(), ppu += 0.5);
-				zl = System.currentTimeMillis();
-			}
 			Point p = world.worldToScreen(xw, yw);
-			g2.setColor(Color.RED);
+			Point p2 = world.worldToScreen(xw2, yw2);
+			g2.setColor(Color.BLUE);
 			g2.fillRect(p.x, p.y, (int) (20 * ppu), (int) (20 * ppu));
+			g2.setColor(Color.YELLOW);
+			g2.fillRect(p2.x, p2.y, (int) (20 * ppu), (int) (20 * ppu));
+			
+			Rectangle2D coll = world.checkCollision(new Rectangle2D.Double(xw, yw, 20, 20), new Rectangle2D.Double(xw2, yw2, 20, 20));
+			if(coll == null)
+				return;
+			g2.setColor(Color.GREEN);
+			Point p3 = world.worldToScreen(coll.getX(), coll.getY());
+			g2.fillRect(p3.x, p3.y, (int) (coll.getWidth()* ppu), (int) (coll.getHeight() * ppu));
 			
 			/*
 			g2.setColor(Color.WHITE);

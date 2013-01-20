@@ -83,7 +83,7 @@ public class GammaTable {
 	 * Called when a new gamma value is set to rebuild the gamma table.
 	 */
 	private synchronized void buildGammaTable() {
-		if(table == null && table.length == TABLE_SIZE)
+		if(table == null || table.length != TABLE_SIZE)
 			table = new int[TABLE_SIZE];
 		float ginv = 1 / gamma;
 		for(int i=0;i<table.length;i++) {

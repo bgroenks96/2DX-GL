@@ -1,2 +1,4 @@
 bin/
 .settings/
+ant_makefile.xml
+.classpath

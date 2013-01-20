@@ -25,7 +25,10 @@ import java.awt.*;
 import javax.swing.*;
 
 /**
- * 
+ * Represents the underlying frame used to display rendered content on screen.  Display
+ * creates a JFrame used to display a RenderControl's BufferStrategy.  This is essentially
+ * the entry point for graphics rendering in Snapdragon2D and works tightly in conjunction with
+ * RenderControl.
  * @author Brian Groenke
  * @since Snapdragon2D 1.0
  */
@@ -36,10 +39,30 @@ public class Display {
 	private JFrame frame;
 	private RenderControl rc;
 
+	/**
+	 * Creates the Display with default GLConfig.
+	 * @param width
+	 * @param height
+	 * @param type
+	 */
 	public Display(int width, int height, Type type) {
+		this(width, height, type, new GLConfig());
+	}
+
+	/**
+	 * Creates the Display and initializes Java2D with the given GLConfig settings.
+	 * If <code>config</code> is null, Java's default configuration will be used.
+	 * @param width width of the window (irrelevant for Type.FULLSCREEN)
+	 * @param height height of the window (irrelevant for Type.FULLSCREEN)
+	 * @param type the type of Display to be shown
+	 * @param config the graphics configuration to use.
+	 */
+	public Display(int width, int height, Type type, GLConfig config) {
 		this.wt = width;
 		this.ht = height;
 		this.type = type;
+		if(config != null)
+			config.apply();
 		init();
 	}
 
@@ -69,9 +92,13 @@ public class Display {
 	public void setTitle(String str) {
 		frame.setTitle(str);
 	}
-	
+
 	public void setLocation(int x, int y) {
 		frame.setLocation(x, y);
+	}
+	
+	public void setSize(int x, int y) {
+		frame.setSize(x, y);
 	}
 
 	/**
@@ -84,8 +111,14 @@ public class Display {
 		return Toolkit.getDefaultToolkit().getScreenSize();
 	}
 
-	public void show(RenderControl render) {
-		rc = render;
+	public RenderControl getRenderControl(int buffs) {
+		return new RenderControl(buffs);
+	}
+
+	public void show(RenderControl rc) {
+		if(rc == null)
+			return;
+		this.rc = rc;
 		frame.add(rc.canvas);
 		frame.setVisible(true);
 		GraphicsDevice d = GraphicsEnvironment.getLocalGraphicsEnvironment().getDefaultScreenDevice();
