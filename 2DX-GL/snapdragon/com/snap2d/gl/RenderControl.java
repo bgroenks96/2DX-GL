@@ -90,7 +90,6 @@ public class RenderControl {
 		loop = new RenderLoop();
 		resize = new AutoResize();
 
-		canvas.createBufferStrategy(buffs);
 		canvas.setIgnoreRepaint(true);
 		canvas.addComponentListener(resize);
 		canvas.addFocusListener(new FocusListener() {
