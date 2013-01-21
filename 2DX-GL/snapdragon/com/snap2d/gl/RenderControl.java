@@ -81,8 +81,6 @@ public class RenderControl {
 	 * Creates a RenderControl object that can be used to render data to a Display.
 	 * A Canvas object is created internally with a managed BufferStrategy.
 	 * @param buffs the number of buffers the BufferStrategy should be created with.
-	 *        Note that RenderControl already uses it's own back buffer, so a double or triple
-	 *        buffered BufferStrategy may or may not be necessary.
 	 */
 	protected RenderControl(int buffs) {
 		this.canvas = new Canvas();
@@ -92,6 +90,7 @@ public class RenderControl {
 		loop = new RenderLoop();
 		resize = new AutoResize();
 
+		canvas.createBufferStrategy(buffs);
 		canvas.setIgnoreRepaint(true);
 		canvas.addComponentListener(resize);
 		canvas.addFocusListener(new FocusListener() {
