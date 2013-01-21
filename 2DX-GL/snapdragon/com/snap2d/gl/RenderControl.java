@@ -23,7 +23,6 @@ package com.snap2d.gl;
 import java.awt.*;
 import java.awt.RenderingHints.Key;
 import java.awt.event.*;
-import java.awt.geom.*;
 import java.awt.image.*;
 import java.util.*;
 import java.util.List;
@@ -61,9 +60,9 @@ public class RenderControl {
 	accelerated = true;
 
 	protected Canvas canvas;
-	protected volatile BufferedImage pri, light, buff;
+	protected volatile BufferedImage pri, light;
 	protected volatile VolatileImage disp;
-	protected volatile int[] pixelData, buffData;
+	protected volatile int[] pixelData;
 	protected volatile long lastResizeFinish;
 	protected volatile boolean applyGamma, updateGamma;
 
@@ -159,7 +158,6 @@ public class RenderControl {
 		delQueue.clear();
 		renderOps.clear();
 		pri.flush();
-		buff.flush();
 		light.flush();
 		if(disp != null)
 			disp.flush();
@@ -167,11 +165,9 @@ public class RenderControl {
 		// nullify references to potentially significant resource holders so that they are available
 		// for garbage collection.
 		pixelData = null;
-		buffData = null;
 		canvas = null;
 		loop = null;
 		pri = null;
-		buff = null;
 		light = null;
 		disp = null;
 		resize = null;
@@ -235,11 +231,11 @@ public class RenderControl {
 	public void setGammaCorrectionEnabled(boolean enabled) {
 		applyGamma = enabled;
 	}
-	
+
 	public boolean isGammaEnabled() {
 		return applyGamma;
 	}
-	
+
 	public boolean isHardwareAccelerated() {
 		return accelerated;
 	}
@@ -353,13 +349,14 @@ public class RenderControl {
 	ExecutorService renderPool = Executors.newFixedThreadPool(Runtime.getRuntime().availableProcessors()
 			, new RenderThreadFactory());
 	ArrayList<RenderRow> rowCache = new ArrayList<RenderRow>();
+	boolean test = true;
 
 	/**
 	 * Internal method that is called by RenderLoop to draw rendered data to the screen.
 	 * The back buffer's data is copied to the main image which, if hardware acceleration is enabled,
 	 * is drawn to a VolatileImage.  Otherwise, the BufferedImage itself is drawn.
 	 */
-	protected synchronized void render() {
+	protected void render(Renderable[] renderables, float interpolation) {
 		// If the component was being resized, cancel rendering until finished (prevents flickering).
 		if(System.nanoTime() - lastResizeFinish < RESIZE_TIMER)
 			return;
@@ -370,38 +367,38 @@ public class RenderControl {
 			return;
 		}
 
-		int buffHeight = buff.getHeight();
 		int priHeight = pri.getHeight();
 
-		Graphics2D g = null;
+		Graphics2D g = (Graphics2D) bs.getDrawGraphics();
 		try {
-			g = (Graphics2D) bs.getDrawGraphics();
+			
+			Graphics2D g2 = pri.createGraphics();
+			for(Renderable r:renderables)
+				r.render(g2, interpolation);
+			g2.dispose();
 
-			Future<?> finalRow = null;
-			for(int y = 0; y < buffHeight; y++) {
+			if(applyGamma) {
+				Future<?> finalRow = null;
+				for(int y = 0; y < priHeight; y++) {
 
-				if(y >= priHeight || y < 0)
-					continue;
+					if(y >= priHeight || y < 0)
+						continue;
 
-				if(y >= rowCache.size())
-					rowCache.add(new RenderRow(y));
-				Future<?> task = renderPool.submit(rowCache.get(y));
-				if(y == buffHeight - 1)
-					finalRow = task;
+					if(y >= rowCache.size())
+						rowCache.add(new RenderRow(y));
+					Future<?> task = renderPool.submit(rowCache.get(y));
+					if(y == priHeight - 1)
+						finalRow = task;
+				}
+
+				while(!finalRow.isDone());
 			}
-
-			while(!finalRow.isDone());
-
-			buff.flush();
 
 			if(accelerated) {
 				// Check the status of the VolatileImage and update/re-create it if neccessary.
 				if(disp == null || disp.getWidth() != pri.getWidth() || disp.getHeight() != pri.getHeight()) {
 					disp = ImageUtils.createVolatileImage(pri.getWidth(), pri.getHeight());
 					disp.setAccelerationPriority(1.0f);
-					Graphics2D img = disp.createGraphics();
-					img.drawRenderedImage(pri, new AffineTransform());
-					img.dispose();
 				}
 				int stat = 0;
 				do {
@@ -413,7 +410,7 @@ public class RenderControl {
 					}
 
 					Graphics2D img = disp.createGraphics();
-					img.drawRenderedImage(pri, new AffineTransform());
+					img.drawImage(pri, 0, 0, null);
 					img.dispose();
 				} while(disp.contentsLost());
 			} else {
@@ -436,7 +433,6 @@ public class RenderControl {
 		}
 		if(!bs.contentsLost())
 			bs.show();
-		//Arrays.fill(pixelData, CANVAS_BACK.getRGB());
 	}
 
 	protected class RenderRow implements Runnable {
@@ -450,9 +446,8 @@ public class RenderControl {
 
 		@Override
 		public void run() {
-			int buffWidth = buff.getWidth();
 			int priWidth = pri.getWidth();
-			for(int x = 0; x < buffWidth; x++) {
+			for(int x = 0; x < priWidth; x++) {
 
 				if(x >= priWidth || x < 0)
 					continue;
@@ -462,7 +457,7 @@ public class RenderControl {
 					continue;
 
 				//get foreground pixels (source)
-				int srcValue = buffData[y * buffWidth + x];
+				int srcValue = pixelData[y * priWidth + x];
 
 				/*
 				 * We don't currently need to blend because the Graphics object will do it for us. 
@@ -473,7 +468,7 @@ public class RenderControl {
 				 */
 
 				pixelData[pos] = (applyGamma) ? 
-						gammaTable.applyGamma(srcValue, ColorUtils.TYPE_ARGB, rgbs) : srcValue;
+						gammaTable.applyGamma(srcValue, ColorUtils.TYPE_ARGB, null) : srcValue;
 			}
 		}
 
@@ -484,15 +479,13 @@ public class RenderControl {
 	}
 
 	private void createImages(int wt, int ht) {
-		/*
-		pri = new BufferedImage(wt, ht, BufferedImage.TYPE_INT_RGB);
-		buff = new BufferedImage(wt, ht, BufferedImage.TYPE_INT_RGB);
-		 */
+
+		//pri = new BufferedImage(wt, ht, BufferedImage.TYPE_INT_RGB);
+		//buff = new BufferedImage(wt, ht, BufferedImage.TYPE_INT_RGB);
+
 		pri = ImageUtils.getNativeImage(wt, ht);
-		buff = ImageUtils.getNativeImage(wt, ht);
 		light = new BufferedImage(wt, ht, BufferedImage.TYPE_INT_ARGB);
 		pixelData = ColorUtils.getImageData(pri);
-		buffData = ColorUtils.getImageData(buff);
 	}
 
 	/**
@@ -596,8 +589,10 @@ public class RenderControl {
 						int updateCount = 0;
 
 						while(now - lastUpdateTime > timeBetweenUpdates && updateCount < maxUpdates ) {
+
 							for(Renderable r:renderables)
 								r.update((long) now, (long)lastUpdateTime);
+
 							lastUpdateTime += timeBetweenUpdates;
 							updateCount++;
 							ticks++;
@@ -608,11 +603,14 @@ public class RenderControl {
 						}
 
 						float interpolation = Math.min(1.0f, (float) ((now - lastUpdateTime) / timeBetweenUpdates));
+						/*
 						Graphics2D g = buff.createGraphics();
 						for(Renderable r:renderables)
 							r.render(g, interpolation);
 						g.dispose();
 						render();
+						 */
+						render(renderables, interpolation);
 						lastRenderTime = now;
 						frameCount++;
 

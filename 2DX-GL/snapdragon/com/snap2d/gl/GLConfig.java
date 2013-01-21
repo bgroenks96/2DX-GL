@@ -87,19 +87,19 @@ public class GLConfig {
 	 */
 	public enum Property {
 		/**
-		 * True/false (default=true)
+		 * Boolean (default=true)
 		 */
 		USE_OPENGL("sun.java2d.opengl", "true"), 
 		/**
-		 * True/false (default=false)
+		 * Boolean (default=false) * MS-Windows only *
 		 */
 		USE_D3D("sun.java2d.d3d", "false"), 
 		/**
-		 * True/false (default=true)
+		 * Boolean (default=true)  * MS-Windows only *
 		 */
 		NO_DDRAW("sun.java2d.noddraw", "true"), 
 		/**
-		 * Integer (default=null)
+		 * Integer (default=null)  * MS-Windows only *
 		 */
 		ACC_THRESHOLD("sun.java2d.accthreshold", null),
 
@@ -109,7 +109,12 @@ public class GLConfig {
 		TRACE("sun.java2d.trace", null),
 		
 		/**
-		 * True/false (default=true)
+		 * Boolean (default=false)  * Linux/Solaris only *
+		 */
+		PM_OFF_SCREEN("sun.java2d.pmoffscreen", "false"),
+		
+		/**
+		 * Boolean (default=true)
 		 */
 		SNAP2D_WINDOWS_HIGH_RES_TIMER("com.snap2d.gl.force_timer", "true");
 

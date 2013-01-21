@@ -27,7 +27,7 @@ public class SnapdragonTestLauncher {
 
 	public void init(String[] args) {
 		GLConfig config = GLConfig.getDefaultSystemConfig();
-		Display disp = new Display(1120, 820, Display.Type.WINDOWED, config);
+		Display disp = new Display(1120, 820, Display.Type.FULLSCREEN, config);
 		disp.setTitle("Snapdragon2D Engine Test (PRE-ALPHA)");
 		rc = disp.getRenderControl(2);
 		InputDispatch input = new InputDispatch(true);
@@ -45,14 +45,16 @@ public class SnapdragonTestLauncher {
 		World2D world = new World2D(-1000, -1000, 2000, 2000, 2);
 		rc.addRenderable(new TestRenderBack(1,1), RenderControl.POSITION_LAST);
 		rc.addRenderable(new TestStaticRenderObj(200, 200), RenderControl.POSITION_LAST);
-		for(int i = 0; i < 10; i++) {
-			rc.addRenderable(new TestRenderObj(r.nextInt(300), r.nextInt(300), world), RenderControl.POSITION_LAST);
+		for(int i = 0; i < 50; i++) {
+			rc.addRenderable(new TestRenderObj(r.nextInt(100), r.nextInt(100), world), RenderControl.POSITION_LAST);
 		}
 		rc.setMaxUpdates(2);
-		//rc.setRenderOp(RenderingHints.KEY_RENDERING, RenderingHints.VALUE_RENDER_QUALITY);
+		rc.setRenderOp(RenderingHints.KEY_RENDERING, RenderingHints.VALUE_RENDER_QUALITY);
 		//rc.setRenderOp(RenderingHints.KEY_INTERPOLATION, RenderingHints.VALUE_INTERPOLATION_BICUBIC);
 		rc.setUseHardwareAcceleration(true);
-		rc.setGammaCorrectionEnabled(false);
+		rc.setTargetFPS(60);
+		//rc.setGammaCorrectionEnabled(true);
+		//rc.setGamma(1.6f);
 		rc.startRenderLoop();
 		disp.show(rc);
 	}
@@ -64,7 +66,7 @@ public class SnapdragonTestLauncher {
 		static {
 			try {
 				img = ImageIO.read(new File(
-						"/media/WIN7/Users/Brian/Pictures/fractal01.png"));
+						"/media/WIN7/Users/Brian/Pictures/test_alpha.png"));
 				img = ImageUtils.convertBufferedImage(img,
 						BufferedImage.TYPE_INT_ARGB);
 			} catch (IOException e) {
@@ -74,7 +76,7 @@ public class SnapdragonTestLauncher {
 
 		CollisionModel coll;
 		int limitx, limity, ox;
-		float x, y, lx, ly, theta = 10;
+		double x, y, lx, ly, theta = 10;
 		boolean reverse;
 
 		public TestRenderObj(int x, int y, World2D world) {
@@ -92,9 +94,10 @@ public class SnapdragonTestLauncher {
 		@Override
 		public void render(Graphics2D g, float interpolation) {
 
-			float x1 = (x - lx) * interpolation + lx;
-			float y1 = (y - ly) * interpolation + ly;
-			g.drawImage(img, Math.round(x1), Math.round(y1), null);
+			double x1 = (x - lx) * interpolation + lx;
+			double y1 = (y - ly) * interpolation + ly;
+		    Point p = world.worldToScreen(x1, y1);
+			g.drawImage(img, p.x, p.y, null);
 
 			/*
 			oct.setLocation(Math.round(x1), Math.round(y1));
@@ -116,19 +119,21 @@ public class SnapdragonTestLauncher {
 			if(last == 0)
 				last = now;
 			if(now - last > INTERVAL) {
-				lx = x;
-				ly = y;
+				lx = worldLoc.getX();
+				ly = worldLoc.getY();
 				if(reverse) {
 					if(x == ox)
 						reverse =  false;
 					x-= 10;
-					y-= 8;
+					y+= 8;
 				} else {
 					if(x >= limitx)
 						reverse = true;
 					x+= 10;
-					y+= 8;
+					y-= 8;
 				}
+				
+				this.setWorldLoc(x, y);
 
 				theta += 0.1;
 				last += INTERVAL;
