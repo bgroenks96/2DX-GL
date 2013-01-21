@@ -1,16 +1,19 @@
 package bg.x2d;
 
 import java.awt.*;
+import java.awt.event.*;
 import java.awt.geom.*;
 import java.awt.image.*;
+import java.io.*;
 import java.util.*;
 
 import javax.swing.*;
 
 import bg.x2d.anim.*;
-import bg.x2d.geo.*;
-import bg.x2d.physics.*;
+import bg.x2d.utils.*;
 
+import com.snap2d.*;
+import com.snap2d.input.*;
 import com.snap2d.physics.*;
 import com.snap2d.world.*;
 
@@ -47,10 +50,11 @@ class TestLauncher {
 
 		volatile int x = 100, y = 100, ix, iy, iz;
 		volatile double theta = 1.0;
-
-		Vector2d vec = new Vector2d(0, 0);
-		Gravity grav = new Gravity();
-		Rectangle rect = new Rectangle(300,50,100,100);
+		
+		volatile boolean up, down, left, right;
+		static final int MOVE = 2;
+		
+		Entity e1, e2, e3;
 
 		public Panel() {
 			background = new Background(new Drawable() {
@@ -72,10 +76,45 @@ class TestLauncher {
 			set.add(ts);
 			ComboSegment combo = new ComboSegment(set);
 			anim = new Animation(new Segment[] {combo}, true);
+			
+			InputDispatch input = new InputDispatch(true);
+			input.registerKeyClient(new InputDispatch.KeyEventClient() {
+
+				@Override
+				public void processKeyEvent(KeyEvent e) {
+					switch(e.getKeyCode()) {
+					case KeyEvent.VK_W:
+						if(e.getID() == KeyEvent.KEY_PRESSED)
+							up = true;
+						else if(e.getID() == KeyEvent.KEY_RELEASED)
+							up = false;
+						break;
+					case KeyEvent.VK_S:
+						if(e.getID() == KeyEvent.KEY_PRESSED)
+							down = true;
+						else if(e.getID() == KeyEvent.KEY_RELEASED)
+							down = false;
+						break;
+					case KeyEvent.VK_A:
+						if(e.getID() == KeyEvent.KEY_PRESSED)
+							left = true;
+						else if(e.getID() == KeyEvent.KEY_RELEASED)
+							left = false;
+						break;
+					case KeyEvent.VK_D:
+						if(e.getID() == KeyEvent.KEY_PRESSED)
+							right = true;
+						else if(e.getID() == KeyEvent.KEY_RELEASED)
+							right = false;
+						
+					}
+				}
+				
+			});
 		}
 		
 		
-		double xw = -100, yw = -200, xw2 = -85, yw2 = -215;
+		double xw = -100, yw = -200, xw2 = -90, yw2 = -205;
 		
 		World2D world;
 		BufferedImage image;
@@ -86,8 +125,23 @@ class TestLauncher {
 
 			if(world == null) {
 				world = new World2D(-getWidth()/2, -getHeight()/2, getWidth(), getHeight(), ppu);
+				
 			}
 			
+			if(up)
+				e1.setWorldLoc(e1.getWorldX(), e1.getWorldY()+MOVE);
+			if(down)
+				e1.setWorldLoc(e1.getWorldX(), e1.getWorldY()-MOVE);
+			if(right)
+				e1.setWorldLoc(e1.getWorldX()+MOVE,e1.getWorldY());
+			if(left)
+				e1.setWorldLoc(e1.getWorldX()-MOVE, e1.getWorldY());
+			
+			e1.render(g2, 1.0f);
+			e2.render(g2, 1.0f);
+			e3.render(g2, 1.0f);
+			
+			/*
 			Point p = world.worldToScreen(xw, yw);
 			Point p2 = world.worldToScreen(xw2, yw2);
 			g2.setColor(Color.BLUE);
@@ -101,19 +155,6 @@ class TestLauncher {
 			g2.setColor(Color.GREEN);
 			Point p3 = world.worldToScreen(coll.getX(), coll.getY());
 			g2.fillRect(p3.x, p3.y, (int) (coll.getWidth()* ppu), (int) (coll.getHeight() * ppu));
-			
-			/*
-			g2.setColor(Color.WHITE);
-			g2.fillRect(0, 0, getWidth(), getHeight());
-			if(image == null) {
-				try {
-					image = ImageLoader.load(new File("/media/WIN7/Users/Brian/Pictures/fnrr_flag.png").toURI().toURL());
-					image = ImageLoader.scaleFrom(image, new Dimension(1920, 1080), ScaleQuality.HIGH, true);
-				} catch (MalformedURLException e) {
-					e.printStackTrace();
-				}
-			}
-			g2.drawImage(image, 0, 0, null);
 			*/
 		}
 
@@ -140,5 +181,57 @@ class TestLauncher {
 				}
 			}
 		}
+	}
+	
+	static class TestObj extends Entity {
+		
+		static BufferedImage img;
+		static CollisionModel coll;
+		
+		static {
+			img = ImageLoader.load(Utils.getFileURL(new File("/media/WIN7/Users/Brian/Pictures/test_alpha.png")));
+			coll = new CollisionModel(img, 0);
+		}
+
+		/**
+		 * @param worldBounds
+		 * @param world
+		 */
+		public TestObj(Rectangle2D worldBounds, World2D world) {
+			super(worldBounds, world);
+		}
+
+		@Override
+		public void render(Graphics2D g, float interpolation) {
+			int x = getScreenX();
+			int y = getScreenY();
+			g.drawImage(img, x, y, null);
+		}
+
+		@Override
+		public void update(long nanoTimeNow, long nanosSinceLastUpdate) {
+			
+		}
+
+		@Override
+		public void onResize(Dimension oldSize, Dimension newSize) {
+			
+		}
+
+		@Override
+		public void setAllowRender(boolean render) {
+			
+		}
+
+		@Override
+		public GamePhysics getPhysics() {
+			return null;
+		}
+
+		@Override
+		public CollisionModel getCollisionModel() {
+			return coll;
+		}
+		
 	}
 }

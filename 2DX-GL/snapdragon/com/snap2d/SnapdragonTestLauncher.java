@@ -45,14 +45,15 @@ public class SnapdragonTestLauncher {
 		World2D world = new World2D(-1000, -1000, 2000, 2000, 2);
 		rc.addRenderable(new TestRenderBack(1,1), RenderControl.POSITION_LAST);
 		rc.addRenderable(new TestStaticRenderObj(200, 200), RenderControl.POSITION_LAST);
-		for(int i = 0; i < 50; i++) {
-			rc.addRenderable(new TestRenderObj(r.nextInt(100), r.nextInt(100), world), RenderControl.POSITION_LAST);
+		EntityManager em = new EntityManager();
+		for(int i = 0; i < 3; i++) {
+			rc.addRenderable(new TestRenderObj(r.nextInt(100), r.nextInt(100), world, em), RenderControl.POSITION_LAST);
 		}
+		rc.addRenderable(em, RenderControl.POSITION_LAST);
 		rc.setMaxUpdates(2);
-		rc.setRenderOp(RenderingHints.KEY_RENDERING, RenderingHints.VALUE_RENDER_QUALITY);
+		//rc.setRenderOp(RenderingHints.KEY_RENDERING, RenderingHints.VALUE_RENDER_QUALITY);
 		//rc.setRenderOp(RenderingHints.KEY_INTERPOLATION, RenderingHints.VALUE_INTERPOLATION_BICUBIC);
 		rc.setUseHardwareAcceleration(true);
-		rc.setTargetFPS(60);
 		//rc.setGammaCorrectionEnabled(true);
 		//rc.setGamma(1.6f);
 		rc.startRenderLoop();
@@ -62,6 +63,7 @@ public class SnapdragonTestLauncher {
 	static class TestRenderObj extends Entity implements Renderable {
 
 		static BufferedImage img;
+		static CollisionModel coll;
 
 		static {
 			try {
@@ -69,25 +71,25 @@ public class SnapdragonTestLauncher {
 						"/media/WIN7/Users/Brian/Pictures/test_alpha.png"));
 				img = ImageUtils.convertBufferedImage(img,
 						BufferedImage.TYPE_INT_ARGB);
+				coll = new CollisionModel(img, 0);
 			} catch (IOException e) {
 				e.printStackTrace();
 			}
 		}
-
-		CollisionModel coll;
+		
 		int limitx, limity, ox;
 		double x, y, lx, ly, theta = 10;
 		boolean reverse;
 
-		public TestRenderObj(int x, int y, World2D world) {
+		public TestRenderObj(int x, int y, World2D world, EntityManager em) {
 			super(new Rectangle2D.Double(world.screenToWorld(x, y).x, world.screenToWorld(x, y).y,
-					(int)world.getPixelsPerUnit() * img.getWidth(), (int)world.getPixelsPerUnit() * img.getHeight()), world);
+					img.getWidth() / world.getPixelsPerUnit(), img.getHeight() / world.getPixelsPerUnit()), world);
+			em.registerEntity(this);
 			this.x = x;
 			this.y = y;
 			this.ox = x;
 			this.limitx = 10*x;
 			this.limity = 10*y;
-			coll = new CollisionModel(img, 0);
 			
 		}
 
@@ -236,5 +238,30 @@ public class SnapdragonTestLauncher {
 			//
 		}
 
+	}
+	
+	static class EntityManager implements Renderable {
+		
+		Entity[] entities = new Entity[0];
+		
+		public void registerEntity(Entity e) {
+			entities = Arrays.copyOf(entities, entities.length + 1);
+			entities[entities.length - 1] = e;
+		}
+
+		@Override
+		public void render(Graphics2D g, float interpolation) {
+			//
+		}
+
+		@Override
+		public void update(long nanoTimeNow, long nanosSinceLastUpdate) {
+		}
+
+		@Override
+		public void onResize(Dimension oldSize, Dimension newSize) {
+			//
+		}
+		
 	}
 }

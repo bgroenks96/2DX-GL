@@ -293,14 +293,6 @@ public class RenderControl {
 		return rtasks.size();
 	}
 
-	public synchronized void addLight() {
-
-	}
-
-	public synchronized void removeLight() {
-
-	}
-
 	public void setRenderOp(Key key, Object value) {
 		renderOps.put(key, value);
 	}
@@ -425,7 +417,7 @@ public class RenderControl {
 				g.drawImage(disp, 0, 0, null);
 			else
 				g.drawImage(pri, 0, 0, null);
-			g.drawImage(light, 0, 0, null);
+			//g.drawImage(light, 0, 0, null);
 		} finally {
 			g.dispose();
 		}
@@ -469,10 +461,6 @@ public class RenderControl {
 						gammaTable.applyGamma(srcValue, ColorUtils.TYPE_ARGB, null) : srcValue;
 			}
 		}
-
-	}
-
-	protected synchronized void renderLight() {
 
 	}
 

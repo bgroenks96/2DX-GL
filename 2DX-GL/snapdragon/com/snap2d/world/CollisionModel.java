@@ -68,22 +68,29 @@ public class CollisionModel {
 		}
 	}
 
-	public boolean collidesWith(Rectangle2D collisionArea, World2D world, Entity e1, Entity e) {
+	public boolean collidesWith(Rectangle2D collisionArea, World2D world, Entity e1, Entity e2) {
 		Point sloc = world.worldToScreen(collisionArea.getX(), collisionArea.getY());
 		int x1 = sloc.x - e1.screenLoc.x;
 		int y1 = sloc.y - e1.screenLoc.y;
-		int x2 = sloc.x - e.screenLoc.x;
-		int y2 = sloc.y - e.screenLoc.y;
-		int wt = (int) Math.round(collisionArea.getWidth() * e1.world.getPixelsPerUnit());
-		int ht = (int) Math.round(collisionArea.getHeight() * e1.world.getPixelsPerUnit());
+		int x2 = sloc.x - e2.screenLoc.x;
+		int y2 = sloc.y - e2.screenLoc.y;
+		int wt = (int) Math.round(collisionArea.getWidth() * world.getPixelsPerUnit());
+		int ht = (int) Math.round(collisionArea.getHeight() * world.getPixelsPerUnit());
 		for(int y = ht - 1; y >= 0; y--) {
-			BigInteger bitmask1 = bitmasks[y + y1];
-			BigInteger bitmask2 = bitmasks[y + y2];
+			BigInteger bitmask1 = bitmasks[y1 + y];
+			BigInteger bitmask2 = bitmasks[y2 + y];
 			BigInteger mask = BigInteger.ZERO.not();
-			mask = (mask.shiftLeft((int)e1.getScreenBounds().width - x1 + 1).not()).and(mask.shiftLeft(x1 + wt));
+			mask = (mask.shiftLeft((int)e1.getScreenBounds().width - x1 + 1).not()).
+					and(mask.shiftLeft((int)e1.getScreenBounds().width - (wt + x1)));
 			bitmask1 = bitmask1.and(mask);
+			/*
+			System.out.println(((int)e1.getScreenBounds().width - x1 + 1) + " " + ((int)e1.getScreenBounds().width - (wt + x1)));
+			if(y < 100000)
+				break;
+				*/
 			mask = BigInteger.ZERO.not();
-			mask = (mask.shiftLeft((int)e.getScreenBounds().width - x2 + 1).not()).and(mask.shiftLeft(x2 + wt));
+			mask = (mask.shiftLeft((int)e2.getScreenBounds().width - x2 + 1).not()).
+					and(mask.shiftLeft((int)e2.getScreenBounds().width - (wt + x2)));
 			bitmask2 = bitmask2.and(mask);
 			if(!bitmask1.and(bitmask2).equals(BigInteger.ZERO))
 				return true;
