@@ -2,3 +2,8 @@ bin/
 .settings/
 ant_makefile.xml
 .classpath
+.project
+.externalToolBuilders/
+.settings/
+buildtracker.jar
+build_id.log
