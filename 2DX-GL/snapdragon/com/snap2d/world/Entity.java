@@ -166,7 +166,7 @@ public abstract class Entity implements Renderable {
 		 * @param img the image from which pixel data will be read.
 		 * @param excludedColor the pixel value that will be ignored.
 		 */
-		protected CollisionModel(BufferedImage img, int excludedColor) {
+		public CollisionModel(BufferedImage img, int excludedColor) {
 			init(img, excludedColor);
 		}
 

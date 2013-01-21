@@ -231,9 +231,17 @@ public class RenderControl {
 			updateGamma = true;
 		}
 	}
-	
+
 	public void setGammaCorrectionEnabled(boolean enabled) {
 		applyGamma = enabled;
+	}
+	
+	public boolean isGammaEnabled() {
+		return applyGamma;
+	}
+	
+	public boolean isHardwareAccelerated() {
+		return accelerated;
 	}
 
 	/**
@@ -434,6 +442,7 @@ public class RenderControl {
 	protected class RenderRow implements Runnable {
 
 		int y;
+		int[] rgbs = new int[4];
 
 		RenderRow(int y) {
 			this.y = y;
@@ -464,7 +473,7 @@ public class RenderControl {
 				 */
 
 				pixelData[pos] = (applyGamma) ? 
-						gammaTable.applyGamma(srcValue, ColorUtils.TYPE_ARGB, null) : srcValue;
+						gammaTable.applyGamma(srcValue, ColorUtils.TYPE_ARGB, rgbs) : srcValue;
 			}
 		}
 
@@ -515,7 +524,10 @@ public class RenderControl {
 				public void run() {
 					Thread.currentThread().setName("snap2d-sleeper_thread");
 					try {
-						Thread.sleep(Long.MAX_VALUE);
+						if(Local.getPlatform().toLowerCase().contains("windows") && Boolean.getBoolean("com.snap2d.gl.force_timer")) {
+							System.out.println("[Snap2D] started windows sleeper daemon");
+							Thread.sleep(Long.MAX_VALUE);
+						}
 					} catch (InterruptedException e) {
 						e.printStackTrace();
 					}

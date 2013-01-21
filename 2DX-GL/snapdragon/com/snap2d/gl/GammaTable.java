@@ -30,7 +30,8 @@ import bg.x2d.utils.*;
  */
 public class GammaTable {
 
-	private static final int COLORS = 255, TABLE_SIZE = 256;
+	private static final float COLORS = 255;
+	private static final int TABLE_SIZE = 256;
 
 	private float gamma;
 	private int[] table;

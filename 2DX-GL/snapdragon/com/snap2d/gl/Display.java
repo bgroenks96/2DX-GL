@@ -76,6 +76,7 @@ public class Display {
 			frame = new JFrame();
 			frame.setUndecorated(true);
 			frame.setLocation(0, 0);
+			frame.setSize(getScreenSize());
 			break;
 		case WINDOWED:
 			frame = new JFrame();
@@ -96,7 +97,7 @@ public class Display {
 	public void setLocation(int x, int y) {
 		frame.setLocation(x, y);
 	}
-	
+
 	public void setSize(int x, int y) {
 		frame.setSize(x, y);
 	}
@@ -121,11 +122,11 @@ public class Display {
 		this.rc = rc;
 		frame.add(rc.canvas);
 		frame.setVisible(true);
-		GraphicsDevice d = GraphicsEnvironment.getLocalGraphicsEnvironment().getDefaultScreenDevice();
-		if(d.isFullScreenSupported())
-			d.setFullScreenWindow(frame);
-		else
-			frame.setSize(getScreenSize());
+		if(type == Type.FULLSCREEN) {
+			GraphicsDevice d = GraphicsEnvironment.getLocalGraphicsEnvironment().getDefaultScreenDevice();
+			if(d.isFullScreenSupported())
+				d.setFullScreenWindow(frame);
+		}
 	}
 
 	public Graphics2D getRawGraphics() {

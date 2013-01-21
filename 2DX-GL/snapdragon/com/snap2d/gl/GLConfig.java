@@ -22,6 +22,8 @@ package com.snap2d.gl;
 
 import java.util.*;
 
+import bg.x2d.*;
+
 /**
  * Object that represents configuration data for Java2D rendering.
  * @author Brian Groenke
@@ -34,6 +36,26 @@ public class GLConfig {
 	public GLConfig() {
 		for(Property p:Property.values())
 			configMap.put(p, p.defValue);
+	}
+	
+	/**
+	 * Creates a GLConfig optimized to defaults appropriate for the current system.
+	 * If the underlying OS is Windows, the default Property values are changed to take
+	 * advantage of Windows native D3D systems over OpenGL and set other Windows-specific
+	 * configurations.  Otherwise, the default Property values are used (they are, by default,
+	 * more optimized for Linux/Solaris/Macintosh systems).
+	 * @return
+	 */
+	public static GLConfig getDefaultSystemConfig() {
+		if(Local.getPlatform().toLowerCase().contains("windows")) {
+			GLConfig config = new GLConfig();
+			config.set(Property.USE_D3D, "true");
+			config.set(Property.NO_DDRAW, "false");
+			config.set(Property.USE_OPENGL, "false");
+			config.set(Property.ACC_THRESHOLD, "0");
+			return config;
+		} else
+			return new GLConfig();
 	}
 
 	/**
@@ -84,7 +106,12 @@ public class GLConfig {
 		/**
 		 * String - list form - (default=null)
 		 */
-		TRACE("sun.java2d.trace", null);
+		TRACE("sun.java2d.trace", null),
+		
+		/**
+		 * True/false (default=true)
+		 */
+		SNAP2D_WINDOWS_HIGH_RES_TIMER("com.snap2d.gl.force_timer", "true");
 
 		private String property, defValue;
 

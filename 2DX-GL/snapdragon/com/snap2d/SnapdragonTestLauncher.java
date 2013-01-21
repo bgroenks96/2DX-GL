@@ -10,7 +10,6 @@ import java.util.*;
 import javax.imageio.*;
 
 import bg.x2d.*;
-import bg.x2d.geo.*;
 
 import com.snap2d.gl.*;
 import com.snap2d.input.*;
@@ -27,7 +26,8 @@ public class SnapdragonTestLauncher {
 	}
 
 	public void init(String[] args) {
-		Display disp = new Display(800, 600, Display.Type.FULLSCREEN);
+		GLConfig config = GLConfig.getDefaultSystemConfig();
+		Display disp = new Display(1120, 820, Display.Type.WINDOWED, config);
 		disp.setTitle("Snapdragon2D Engine Test (PRE-ALPHA)");
 		rc = disp.getRenderControl(2);
 		InputDispatch input = new InputDispatch(true);
@@ -42,49 +42,51 @@ public class SnapdragonTestLauncher {
 			}
 		});
 		Random r = new Random();
+		World2D world = new World2D(-1000, -1000, 2000, 2000, 2);
 		rc.addRenderable(new TestRenderBack(1,1), RenderControl.POSITION_LAST);
 		rc.addRenderable(new TestStaticRenderObj(200, 200), RenderControl.POSITION_LAST);
-		rc.addRenderable(new TestRenderObj(r.nextInt(300), r.nextInt(300)), RenderControl.POSITION_LAST);
-		rc.addRenderable(new TestRenderObj(r.nextInt(300), r.nextInt(300)), RenderControl.POSITION_LAST);
-		rc.addRenderable(new TestRenderObj(r.nextInt(300), r.nextInt(300)), RenderControl.POSITION_LAST);
-		rc.addRenderable(new TestRenderObj(r.nextInt(300), r.nextInt(300)), RenderControl.POSITION_LAST);
-		rc.addRenderable(new TestRenderObj(r.nextInt(300), r.nextInt(300)), RenderControl.POSITION_LAST);
-		rc.addRenderable(new TestRenderObj(r.nextInt(300), r.nextInt(300)), RenderControl.POSITION_LAST);
-		rc.addRenderable(new TestRenderObj(r.nextInt(300), r.nextInt(300)), RenderControl.POSITION_LAST);
-		rc.addRenderable(new TestRenderObj(r.nextInt(300), r.nextInt(300)), RenderControl.POSITION_LAST);
+		for(int i = 0; i < 10; i++) {
+			rc.addRenderable(new TestRenderObj(r.nextInt(300), r.nextInt(300), world), RenderControl.POSITION_LAST);
+		}
 		rc.setMaxUpdates(2);
-		rc.setRenderOp(RenderingHints.KEY_RENDERING, RenderingHints.VALUE_RENDER_QUALITY);
-		rc.setRenderOp(RenderingHints.KEY_INTERPOLATION, RenderingHints.VALUE_INTERPOLATION_BICUBIC);
+		//rc.setRenderOp(RenderingHints.KEY_RENDERING, RenderingHints.VALUE_RENDER_QUALITY);
+		//rc.setRenderOp(RenderingHints.KEY_INTERPOLATION, RenderingHints.VALUE_INTERPOLATION_BICUBIC);
 		rc.setUseHardwareAcceleration(true);
+		rc.setGammaCorrectionEnabled(false);
 		rc.startRenderLoop();
 		disp.show(rc);
 	}
 
-	static class TestRenderObj implements Renderable {
+	static class TestRenderObj extends Entity implements Renderable {
 
-		Octagon2D oct;
-		BufferedImage img;
-		int limitx, limity, ox;
-		float x, y, lx, ly, theta = 10;
-		boolean reverse;
+		static BufferedImage img;
 
-		public TestRenderObj(int x, int y) {
-			this.x = x;
-			this.y = y;
-			this.ox = x;
-			this.limitx = 10*x;
-			this.limity = 10*y;
-
-			oct = new Octagon2D(x, y, 150, Color.YELLOW, true);
-
+		static {
 			try {
 				img = ImageIO.read(new File(
-						"/media/WIN7/Users/Brian/Pictures/test_alpha.png"));
+						"/media/WIN7/Users/Brian/Pictures/fractal01.png"));
 				img = ImageUtils.convertBufferedImage(img,
 						BufferedImage.TYPE_INT_ARGB);
 			} catch (IOException e) {
 				e.printStackTrace();
 			}
+		}
+
+		CollisionModel coll;
+		int limitx, limity, ox;
+		float x, y, lx, ly, theta = 10;
+		boolean reverse;
+
+		public TestRenderObj(int x, int y, World2D world) {
+			super(new Rectangle2D.Double(world.screenToWorld(x, y).x, world.screenToWorld(x, y).y,
+					(int)world.getPixelsPerUnit() * img.getWidth(), (int)world.getPixelsPerUnit() * img.getHeight()), world);
+			this.x = x;
+			this.y = y;
+			this.ox = x;
+			this.limitx = 10*x;
+			this.limity = 10*y;
+			coll = new CollisionModel(img, 0);
+			
 		}
 
 		@Override
@@ -133,6 +135,21 @@ public class SnapdragonTestLauncher {
 			}
 		}
 
+		@Override
+		public void setAllowRender(boolean render) {
+			
+		}
+
+		@Override
+		public GamePhysics getPhysics() {
+			return null;
+		}
+
+		@Override
+		public CollisionModel getCollisionModel() {
+			return coll;
+		}
+
 	}
 
 	static class TestStaticRenderObj implements Renderable {
@@ -140,42 +157,6 @@ public class SnapdragonTestLauncher {
 		BufferedImage img;
 		int[] data;
 		int x, y, lx, ly;
-
-		Entity e = new Entity(new Rectangle2D.Double(0,0,10,10), new World2D(-250, -250, 500, 500, 5)) {
-
-			@Override
-			public void render(Graphics2D g, float interpolation) {
-
-			}
-
-			@Override
-			public void update(long nanoTimeNow, long nanosSinceLastUpdate) {
-
-			}
-
-			@Override
-			public void onResize(Dimension oldSize, Dimension newSize) {
-
-			}
-
-			@Override
-			public void setAllowRender(boolean render) {
-
-			}
-
-			@Override
-			public GamePhysics getPhysics() {
-				// TODO Auto-generated method stub
-				return null;
-			}
-
-			@Override
-			public CollisionModel getCollisionModel() {
-				// TODO Auto-generated method stub
-				return null;
-			}
-
-		};
 
 		public TestStaticRenderObj(int x, int y) {
 			this.x = x;
@@ -207,7 +188,7 @@ public class SnapdragonTestLauncher {
 
 		@Override
 		public void update(long now, long last) {
-			e.setWorldLoc(e.getWorldX() + 1, e.getWorldY() + 1);
+
 		}
 	}
 
