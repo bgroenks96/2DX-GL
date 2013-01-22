@@ -22,7 +22,6 @@ package com.snap2d.world;
 
 import java.awt.*;
 import java.awt.image.*;
-import java.lang.ref.*;
 import java.math.*;
 
 import bg.x2d.utils.*;
@@ -104,16 +103,6 @@ public class CollisionModel {
 				return true;
 		}
 		return false;
-	}
-	
-	public void release() {
-		ReferenceQueue<BigInteger> queue = new ReferenceQueue<BigInteger>();
-		for(int i = 0; i < bitmasks.length; i++) {
-			WeakReference<BigInteger> ref = new WeakReference<BigInteger>(bitmasks[i], queue);
-			bitmasks[i] = null;
-			ref.enqueue();
-		}
-		bitmasks = null;
 	}
 
 	/*
