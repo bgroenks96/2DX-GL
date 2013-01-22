@@ -179,4 +179,18 @@ public class World2D {
 		int y1 = (int) Math.round(ht - (y*ppu - minY));
 		return new Point(x1, y1);
 	}
+	
+	public Rectangle convertWorldRect(Rectangle2D r) {
+		Point sp = worldToScreen(r.getX(), r.getY());
+		int wt = (int) Math.round(r.getWidth() * ppu);
+		int ht = (int) Math.round(r.getHeight() * ppu);
+		return new Rectangle(sp.x, sp.y, wt, ht);
+	}
+	
+	public Rectangle2D.Double convertScreenRect(Rectangle r) {
+		PointLD wp = screenToWorld(r.x, r.y);
+		double wt = r.width / ppu;
+		double ht = r.height / ppu;
+		return new Rectangle2D.Double(wp.x, wp.y, wt, ht);
+	}
 }

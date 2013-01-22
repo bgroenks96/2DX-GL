@@ -21,8 +21,8 @@
 package com.snap2d.world;
 
 import java.awt.*;
-import java.awt.geom.*;
 import java.awt.image.*;
+import java.lang.ref.*;
 import java.math.*;
 
 import bg.x2d.utils.*;
@@ -33,8 +33,6 @@ import bg.x2d.utils.*;
  *
  */
 public class CollisionModel {
-
-	int[] testData;
 
 	BigInteger[] bitmasks;
 
@@ -52,7 +50,6 @@ public class CollisionModel {
 
 	private void init(BufferedImage img, int excludedColor) {
 		int[] data = ColorUtils.getImageData(img);
-		testData = data;
 		int wt = img.getWidth();
 		int ht = img.getHeight();
 		bitmasks = new BigInteger[ht];
@@ -68,34 +65,55 @@ public class CollisionModel {
 		}
 	}
 
-	public boolean collidesWith(Rectangle2D collisionArea, World2D world, Entity e1, Entity e2) {
-		Point sloc = world.worldToScreen(collisionArea.getX(), collisionArea.getY());
-		int x1 = sloc.x - e1.screenLoc.x;
-		int y1 = sloc.y - e1.screenLoc.y;
-		int x2 = sloc.x - e2.screenLoc.x;
-		int y2 = sloc.y - e2.screenLoc.y;
-		int wt = (int) Math.round(collisionArea.getWidth() * world.getPixelsPerUnit());
-		int ht = (int) Math.round(collisionArea.getHeight() * world.getPixelsPerUnit());
-		for(int y = ht - 1; y >= 0; y--) {
+	/**
+	 * Checks to see if the bitmasks of the two entities share common bits (thus are colliding).
+	 * @param collisionArea the area in screen coordinates where the two rectangles overlap
+	 * @param thisObj the object in screen space represented by this CollisionModel
+	 * @param otherObj the object in screen space to check for collision.
+	 * @param otherModel the CollisionModel representing the other object.
+	 * @return true if the bitmasks of the two objects' CollisionModels overlap in space (the models 
+	 *     are colliding), false otherwise
+	 * @throws IllegalStateException if <code>release</code> has been invoked on this CollisionModel
+	 */
+	public boolean collidesWith(Rectangle collisionArea, Rectangle thisObj, Rectangle otherObj, CollisionModel otherModel)
+			throws IllegalStateException {
+		if(bitmasks == null)
+			throw(new IllegalStateException("no collision data"));
+		int x1 = thisObj.x;
+		int y1 = thisObj.y;
+		int x2 = otherObj.x;
+		int y2 = otherObj.y;
+		int wt = collisionArea.width;
+		int ht = collisionArea.height;
+		for(int y = 0; y < ht; y++) {
 			BigInteger bitmask1 = bitmasks[y1 + y];
-			BigInteger bitmask2 = bitmasks[y2 + y];
+			BigInteger bitmask2 = otherModel.bitmasks[y2 + y];
 			BigInteger mask = BigInteger.ZERO.not();
-			mask = (mask.shiftLeft((int)e1.getScreenBounds().width - x1 + 1).not()).
-					and(mask.shiftLeft((int)e1.getScreenBounds().width - (wt + x1)));
+			int startOffs = thisObj.width - (wt + x1);
+			mask = (mask.shiftLeft(thisObj.width - x1 + 1).not()).
+					and(mask.shiftLeft(startOffs));
 			bitmask1 = bitmask1.and(mask);
-			/*
-			System.out.println(((int)e1.getScreenBounds().width - x1 + 1) + " " + ((int)e1.getScreenBounds().width - (wt + x1)));
-			if(y < 100000)
-				break;
-				*/
+			bitmask1 = bitmask1.shiftRight(startOffs);
 			mask = BigInteger.ZERO.not();
-			mask = (mask.shiftLeft((int)e2.getScreenBounds().width - x2 + 1).not()).
-					and(mask.shiftLeft((int)e2.getScreenBounds().width - (wt + x2)));
+			startOffs = otherObj.width - (wt + x2);
+			mask = (mask.shiftLeft(otherObj.width - x2 + 1).not()).
+					and(mask.shiftLeft(startOffs));
 			bitmask2 = bitmask2.and(mask);
+			bitmask2 = bitmask2.shiftRight(startOffs);
 			if(!bitmask1.and(bitmask2).equals(BigInteger.ZERO))
 				return true;
 		}
 		return false;
+	}
+	
+	public void release() {
+		ReferenceQueue<BigInteger> queue = new ReferenceQueue<BigInteger>();
+		for(int i = 0; i < bitmasks.length; i++) {
+			WeakReference<BigInteger> ref = new WeakReference<BigInteger>(bitmasks[i], queue);
+			bitmasks[i] = null;
+			ref.enqueue();
+		}
+		bitmasks = null;
 	}
 
 	/*

@@ -121,7 +121,13 @@ public abstract class Entity implements Renderable {
 		if(coll == null)
 			return false;
 		CollisionModel cmodel = getCollisionModel();
-		return cmodel.collidesWith(coll, world, this, e);
+		Rectangle collRect = world.convertWorldRect(coll);
+		int x1 = collRect.x - screenLoc.x;
+		int y1 = collRect.y - screenLoc.y;
+		int x2 = collRect.x - e.screenLoc.x;
+		int y2 = collRect.y - e.screenLoc.y;
+		return cmodel.collidesWith(collRect, new Rectangle(x1, y1, screenBounds.width, screenBounds.height), 
+				new Rectangle(x2, y2, e.screenBounds.width, e.screenBounds.height), cmodel);
 	}
 	
 	/**
