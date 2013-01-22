@@ -3,6 +3,7 @@ The 2DX Project - Open Source Java 2D Graphics Library
 2DX-GL (Advanced 2-dimensional Graphics Library)
     Extends the Java2D (AWT/Swing) API by adding more high-level functionality for rendering 2D geometry, UIs,
     effects, animations and physics.  Also aims to provide utility methods for geometric math and general functionality.
+
 Snapdragon2D
    A 2D Java game engine built on 2DX-GL.  Snapdragon2D utilizes and extends the 2DX-GL API by re-applying its
    functionality and providing its own infrastructure for game development.  Snapdragon2D aims to squeeze the best
