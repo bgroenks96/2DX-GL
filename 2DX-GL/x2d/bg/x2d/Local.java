@@ -129,10 +129,8 @@ public abstract class Local {
 
 	/**
 	 * Attempts to determine the human-readable identifier of the graphics device installed on this machine.
-	 * Usually this method returns the name of either the video hardware or software depending on what information
-	 * the underlying system provides.  On Windows, the returned value tends to be the former, on Linux, the latter.
-	 * @return the human-readable name as a String or null if unable to be determined (i.e an error occurred or 2DX
-	 * doesn't support native operations on this platform).
+	 * Usually this method returns the name of the installed video hardware responsible for handling VGA output.
+	 * The exact model/name returned may vary depending on the underlying OS.
 	 */
 	public static native String getGraphicsDevice();
 
