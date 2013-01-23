@@ -1,9 +1,16 @@
-#include <SDL.h>
 #include <sys/sysinfo.h>
 #include <string.h>
+#include <stdlib.h>
+#include <stdio.h>
 #include "bg_x2d_Local.h"
 
 #define MAX_STR_LEN 128
+
+// ---- constant strings needed for executing and parsing the command ----- //
+const char* GET_DEVICE_CMD = "lspci | awk '/VGA/'";
+const char* VGA = "VGA";
+const char* RET_VAL_SEP = ": ";
+// ---- //
 
 typedef struct _meminfo {
   unsigned long mem_unit;
@@ -17,10 +24,42 @@ typedef struct _meminfo {
 int get_primary_device(char *str) {
 
     int chk = 0;	
-    chk = SDL_Init(SDL_INIT_VIDEO);
-    if(chk != 0)
+    FILE *fp;
+    char path[1035];
+
+    fp = popen(GET_DEVICE_CMD, "r");
+    if (fp == NULL) {
+      chk = -1;
       return chk;
-    SDL_VideoDriverName(str, MAX_STR_LEN);
+    }
+
+    char* out = fgets(path, sizeof(path)-1, fp);
+    if(out == NULL) {
+      chk = -1;
+      return chk;
+    }
+    
+    char* nstr = strstr(out, VGA);
+    if(nstr == NULL) {
+      chk = -1;
+      return chk;
+    }
+    nstr = strstr(nstr, RET_VAL_SEP);
+    if(nstr == NULL) {
+      chk = -1;
+      return chk;
+    }
+    
+    int r_val_len = strlen(RET_VAL_SEP);
+    char fstr[strlen(nstr) - r_val_len];
+    int i;
+    for(i=r_val_len;i<sizeof(fstr) + 1;i++) {
+      fstr[i-r_val_len] = nstr[i];
+    }
+    
+    strcpy(str, fstr);
+    
+    pclose(fp);
     return chk;
 }
 
@@ -61,7 +100,7 @@ JNIEXPORT jstring JNICALL Java_bg_x2d_Local_getGraphicsDevice
     int i;
     for(i=0;i<size;i++)
       jchars[i] = (jchar) str[i];
-    jstring jstr = (*env) -> NewString(env, jchars, strlen(str));
+    jstring jstr = (*env) -> NewString(env, jchars, size);
     return jstr;
 }
 
