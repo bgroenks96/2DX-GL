@@ -27,8 +27,6 @@ import java.io.*;
 import java.net.*;
 import java.util.*;
 
-import bg.x2d.utils.*;
-
 /**
  * A convenience class consisting entirely of static methods regarding system
  * information. Many of these methods simply mirror the
@@ -61,10 +59,7 @@ public abstract class Local {
 
 	private static String[] nativeSupported;
 
-	private static String nativesJar = "natives.jar", nativeLib = "x2d_lib", current;
-	private static URLClassLoader nativeLoader;
-
-	private static final String nativeJarTmp = System.getProperty("java.io.tmpdir") + File.separator + "x2d_tmp_" + nativesJar;
+	private static String nativeLib = "x2d_native_libs", current;
 
 	static {
 		checkNativeSupport();
@@ -172,30 +167,10 @@ public abstract class Local {
 	 * Sets the location from which native libraries should be loaded from.  This method
 	 * automatically calls checkNativeSupport after setting the new variable.
 	 * 
-	 * Two checks are performed before re-assigning the native library location:
-	 * <br/>
-	 * 1) The full JAR path points to a valid JAR file at the given location.
-	 * <br/>
-	 * 2) The URLClassLoader created with this JAR file recognizes the given package as a valid resource.
-	 * 
-	 * @param jar URL
+	 * @param pkg the name of the package from which native code should be loaded
 	 * @return true if successful, false otherwise
 	 */
-	public static boolean setNativeLibraryLocation(URL jar, String pkg) {
-		InputStream test = null;
-		try {
-			test = jar.openStream();
-		} catch (IOException e) {
-			e.printStackTrace();
-		}
-		if(test == null || !jar.toString().endsWith(".jar"))
-			return false;
-		Utils.closeStream(test);
-		URLClassLoader nloader = new URLClassLoader(new URL[]{jar}, ClassLoader.getSystemClassLoader());
-		if(nloader.getResource(pkg) == null)
-			return false;
-		
-		nativeLoader = nloader;
+	public static boolean setNativeLibraryLocation(String pkg) {
 		nativeLib = pkg;
 
 		checkNativeSupport();
@@ -217,7 +192,7 @@ public abstract class Local {
 			return false;
 		name = name + '.' + getNativeLibrarySuffix();
 		try {
-			URL url = nativeLoader.getResource(nativeLib + current + "/" + name);
+			URL url = ClassLoader.getSystemResource(nativeLib + current + "/" + name);
 			if(url == null)
 				throw(new UnsatisfiedLinkError("failed to locate native library"));
 			File tmp = new File(System.getProperty("java.io.tmpdir") + File.separator + name);
@@ -240,44 +215,7 @@ public abstract class Local {
 		return false;
 	}
 
-	/**
-	 * Writes the natives.jar to a cache file in the default Java platform specified temp-dir.  This temporary JAR is
-	 * then used to check compatibility and initialize the URLClassLoader responsible for loading native libraries.
-	 * Note that no native libraries have been loaded into the VM yet after this method returns.
-	 */
 	private static synchronized void checkNativeSupport() {
-
-		if(nativeLoader == null) {
-			if(ClassLoader.getSystemResource(nativesJar) == null) {
-				System.out.println("2DX: failed to locate natives.jar");
-				nativeSupported = new String[0];
-				return;
-			} else {
-				OutputStream out = null;
-				InputStream in = null;
-				boolean error = false;
-				try {
-					out = new FileOutputStream(nativeJarTmp);
-					in = ClassLoader.getSystemResourceAsStream(nativesJar);
-					byte[] bytes = new byte[8192];
-					int len = 0;
-					while((len=in.read(bytes, 0, bytes.length)) >= 0)
-						out.write(bytes, 0, len);
-				} catch (IOException e) {
-					error = true;
-				} finally {
-					Utils.closeStream(in);
-					Utils.closeStream(out);
-				}
-				if(error)
-					return;
-			}
-
-			File f = new File(nativeJarTmp);
-			f.deleteOnExit();
-			nativeLoader = new URLClassLoader(new URL[]{Utils.getFileURL(f)}, 
-					ClassLoader.getSystemClassLoader());
-		}
 
 		final int SYS_COUNT = 8; // this must be changed if platforms are added/removed.
 
@@ -326,7 +264,7 @@ public abstract class Local {
 					current = platform;
 			}
 
-			if(nativeLoader.getResource(nativeLib + platform  + "/") != null)
+			if(ClassLoader.getSystemResource(nativeLib + platform  + "/") != null)
 				supported.add(platform);
 			nativeSupported = supported.toArray(new String[supported.size()]);
 		}
