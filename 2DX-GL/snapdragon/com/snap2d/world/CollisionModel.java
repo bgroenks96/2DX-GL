@@ -21,6 +21,7 @@
 package com.snap2d.world;
 
 import java.awt.*;
+import java.awt.geom.*;
 import java.awt.image.*;
 import java.math.*;
 
@@ -45,6 +46,27 @@ public class CollisionModel {
 	 */
 	public CollisionModel(BufferedImage img, int excludedColor) {
 		init(img, excludedColor);
+	}
+	
+	/**
+	 * Draws the given geometry onto a BufferedImage and uses the image to create a CollisionModel.
+	 * @param geometry
+	 * @param texture
+	 * @param transform
+	 * @param fill
+	 */
+	public CollisionModel(Shape geometry, Paint texture, AffineTransform transform, boolean fill) {
+		Rectangle bounds = geometry.getBounds();
+		BufferedImage img = new BufferedImage(bounds.width, bounds.height, BufferedImage.TYPE_INT_ARGB_PRE);
+		Graphics2D g = img.createGraphics();
+		g.setPaint(texture);
+		g.setTransform(transform);
+		if(fill)
+			g.fill(geometry);
+		else
+			g.draw(geometry);
+		g.dispose();
+		init(img, 0);
 	}
 
 	private void init(BufferedImage img, int excludedColor) {

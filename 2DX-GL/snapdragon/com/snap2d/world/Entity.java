@@ -55,10 +55,8 @@ public abstract class Entity implements Renderable {
 	public Entity(Rectangle2D worldBounds, World2D world) {
 		this.worldLoc = new PointLD(worldBounds.getX(), worldBounds.getY());
 		this.worldBounds = (Rectangle2D.Double) worldBounds.clone();
-		this.screenLoc = world.worldToScreen(worldLoc.dx, worldLoc.dy);
-		this.screenBounds = new Rectangle(screenLoc.x, screenLoc.y, 
-				(int) Math.round(worldBounds.getWidth() * world.getPixelsPerUnit()),
-				(int) Math.round(worldBounds.getHeight() * world.getPixelsPerUnit()));
+		this.screenBounds = world.convertWorldRect(worldBounds);
+		this.screenLoc = screenBounds.getLocation();
 		this.world = world;
 	}
 	

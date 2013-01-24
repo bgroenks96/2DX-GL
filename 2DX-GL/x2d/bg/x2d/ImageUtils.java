@@ -80,7 +80,6 @@ public class ImageUtils {
 		affine.rotate(Math.toRadians(degrees), img.getWidth(null) / 2,
 				img.getHeight(null) / 2);
 		g2d.drawImage(img, affine, null);
-		g2d.dispose();
 		return affine;
 	}
 
@@ -142,7 +141,6 @@ public class ImageUtils {
 					img.getHeight(null) / 2);
 		}
 		g2d.drawImage(img, affine, null);
-		g2d.dispose();
 		return affine;
 	}
 

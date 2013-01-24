@@ -179,7 +179,14 @@ public class World2D {
 		int y1 = (int) Math.round(ht - (y*ppu - minY));
 		return new Point(x1, y1);
 	}
-	
+	 
+	/**
+	 * Converts the given Rectangle2D representing bounds in world space to corresponding
+	 * Rectangle bounds in screen space.  This method first converts the x,y coordinates, then
+	 * scales the rectangle by this World2D's current pixels-per-unit value.
+	 * @param r
+	 * @return
+	 */
 	public Rectangle convertWorldRect(Rectangle2D r) {
 		Point sp = worldToScreen(r.getX(), r.getY());
 		int wt = (int) Math.round(r.getWidth() * ppu);
@@ -187,6 +194,13 @@ public class World2D {
 		return new Rectangle(sp.x, sp.y, wt, ht);
 	}
 	
+	/**
+	 * Converts the given Rectangle representing bounds in screen space to corresponding
+	 * Rectangle2D bounds in world space.  This method first converts the x,y coordinates, then
+	 * scales the rectangle by this World2D's current pixels-per-unit value.
+	 * @param r
+	 * @return
+	 */
 	public Rectangle2D.Double convertScreenRect(Rectangle r) {
 		PointLD wp = screenToWorld(r.x, r.y);
 		double wt = r.width / ppu;

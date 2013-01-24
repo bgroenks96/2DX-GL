@@ -1,5 +1,5 @@
 /*
- * Copyright � 2011-2012 Brian Groenke
+ * Copyright © 2011-2012 Brian Groenke
  * All rights reserved.
  * 
  *  This file is part of the 2DX Graphics Library.
@@ -60,7 +60,7 @@ public class RenderControl {
 	accelerated = true;
 
 	protected Canvas canvas;
-	protected volatile BufferedImage pri, light;
+	protected volatile BufferedImage pri;
 	protected volatile VolatileImage disp;
 	protected volatile int[] pixelData;
 	protected volatile long lastResizeFinish;
@@ -156,7 +156,6 @@ public class RenderControl {
 		delQueue.clear();
 		renderOps.clear();
 		pri.flush();
-		light.flush();
 		if(disp != null)
 			disp.flush();
 
@@ -166,7 +165,6 @@ public class RenderControl {
 		canvas = null;
 		loop = null;
 		pri = null;
-		light = null;
 		disp = null;
 		resize = null;
 		taskCallback = null;
@@ -361,7 +359,7 @@ public class RenderControl {
 
 		Graphics2D g = (Graphics2D) bs.getDrawGraphics();
 		try {
-			
+
 			Graphics2D g2 = pri.createGraphics();
 			for(Renderable r:renderables)
 				r.render(g2, interpolation);
@@ -417,7 +415,6 @@ public class RenderControl {
 				g.drawImage(disp, 0, 0, null);
 			else
 				g.drawImage(pri, 0, 0, null);
-			//g.drawImage(light, 0, 0, null);
 		} finally {
 			g.dispose();
 		}
@@ -466,11 +463,9 @@ public class RenderControl {
 
 	private void createImages(int wt, int ht) {
 
-		//pri = new BufferedImage(wt, ht, BufferedImage.TYPE_INT_RGB);
-		//buff = new BufferedImage(wt, ht, BufferedImage.TYPE_INT_RGB);
-
 		pri = ImageUtils.getNativeImage(wt, ht);
-		light = new BufferedImage(wt, ht, BufferedImage.TYPE_INT_ARGB);
+		if(!(pri.getRaster().getDataBuffer() instanceof DataBufferInt))
+			pri = new BufferedImage(wt, ht, BufferedImage.TYPE_INT_ARGB_PRE);
 		pixelData = ColorUtils.getImageData(pri);
 	}
 
@@ -568,7 +563,7 @@ public class RenderControl {
 					double now = System.nanoTime();
 					if (active && (canvas.getWidth() > 0 && canvas.getHeight() > 0)) {
 
-						if(pri == null || light == null) {
+						if(pri == null) {
 							createImages(canvas.getWidth(), canvas.getHeight());
 						}
 

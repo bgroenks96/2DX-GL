@@ -35,7 +35,7 @@ import bg.x2d.utils.*;
  * <code>System.getProperty</code> method in Java's standard package.
  * 
  * This class also deals with how 2DX loads and handles native libraries.  By default, 2DX loads
- * native code from the /lib directory in the classpath.  Inside of this driectory, each platform specific
+ * native code from the natives JAR file in the classpath.  Inside of this JAR, each platform specific
  * directory must exist in order to be counted as supported.  Any platforms which do not have an existing directory
  * within the native library location will not be listed as supported by the 2DX-GL software distribution.
  * 
@@ -72,8 +72,7 @@ public abstract class Local {
 	}
 
 	/**
-	 * Uses a simple algorithm to convert Calendar time into standard 24-hour
-	 * time format.
+	 * Converts Calendar time into standard 24-hour time format.
 	 * 
 	 * @return a four digit (usually) integer representing the current time in
 	 *         24-hour format.
@@ -95,6 +94,10 @@ public abstract class Local {
 		return millis;
 	}
 
+	/**
+	 * Returns the name of the underlying operating system.
+	 * @return
+	 */
 	public static String getPlatform() {
 		return System.getProperty("os.name");
 	}
@@ -137,7 +140,7 @@ public abstract class Local {
 	/**
 	 * Fetches the amount of RAM the system has available.  As opposed to the built in Java functions, this method
 	 * obtains the amount of free RAM system-wide, outside of the virtual machine.
-	 * @return free system RAM in bytes.
+	 * @return free system RAM in bytes, or -1 if an error occurred.
 	 */
 	public static native long getSystemAvailableRAM();
 
@@ -145,7 +148,7 @@ public abstract class Local {
 	 * Fetches the total amount of RAM installed on the system.  As opposed to the built in Java functions, this method
 	 * obtains the total amount of RAM installed on the hardware.  The accuracy of the result may vary depending on the
 	 * platform.
-	 * @return total system installed RAM in bytes.
+	 * @return total system installed RAM in bytes, or -1 if an error occurred.
 	 */
 	public static native long getSystemTotalRAM();
 
@@ -204,9 +207,8 @@ public abstract class Local {
 	}
 
 	/**
-	 * Loads the specified library into the system.  Looks for the native library
-	 * in the /lib folder of the JVM classpath (/lib in JAR or whatever is set), writes it to a temporary
-	 * file location and loads it into the system.
+	 * Loads the specified library into the system.  Loads the native library via the currently
+	 * initialized URLClassLoader, writes it to a temporary file location and loads it into the system.
 	 * @param native library name (no extension or path).
 	 * @return true if successful, false otherwise.
 	 */
@@ -239,7 +241,9 @@ public abstract class Local {
 	}
 
 	/**
-	 * Writes the natives.jar
+	 * Writes the natives.jar to a cache file in the default Java platform specified temp-dir.  This temporary JAR is
+	 * then used to check compatibility and initialize the URLClassLoader responsible for loading native libraries.
+	 * Note that no native libraries have been loaded into the VM yet after this method returns.
 	 */
 	private static synchronized void checkNativeSupport() {
 

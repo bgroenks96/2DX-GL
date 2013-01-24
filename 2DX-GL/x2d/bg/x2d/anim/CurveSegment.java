@@ -89,9 +89,7 @@ public class CurveSegment implements Segment {
 					* Math.pow(t, 2) * cy2 + Math.pow(t, 3) * ye);
 			int dx = nx - lx;
 			int dy = ny - ly;
-			affine.rotate(-tf.rotation);
 			affine.translate(dx, dy);
-			affine.rotate(tf.rotation);
 			lx = nx;
 			ly = ny;
 			last = curr;
