@@ -15,6 +15,7 @@ import java.util.*;
 import javax.swing.*;
 
 import bg.x2d.geo.*;
+import bg.x2d.math.*;
 import bg.x2d.physics.PhysicsNode.Collision;
 
 /**
@@ -45,7 +46,8 @@ public class PhysicsTest extends JApplet {
 			UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
 		} catch (Exception e) {}
 		
-		Vector2f.setDefaultPrecision(6);
+		Vector2f.setDefaultPrecision(8);
+		FloatMath.setPrecision(8);
 		
 		friction = new Friction(0.0f, 0.0f, new Gravity());
 		forces[0] = friction;
@@ -496,7 +498,7 @@ public class PhysicsTest extends JApplet {
 						case 5:
 							fsy = Float.parseFloat(textFields[i].getText());
 							break;
-						case 8:
+						case 6:
 							sleepTime = Long.parseLong(textFields[i].getText());
 							break;
 						}
