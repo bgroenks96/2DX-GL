@@ -1,5 +1,5 @@
 /*
- *  Copyright © 2011-2012 Brian Groenke
+ *  Copyright © 2011-2013 Brian Groenke
  *  All rights reserved.
  * 
  *  This file is part of the 2DX Graphics Library.
@@ -82,16 +82,76 @@ public class Display {
 		frame.getContentPane().setBackground(RenderControl.CANVAS_BACK);
 	}
 
+	/**
+	 * Sets this Display's window title.
+	 * @param str
+	 */
 	public void setTitle(String str) {
 		frame.setTitle(str);
 	}
 
+	/**
+	 * Sets the location on screen.  Should only be used for WINDOWED Displays.
+	 * @param x
+	 * @param y
+	 */
 	public void setLocation(int x, int y) {
 		frame.setLocation(x, y);
 	}
 
+	/**
+	 * Sets the size of the frame.  Should only be used for WINDOWED Displays.
+	 * @param x
+	 * @param y
+	 */
 	public void setSize(int x, int y) {
 		frame.setSize(x, y);
+	}
+
+	/**
+	 * Sets whether the frame is decorated.
+	 * @param undecorated
+	 */
+	public void setUndecorated(boolean undecorated) {
+		frame.setUndecorated(undecorated);
+	}
+	
+	/**
+	 * Only applicable for decorated, WINDOWED Displays.
+	 * @param onClose specified in the JFrame class
+	 */
+	public void setDefaultCloseOperation(int onClose) {
+		frame.setDefaultCloseOperation(onClose);
+	}
+
+	/**
+	 * @return true if the Display is currently showing, false otherwise
+	 */
+	public boolean isShowing() {
+		return frame.isShowing();
+	}
+
+	/**
+	 * Sets the Display type.  This will force the Display to recreate the JFrame
+	 * internally and migrate the rendering handle (if existent).
+	 * @param dispType
+	 */
+	public void setType(Type dispType) {
+		boolean wasActive = false;
+		if(rc != null) {
+			wasActive= rc.isActive();
+			rc.setRenderActive(false);
+		}
+		boolean frameVisible = frame.isShowing();
+		frame.dispose();
+		type = dispType;
+		init();
+		if(rc != null) {
+			frame.add(rc.canvas);
+			rc.setRenderActive(wasActive);
+		}
+		if(frameVisible)
+			show();
 	}
 
 	/**
@@ -104,15 +164,28 @@ public class Display {
 		return Toolkit.getDefaultToolkit().getScreenSize();
 	}
 
+	/**
+	 * Creates a new RenderControl to be used as a rendering handle for drawing to
+	 * this Display.  This method creates the renderer and adds it to the frame.
+	 * Call <code>show()</code> to show the Display.
+	 * @param buffs
+	 * @return
+	 */
 	public RenderControl getRenderControl(int buffs) {
-		return new RenderControl(buffs);
+		if(rc != null) {
+			frame.remove(rc.canvas);
+			rc.dispose();
+		}
+		rc = new RenderControl(buffs);
+		frame.add(rc.canvas);
+		return rc;
 	}
 
-	public void show(RenderControl rc) {
-		if(rc == null)
-			return;
-		this.rc = rc;
-		frame.add(rc.canvas);
+	/**
+	 * Shows this Display's frame on screen.  If this is a fullscreen window, this method will set
+	 * the frame to be activated as the system's full screen display view.
+	 */
+	public void show() {
 		frame.setVisible(true);
 		if(type == Type.FULLSCREEN) {
 			GraphicsDevice d = GraphicsEnvironment.getLocalGraphicsEnvironment().getDefaultScreenDevice();
@@ -121,10 +194,11 @@ public class Display {
 		}
 	}
 
-	public Graphics2D getRawGraphics() {
-		return (Graphics2D) frame.getContentPane().getGraphics();
-	}
-
+	/**
+	 * Hides this Display's frame on screen.  If this is a fullscreen window, this method will remove
+	 * the frame from the system's full screen display view.  For windowed mode, this will minimize the
+	 * window on most desktop environments.
+	 */
 	public void hide() {
 		rc.setRenderActive(false);
 		GraphicsDevice d = GraphicsEnvironment.getLocalGraphicsEnvironment().getDefaultScreenDevice();
@@ -132,8 +206,15 @@ public class Display {
 		frame.setVisible(false);
 	}
 
+	/**
+	 * Disposes this Display and its rendering handle (if any).  Once disposed, a Display object should
+	 * be discarded.  It's a good idea to call this only when the game is exiting.
+	 */
 	public void dispose() {
-		rc.dispose();
+		if(rc != null) {
+			frame.remove(rc.canvas);
+			rc.dispose();
+		}
 		GraphicsDevice d = GraphicsEnvironment.getLocalGraphicsEnvironment().getDefaultScreenDevice();
 		d.setFullScreenWindow(null);
 		frame.dispose();
@@ -142,5 +223,27 @@ public class Display {
 	public enum Type {
 
 		WINDOWED, FULLSCREEN;
+	}
+
+	// ----- DEPRECATED ------- //
+
+	@Deprecated
+	/**
+	 * This method simply calls <code>show()</code> for backwards compatibility.
+		if(rc != null) {
+	 * @param rc
+	 */
+	public void show(RenderControl rc) {
+		show();
+	}
+
+	@Deprecated
+	/**
+	 * This method is generally useless because the RenderControl will occupy the frame's drawing
+	 * space.  Anything drawn on the content pane graphics probably won't show up.
+	 * @return
+	 */
+	public Graphics2D getRawGraphics() {
+		return (Graphics2D) frame.getContentPane().getGraphics();
 	}
 }

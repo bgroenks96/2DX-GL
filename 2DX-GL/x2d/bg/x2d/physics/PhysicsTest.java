@@ -1,5 +1,5 @@
 /*
- * Copyright © 2011-2012 Brian Groenke
+ * Copyright © 2011-2013 Brian Groenke
  * All rights reserved.
  * 
  * This file is not part of the 2DX library.

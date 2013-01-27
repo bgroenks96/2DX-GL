@@ -1,5 +1,5 @@
 /*
- *  Copyright © 2011-2012 Brian Groenke
+ *  Copyright © 2011-2013 Brian Groenke
  *  All rights reserved.
  * 
  *  This file is part of the 2DX Graphics Library.
@@ -26,7 +26,8 @@ import bg.x2d.utils.*;
 import com.snap2d.*;
 
 /**
- * Controls graphics rendering on a Canvas object.  Used in conjunction with Display.
+ * Acts as a rendering handle to a Display.  This class handles the core game update/render
+ * thread.
  * @author Brian Groenke
  * @since Snapdragon2D 1.0
  * @see com.snap2d.gl.Display
@@ -151,7 +152,7 @@ public class RenderControl {
 		if(disp != null)
 			disp.flush();
 
-		// nullify references to potentially significant resource holders so that they are available
+		// nullify references to potentially significant resource holders to ensure that they are available
 		// for garbage collection.
 		pixelData = null;
 		canvas = null;
@@ -357,22 +358,20 @@ public class RenderControl {
 				r.render(g2, interpolation);
 			g2.dispose();
 
-			if(applyGamma) {
-				Future<?> finalRow = null;
-				for(int y = 0; y < priHeight; y++) {
+			Future<?> finalRow = null;
+			for(int y = 0; y < priHeight; y++) {
 
-					if(y >= priHeight || y < 0)
-						continue;
+				if(y >= priHeight || y < 0)
+					continue;
 
-					if(y >= rowCache.size())
-						rowCache.add(new RenderRow(y));
-					Future<?> task = renderPool.submit(rowCache.get(y));
-					if(y == priHeight - 1)
-						finalRow = task;
-				}
-
-				while(!finalRow.isDone());
+				if(y >= rowCache.size())
+					rowCache.add(new RenderRow(y));
+				Future<?> task = renderPool.submit(rowCache.get(y));
+				if(y == priHeight - 1)
+					finalRow = task;
 			}
+
+			while(!finalRow.isDone());
 
 			if(accelerated) {
 				// Check the status of the VolatileImage and update/re-create it if neccessary.
@@ -414,6 +413,11 @@ public class RenderControl {
 			bs.show();
 	}
 
+	/**
+	 * Used in concurrent rendering.
+	 * @author Brian Groenke
+	 *
+	 */
 	protected class RenderRow implements Runnable {
 
 		int y;
@@ -453,6 +457,11 @@ public class RenderControl {
 
 	}
 
+	/**
+	 * Instantiates the BufferedImage used for drawing onto the screen.
+	 * @param wt
+	 * @param ht
+	 */
 	private void createImages(int wt, int ht) {
 
 		pri = ImageUtils.getNativeImage(wt, ht);

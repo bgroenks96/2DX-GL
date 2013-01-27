@@ -1,0 +1,168 @@
+/*
+ *  Copyright © 2011-2013 Brian Groenke
+ *  All rights reserved.
+ * 
+ *  This file is part of the 2DX Graphics Library.
+ *
+ *  This Source Code Form is subject to the terms of the
+ *  Mozilla Public License, v. 2.0. If a copy of the MPL 
+ *  was not distributed with this file, You can obtain one at 
+ *  http://mozilla.org/MPL/2.0/.
+ */
+
+package com.snap2d.world;
+
+import java.awt.*;
+import java.util.*;
+import java.util.List;
+
+import com.snap2d.gl.*;
+import com.snap2d.world.event.*;
+
+/**
+ * 
+ * <br/><br/>
+ * Note: EntityManager is NOT thread safe.  Only one thread should be responsible for modifying its
+ * data, or the Object must be synchronized externally.
+ * @author Brian Groenke
+ *
+ */
+public class EntityManager implements Renderable {
+
+	HashSet<Entity> entities = new HashSet<Entity>();
+	HashMap<Entity, List<EntityListener>> listeners = new HashMap<Entity, List<EntityListener>>();
+
+	/**
+	 * @param e
+	 * @return true if the Entity was not already registered.
+	 */
+	public boolean register(Entity e) {
+		boolean added = entities.add(e);
+		if(added)
+			fireAddEvent(e);
+		return added;
+	}
+
+	public void register(Entity e, EntityListener listener) {
+		addEntityListener(listener, e);
+		register(e);
+	}
+
+	public void unregister(Entity e) {
+		if(entities.remove(e))
+			fireRemoveEvent(e);
+		listeners.remove(e);
+	}
+
+	public void unregisterAll() {
+		for(Entity e:entities)
+			fireRemoveEvent(e);
+		entities.clear();
+		listeners.clear();
+	}
+
+	/**
+	 * 
+	 * @param listener the EntityListener to receive Entity events.
+	 * @param entities the entities this listener should receive events for.
+	 */
+	public void addEntityListener(EntityListener listener, Entity...entities) {
+		for(Entity e:entities) {
+			List<EntityListener> reg = listeners.get(e);
+			if(reg != null) {
+				if(!reg.contains(listener))
+					reg.add(listener);
+				listeners.put(e, reg);
+			} else {
+				List<EntityListener> els = new ArrayList<EntityListener>();
+				els.add(listener);
+				listeners.put(e, els);
+			}
+		}
+	}
+
+	public void removeEntityListener(EntityListener listener) {
+		for(Entity e:listeners.keySet()) {
+			if(listeners.get(e).contains(listener)) {
+				listeners.get(e).remove(listener);
+			}
+		}
+	}
+
+	/**
+	 * Dispatches the renderer's draw request to all registered Entity objects.
+	 */
+	@Override
+	public void render(Graphics2D g, float interpolation) {
+		for(Entity e:entities)
+			e.render(g, interpolation);
+	}
+
+	/*
+	 * Cache lists used for collision checking.
+	 * chkCache - Starts with every Entity object and removes the current iteration's object with
+	 *   each pass (avoids performing the same check multiple times).
+	 * collCache - holds each collided Entity during each iteration to be used for firing the collision event.
+	 */
+	ArrayList<Entity> chkCache = new ArrayList<Entity>(), collCache = new ArrayList<Entity>();
+
+	/**
+	 * Dispatches the renderer's update request to all registered Entity objects and
+	 * checks for collisions.
+	 */
+	@Override
+	public void update(long nanoTimeNow, long nanosSinceLastUpdate) {
+		chkCache.addAll(entities);
+		for(Entity e:entities) {
+			e.update(nanoTimeNow, nanosSinceLastUpdate);
+			chkCache.remove(e);
+			for(Entity opp:chkCache) {
+				if(e.collidesWith(opp))
+					collCache.add(opp);
+			}
+			if(collCache.size() > 0) {
+				fireCollisionEvent(e, collCache.toArray(new Entity[collCache.size()]));
+				collCache.clear();
+			}
+		}
+	}
+
+	/**
+	 * Dispatches the renderer's resize request to all registered Entity objects.
+	 */
+	@Override
+	public void onResize(Dimension oldSize, Dimension newSize) {
+		for(Entity e:entities)
+			e.onResize(oldSize, newSize);
+	}
+
+	protected void fireCollisionEvent(Entity e, Entity...entities) {
+		List<EntityListener> queue = listeners.get(e);
+		if(queue == null || queue.size() == 0)
+			return;
+		CollisionEvent evt = new CollisionEvent(e, entities);
+		for(EntityListener el:queue) {
+			el.onCollision(evt);
+		}
+	}
+
+	protected void fireAddEvent(Entity e) {
+		List<EntityListener> queue = listeners.get(e);
+		if(queue == null || queue.size() == 0)
+			return;
+		AddEvent evt = new AddEvent(e);
+		for(EntityListener el:queue) {
+			el.onAdd(evt);
+		}
+	}
+
+	protected void fireRemoveEvent(Entity e) {
+		List<EntityListener> queue = listeners.get(e);
+		if(queue == null || queue.size() == 0)
+			return;
+		RemoveEvent evt = new RemoveEvent(e);
+		for(EntityListener el:queue) {
+			el.onRemove(evt);
+		}
+	}
+}
