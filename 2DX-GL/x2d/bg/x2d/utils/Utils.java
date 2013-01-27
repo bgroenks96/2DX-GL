@@ -21,6 +21,34 @@ import java.net.*;
  * @since 2DX 1.0 (1st Edition)
  */
 public class Utils {
+	
+	public static final File TEMP_DIR = new File(System.getProperty("java.io.tmpdir") + File.separator +
+			".com_snap2d_tmp");
+	
+	static {
+		boolean chk = false;
+		for(int i = 0; i < 5; i++) {
+			chk = TEMP_DIR.mkdir();
+			if(chk)
+				break;
+		}
+		if(!chk)
+			System.err.println("Snapdragon2D: error creating temp-dir");
+		else {
+			Runtime.getRuntime().addShutdownHook(new Thread(new Runnable() {
+
+				@Override
+				public void run() {
+					try {
+						removeDirectory(TEMP_DIR, true);
+					} catch (FileNotFoundException e) {
+						System.err.println("Snapdragon2D: failed to remove temp-dir");
+					}
+				}
+				
+			}));
+		}
+	}
 
 	private Utils() {};
 	
@@ -77,5 +105,64 @@ public class Utils {
 			e.printStackTrace();
 			return null;
 		}
+	}
+	
+	/**
+	 * Writes the data from the given InputStream to a file of the specified name in Java's default temp-dir.
+	 * The given InputStream is closed by this method after writing completes.
+	 * @param in
+	 * @param fileName
+	 * @throws IOException
+	 * @return a File object representing the newly created temp-file.
+	 */
+	public static File writeToTempStorage(InputStream in, String fileName) throws IOException {
+		BufferedInputStream buffIn = new BufferedInputStream(in);
+		File outFile = new File(TEMP_DIR + File.separator + fileName);
+		BufferedOutputStream buffOut = new BufferedOutputStream(new FileOutputStream(outFile));
+		byte[] buff = new byte[8124];
+		int len;
+		while((len=buffIn.read(buff)) > 0) {
+			buffOut.write(buff, 0, len);
+		}
+		buffOut.close();
+		buffIn.close();
+		return outFile;
+	}
+	
+	/**
+	 * Recursively removes all subfiles of the given directory and deletes it if
+	 * desired.
+	 * 
+	 * @param dir
+	 *            The directory to clear/delete.
+	 * @param delete
+	 *            removes the now empty directory if true, else it is left
+	 *            alone.
+	 * @return true if successful. False otherwise.
+	 * @throws FileNotFoundException
+	 *             if the given File isn't a directory.
+	 */
+	public static boolean removeDirectory(File dir, boolean delete)
+			throws FileNotFoundException {
+		boolean deleted = true;
+		if (dir.isDirectory()) {
+			File[] subfiles = dir.listFiles();
+			for (File sub : subfiles) {
+				if (sub.isDirectory()) {
+					removeDirectory(sub, delete);
+				} else {
+					if (!sub.delete()) {
+						deleted = false;
+					}
+					;
+				}
+			}
+		} else {
+			throw (new FileNotFoundException(dir + " is not a directory."));
+		}
+		if (delete) {
+			deleted = dir.delete();
+		}
+		return deleted;
 	}
 }

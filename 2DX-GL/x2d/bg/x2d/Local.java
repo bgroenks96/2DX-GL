@@ -19,6 +19,8 @@ import java.io.*;
 import java.net.*;
 import java.util.*;
 
+import bg.x2d.utils.*;
+
 /**
  * A convenience class consisting entirely of static methods regarding system
  * information. Many of these methods simply mirror the
@@ -156,15 +158,16 @@ public abstract class Local {
 	}
 
 	/**
-	 * Sets the location from which native libraries should be loaded from.  This method
-	 * automatically calls checkNativeSupport after setting the new variable.
+	 * Sets the location on the classpath from which native libraries should be loaded from.  
+	 * This method automatically calls checkNativeSupport after setting the new variable.
 	 * 
-	 * @param pkg the name of the package from which native code should be loaded
+	 * @param pathLoc the name of the package from which native code should be loaded
 	 * @return true if successful, false otherwise
 	 */
-	public static boolean setNativeLibraryLocation(String pkg) {
-		nativeLib = pkg;
-
+	public static boolean setNativeLibraryLocation(String pathLoc) {
+		if(pathLoc == null)
+			return false;
+		nativeLib = pathLoc;
 		checkNativeSupport();
 		return true;
 	}
@@ -174,8 +177,9 @@ public abstract class Local {
 	}
 
 	/**
-	 * Loads the specified library into the system.  Loads the native library via the currently
-	 * initialized URLClassLoader, writes it to a temporary file location and loads it into the system.
+	 * Loads the specified library into the system.  The native library is located via
+	 * the system class loader and written to a temporary file before being loaded
+	 * into the system.
 	 * @param native library name (no extension or path).
 	 * @return true if successful, false otherwise.
 	 */
@@ -187,14 +191,7 @@ public abstract class Local {
 			URL url = ClassLoader.getSystemResource(nativeLib + current + "/" + name);
 			if(url == null)
 				throw(new UnsatisfiedLinkError("failed to locate native library"));
-			File tmp = new File(System.getProperty("java.io.tmpdir") + File.separator + name);
-			InputStream in = url.openStream();
-			FileOutputStream fos = new FileOutputStream(tmp);
-			byte[] buff = new byte[1024];
-			int len;
-			while((len=in.read(buff)) > 0)
-				fos.write(buff, 0, len);
-			fos.close();
+			File tmp = Utils.writeToTempStorage(url.openStream(), name);
 			System.load(tmp.getPath());
 			tmp.deleteOnExit();
 			return true;
@@ -258,8 +255,8 @@ public abstract class Local {
 
 			if(ClassLoader.getSystemResource(nativeLib + platform  + "/") != null)
 				supported.add(platform);
-			nativeSupported = supported.toArray(new String[supported.size()]);
 		}
-
+		nativeSupported = supported.toArray(new String[supported.size()]);
+		Arrays.sort(nativeSupported);
 	}
 }

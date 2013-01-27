@@ -13,6 +13,10 @@
 package com.snap2d.sound;
 
 import paulscode.sound.*;
+import paulscode.sound.codecs.*;
+import paulscode.sound.libraries.*;
+
+import com.snap2d.sound.libs.*;
 
 /**
  * Main class for the Snapdragon2D Sound API.  Allows you to initialize and shutdown the sound system, as well
@@ -27,19 +31,29 @@ import paulscode.sound.*;
  * Snapdragon2D Sound supports the following audio formats: Ogg Vorbis (.ogg), Waveform (.wav), NeXT/Sun AU (.au), Apple AIFF (.aiff).
  * 
  * <br/><br/>
- * <b>SoundSystem for Java - credit goes to Paul Lamb {@link http://www.paulscode.com/}
+ * <b>SoundSystem for Java - credit goes to Paul Lamb http://www.paulscode.com/</b>
  * @author Brian Groenke
  *
  */
 public class Sound2D {
-	
+
 	private SoundSystem sound;
-	
+
 	/**
 	 * Blocks constructor access.  Only one instance of Sound2D should exist.  It can be obtained through SoundAPI.
 	 */
-	protected Sound2D() {}
-	
+	protected Sound2D() {
+		try {
+			SoundSystemConfig.addLibrary(LibraryJavaSound.class);
+			SoundSystemConfig.setCodec("ogg", CodecJOrbis.class);
+			SoundSystemConfig.setCodec("wav", CodecWav.class);
+			SoundSystemConfig.setCodec("au", CodecJSound.class);
+			SoundSystemConfig.setCodec("aiff", CodecJSound.class);
+		} catch (SoundSystemException e) {
+			System.err.println("Snapdragon2D: error configuring sound system: " + e.getMessage());
+		}
+	}
+
 	/**
 	 * Initializes the sound engine.
 	 */
@@ -48,7 +62,7 @@ public class Sound2D {
 			shutdown();
 		sound = new SoundSystem();
 	}
-	
+
 	/**
 	 * 
 	 * @return true if the sound system is currently initialized and running, false otherwise.
@@ -77,7 +91,7 @@ public class Sound2D {
 		if(jarPkg != null)
 			SoundSystemConfig.setSoundFilesPackage(jarPkg);
 	}
-	
+
 	/**
 	 * Plays ambient background sound independent of world position.
 	 * @param id
@@ -89,7 +103,7 @@ public class Sound2D {
 			return;
 		sound.backgroundMusic(id, fileName, loop);
 	}
-	
+
 	/**
 	 * Typically should be used to pause currently playing background music, although because the
 	 * same SoundSystem is used, passing an identifier to a sound source created elsewhere will still
@@ -102,7 +116,7 @@ public class Sound2D {
 			return;
 		sound.pause(id);
 	}
-	
+
 	/**
 	 * Typically should be used to stop currently playing background music, although because the
 	 * same SoundSystem is used, passing an identifier to a sound source created elsewhere will still
@@ -115,7 +129,7 @@ public class Sound2D {
 			return;
 		sound.stop(id);
 	}
-	
+
 	/**
 	 * Pre-load a sound file into memory so it can be quickly played later.
 	 * @param fileName
@@ -123,7 +137,7 @@ public class Sound2D {
 	public void load(String fileName) {
 		sound.loadSound(fileName);
 	}
-	
+
 	/**
 	 * Unload a sound file from memory.
 	 * @param fileName
@@ -131,7 +145,7 @@ public class Sound2D {
 	public void unload(String fileName) {
 		sound.unloadSound(fileName);
 	}
-	
+
 	/**
 	 * Internal method for subclass implementations and/or classes within Snapdragon2D's sound API.  Retrieves the underlying
 	 * SoundSystem object from third party libraries that controls 3D audio mapping/playback.
