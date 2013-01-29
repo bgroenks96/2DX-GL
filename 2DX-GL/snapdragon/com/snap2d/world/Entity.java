@@ -14,6 +14,7 @@ package com.snap2d.world;
 
 import java.awt.*;
 import java.awt.geom.*;
+import java.io.*;
 
 import bg.x2d.geo.*;
 
@@ -26,7 +27,12 @@ import com.snap2d.physics.*;
  * @author Brian Groenke
  *
  */
-public abstract class Entity implements Renderable {
+public abstract class Entity implements Renderable, Serializable {
+
+	/**
+	 * 
+	 */
+	private static final long serialVersionUID = -1592236500933136785L;
 
 	protected Point screenLoc;
 	protected PointLD worldLoc;
@@ -34,7 +40,7 @@ public abstract class Entity implements Renderable {
 	protected Rectangle2D worldBounds;
 	protected World2D world;
 
-	protected boolean shouldRender;
+	protected boolean shouldRender = true;
 
 	/**
 	 * Creates this Entity at the given world location in the context of the given World2D.
@@ -44,30 +50,45 @@ public abstract class Entity implements Renderable {
 	 * @param world the World2D this Entity exists in; used for converting coordinates and determining
 	 *     world/screen position.
 	 */
-	public Entity(Rectangle2D worldBounds, World2D world) {
-		this.worldLoc = new PointLD(worldBounds.getX(), worldBounds.getY());
-		this.worldBounds = (Rectangle2D.Double) worldBounds.clone();
-		this.screenBounds = world.convertWorldRect(worldBounds);
-		this.screenLoc = screenBounds.getLocation();
+	public Entity(Point2D worldLoc, World2D world) {
+		this.worldLoc = new PointLD(worldLoc.getX(), worldLoc.getY());
+		this.screenLoc = new Point(world.worldToScreen(worldLoc.getX(), worldLoc.getY()));
 		this.world = world;
 	}
-	
+
+	/**
+	 * Should be called as soon possible (usually in the constructor) by the Entity implementation
+	 * to initialize screen and world bounds.  This method creates the screen bounds rectangle with
+	 * the current screen location and given dimensions, then creates the world bounds by converting
+	 * it to a world rectangle.
+	 * @param swidth width of the Entity on screen
+	 * @param sheight height of the Entity on screen
+	 */
+	protected void initBounds(int swidth, int sheight) {
+		this.screenBounds = new Rectangle(screenLoc.x, screenLoc.y, swidth, sheight);
+		this.worldBounds = world.convertScreenRect(screenBounds);
+	}
+
+	protected double interpolate(double n, double lastN, float interpolation) {
+		return ((n - lastN) * interpolation + lastN);
+	}
+
 	public double getWorldX() {
 		return worldLoc.dx;
 	}
-	
+
 	public double getWorldY() {
 		return worldLoc.dy;
 	}
-	
+
 	public int getScreenX() {
 		return screenLoc.x;
 	}
-	
+
 	public int getScreenY() {
 		return screenLoc.y;
 	}
-	
+
 	/**
 	 * Sets the location of this Entity on the screen coordinate system.
 	 * Supertype implementation simply resets the world/screen points and bounds.
@@ -80,7 +101,7 @@ public abstract class Entity implements Renderable {
 		screenBounds.setLocation(screenLoc);
 		worldBounds.setRect(worldLoc.dx, worldLoc.dy, worldBounds.getWidth(), worldBounds.getHeight());
 	}
-	
+
 	/**
 	 * Sets the location of this Entity on the world coordinate system.
 	 * Supertype implementation simply resets the world/screen points and bounds.
@@ -94,8 +115,28 @@ public abstract class Entity implements Renderable {
 		worldBounds.setRect(worldLoc.dx, worldLoc.dy, worldBounds.getWidth(), worldBounds.getHeight());
 	}
 
+	public void applyVector(Vector2f vec, float mult) {
+		PointLD np = new PointLD(vec.applyTo(worldLoc.getFloatPoint(), mult));
+		setWorldLoc(np.getX(), np.getY());
+	}
+
+	public void applyVector(Vector2d vec, double mult) {
+		PointLD np = new PointLD(vec.applyTo(worldLoc.getDoublePoint(), mult));
+		setWorldLoc(np.getX(), np.getY());
+	}
+
 	public Rectangle2D getWorldBounds() {
 		return worldBounds;
+	}
+	
+	/**
+	 * This method inverts the Y value to compensate for the inverted Y-axis.  Bounds returned from
+	 * this method will function correctly with the built-in Java geometry system.
+	 * @return
+	 */
+	public Rectangle2D getCompatibleBounds() {
+		return new Rectangle2D.Double(worldBounds.getX(), -worldBounds.getY(), worldBounds.getWidth(), 
+				worldBounds.getHeight());
 	}
 
 	public Rectangle getScreenBounds() {
@@ -105,34 +146,54 @@ public abstract class Entity implements Renderable {
 	public boolean isRendering() {
 		return shouldRender;
 	}
-	
+
+	/**
+	 * Checks to see if this Entity collides with the given Entity.  This method uses
+	 * a low precision bounds-check followed by a high-precision CollisionModel check
+	 * if the bounds intersect.
+	 * @param e
+	 * @return true if the Entities are in collision, false otherwise.
+	 */
 	public boolean collidesWith(Entity e) {
 		Rectangle2D coll = world.checkCollision(this.worldBounds, e.worldBounds);
 		if(coll == null)
 			return false;
 		CollisionModel cmodel = getCollisionModel();
 		Rectangle collRect = world.convertWorldRect(coll);
-		int x1 = collRect.x - screenLoc.x;
-		int y1 = collRect.y - screenLoc.y;
-		int x2 = collRect.x - e.screenLoc.x;
-		int y2 = collRect.y - e.screenLoc.y;
-		return cmodel.collidesWith(collRect, new Rectangle(x1, y1, screenBounds.width, screenBounds.height), 
-				new Rectangle(x2, y2, e.screenBounds.width, e.screenBounds.height), cmodel);
+		return cmodel.collidesWith(collRect, screenBounds, e.screenBounds, e.getCollisionModel());
 	}
 	
+	/**
+	 * This method uses the same process as <code>collidesWith(Entity)</code> but returns
+	 * the low precision intersection box if the two entity's CollisionModels are in collision.
+	 * @param e
+	 * @return the computed intersection box between the two Entities in world space or null if no collision
+	 */
+	public Rectangle2D getCollision(Entity e) {
+		Rectangle2D coll = world.checkCollision(this.worldBounds, e.worldBounds);
+		if(coll == null)
+			return coll;
+		CollisionModel cmodel = getCollisionModel();
+		Rectangle collRect = world.convertWorldRect(coll);
+		if(cmodel.collidesWith(collRect, screenBounds, e.screenBounds, e.getCollisionModel()))
+			return coll;
+		else
+			return null;
+	}
+
 	/**
 	 * Set whether or not the Entity should be rendered on screen.  The behavior of this
 	 * method is entirely up to the implementation.
 	 * @param render
 	 */
 	public abstract void setAllowRender(boolean render);
-	
+
 	/**
 	 * Obtain the GamePhysics node of the Entity, if one exists.
 	 * @return
 	 */
 	public abstract GamePhysics getPhysics();
-	
+
 	/**
 	 * Obtain the collision model of the Entity.  This should always return a valid CollisionModel
 	 * for all Entity implementations.  Null values will cause errors in collision and bounds checking.

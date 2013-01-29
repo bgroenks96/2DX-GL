@@ -60,12 +60,16 @@ public class PointLD extends Point {
 	public void setLocation(double x, double y) {
 		this.dx = x;
 		this.dy = y;
-		super.x = getIntX();
-		super.y = getIntY();
+		super.setLocation(x, y);
 	}
 	
 	@Override
 	public void setLocation(Point2D p) {
+		setLocation(p.getX(), p.getY());
+	}
+	
+	@Override
+	public void setLocation(Point p) {
 		setLocation(p.getX(), p.getY());
 	}
 

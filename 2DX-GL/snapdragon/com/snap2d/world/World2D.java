@@ -42,23 +42,35 @@ public class World2D {
 	/**
 	 * Creates this World2D with the specified starting x,y coordinates and view size.
 	 * @param minX the current minimum value for x in world space; corresponds to x=0 in screen space.
-	 * @param minY the current minimum value for y in world space; corresponds to y=0 in screen space.
+	 * @param maxY the current maximum value for y in world space; corresponds to y=0 in screen space.
 	 * @param viewWidth the width of the area on screen to which world coordinates should be translated
 	 * @param viewHeight the height of the area on screen to which world coordinates should be translated.
 	 * @param ppu the number of pixels per unit in world space
 	 */
-	public World2D(double minX, double minY, int viewWidth, int viewHeight, double ppu) {
+	public World2D(double minX, double maxY, int viewWidth, int viewHeight, double ppu) {
 		this.minX = minX;
-		this.minY = minY;
+		this.minY = maxY;
 		setViewSize(viewWidth, viewHeight, ppu);
 	}
 
 	/**
-	 * 
+	 * The Rectangle2D returned is not compatible with the built in Java2D functions due to the
+	 * inverted Y-axis.  If you need a compatible world bounds for geometry checking, use
+	 * #getCompatibleBounds
 	 * @return the viewport of the 2D coordinate system currently on screen
+	 * @see getCompatibleBounds
 	 */
 	public Rectangle2D getBounds() {
 		return new Rectangle2D.Double(minX, minY, wt, ht);
+	}
+	
+	/**
+	 * This method inverts the Y value to compensate for the inverted Y-axis.  Bounds returned from
+	 * this method will function correctly with the built-in Java geometry system.
+	 * @return
+	 */
+	public Rectangle2D getCompatibleBounds() {
+		return new Rectangle2D.Double(minX, -minY, wt, ht);
 	}
 
 	/**
@@ -86,7 +98,7 @@ public class World2D {
 		this.minX = minX;
 		this.minY = minY;
 		this.maxX = minX + wt;
-		this.maxY = minY + ht;
+		this.maxY = minY - ht;
 	}
 
 	/**
@@ -102,11 +114,9 @@ public class World2D {
 			throw(new IllegalArgumentException("illegal pixel-per-unit value: " + ppu));
 		this.ppu = ppu;
 		maxX = minX + ((double)viewWidth / ppu);
-		maxY = minY + ((double)viewHeight / ppu);
-		wt = maxX - minX;
-		ht = maxY - minY;
-		if(wt <= 0 || ht <= 0)
-			throw(new IllegalArgumentException("illegal min/max values"));
+		maxY = minY - ((double)viewHeight / ppu);
+		wt = Math.abs(maxX - minX);
+		ht = Math.abs(maxY - minY);
 	}
 
 	public int getViewWidth() {
@@ -115,6 +125,14 @@ public class World2D {
 
 	public int getViewHeight() {
 		return sht;
+	}
+	
+	public double getWorldWidth() {
+		return wt;
+	}
+	
+	public double getWorldHeight() {
+		return ht;
 	}
 
 	public double getPixelsPerUnit() {
@@ -132,20 +150,27 @@ public class World2D {
 		double x1 = r1.getMinX();
 		double x1m = r1.getMaxX();
 		double y1 = r1.getMinY();
-		double y1m = r1.getMaxY();
+		double y1m = y1 - r1.getHeight();
 		double x2 = r2.getMinX();
 		double x2m = r2.getMaxX();
 		double y2 = r2.getMinY();
-		double y2m = r2.getMaxY();
+		double y2m = y2 - r2.getHeight();
 
 		double xOverlap = Math.max(0, Math.min(x1m, x2m) - Math.max(x1, x2));
-		double yOverlap = Math.max(0, Math.min(y1m, y2m) - Math.max(y1, y2));
-		
+		double yOverlap = Math.max(0, Math.min(y1, y2) - Math.max(y1m, y2m));
 		
 		if(xOverlap == 0 || yOverlap == 0)
 			return null;
 		else
 			return new Rectangle2D.Double(Math.max(x1, x2), Math.min(y1, y2), xOverlap, yOverlap);
+	}
+	
+	public boolean worldContains(Rectangle2D rect) {
+		return getCompatibleBounds().contains(rect);
+	}
+	
+	public boolean worldIntersects(Rectangle2D rect) {
+		return getCompatibleBounds().intersects(rect);
 	}
 
 	/**
@@ -156,7 +181,7 @@ public class World2D {
 	 */
 	public PointLD screenToWorld(int x, int y) {
 		double x1 = (x + minX) / ppu;
-		double y1 = (maxY - y) / ppu;
+		double y1 = (minY - y) / ppu;
 		return new PointLD(x1, y1);
 	}
 
@@ -168,7 +193,7 @@ public class World2D {
 	 */
 	public Point worldToScreen(double x, double y) {
 		int x1 = (int) Math.round(x*ppu - minX);
-		int y1 = (int) Math.round(ht - (y*ppu - minY));
+		int y1 = (int) Math.round(ht - (y*ppu - maxY));
 		return new Point(x1, y1);
 	}
 	 
@@ -197,6 +222,6 @@ public class World2D {
 		PointLD wp = screenToWorld(r.x, r.y);
 		double wt = r.width / ppu;
 		double ht = r.height / ppu;
-		return new Rectangle2D.Double(wp.x, wp.y, wt, ht);
+		return new Rectangle2D.Double(wp.dx, wp.dy, wt, ht);
 	}
 }

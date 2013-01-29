@@ -27,6 +27,12 @@ public class Utils {
 	
 	static {
 		boolean chk = false;
+		if(TEMP_DIR.exists())
+			try {
+				removeDirectory(TEMP_DIR, true);
+			} catch (FileNotFoundException e1) {
+				e1.printStackTrace();
+			}
 		for(int i = 0; i < 5; i++) {
 			chk = TEMP_DIR.mkdir();
 			if(chk)

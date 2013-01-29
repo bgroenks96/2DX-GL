@@ -57,18 +57,19 @@ public class RenderControl {
 	protected volatile VolatileImage disp;
 	protected volatile int[] pixelData;
 	protected volatile long lastResizeFinish;
-	protected volatile boolean applyGamma, updateGamma;
+	protected volatile boolean applyGamma, updateGamma, scheduledResize;
 
 	protected List<Renderable> rtasks = new ArrayList<Renderable>(), delQueue = new Vector<Renderable>();
-	protected Map<Integer, Renderable> addQueue = new ConcurrentSkipListMap<Integer, Renderable>();
+	protected List<QueuedRenderable> addQueue = new Vector<QueuedRenderable>();
 	protected RenderLoop loop;
-	protected AutoResize resize;
+	protected AutoResize autoResize;
 	protected Future<?> taskCallback;
 	protected int buffs;
 	protected float gamma = 1.0f;
 
 	protected GammaTable gammaTable = new GammaTable(gamma);
 	protected Map<RenderingHints.Key, Object> renderOps;
+	protected Semaphore loopChk = new Semaphore(1, true);
 
 	/**
 	 * Creates a RenderControl object that can be used to render data to a Display.
@@ -81,10 +82,10 @@ public class RenderControl {
 
 		renderOps = new HashMap<RenderingHints.Key, Object>();
 		loop = new RenderLoop();
-		resize = new AutoResize();
+		autoResize = new AutoResize();
 
 		canvas.setIgnoreRepaint(true);
-		canvas.addComponentListener(resize);
+		canvas.addComponentListener(autoResize);
 		canvas.addFocusListener(new FocusListener() {
 
 			@Override
@@ -123,7 +124,14 @@ public class RenderControl {
 	 * @param active true to enable active rendering/updates, false to disable rendering/updates
 	 */
 	public void setRenderActive(boolean active) {
-		loop.active = active;
+		try {
+			loopChk.acquire();
+			loop.active = active;
+		} catch (InterruptedException e) {
+			e.printStackTrace();
+		} finally {
+			loopChk.release();
+		}
 	}
 
 	/**
@@ -159,7 +167,7 @@ public class RenderControl {
 		loop = null;
 		pri = null;
 		disp = null;
-		resize = null;
+		autoResize = null;
 		taskCallback = null;
 	}
 
@@ -262,7 +270,10 @@ public class RenderControl {
 		if (pos == POSITION_LAST) {
 			pos = (addQueue.size() == 0) ? rtasks.size():rtasks.size() + addQueue.size();
 		}
-		addQueue.put(Integer.valueOf(pos), r);
+		QueuedRenderable qr = new QueuedRenderable();
+		qr.pos = pos;
+		qr.r = r;
+		addQueue.add(qr);
 	}
 
 	/**
@@ -341,6 +352,8 @@ public class RenderControl {
 		// If the component was being resized, cancel rendering until finished (prevents flickering).
 		if(System.nanoTime() - lastResizeFinish < RESIZE_TIMER)
 			return;
+		if(canvas.getParent() == null)
+			return;
 		BufferStrategy bs = canvas.getBufferStrategy();
 		if(bs == null) {
 			canvas.createBufferStrategy(buffs);
@@ -409,7 +422,7 @@ public class RenderControl {
 		} finally {
 			g.dispose();
 		}
-		if(!bs.contentsLost())
+		if(!bs.contentsLost() && canvas.getParent() != null)
 			bs.show();
 	}
 
@@ -542,8 +555,8 @@ public class RenderControl {
 
 					if(addQueue.size() > 0) {
 
-						for(Integer i:addQueue.keySet()) {
-							rtasks.add(i, addQueue.get(i));
+						for(QueuedRenderable qr:addQueue) {
+							rtasks.add(qr.pos, qr.r);
 						}
 						addQueue.clear();
 
@@ -557,8 +570,14 @@ public class RenderControl {
 						delQueue.clear();
 					}
 
+					if(scheduledResize) {
+						autoResize.resize();
+						scheduledResize = false;
+					}
+
 					if(updateGamma) {
 						gammaTable.setGamma(gamma);
+						updateGamma = false;
 					}
 
 					double now = System.nanoTime();
@@ -607,16 +626,20 @@ public class RenderControl {
 						}
 					}
 
+					loopChk.release();
 					while (now - lastRenderTime < targetTimeBetweenRenders && now - lastUpdateTime < timeBetweenUpdates) {
 						Thread.yield();
 						now = System.nanoTime();
 					}
+					loopChk.acquire();
 
-					if(!active)
+					if(!active) {
 						// preserve CPU if loop is currently is currently inactive.
 						// the constant can be lowered to reduce latency when re-focusing.
 						Thread.sleep(SLEEP_WHILE_INACTIVE);
+					}
 				} catch(Exception e) {
+					System.err.println("Snapdragon2D: error in rendering loop");
 					e.printStackTrace();
 				}
 			}
@@ -642,38 +665,41 @@ public class RenderControl {
 		}
 	}
 
+	protected class QueuedRenderable {
+		Renderable r;
+		int pos;
+	}
+
 	protected class AutoResize extends ComponentAdapter {
 
-		private int wt, ht;
+		private volatile int wt, ht;
 
 		@Override
 		public void componentResized(ComponentEvent e) {
-			if (auto) {
-				resize(e.getComponent().getWidth(), e.getComponent()
-						.getHeight());
-				Iterator<Renderable> itr = rtasks.listIterator();
-				while (itr.hasNext()) {
-					itr.next().onResize(
-							new Dimension(wt, ht),
-							new Dimension(e.getComponent().getWidth(), e
-									.getComponent().getHeight()));
-				}
-
-				lastResizeFinish = System.nanoTime();
-			}
+			wt = e.getComponent().getWidth();
+			ht = e.getComponent().getHeight();
+			scheduledResize = true;
 		}
 
-		protected void resize(int wt, int ht) {
+		protected void resize() {
 			if (wt <= 0) {
 				wt = 1;
 			}
+
 			if (ht <= 0) {
 				ht = 1;
 			}
 
 			createImages(wt, ht);
-			this.wt = wt;
-			this.ht = ht;
+			if (auto) {
+				Iterator<Renderable> itr = rtasks.listIterator();
+				while (itr.hasNext()) {
+					Renderable r = itr.next();
+					r.onResize(new Dimension(wt, ht), new Dimension(wt, ht));
+				}
+
+				lastResizeFinish = System.nanoTime();
+			}
 		}
 
 	}

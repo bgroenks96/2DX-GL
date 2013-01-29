@@ -268,7 +268,7 @@ public class PhysicsTest extends JApplet {
 		}
 	}
 
-	class Entity {
+	private class Entity {
 		PhysicsNode pnode;
 		PointLD worldLoc;
 		Point screenLoc;

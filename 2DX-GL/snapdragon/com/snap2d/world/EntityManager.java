@@ -20,7 +20,11 @@ import com.snap2d.gl.*;
 import com.snap2d.world.event.*;
 
 /**
- * 
+ * Provides a facility for managing registered Entity objects.  Adding EntityManager as a Renderable
+ * task will allow all render/update calls to be forwarded to Entities registered with EntityManager.
+ * EntityManager also checks for collisions between all registered Entities on each update and fires
+ * a CollisionEvent when Entity collisions are detected.  EntityListeners can also be used to receive
+ * events for when a new Entity is registered or removed.
  * <br/><br/>
  * Note: EntityManager is NOT thread safe.  Only one thread should be responsible for modifying its
  * data, or the Object must be synchronized externally.
@@ -29,7 +33,7 @@ import com.snap2d.world.event.*;
  */
 public class EntityManager implements Renderable {
 
-	HashSet<Entity> entities = new HashSet<Entity>();
+	ArrayList<Entity> entities = new ArrayList<Entity>();
 	HashMap<Entity, List<EntityListener>> listeners = new HashMap<Entity, List<EntityListener>>();
 
 	/**

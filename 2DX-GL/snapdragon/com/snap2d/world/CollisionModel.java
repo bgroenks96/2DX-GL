@@ -92,10 +92,10 @@ public class CollisionModel {
 			throws IllegalStateException {
 		if(bitmasks == null)
 			throw(new IllegalStateException("no collision data"));
-		int x1 = thisObj.x;
-		int y1 = thisObj.y;
-		int x2 = otherObj.x;
-		int y2 = otherObj.y;
+		int x1 = Math.max(0, collisionArea.x - thisObj.x);
+		int y1 = Math.max(0, collisionArea.y - thisObj.y);
+		int x2 = Math.max(0, collisionArea.x - otherObj.x);
+		int y2 = Math.max(0, collisionArea.y - otherObj.y);
 		int wt = collisionArea.width;
 		int ht = collisionArea.height;
 		for(int y = 0; y < ht; y++) {
@@ -123,15 +123,17 @@ public class CollisionModel {
 	public void testWriteToFile() {
 		PrintWriter pw =  null;
 		try {
-			pw = new PrintWriter(new File("/home/brian/Desktop/imageModel.txt"));
+			pw = new PrintWriter(new File("/home/brian/Desktop/" + Math.random() + ".txt"));
 		} catch (FileNotFoundException e) {
 			e.printStackTrace();
 			return;
 		}
 
-		for(int y = (int)bounds.getHeight() - 1; y >= 0; y--) {
+		int wt = bitmasks[0].bitLength();
+		int ht = bitmasks.length;
+		for(int y = ht - 1; y >= 0; y--) {
 			BigInteger bitmask = bitmasks[y];
-			for(int x = (int)bounds.getWidth() - 1; x >= 0; x--) {
+			for(int x = wt - 1; x >= 0; x--) {
 				long a = bitmask.shiftRight(x).and(BigInteger.ONE).longValue();
 				if(a != 0)
 					pw.print("1");

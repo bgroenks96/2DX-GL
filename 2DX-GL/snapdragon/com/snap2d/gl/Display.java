@@ -69,6 +69,8 @@ public class Display {
 			frame.setUndecorated(true);
 			frame.setLocation(0, 0);
 			frame.setSize(getScreenSize());
+			wt = frame.getWidth();
+			ht = frame.getHeight();
 			break;
 		case WINDOWED:
 			frame = new JFrame();
@@ -163,6 +165,13 @@ public class Display {
 	public Dimension getScreenSize() {
 		return Toolkit.getDefaultToolkit().getScreenSize();
 	}
+	
+	/**
+	 * @return the current size of this Display regardless of whether or not it is being shown.
+	 */
+	public Dimension getSize() {
+		return new Dimension(wt, ht);
+	}
 
 	/**
 	 * Creates a new RenderControl to be used as a rendering handle for drawing to
@@ -173,6 +182,7 @@ public class Display {
 	 */
 	public RenderControl getRenderControl(int buffs) {
 		if(rc != null) {
+			rc.setRenderActive(false);
 			frame.remove(rc.canvas);
 			rc.dispose();
 		}
@@ -212,7 +222,6 @@ public class Display {
 	 */
 	public void dispose() {
 		if(rc != null) {
-			frame.remove(rc.canvas);
 			rc.dispose();
 		}
 		GraphicsDevice d = GraphicsEnvironment.getLocalGraphicsEnvironment().getDefaultScreenDevice();

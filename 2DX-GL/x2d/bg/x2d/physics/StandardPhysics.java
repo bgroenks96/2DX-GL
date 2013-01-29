@@ -24,8 +24,8 @@ public class StandardPhysics implements PhysicsNode {
 	
 	Gravity g = new Gravity();
 	
-	Vector2f vecf;
-	Vector2d vecd;
+	protected Vector2f vecf;
+	protected Vector2d vecd;
 	
 	double mass;
 
