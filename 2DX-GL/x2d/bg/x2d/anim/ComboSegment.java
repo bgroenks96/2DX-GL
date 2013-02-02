@@ -56,7 +56,7 @@ public class ComboSegment implements Segment {
 	}
 
 	@Override
-	public void transform(AffineTransform affine, Transform tf) {
+	public void transform(AffineTransform affine) {
 		if (start >= 0 && !isValid()) {
 			throw (new IllegalArgumentException("reset() was not called."));
 		} else if (start < 0) {
@@ -67,7 +67,7 @@ public class ComboSegment implements Segment {
 		if (isValid() && curr - last > 0) {
 			for (Segment s : segSet) {
 				if (s.isValid() || !s.isStarted()) {
-					s.transform(affine, tf);
+					s.transform(affine);
 				}
 			}
 			last = curr;

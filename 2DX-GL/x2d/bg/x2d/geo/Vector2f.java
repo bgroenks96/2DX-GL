@@ -178,7 +178,7 @@ public class Vector2f {
 	}
 
 	public float det(Vector2f arg) {
-		return (float) (x * arg.y - y * arg.x);
+		return x * arg.y - y * arg.x;
 	}
 
 	public float cross(Vector2f arg) {

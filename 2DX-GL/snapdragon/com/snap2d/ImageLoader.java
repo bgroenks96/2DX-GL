@@ -72,6 +72,15 @@ public class ImageLoader {
 		return img;
 	}
 
+	/**
+	 * Scales the given BufferedImage based on display size.  The Dimensions <code>prevDisp</code>
+	 * represents the screen dimensions <code>img</code> is sized for by default.
+	 * @param img the BufferedImage to scale
+	 * @param prevDisp display size <code>img</code> is sized to be viewed on.
+	 * @param quality quality of the scaling operation
+	 * @param aspectRatio true if the image's aspect ratio should be maintained, false otherwise
+	 * @return the scaled BufferedImage
+	 */
 	public static BufferedImage scaleFrom(BufferedImage img, Dimension prevDisp, ScaleQuality quality, boolean aspectRatio) {
 		Dimension screen = Toolkit.getDefaultToolkit().getScreenSize();
 		Dimension newSize = new Dimension();

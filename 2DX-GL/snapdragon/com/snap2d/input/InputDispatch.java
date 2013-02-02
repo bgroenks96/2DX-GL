@@ -76,16 +76,6 @@ public class InputDispatch {
 		mouseClients.remove(client);
 	}
 
-	public interface KeyEventClient {
-
-		public void processKeyEvent(KeyEvent e);
-	}
-
-	public interface MouseEventClient {
-
-		public void processMouseEvent(MouseEvent me);
-	}
-
 	private class KeyDispatcher implements KeyEventDispatcher {
 
 		@Override

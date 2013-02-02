@@ -58,7 +58,7 @@ public interface Segment {
 	 * @param affine
 	 * @param transform data for ongoing transformations
 	 */
-	public void transform(AffineTransform affine, Transform transform);
+	public void transform(AffineTransform affine);
 
 	/**
 	 * Checks to see if this Segment has been started (if <code>transform</code>

@@ -106,7 +106,7 @@ public class DilationSegment implements Segment {
 	 * enacted to keep the objects centered.
 	 */
 	@Override
-	public void transform(AffineTransform affine, Transform tf) {
+	public void transform(AffineTransform affine) {
 		if (start >= 0 && !isValid()) {
 			throw (new IllegalArgumentException("reset() was not called."));
 		} else if (start < 0) {

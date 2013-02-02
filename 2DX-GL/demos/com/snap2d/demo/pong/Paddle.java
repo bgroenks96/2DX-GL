@@ -19,8 +19,6 @@ import java.awt.geom.*;
 import bg.x2d.geo.*;
 
 import com.snap2d.input.*;
-import com.snap2d.input.InputDispatch.KeyEventClient;
-import com.snap2d.input.InputDispatch.MouseEventClient;
 import com.snap2d.physics.*;
 import com.snap2d.world.*;
 
@@ -39,10 +37,10 @@ public class Paddle extends Entity implements MouseEventClient, KeyEventClient {
 	public static final Color PADDLE_COLOR = Color.WHITE;
 
 	private static final Vector2f MOVE_VECTOR = new Vector2f(0, 20);
+	private static CollisionModel coll;
 
 	double lx, ly;
 	boolean up, down, useMouse;
-	CollisionModel coll;
 
 	/**
 	 * @param worldBounds
@@ -58,8 +56,9 @@ public class Paddle extends Entity implements MouseEventClient, KeyEventClient {
 			input.registerKeyClient(this);
 		this.useMouse = useMouse;
 
-		coll = new CollisionModel(new Rectangle(0,0,screenBounds.width, screenBounds.height), 
-				Color.BLACK, new AffineTransform(), true);
+		if(coll == null)
+			coll = new CollisionModel(new Rectangle(0,0,screenBounds.width, screenBounds.height), 
+					Color.BLACK, new AffineTransform(), true);
 	}
 
 	/**
@@ -106,7 +105,7 @@ public class Paddle extends Entity implements MouseEventClient, KeyEventClient {
 			MOVE_VECTOR.y = -Math.abs(MOVE_VECTOR.y);
 			applyVector(MOVE_VECTOR, 1);
 		}
-		
+
 		if(worldLoc.getY() > world.getY())
 			setWorldLoc(getWorldX(), world.getY());
 		else if(worldLoc.getY() - worldBounds.getHeight() < world.getY() - world.getWorldHeight())

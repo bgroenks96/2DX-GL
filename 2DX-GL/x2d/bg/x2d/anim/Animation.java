@@ -34,7 +34,6 @@ public class Animation implements Drawable {
 	LinkedList<Segment> queue = new LinkedList<Segment>();
 	LinkedList<Segment> dump = new LinkedList<Segment>();
 	private volatile boolean finis = false, loop = false;
-	private Transform tf;
 	private Segment seg;
 
 	private AffineTransform orig, curr;
@@ -81,7 +80,6 @@ public class Animation implements Drawable {
 			queue.add(s);
 		}
 		loop = autoLoop;
-		tf = new Transform();
 	}
 
 	/**
@@ -124,7 +122,6 @@ public class Animation implements Drawable {
 			queue.add(s);
 		}
 		dump.clear();
-		tf = new Transform();
 		finis = false;
 	}
 
@@ -169,7 +166,7 @@ public class Animation implements Drawable {
 		} else if (!seg.isValid() && seg.isStarted()) {
 			dump.add(queue.pollFirst());
 		} else {
-			seg.transform(curr, tf);
+			seg.transform(curr);
 		}
 	}
 }

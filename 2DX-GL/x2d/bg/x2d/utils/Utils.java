@@ -169,6 +169,28 @@ public class Utils {
 		if (delete) {
 			deleted = dir.delete();
 		}
+		
 		return deleted;
+	}
+	
+	public static <T> T[] arrayDelete(T[] arr, T[] dest, T...dels) {
+		if(arr == null || dest == null || dest.length != arr.length - dels.length)
+			throw(new IllegalArgumentException("null or invalid array argument"));
+		for(int i = 0; i < dels.length; i++) {
+			for(int ii = 0, offs = 0; ii < arr.length; ii++) {
+				if(ii >= dest.length)
+					return null;
+				if(arr[ii] != dels[i])
+					dest[ii - offs] = arr[ii];
+				else
+					offs++;
+			}
+		}
+		
+		return dest;
+	}
+	
+	public static int interpolate(int n, int lastN, float interpolation) {
+		return (int) Math.round(((n - lastN) * interpolation + lastN));
 	}
 }

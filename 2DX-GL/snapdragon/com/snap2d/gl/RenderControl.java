@@ -36,7 +36,6 @@ public class RenderControl {
 
 	public static final int POSITION_LAST = 0x07FFFFFFF;
 	public static final Color CANVAS_BACK = Color.WHITE;
-	public static final Color LIGHT_COLOR = Color.BLACK;
 
 	public static int stopTimeout = 2000;
 
@@ -64,12 +63,14 @@ public class RenderControl {
 	protected RenderLoop loop;
 	protected AutoResize autoResize;
 	protected Future<?> taskCallback;
+	protected Dimension initSize;
 	protected int buffs;
 	protected float gamma = 1.0f;
 
 	protected GammaTable gammaTable = new GammaTable(gamma);
 	protected Map<RenderingHints.Key, Object> renderOps;
-	protected Semaphore loopChk = new Semaphore(1, true);
+	
+	private Semaphore loopChk = new Semaphore(1, true);
 
 	/**
 	 * Creates a RenderControl object that can be used to render data to a Display.
@@ -415,6 +416,8 @@ public class RenderControl {
 			}
 
 			g.setRenderingHints(renderOps);
+			g.setColor(CANVAS_BACK);
+			g.fillRect(0, 0, canvas.getWidth(), canvas.getHeight());
 			if(disp != null)
 				g.drawImage(disp, 0, 0, null);
 			else
@@ -582,6 +585,9 @@ public class RenderControl {
 
 					double now = System.nanoTime();
 					if (active && (canvas.getWidth() > 0 && canvas.getHeight() > 0)) {
+						
+						if(initSize == null)
+							initSize = new Dimension(canvas.getWidth(), canvas.getHeight());
 
 						if(pri == null) {
 							createImages(canvas.getWidth(), canvas.getHeight());
@@ -695,7 +701,7 @@ public class RenderControl {
 				Iterator<Renderable> itr = rtasks.listIterator();
 				while (itr.hasNext()) {
 					Renderable r = itr.next();
-					r.onResize(new Dimension(wt, ht), new Dimension(wt, ht));
+					r.onResize(initSize, new Dimension(wt, ht));
 				}
 
 				lastResizeFinish = System.nanoTime();

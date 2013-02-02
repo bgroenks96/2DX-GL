@@ -71,7 +71,7 @@ public class TranslationSegment implements Segment {
 	}
 
 	@Override
-	public void transform(AffineTransform affine, Transform tf) {
+	public void transform(AffineTransform affine) {
 		if (start >= 0 && !isValid()) {
 			throw (new IllegalArgumentException("reset() was not called."));
 		} else if (start < 0) {

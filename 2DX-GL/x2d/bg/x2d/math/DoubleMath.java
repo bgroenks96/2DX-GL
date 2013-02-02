@@ -40,7 +40,7 @@ public class DoubleMath {
 			return 1;
 		
 		double x = arg0;
-		long lim = (long) Math.abs(power);
+		long lim = Math.abs(power);
 		for(long i = 1; i < lim; i++) {
 			x *= (power > 0) ? arg0:1/arg0;
 		}

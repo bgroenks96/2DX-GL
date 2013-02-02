@@ -1,4 +1,4 @@
-The 2DX Project - Open Source Java 2D Graphics Library
+﻿The 2DX Project - Open Source Java 2D Graphics Library
 
 2DX-GL (Advanced 2-dimensional Graphics Library)
     Extends the Java2D (AWT/Swing) API by adding more high-level functionality for rendering 2D geometry, UIs,
@@ -27,8 +27,8 @@ To-do (next commit):
 Snapdragon2D
 Project dev status: Alpha
 To-do (next commit):
+-Built-in, basic UI features (implementations of RenderedComponent)
 -Lighting engine
--Entity mangement (?)
 -Snapdragon2D physics package
 
 

@@ -11,7 +11,7 @@
  */
 
 /**
- * Demo for Snapdragon2D - implementation of Pong.  Currently a work in progress.
+ * Demo for Snapdragon2D - implementation of Pong.
  */
 package com.snap2d.demo.pong;
 
@@ -24,7 +24,6 @@ import bg.x2d.physics.PhysicsNode.Collision;
 import com.snap2d.gl.*;
 import com.snap2d.gl.Display.Type;
 import com.snap2d.input.*;
-import com.snap2d.input.InputDispatch.KeyEventClient;
 import com.snap2d.world.*;
 import com.snap2d.world.event.*;
 

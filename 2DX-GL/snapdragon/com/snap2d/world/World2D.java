@@ -113,8 +113,8 @@ public class World2D {
 		if(ppu < 1)
 			throw(new IllegalArgumentException("illegal pixel-per-unit value: " + ppu));
 		this.ppu = ppu;
-		maxX = minX + ((double)viewWidth / ppu);
-		maxY = minY - ((double)viewHeight / ppu);
+		maxX = minX + (viewWidth / ppu);
+		maxY = minY - (viewHeight / ppu);
 		wt = Math.abs(maxX - minX);
 		ht = Math.abs(maxY - minY);
 	}
