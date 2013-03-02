@@ -1,5 +1,5 @@
 /*
- *  Copyright © 2011-2012 Brian Groenke
+ *  Copyright © 2011-2013 Brian Groenke
  *  All rights reserved.
  * 
  *  This file is part of the 2DX Graphics Library.
@@ -11,7 +11,7 @@
  */
 
 #define WINVER 0x0500
-#define _WIN32_WINNT 0x0500
+#define _WIN32_WINNT 0x0501
 
 #include <windows.h>
 #include <stdio.h>
@@ -76,6 +76,11 @@ int get_system_total_ram(DWORDLONG* ram_ptr) {
 	return 1;
 }
 
+DWORD get_proc_id() {
+    HANDLE proc = GetCurrentProcess();
+    return GetProcessId(proc);
+}
+
 JNIEXPORT jstring JNICALL Java_bg_x2d_Local_getGraphicsDevice
   (JNIEnv *env, jclass jc) {
   	DISPLAY_INFO info;
@@ -111,4 +116,9 @@ JNIEXPORT jlong JNICALL Java_bg_x2d_Local_getSystemTotalRAM
 	if(!chk)
 		return -1;
 	return (jlong) mem;
+}
+
+JNIEXPORT jint JNICALL Java_bg_x2d_Local_getProcessId
+  (JNIEnv *env, jclass class) {
+    return (jint) get_proc_id();  
 }

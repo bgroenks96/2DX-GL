@@ -177,8 +177,9 @@ public class RenderedLayout implements Renderable, MouseEventClient {
 
 	/**
 	 * Sets whether or not to keep this RenderedLayout's aspect ratio.  Has no effect
-	 * on the scaling of child components.  {@link #RenderedComponent.keepAspectRatio}
+	 * on the scaling of child components.
 	 * @param aspect
+	 * @see com.snap2d.ui.RenderedComponent#keepAspectRatio
 	 */
 	public void setKeepAspectRatio(boolean aspect) {
 		aspectRatio = aspect;

@@ -12,7 +12,7 @@
 
 package bg.x2d.gen;
 
-import java.util.Random;
+import java.util.*;
 
 /**
  * Generates a random number between the specified bounds using the
@@ -62,6 +62,7 @@ public class NumberGenerator<T extends Number> implements Generator<T> {
 		double high = ((Number) highBound).doubleValue();
 		double diff = high - low;
 		Double result = low + (rand.nextDouble() * diff);
+		
 		if (lowBound instanceof Double) {
 			return (T) result;
 		} else if (lowBound instanceof Integer) {
@@ -78,5 +79,10 @@ public class NumberGenerator<T extends Number> implements Generator<T> {
 			throw (new NumberFormatException(
 					"NumberGenerator only supports the Java(tm) language Number (java.lang.Number) types."));
 		}
+	}
+	
+	public static void main(String[] args) {
+		Integer i = new NumberGenerator<Integer>(-50,50).generate();
+		System.out.println(i.intValue());
 	}
 }

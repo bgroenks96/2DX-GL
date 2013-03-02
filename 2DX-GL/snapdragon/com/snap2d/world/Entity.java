@@ -125,18 +125,24 @@ public abstract class Entity implements Renderable, Serializable {
 		setWorldLoc(np.getX(), np.getY());
 	}
 
+	/**
+	 * Returns a Rectangle2D representing the Entity's bounds in world space.  Note that these bounds
+	 * are created against a <b>Cartesian</b> coordinate system <b>NOT the screen</b> coordinate system, so
+	 * Java2D geometry functions will not work.
+	 * @return
+	 */
 	public Rectangle2D getWorldBounds() {
 		return worldBounds;
 	}
 	
 	/**
-	 * This method inverts the Y value to compensate for the inverted Y-axis.  Bounds returned from
+	 * This method subtracts height from the Y value to compensate for the inverted Y-axis.  Bounds returned from
 	 * this method will function correctly with the built-in Java geometry system.
 	 * @return
 	 */
 	public Rectangle2D getCompatibleBounds() {
-		return new Rectangle2D.Double(worldBounds.getX(), -worldBounds.getY(), worldBounds.getWidth(), 
-				worldBounds.getHeight());
+		return new Rectangle2D.Double(worldBounds.getX(), worldBounds.getY() - worldBounds.getHeight()
+				, worldBounds.getWidth(), worldBounds.getHeight());
 	}
 
 	public Rectangle getScreenBounds() {
@@ -169,14 +175,14 @@ public abstract class Entity implements Renderable, Serializable {
 	 * @param e
 	 * @return the computed intersection box between the two Entities in world space or null if no collision
 	 */
-	public Rectangle2D getCollision(Entity e) {
+	public EntityCollision getCollision(Entity e) {
 		Rectangle2D coll = world.checkCollision(this.worldBounds, e.worldBounds);
 		if(coll == null)
-			return coll;
+			return null;
 		CollisionModel cmodel = getCollisionModel();
 		Rectangle collRect = world.convertWorldRect(coll);
 		if(cmodel.collidesWith(collRect, screenBounds, e.screenBounds, e.getCollisionModel()))
-			return coll;
+			return new EntityCollision(e, coll);
 		else
 			return null;
 	}
@@ -200,4 +206,14 @@ public abstract class Entity implements Renderable, Serializable {
 	 * @return the Entity's CollisionModel
 	 */
 	public abstract CollisionModel getCollisionModel();
+	
+	public class EntityCollision {
+	    Entity e;
+		Rectangle2D collisionBox;
+		
+		EntityCollision(Entity e, Rectangle2D collisionBox) {
+			this.e = e;
+			this.collisionBox = collisionBox;
+		}
+	}
 }

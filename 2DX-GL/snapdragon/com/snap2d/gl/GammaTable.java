@@ -54,11 +54,39 @@ public class GammaTable {
 		int newColor = ColorUtils.packInt(argb);
 		return newColor;
 	}
+	
+	/**
+	 * Same as {@link #applyGamma(int, int, int[])} but uses the separate ARGB values stored
+	 * in the given array.
+	 * @param argb
+	 * @return
+	 */
+	public int[] applyGamma(int[] argb) {
+		for(int i = 0; i < argb.length; i++) {
+			int col = argb[i];
+			argb[i] = table[col];
+		}
+		return argb;
+	}
+	
+	/**
+	 * Applies gamma correction to a single ARGB component value.  
+	 * <br/><br/>
+	 * Note: Value must be within valid color range (0-255) or ArrayIndexOutOfBounds exception
+	 * will be thrown by the VM.
+	 * @param val
+	 * @return the gamma modified color component
+	 */
+	public int applyGamma(int val) {
+		return table[val];
+	}
 
 	/**
 	 * Sets the gamma and rebuilds the internal gamma table.  The passed value
 	 * should be >= 0.0 specifying how much to darken or brighten the image, where
 	 * 1.0 has no change, < 1 is darker, and > 1 is brighter.
+	 * <br/><br/>
+	 * This method MAY consume noticeable time in the calling thread from rebuilding the gamma table.
 	 * @param gamma the new gamma value
 	 */
 	public void setGamma(float gamma) {

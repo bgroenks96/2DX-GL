@@ -193,4 +193,20 @@ public class Utils {
 	public static int interpolate(int n, int lastN, float interpolation) {
 		return (int) Math.round(((n - lastN) * interpolation + lastN));
 	}
+	
+	/**
+	 * Computes the size of an Object by serializing it to memory and checking
+	 * the buffer size.
+	 * 
+	 * @param obj
+	 * @return
+	 * @throws IOException
+	 */
+	public static int sizeof(Object obj) throws IOException {
+		ByteArrayOutputStream bos = new ByteArrayOutputStream();
+		ObjectOutputStream oos = new ObjectOutputStream(bos);
+		oos.writeObject(obj);
+		oos.close();
+		return bos.size();
+	}
 }

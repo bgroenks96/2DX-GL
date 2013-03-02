@@ -1,5 +1,5 @@
 /*
- *  Copyright © 2011-2012 Brian Groenke
+ *  Copyright © 2011-2013 Brian Groenke
  *  All rights reserved.
  * 
  *  This file is part of the 2DX Graphics Library.
@@ -14,6 +14,7 @@
 #include <string.h>
 #include <stdlib.h>
 #include <stdio.h>
+#include <unistd.h>
 #include "bg_x2d_Local.h"
 
 #define MAX_STR_LEN 128
@@ -101,6 +102,10 @@ int get_system_total_ram(unsigned long* total) {
     return chk;
 }
 
+pid_t get_proc_id() {
+    return getpid(); 
+}
+
 JNIEXPORT jstring JNICALL Java_bg_x2d_Local_getGraphicsDevice
   (JNIEnv *env, jclass jc) {
     char str[MAX_STR_LEN];
@@ -132,4 +137,9 @@ JNIEXPORT jlong JNICALL Java_bg_x2d_Local_getSystemTotalRAM
     if(chk != 0)
       return -1;
     return (jlong) mem;
+}
+
+JNIEXPORT jint JNICALL Java_bg_x2d_Local_getProcessId
+  (JNIEnv *env, jclass class) {
+    return (jint) get_proc_id();
 }

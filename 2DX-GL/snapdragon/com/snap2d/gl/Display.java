@@ -196,12 +196,14 @@ public class Display {
 	 * the frame to be activated as the system's full screen display view.
 	 */
 	public void show() {
-		frame.setVisible(true);
 		if(type == Type.FULLSCREEN) {
 			GraphicsDevice d = GraphicsEnvironment.getLocalGraphicsEnvironment().getDefaultScreenDevice();
-			if(d.isFullScreenSupported())
+			if(d.isFullScreenSupported() && type.useNativeFullscreen)
 				d.setFullScreenWindow(frame);
-		}
+			else
+				frame.setVisible(true);
+		} else
+			frame.setVisible(true);
 	}
 
 	/**
@@ -232,6 +234,24 @@ public class Display {
 	public enum Type {
 
 		WINDOWED, FULLSCREEN;
+		
+		boolean useNativeFullscreen = true;
+		
+		/**
+		 * Only relevant for Type.FULLSCREEN mode.  Sets the Display as a native fullscreen window rather
+		 * than just displaying a screen-sized frame.  This feature is especially useful on Windows systems.
+		 * <br/><br/>
+		 * Note: Using this feature will often cause the native graphics driver to enforce settings like vertical-sync
+		 *     or triple buffering on the rendering system.
+		 * @param nativeFullscreen
+		 */
+		public void setUseNativeFullscreen(boolean nativeFullscreen) {
+			this.useNativeFullscreen = nativeFullscreen;
+		}
+		
+		public boolean isNativeFullscreen() {
+			return useNativeFullscreen;
+		}
 	}
 
 	// ----- DEPRECATED ------- //

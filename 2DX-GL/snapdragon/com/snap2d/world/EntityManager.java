@@ -17,6 +17,7 @@ import java.util.*;
 import java.util.List;
 
 import com.snap2d.gl.*;
+import com.snap2d.world.Entity.EntityCollision;
 import com.snap2d.world.event.*;
 
 /**
@@ -64,6 +65,14 @@ public class EntityManager implements Renderable {
 		entities.clear();
 		listeners.clear();
 	}
+	
+	public boolean contains(Entity e) {
+		return entities.contains(e);
+	}
+	
+	public Entity[] getEntities() {
+		return entities.toArray(new Entity[entities.size()]);
+	}
 
 	/**
 	 * 
@@ -108,7 +117,8 @@ public class EntityManager implements Renderable {
 	 *   each pass (avoids performing the same check multiple times).
 	 * collCache - holds each collided Entity during each iteration to be used for firing the collision event.
 	 */
-	ArrayList<Entity> chkCache = new ArrayList<Entity>(), collCache = new ArrayList<Entity>();
+	ArrayList<Entity> chkCache = new ArrayList<Entity>();
+	ArrayList<EntityCollision> collCache = new ArrayList<EntityCollision>();
 
 	/**
 	 * Dispatches the renderer's update request to all registered Entity objects and
@@ -121,11 +131,13 @@ public class EntityManager implements Renderable {
 			e.update(nanoTimeNow, nanosSinceLastUpdate);
 			chkCache.remove(e);
 			for(Entity opp:chkCache) {
-				if(e.collidesWith(opp))
-					collCache.add(opp);
+				EntityCollision coll;
+				if((coll=e.getCollision(opp)) != null) {
+					collCache.add(coll);
+				}
 			}
 			if(collCache.size() > 0) {
-				fireCollisionEvent(e, collCache.toArray(new Entity[collCache.size()]));
+				fireCollisionEvent(e, collCache.toArray(new EntityCollision[collCache.size()]));
 				collCache.clear();
 			}
 		}
@@ -140,11 +152,11 @@ public class EntityManager implements Renderable {
 			e.onResize(oldSize, newSize);
 	}
 
-	protected void fireCollisionEvent(Entity e, Entity...entities) {
+	protected void fireCollisionEvent(Entity e, EntityCollision...colls) {
 		List<EntityListener> queue = listeners.get(e);
 		if(queue == null || queue.size() == 0)
 			return;
-		CollisionEvent evt = new CollisionEvent(e, entities);
+		CollisionEvent evt = new CollisionEvent(e, colls);
 		for(EntityListener el:queue) {
 			el.onCollision(evt);
 		}

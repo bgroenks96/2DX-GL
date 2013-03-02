@@ -53,11 +53,16 @@ public class World2D {
 		setViewSize(viewWidth, viewHeight, ppu);
 	}
 
+	@Deprecated
 	/**
 	 * The Rectangle2D returned is not compatible with the built in Java2D functions due to the
 	 * inverted Y-axis.  If you need a compatible world bounds for geometry checking, use
-	 * #getCompatibleBounds
-	 * @return the viewport of the 2D coordinate system currently on screen
+	 * #getCompatibleBounds.
+	 * <br/><br/>
+	 * It is recommended that you explicitly 
+	 * use #getX, #getY, #getWorldWidth, and #getWorldWidth as opposed
+	 * to this method to avoid bugs produced by incompatible coordinate system geometry.
+	 * @return the viewport of the 2D coordinate system currently on screen (in world coordinates)
 	 * @see getCompatibleBounds
 	 */
 	public Rectangle2D getBounds() {
@@ -65,12 +70,12 @@ public class World2D {
 	}
 	
 	/**
-	 * This method inverts the Y value to compensate for the inverted Y-axis.  Bounds returned from
+	 * This method subtracts height from the Y value to compensate for the inverted Y-axis.  Bounds returned from
 	 * this method will function correctly with the built-in Java geometry system.
 	 * @return
 	 */
 	public Rectangle2D getCompatibleBounds() {
-		return new Rectangle2D.Double(minX, -minY, wt, ht);
+		return new Rectangle2D.Double(minX, minY - ht, wt, ht);
 	}
 
 	/**
@@ -141,7 +146,8 @@ public class World2D {
 
 	/**
 	 * Checks for a collision between the two rectangles and returns the calculated area
-	 * of collision (if one exists).
+	 * of collision (if one exists).  Note that the returned Rectangle2D is not compatible and
+	 * represents the collision area in world coordinates.
 	 * @param r1 rectangle to test for collision with second
 	 * @param r2 rectangle to test for collision with first
 	 * @return a rectangle representing the overlap of the two rectangles in world space.
@@ -165,11 +171,23 @@ public class World2D {
 			return new Rectangle2D.Double(Math.max(x1, x2), Math.min(y1, y2), xOverlap, yOverlap);
 	}
 	
-	public boolean worldContains(Rectangle2D rect) {
+	/**
+	 * Checks if the given Rectangle2D is fully contained within this World2D's viewport.
+	 * Compatible bounds are used for the check.
+	 * @param rect
+	 * @return
+	 */
+	public boolean viewContains(Rectangle2D rect) {
 		return getCompatibleBounds().contains(rect);
 	}
 	
-	public boolean worldIntersects(Rectangle2D rect) {
+	/**
+	 * Checks if the given Rectangle2D intersects with this World2D's viewport.
+	 * Compatible bounds are used for the check.
+	 * @param rect
+	 * @return
+	 */
+	public boolean viewIntersects(Rectangle2D rect) {
 		return getCompatibleBounds().intersects(rect);
 	}
 
@@ -214,7 +232,7 @@ public class World2D {
 	/**
 	 * Converts the given Rectangle representing bounds in screen space to corresponding
 	 * Rectangle2D bounds in world space.  This method first converts the x,y coordinates, then
-	 * scales the rectangle by this World2D's current pixels-per-unit value.
+	 * scales the rectangle by this World2eD's current pixels-per-unit value.
 	 * @param r
 	 * @return
 	 */
@@ -223,5 +241,25 @@ public class World2D {
 		double wt = r.width / ppu;
 		double ht = r.height / ppu;
 		return new Rectangle2D.Double(wp.dx, wp.dy, wt, ht);
+	}
+	
+	/**
+	 * Replaced by more appropriately named {@link #viewContains}
+	 * @param rect
+	 * @return
+	 */
+	@Deprecated
+	public boolean worldContains(Rectangle2D rect) {
+		return viewContains(rect);
+	}
+	
+	/**
+	 * Replaced by more appropriately named {@link #viewIntersects}
+	 * @param rect
+	 * @return
+	 */
+	@Deprecated
+	public boolean worldIntersects(Rectangle2D rect) {
+		return viewIntersects(rect);
 	}
 }

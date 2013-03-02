@@ -417,7 +417,7 @@ public class PhysicsTest extends JApplet {
 
 		SettingsDialog() {
 			setTitle("Physics Control");
-			setDefaultCloseOperation(JDialog.DISPOSE_ON_CLOSE);
+			setDefaultCloseOperation(WindowConstants.DISPOSE_ON_CLOSE);
 
 			Box main = Box.createVerticalBox();
 

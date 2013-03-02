@@ -106,9 +106,14 @@ public class GLConfig {
 		PM_OFF_SCREEN("sun.java2d.pmoffscreen", "false"),
 		
 		/**
+		 * Boolean (default=true)   * MS-Windows only *
+		 */
+		SNAP2D_WINDOWS_HIGH_RES_TIMER("com.snap2d.gl.force_timer", "true"),
+		
+		/**
 		 * Boolean (default=true)
 		 */
-		SNAP2D_WINDOWS_HIGH_RES_TIMER("com.snap2d.gl.force_timer", "true");
+		SNAP2D_PRINT_RENDER_STAT("com.snap2d.gl.printframes", "true");
 
 		private String property, defValue;
 

@@ -190,4 +190,12 @@ public class Friction extends Force {
 		}
 		return vec;
 	}
+
+	/**
+	 *
+	 */
+	@Override
+	public double getAcceleration(double mass) {
+		return (vecd != null) ? -dkc * dg : -fkc * fg;
+	}
 }

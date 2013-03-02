@@ -14,6 +14,11 @@ package bg.x2d.physics;
 
 import bg.x2d.geo.*;
 
+/**
+ * Base class for all physics Forces that can be applied to velocity
+ * vectors.
+ * @author Brian Groenke
+ */
 public abstract class Force {
 
 	protected Vector2f vecf;
@@ -38,6 +43,15 @@ public abstract class Force {
 	 * @return the amount of force exerted on the given object.
 	 */
 	public abstract double getNewtonForce(double mass);
+	
+	/**
+	 * Implementation dependent.  Standard implementation for a Newton force
+	 * will compute this value using F = ma.  Gravity, on the other hand, will
+	 * behave as a field and accelerate all masses the same regardless of mass.
+	 * @param mass
+	 * @return the acceleration in m/s/s
+	 */
+	public abstract double getAcceleration(double mass);
 
 	/**
 	 * Applies this force to the given Vector2f.

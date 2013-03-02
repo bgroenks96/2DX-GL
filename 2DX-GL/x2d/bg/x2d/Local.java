@@ -123,23 +123,32 @@ public abstract class Local {
 	 * Attempts to determine the human-readable identifier of the graphics device installed on this machine.
 	 * Usually this method returns the name of the installed video hardware responsible for handling VGA output.
 	 * The exact model/name returned may vary depending on the underlying OS.
+	 * @throws UnsatisfiedLinkError if 2DX does not support native libraries on the current platform
 	 */
-	public static native String getGraphicsDevice();
+	public static native String getGraphicsDevice() throws UnsatisfiedLinkError;
 
 	/**
 	 * Fetches the amount of RAM the system has available.  As opposed to the built in Java functions, this method
 	 * obtains the amount of free RAM system-wide, outside of the virtual machine.
 	 * @return free system RAM in bytes, or -1 if an error occurred.
+	 * @throws UnsatisfiedLinkError if 2DX does not support native libraries on the current platform
 	 */
-	public static native long getSystemAvailableRAM();
+	public static native long getSystemAvailableRAM() throws UnsatisfiedLinkError;
 
 	/**
 	 * Fetches the total amount of RAM installed on the system.  As opposed to the built in Java functions, this method
 	 * obtains the total amount of RAM installed on the hardware.  The accuracy of the result may vary depending on the
 	 * platform.
 	 * @return total system installed RAM in bytes, or -1 if an error occurred.
+	 * @throws UnsatisfiedLinkError if 2DX does not support native libraries on the current platform
 	 */
-	public static native long getSystemTotalRAM();
+	public static native long getSystemTotalRAM() throws UnsatisfiedLinkError;
+	
+	/**
+	 * @return the underlying OS identifier for the current process
+	 * @throws UnsatisfiedLinkError if 2DX does not support native libraries on the current platform
+	 */
+	public static native int getProcessId() throws UnsatisfiedLinkError;
 
 	/**
 	 * 

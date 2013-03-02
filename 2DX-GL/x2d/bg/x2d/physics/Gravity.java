@@ -98,4 +98,12 @@ public class Gravity extends Force {
 	public Vector2d applyTo(double time, double mass, Vector2d forceSum, Vector2d vec) {
 		return vec.add(vecd.multNew(time));
 	}
+
+	/**
+	 *
+	 */
+	@Override
+	public double getAcceleration(double mass) {
+		return ga;
+	}
 }

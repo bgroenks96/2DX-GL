@@ -31,6 +31,10 @@ public class FloatMath {
 		return (arg1 <= arg0 + round && arg1 >= arg0 - round);
 	}
 	
+	public static boolean equals(float arg0, float arg1, float round) {
+		return (arg1 <= arg0 + round && arg1 >= arg0 - round);
+	}
+	
 	/**
 	 * A much faster, simpler method of raising a number to an exponent than Math.pow, at
 	 * the cost of accuracy.

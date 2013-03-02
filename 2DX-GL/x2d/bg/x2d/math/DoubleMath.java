@@ -28,6 +28,10 @@ public class DoubleMath {
 		return (arg1 <= arg0 + round && arg1 >= arg0 - round);
 	}
 	
+	public static boolean equals(double arg0, double arg1, double round) {
+		return (arg1 <= arg0 + round && arg1 >= arg0 - round);
+	}
+	
 	/**
 	 * A much faster, simpler way of raising a number to an exponent than Math.pow.
 	 * Note: The obvious limitation is the required integer exponent

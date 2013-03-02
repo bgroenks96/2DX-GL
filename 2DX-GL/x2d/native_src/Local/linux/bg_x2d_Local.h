@@ -31,6 +31,14 @@ JNIEXPORT jlong JNICALL Java_bg_x2d_Local_getSystemAvailableRAM
 JNIEXPORT jlong JNICALL Java_bg_x2d_Local_getSystemTotalRAM
   (JNIEnv *, jclass);
 
+/*
+ * Class:     bg_x2d_Local
+ * Method:    getProcessId
+ * Signature: ()I
+ */
+JNIEXPORT jint JNICALL Java_bg_x2d_Local_getProcessId
+  (JNIEnv *, jclass);
+
 #ifdef __cplusplus
 }
 #endif

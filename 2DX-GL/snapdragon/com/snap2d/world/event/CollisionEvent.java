@@ -13,6 +13,7 @@
 package com.snap2d.world.event;
 
 import com.snap2d.world.*;
+import com.snap2d.world.Entity.EntityCollision;
 
 public class CollisionEvent extends EntityEvent {
 
@@ -21,18 +22,18 @@ public class CollisionEvent extends EntityEvent {
 	 */
 	private static final long serialVersionUID = -2631149230119417861L;
 	
-	private Entity[] targets;
+	private EntityCollision[] colls;
 
 	/**
 	 * 
 	 * @param source
 	 */
-	public CollisionEvent(Entity source, Entity...targets) {
+	public CollisionEvent(Entity source, EntityCollision...colls) {
 		super(source);
-		this.targets = targets;
+		this.colls = colls;
 	}
 	
-	public Entity[] getTargets() {
-		return targets;
+	public EntityCollision[] getCollisions() {
+		return colls;
 	}
 }

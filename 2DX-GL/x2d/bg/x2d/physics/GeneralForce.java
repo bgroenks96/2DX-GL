@@ -100,4 +100,12 @@ public class GeneralForce extends Force {
 		return vec;
 	}
 
+	/**
+	 *
+	 */
+	@Override
+	public double getAcceleration(double mass) {
+		return getNewtonForce(mass) / mass;
+	}
+
 }

@@ -33,9 +33,6 @@ public class CodecJSound implements ICodec {
 	private Semaphore sync = new Semaphore(1, true);
 	private volatile boolean init, eos;
 
-	/* (non-Javadoc)
-	 * @see paulscode.sound.ICodec#cleanup()
-	 */
 	@Override
 	public void cleanup() {
 		try {
@@ -48,9 +45,6 @@ public class CodecJSound implements ICodec {
 		audioIn = null;
 	}
 
-	/* (non-Javadoc)
-	 * @see paulscode.sound.ICodec#endOfStream()
-	 */
 	@Override
 	public boolean endOfStream() {
 		boolean eos = false;
@@ -66,9 +60,6 @@ public class CodecJSound implements ICodec {
 		return eos;
 	}
 
-	/* (non-Javadoc)
-	 * @see paulscode.sound.ICodec#getAudioFormat()
-	 */
 	@Override
 	public AudioFormat getAudioFormat() {
 		if(audioIn != null)
@@ -77,9 +68,6 @@ public class CodecJSound implements ICodec {
 			return null;
 	}
 
-	/* (non-Javadoc)
-	 * @see paulscode.sound.ICodec#initialize(java.net.URL)
-	 */
 	@Override
 	public boolean initialize(URL sound) {
 		try {
@@ -99,9 +87,6 @@ public class CodecJSound implements ICodec {
 		return false;
 	}
 
-	/* (non-Javadoc)
-	 * @see paulscode.sound.ICodec#initialized()
-	 */
 	@Override
 	public boolean initialized() {
 		boolean init = false;
@@ -116,9 +101,6 @@ public class CodecJSound implements ICodec {
 		return init;
 	}
 
-	/* (non-Javadoc)
-	 * @see paulscode.sound.ICodec#read()
-	 */
 	@Override
 	public SoundBuffer read() {
 		if(audioIn == null || audioIn.getFormat() == null) {
@@ -160,9 +142,6 @@ public class CodecJSound implements ICodec {
 		return new SoundBuffer(buff, audioIn.getFormat());
 	}
 
-	/* (non-Javadoc)
-	 * @see paulscode.sound.ICodec#readAll()
-	 */
 	@Override
 	public SoundBuffer readAll() {
 		if(audioIn == null || audioIn.getFormat() == null) {
@@ -211,12 +190,9 @@ public class CodecJSound implements ICodec {
 		return buffer;
 	}
 
-	/* (non-Javadoc)
-	 * @see paulscode.sound.ICodec#reverseByteOrder(boolean)
-	 */
 	@Override
 	public void reverseByteOrder(boolean arg0) {
-		// shouldn't be an issue for AU files
+		// shouldn't be an issue for JavaSound audio streams
 	}
 
 	private byte[] trimArray(byte[] bytes, int maxLen) {

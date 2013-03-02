@@ -17,7 +17,6 @@ import java.awt.geom.*;
 
 import bg.x2d.geo.*;
 import bg.x2d.physics.*;
-import bg.x2d.physics.PhysicsNode.Collision;
 
 import com.snap2d.physics.*;
 import com.snap2d.world.*;
@@ -67,6 +66,7 @@ public class Ball extends Entity {
 		double wy = worldLoc.dy;
 		int x,y;
 		wy = interpolate(wy, ly, interpolation); // interpolate with the last position
+		wx = interpolate(wx, lx, interpolation);
 		Point p = world.worldToScreen(wx, wy);
 		x = p.x;
 		y = p.y;
@@ -82,11 +82,11 @@ public class Ball extends Entity {
 		lx = getWorldX();
 		ly = getWorldY();
 		applyVector(phys.getVelocity2f(), 1);
-		if(!world.worldContains(worldBounds)) {
+		if(!world.viewContains(worldBounds)) {
 			if(worldLoc.dx + worldBounds.getWidth() < world.getX() || worldLoc.dx > world.getWorldWidth() + world.getX()) {
 				listener.outOfBounds(this);
 			} else if(worldLoc.dy >= world.getY() || worldLoc.dy - worldBounds.getHeight() <= world.getY() - world.getWorldHeight()) {
-				phys.collide(1, 0, Collision.X);
+				phys.collide(1, 0, PhysicsNode.Collision.X);
 			}
 		}
 	}
