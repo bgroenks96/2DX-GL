@@ -221,7 +221,7 @@ public class RenderControl {
 
 	/**
 	 * Sets the max number of times updates can be issued before a render must occur. If animations
-	 * are "chugging" or skipping, it may help to set this value to a very low value (0-2). Higher
+	 * are "chugging" or skipping, it may help to set this value to a very low value (1-2). Higher
 	 * values will prevent the game updates from freezing.
 	 * 
 	 * @param maxUpdates
@@ -505,7 +505,7 @@ public class RenderControl {
 		        }
 		
 				srcValue = a;
-				srcValue = (srcValue << 8) + r;
+			    srcValue = (srcValue << 8) + r;
 				srcValue = (srcValue << 8) + g;
 				srcValue = (srcValue << 8) + b;
 				pixelData[pos] = srcValue;

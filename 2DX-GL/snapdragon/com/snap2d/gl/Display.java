@@ -204,6 +204,8 @@ public class Display {
 				frame.setVisible(true);
 		} else
 			frame.setVisible(true);
+		wt = frame.getWidth();
+		ht = frame.getHeight();
 	}
 
 	/**

@@ -23,10 +23,10 @@ import com.snap2d.world.*;
  *
  */
 public class ScrollWorld extends World2D implements GameWorld, Renderable {
-	
+
 	HashSet<Entity> entities = new HashSet<Entity>();
 	EntityManager manager = new EntityManager();
-	
+
 	/**
 	 * @param minX
 	 * @param maxY
@@ -38,7 +38,7 @@ public class ScrollWorld extends World2D implements GameWorld, Renderable {
 			double ppu) {
 		super(minX, maxY, viewWidth, viewHeight, ppu);
 	}
-	
+
 	/**
 	 * 
 	 */
@@ -54,8 +54,9 @@ public class ScrollWorld extends World2D implements GameWorld, Renderable {
 	public void update(long nanoTimeNow, long nanosSinceLastUpdate) {
 		manager.update(nanoTimeNow, nanosSinceLastUpdate);
 		for(Entity e:entities) {
-			if(!viewIntersects(e.getCompatibleBounds())) {
-				manager.unregister(e);
+			if(!viewIntersects(e.getWorldBounds())) {
+				if(manager.contains(e))
+					manager.unregister(e);
 			} else if(!manager.contains(e))
 				manager.register(e);
 		}
@@ -138,6 +139,10 @@ public class ScrollWorld extends World2D implements GameWorld, Renderable {
 				return e;
 		}
 		return null;
+	}
+
+	public EntityManager getManager() {
+		return manager;
 	}
 
 }

@@ -65,11 +65,11 @@ public class EntityManager implements Renderable {
 		entities.clear();
 		listeners.clear();
 	}
-	
+
 	public boolean contains(Entity e) {
 		return entities.contains(e);
 	}
-	
+
 	public Entity[] getEntities() {
 		return entities.toArray(new Entity[entities.size()]);
 	}

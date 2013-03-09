@@ -88,7 +88,7 @@ public class World2D {
 
 	/**
 	 * 
-	 * @return the minimum y value in world space
+	 * @return the maximum y value in world space
 	 */
 	public double getY() {
 		return minY;
@@ -115,7 +115,7 @@ public class World2D {
 	public void setViewSize(int viewWidth, int viewHeight, double ppu) {
 		this.swt = viewWidth;
 		this.sht = viewHeight;
-		if(ppu < 1)
+		if(ppu <= 0)
 			throw(new IllegalArgumentException("illegal pixel-per-unit value: " + ppu));
 		this.ppu = ppu;
 		maxX = minX + (viewWidth / ppu);
@@ -173,22 +173,32 @@ public class World2D {
 	
 	/**
 	 * Checks if the given Rectangle2D is fully contained within this World2D's viewport.
-	 * Compatible bounds are used for the check.
-	 * @param rect
+	 * @param rect the bounding box in world coordinates to check.
 	 * @return
 	 */
 	public boolean viewContains(Rectangle2D rect) {
-		return getCompatibleBounds().contains(rect);
+		double vx = getX();
+		double vy = getY();
+		double vwt = getWorldWidth();
+		double vht = getWorldHeight();
+		boolean inYBounds = rect.getY() < vy && rect.getY() - rect.getHeight() > vy - vht;
+		boolean inXBounds = rect.getX() > vx && rect.getX() + rect.getWidth() < vx + vwt;
+		return inYBounds && inXBounds;
 	}
 	
 	/**
 	 * Checks if the given Rectangle2D intersects with this World2D's viewport.
-	 * Compatible bounds are used for the check.
-	 * @param rect
+	 * @param rect the bounding box in world coordinates to check for intersection
 	 * @return
 	 */
 	public boolean viewIntersects(Rectangle2D rect) {
-		return getCompatibleBounds().intersects(rect);
+		double vx = getX();
+		double vy = getY();
+		double vwt = getWorldWidth();
+		double vht = getWorldHeight();
+		boolean inYBounds = rect.getY() - rect.getHeight() < vy && rect.getY() > vy - vht;
+		boolean inXBounds = rect.getX() + rect.getWidth() > vx && rect.getX() < vx + vwt;
+		return inYBounds && inXBounds;
 	}
 
 	/**
@@ -198,8 +208,8 @@ public class World2D {
 	 * @return the corresponding point in world space
 	 */
 	public PointLD screenToWorld(int x, int y) {
-		double x1 = (x + minX) / ppu;
-		double y1 = (minY - y) / ppu;
+		double x1 = (x / ppu) + minX;
+		double y1 = minY - (y / ppu);
 		return new PointLD(x1, y1);
 	}
 
@@ -210,8 +220,8 @@ public class World2D {
 	 * @return the corresponding point in screen space
 	 */
 	public Point worldToScreen(double x, double y) {
-		int x1 = (int) Math.round(x*ppu - minX);
-		int y1 = (int) Math.round(ht - (y*ppu - maxY));
+		int x1 = (int) Math.round((x - minX) * ppu);
+		int y1 = (int) Math.round((ht - (y - maxY)) * ppu);
 		return new Point(x1, y1);
 	}
 	 

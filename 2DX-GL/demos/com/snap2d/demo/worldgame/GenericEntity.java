@@ -30,14 +30,12 @@ public class GenericEntity extends Entity {
 	private static final long serialVersionUID = 949575200050379961L;
 	
 	private static final CollisionModel model;
-	private static final Color COLOR = Color.BLUE;
+	private static final Color COLOR = Color.GREEN;
 	private static final int SIZE = 50;
 	
 	static {
-		model = new CollisionModel(new Ellipse2D.Double(0, 0, SIZE, SIZE), COLOR, new AffineTransform(), true);
+		model = new CollisionModel(new Rectangle2D.Double(0, 0, SIZE, SIZE), COLOR, new AffineTransform(), true);
 	}
-	
-	private double lx, ly;
 
 	/**
 	 * @param worldLoc
@@ -55,11 +53,14 @@ public class GenericEntity extends Entity {
 	public void render(Graphics2D g, float interpolation) {
 		if(!shouldRender)
 			return;
-		double wx = interpolate(worldLoc.dx, lx, interpolation);
-		double wy = interpolate(worldLoc.dy, ly, interpolation);
+		double wx = worldLoc.dx;
+		double wy = worldLoc.dy;
 		Point p = world.worldToScreen(wx, wy);
+		int x,y;
+		x = p.x;
+		y = p.y;
 		g.setPaint(COLOR);
-		g.fillOval(p.x, p.y, SIZE, SIZE);
+		g.fillRect(x, y, SIZE, SIZE);
 	}
 
 	/**
@@ -67,8 +68,7 @@ public class GenericEntity extends Entity {
 	 */
 	@Override
 	public void update(long nanoTimeNow, long nanosSinceLastUpdate) {
-		lx = worldLoc.dx;
-		ly = worldLoc.dy;
+		
 	}
 
 	/**

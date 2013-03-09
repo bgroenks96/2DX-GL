@@ -99,6 +99,8 @@ public class CollisionModel {
 		int wt = collisionArea.width;
 		int ht = collisionArea.height;
 		for(int y = 0; y < ht; y++) {
+			if(y1 + y > bitmasks.length)
+				return false;
 			BigInteger bitmask1 = bitmasks[y1 + y];
 			BigInteger bitmask2 = otherModel.bitmasks[y2 + y];
 			BigInteger mask = BigInteger.ZERO.not();
@@ -123,7 +125,10 @@ public class CollisionModel {
 	public void testWriteToFile() {
 		PrintWriter pw =  null;
 		try {
-			pw = new PrintWriter(new File("/home/brian/Desktop/" + Math.random() + ".txt"));
+			pw = new PrintWriter(new File("/home/+ y];
+			BigInteger bitmask2 = otherModel.bitmasks[y2 + y];
+			BigInteger mask = BigInteger.ZERO.not();
+			int startOffs = thisObj.width - brian/Desktop/" + Math.random() + ".txt"));
 		} catch (FileNotFoundException e) {
 			e.printStackTrace();
 			return;
