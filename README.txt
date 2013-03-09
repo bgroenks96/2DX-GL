@@ -31,6 +31,7 @@ To-do (next commit):
 -Lighting engine
 -Snapdragon2D physics package
 
+Follow @The2DXProject on Twitter for real-time updates on development of the project!
 
 Additional credits:
     Snapdragon2D Sound API utilizes SoundSystem for Java by Paul Lamb [www.paulscode.com]
