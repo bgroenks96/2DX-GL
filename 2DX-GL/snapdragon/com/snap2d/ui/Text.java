@@ -76,5 +76,29 @@ public class Text extends RenderedComponent {
 	public void processMouseEvent(MouseEvent me) {
 		//
 	}
+	
+	/**
+	 * Override to perform key event actions.  Default implementation does nothing.
+	 */
+	@Override
+	public void processKeyEvent(KeyEvent e) {
+		
+	}
+
+	/**
+	 * Text implementation does nothing
+	 */
+	@Override
+	public void focusChanged(int focusEventId) {
+		//
+	}
+
+	/**
+	 * Text implementation always returns false.
+	 */
+	@Override
+	public boolean hasFocus() {
+		return false;
+	}
 
 }

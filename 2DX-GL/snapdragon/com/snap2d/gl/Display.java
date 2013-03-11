@@ -100,6 +100,10 @@ public class Display {
 	public void setLocation(int x, int y) {
 		frame.setLocation(x, y);
 	}
+	
+	public Component getAsComponent() {
+		return frame;
+	}
 
 	/**
 	 * Sets the size of the frame.  Should only be used for WINDOWED Displays.

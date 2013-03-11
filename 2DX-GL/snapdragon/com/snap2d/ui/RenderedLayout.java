@@ -27,19 +27,22 @@ import com.snap2d.input.*;
  * Provides a mechanism for rendering UI components to the screen using the rendering engine's
  * default interface.  RenderedLayout keeps and manages a collection of RenderedCopmonents that
  * it is responsible for rendering, updating, resizing, and animating.  It implements the
- * MouseEventClient interface so that it can be registered with an InputDispatch to forward
- * relevant mouse events to child components.
+ * MouseEventClient and KeyEventClient interfaces so that it can be registered with an InputDispatch to forward
+ * input events to child components.
  * <br/><br/>
  * Note: It is recommended that this class be handled by only one thread at a time, or is externally
  *     synchronized, as it frequently interfaces with non-thread-safe Java Collections.
  * @author Brian Groenke
  *
  */
-public class RenderedLayout implements Renderable, MouseEventClient {
+public class RenderedLayout implements Renderable, MouseEventClient, KeyEventClient {
+	
+	public static final int FOCUS_GAINED = 0xFFFFFF0, FOCUS_LOST = 0xFFFFFF1;
 
 	public AffineTransform generalTransform = new AffineTransform();
 
 	private final int INIT_WT, INIT_HT;
+	private Component parent;
 	private int wt, ht;
 	private boolean autoScaleSize = true, autoScaleLoc = true, aspectRatio = true;
 
@@ -49,11 +52,12 @@ public class RenderedLayout implements Renderable, MouseEventClient {
 	/**
 	 * 
 	 */
-	public RenderedLayout(int wt, int ht) {
+	public RenderedLayout(int wt, int ht, Component parent) {
 		INIT_WT = wt;
 		INIT_HT = ht;
 		this.wt = wt;
 		this.ht = ht;
+		this.parent = parent;
 	}
 
 	/**
@@ -137,6 +141,68 @@ public class RenderedLayout implements Renderable, MouseEventClient {
 		}
 	}
 
+	Point lastLoc, lastPressLoc;
+
+	@Override
+	/**
+	 * Forwards mouse events to components whose bounds contain the mouse's current location.
+	 * RenderedComponent children will begin receiving mouse events when the mouse enters their
+	 * bounding box.  Upon the mouse exiting the component's area, RenderedLayout will send an extra
+	 * MouseEvent with event ID MouseEvent.MOUSE_EXITED.
+	 */
+	public void processMouseEvent(MouseEvent me) {
+		Point mloc = new Point(me.getX(), me.getY());
+
+		switch(me.getID()) {
+		case MouseEvent.MOUSE_PRESSED:
+			if(lastPressLoc == null)
+				lastPressLoc = new Point(mloc);
+			for(RenderedComponent rc:compList) {
+				if(rc.getBounds().contains(mloc)) {
+					if(!rc.hasFocus()) {
+						rc.focusChanged(FOCUS_GAINED);
+					}
+					
+					rc.processMouseEvent(me);
+				} else if(rc.getBounds().contains(lastPressLoc)) {
+					if(rc.hasFocus()) {
+						rc.focusChanged(FOCUS_LOST);
+					}
+				}
+			}
+			
+			lastPressLoc.setLocation(mloc);
+			break;
+		default:
+			if(lastLoc == null)
+				lastLoc = new Point(mloc);
+			for(RenderedComponent rc:compList) {
+				if(rc.getBounds().contains(mloc)) {
+					rc.processMouseEvent(me);
+				} else if(rc.getBounds().contains(lastLoc)) {
+					MouseEvent exit = new MouseEvent(me.getComponent(), MouseEvent.MOUSE_EXITED, me.getWhen(), 
+							me.getModifiers(), mloc.x, mloc.y, me.getClickCount(), me.isPopupTrigger());
+					rc.processMouseEvent(exit);
+				}
+			}
+
+			lastLoc.setLocation(mloc);
+		}
+	}
+
+	/**
+	 * All components will receive key input events.  It is the components' responsibility
+	 * to handle when they have the appropriate focus.
+	 */
+	@Override
+	public void processKeyEvent(KeyEvent e) {
+		for(RenderedComponent rc:compList) {
+			rc.processKeyEvent(e);
+		}
+	}
+	
+	// ----- MISC ------ //
+	
 	/**
 	 * Sets an Animation for the given component.  The Animation
 	 * will be started on the next render cycle.
@@ -200,6 +266,14 @@ public class RenderedLayout implements Renderable, MouseEventClient {
 	public RenderedComponent remove(int ind) {
 		return compList.remove(ind);
 	}
+	
+	public RenderedComponent getAt(int index) {
+		return compList.get(index);
+	}
+	
+	public int indexOf(RenderedComponent rc) {
+		return compList.indexOf(rc);
+	}
 
 	/**
 	 * Returns a copy of the internal List that stores components.
@@ -211,31 +285,5 @@ public class RenderedLayout implements Renderable, MouseEventClient {
 
 	public int getComponentCount() {
 		return compList.size();
-	}
-	
-	Point lastLoc;
-
-	@Override
-	/**
-	 * Forwards mouse events to components whose bounds contain the mouse's current location.
-	 * RenderedComponent children will begin receiving mouse events when the mouse enters their
-	 * bounding box.  Upon the mouse exiting the component's area, RenderedLayout will send an extra
-	 * MouseEvent with event ID MouseEvent.MOUSE_EXITED.
-	 */
-	public void processMouseEvent(MouseEvent me) {
-		Point mloc = new Point(me.getX(), me.getY());
-		if(lastLoc == null)
-			lastLoc = new Point(mloc);
-		for(RenderedComponent rc:compList) {
-			if(rc.getBounds().contains(mloc)) {
-				rc.processMouseEvent(me);
-			} else if(rc.getBounds().contains(lastLoc)) {
-				MouseEvent exit = new MouseEvent(me.getComponent(), MouseEvent.MOUSE_EXITED, me.getWhen(), 
-						me.getModifiers(), mloc.x, mloc.y, me.getClickCount(), me.isPopupTrigger());
-				rc.processMouseEvent(exit);
-			}
-		}
-		
-		lastLoc.setLocation(mloc);
 	}
 }

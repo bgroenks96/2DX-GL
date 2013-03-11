@@ -138,10 +138,19 @@ public class RenderControl {
 			loopChk.release();
 		}
 	}
+	
+	/**
+	 * If true, the rendering loop will continue to run, but update ticks will be skipped.
+	 * False by default.
+	 * @param noUpdate true if updates should be disabled, false to enable.
+	 */
+	public void setDisableUpdates(boolean noUpdate) {
+		loop.noUpdate = noUpdate;
+	}
 
 	/**
 	 * Enable/disable hardware accelerated rendering of images.
-	 * 
+	 * True by default.
 	 * @param accelerated
 	 */
 	public void setUseHardwareAcceleration(boolean accelerated) {
@@ -244,14 +253,24 @@ public class RenderControl {
 		}
 	}
 
+	/**
+	 * Enables/disables gamma correction on the rendered image.
+	 * @param enabled
+	 */
 	public void setGammaCorrectionEnabled(boolean enabled) {
 		applyGamma = enabled;
 	}
 
+	/**
+	 * @return true if gamma correction is enabled, false otherwise.
+	 */
 	public boolean isGammaEnabled() {
 		return applyGamma;
 	}
 
+	/**
+	 * @return true if hardware acceleration is enabled, false otherwise.
+	 */
 	public boolean isHardwareAccelerated() {
 		return accelerated;
 	}
@@ -552,7 +571,7 @@ public class RenderControl {
 				maxUpdates = MAX_UPDATES_BEFORE_RENDER;
 
 		volatile int fps, tps;
-		volatile boolean running, active, printFrames;
+		volatile boolean running, active, noUpdate, printFrames;
 
 		@Override
 		public void run() {
@@ -659,7 +678,7 @@ public class RenderControl {
 						int updateCount = 0;
 
 						while (now - lastUpdateTime > timeBetweenUpdates
-								&& updateCount < maxUpdates) {
+								&& updateCount < maxUpdates && !noUpdate) {
 
 							for (Renderable r : renderables) {
 								r.update((long) now, (long) lastUpdateTime);
@@ -670,7 +689,7 @@ public class RenderControl {
 							ticks++;
 						}
 
-						if (now - lastUpdateTime > timeBetweenUpdates) {
+						if (now - lastUpdateTime > timeBetweenUpdates && !noUpdate) {
 							lastUpdateTime = now - timeBetweenUpdates;
 						}
 

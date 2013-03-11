@@ -31,7 +31,7 @@ import com.snap2d.input.*;
  * @author Brian Groenke
  *
  */
-public abstract class RenderedComponent implements Renderable, MouseEventClient {
+public abstract class RenderedComponent implements Renderable, MouseEventClient, KeyEventClient {
 	
 	public boolean
 	/**
@@ -130,4 +130,12 @@ public abstract class RenderedComponent implements Renderable, MouseEventClient 
 	 * The base implementation does nothing.
 	 */
 	public void onResize(Dimension oldSize, Dimension newSize) {}
+	
+	/**
+	 * 
+	 * @param focusEventId a focus changed value from RenderedLayout
+	 */
+	public abstract void focusChanged(int focusEventId);
+	
+	public abstract boolean hasFocus();
 }
