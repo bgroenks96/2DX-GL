@@ -550,38 +550,7 @@ public class RenderControl {
 						;
 					}
 				}
-				if (clContext != null) {
-					Pointer<Integer> dPtr = dataBuff.map(clQueue, MapFlags.Write);
-					dPtr.setInts(pixelData);
-					dataBuff.unmap(clQueue, dPtr);
-					renderKernel.setArgs(pixelData.length, (applyGamma) ? 1 : 0,
-							dataBuff, gBuff);
-					CLEvent exec = renderKernel.enqueueNDRange(clQueue,
-							globalWorkSizes);
-					dPtr = dataBuff.map(clQueue, MapFlags.Read, exec);
-					dPtr.getInts(pixelData);
-					dataBuff.unmap(clQueue, dPtr);
-				} else {
-					Future<?> finalRow = null;
-					for (int y = 0; y < priHeight; y++) {
-
-						if (y >= priHeight || y < 0) {
-							continue;
-						}
-
-						if (y >= rowCache.size()) {
-							rowCache.add(new RenderRow(y));
-						}
-						Future<?> task = renderPool.submit(rowCache.get(y));
-						if (y == priHeight - 1) {
-							finalRow = task;
-						}
-					}
-
-					while (!finalRow.isDone()) {
-						;
-					}
-				}
+				
 				g.drawImage(pri, 0, 0, null);
 			}
 		} finally {
