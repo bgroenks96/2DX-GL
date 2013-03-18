@@ -21,17 +21,17 @@ import com.snap2d.gl.Display.Type;
 
 /**
  * @author Brian Groenke
- *
+ * 
  */
 public class DrawStuff {
-	
+
 	public static void main(String[] args) {
-		
+
 		// create the Display; note that Type is an inner-type of Display
 		// you will need to import com.snap2d.gl.Display.Type for this to work
 		Display disp = new Display(800, 600, Type.WINDOWED);
 		final RenderControl rc = disp.getRenderControl(2);
-		
+
 		Renderable obj = new Renderable() {
 
 			@Override
@@ -40,27 +40,27 @@ public class DrawStuff {
 				g.drawString("Hello Snapdragon2D!", 50, 50);
 				g.setColor(Color.RED);
 				g.fillOval(100, 100, 100, 100);
-				
+
 				Hexagon2D hex = new Hexagon2D(300, 100, 100, Color.BLUE, true);
 				hex.draw(g);
 			}
 
 			@Override
 			public void update(long nanoTimeNow, long nanosSinceLastUpdate) {
-				
+
 			}
 
 			@Override
 			public void onResize(Dimension oldSize, Dimension newSize) {
-				
+
 			}
-			
+
 		};
 		rc.addRenderable(obj, RenderControl.POSITION_LAST);
-		
+
 		disp.show();
 		rc.startRenderLoop();
-		
+
 		// quick and dirty example of shutting down the system cleanly on exit
 		Runtime.getRuntime().addShutdownHook(new Thread(new Runnable() {
 

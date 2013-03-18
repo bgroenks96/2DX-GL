@@ -29,49 +29,63 @@ import bg.x2d.utils.*;
  */
 final class LoadSoundLibraries {
 
-	public static final String[] JAR_PATHS = new String[] {"com/snap2d/sound/libs/LibraryJavaSound.jar", 
-		"com/snap2d/sound/libs/Codecs.jar", "com/snap2d/sound/libs/SoundSystem.jar"};
-	
+	public static final String[] JAR_PATHS = new String[] {
+			"com/snap2d/sound/libs/LibraryJavaSound.jar",
+			"com/snap2d/sound/libs/Codecs.jar",
+			"com/snap2d/sound/libs/SoundSystem.jar" };
+
 	private static final String TEMP_JAR_NAME = "com_snap2d_sound-libjar_";
 
 	public static void load(boolean verbose) {
 		URL[] urls = new URL[JAR_PATHS.length];
-		for(int i = 0;i < JAR_PATHS.length;i++) {
-			InputStream  in = ClassLoader.getSystemClassLoader().getResourceAsStream(JAR_PATHS[i]);
+		for (int i = 0; i < JAR_PATHS.length; i++) {
+			InputStream in = ClassLoader.getSystemClassLoader()
+					.getResourceAsStream(JAR_PATHS[i]);
 			try {
-				File f = Utils.writeToTempStorage(in, TEMP_JAR_NAME + i + ".jar");
+				File f = Utils.writeToTempStorage(in, TEMP_JAR_NAME + i
+						+ ".jar");
 				f.deleteOnExit();
 				urls[i] = Utils.getFileURL(f);
 			} catch (IOException e) {
-				System.err.println("Error writing sound library to temp-storage: " + e.getMessage());
+				System.err
+						.println("Error writing sound library to temp-storage: "
+								+ e.getMessage());
 			}
-			System.out.println("[snap2d] Located sound library at: " + urls[i].toExternalForm());
+			System.out.println("[snap2d] Located sound library at: "
+					+ urls[i].toExternalForm());
 		}
-		URLClassLoader loader = new URLClassLoader(urls, ClassLoader.getSystemClassLoader());
+		URLClassLoader loader = new URLClassLoader(urls,
+				ClassLoader.getSystemClassLoader());
 		Thread.currentThread().setContextClassLoader(loader);
-		for(String s:JAR_PATHS) {
+		for (String s : JAR_PATHS) {
 			try {
-				JarInputStream jarIn = new JarInputStream(ClassLoader.getSystemClassLoader().getResourceAsStream(s));
+				JarInputStream jarIn = new JarInputStream(ClassLoader
+						.getSystemClassLoader().getResourceAsStream(s));
 				JarEntry je = null;
-				while((je=jarIn.getNextJarEntry()) != null) {
-					if(je.isDirectory() || !je.getName().endsWith(".class"))
+				while ((je = jarIn.getNextJarEntry()) != null) {
+					if (je.isDirectory() || !je.getName().endsWith(".class")) {
 						continue;
+					}
 					try {
 						// format name in correct binary format
 						String name = je.getName().replaceAll("/", "\\.");
 						name = name.substring(0, name.indexOf(".class"));
-						
+
 						Class<?> loaded = Class.forName(name, true, loader);
-						
-						if(verbose)
+
+						if (verbose) {
 							System.out.println("loaded " + loaded.getName());
+						}
 					} catch (ClassNotFoundException e) {
-						System.err.println("Snapdragon2D: failed to locate class " + je.getName() + " in library " + s);
+						System.err
+								.println("Snapdragon2D: failed to locate class "
+										+ je.getName() + " in library " + s);
 					}
 				}
 				jarIn.close();
 			} catch (IOException e) {
-				System.err.println("Snapdragon2D: error loading sound library " + s);
+				System.err.println("Snapdragon2D: error loading sound library "
+						+ s);
 			}
 		}
 	}

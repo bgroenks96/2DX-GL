@@ -18,8 +18,9 @@ import java.awt.*;
 import java.awt.geom.*;
 
 /**
- * Contains static convenience method for Geometric operations.
- * All angular operations take and return values in radians.
+ * Contains static convenience method for Geometric operations. All angular operations take and
+ * return values in radians.
+ * 
  * @author Brian Groenke
  * @since 2DX 1.0 (1st Edition)
  */
@@ -60,8 +61,8 @@ public class GeoUtils {
 	 * @param paint
 	 *            paint to be applied to the polygon
 	 * @param fill
-	 *            true if the polygon should be filled completely, false if only
-	 *            an outline should be drawn
+	 *            true if the polygon should be filled completely, false if only an outline should
+	 *            be drawn
 	 * @return
 	 */
 	public static Polygon drawPolygon(Point2D[] points, Graphics2D g2d,
@@ -80,11 +81,10 @@ public class GeoUtils {
 	}
 
 	/**
-	 * Algorithm that uses an algebraic rotation formula to transform a point
-	 * from its current location x rads to a new position on the coordinate
-	 * plane.
+	 * Algorithm that uses an algebraic rotation formula to transform a point from its current
+	 * location x rads to a new position on the coordinate plane.
 	 * 
-	 * This method is for convenience.  It uses the given points to call the actual rotatePoint
+	 * This method is for convenience. It uses the given points to call the actual rotatePoint
 	 * method, which takes double parameters.
 	 * 
 	 * @param p
@@ -97,55 +97,64 @@ public class GeoUtils {
 	 */
 	public static Point2D.Double rotatePoint(Point2D point, Point2D origin,
 			double angle) {
-		double[] pts = rotatePoint(point.getX(), point.getY(), origin.getX(), origin.getY(), angle);
+		double[] pts = rotatePoint(point.getX(), point.getY(), origin.getX(),
+				origin.getY(), angle);
 		return new Point2D.Double(pts[0], pts[1]);
 	}
-	
+
 	/**
-	 * Algorithm that uses an algebraic rotation formula to transform a point
-	 * from its current location x rads to a new position on the coordinate
-	 * plane. 
-	 * @param x x coordinate
-	 * @param y y coordinate
-	 * @param x0 x origin coordinate
-	 * @param y0 y origin coordinate
-	 * @param angle radians to rotate around the origin
+	 * Algorithm that uses an algebraic rotation formula to transform a point from its current
+	 * location x rads to a new position on the coordinate plane.
+	 * 
+	 * @param x
+	 *            x coordinate
+	 * @param y
+	 *            y coordinate
+	 * @param x0
+	 *            x origin coordinate
+	 * @param y0
+	 *            y origin coordinate
+	 * @param angle
+	 *            radians to rotate around the origin
 	 * @return
 	 */
-	public static double[] rotatePoint(double x, double y, double x0, double y0, double angle) {
-		if(degrees)
+	public static double[] rotatePoint(double x, double y, double x0,
+			double y0, double angle) {
+		if (degrees) {
 			angle = Math.toRadians(angle);
+		}
 		double wx = x - x0;
 		double wy = y - y0;
 		/* xprime = x*cos(theta) - y*sin(toRadians(theta)) */
-		double xresult = (wx * (Math.cos(angle)))
-				- (wy * (Math.sin(angle)));
+		double xresult = (wx * (Math.cos(angle))) - (wy * (Math.sin(angle)));
 		/* yprime = x*sin(theta) + y*cos(toRadians(theta)) */
-		double yresult = (wx * (Math.sin(angle)))
-				+ (wy * (Math.cos(angle)));
+		double yresult = (wx * (Math.sin(angle))) + (wy * (Math.cos(angle)));
 
 		double x2 = xresult + x0;
 		double y2 = yresult + y0;
-		return new double[]{x2,y2};
+		return new double[] { x2, y2 };
 	}
 
 	/**
-	 * Computes the terminal position of an angle using the given x, y coordinates drawn from the origin.
-	 * The value returned from this method will be 0-2pi.
+	 * Computes the terminal position of an angle using the given x, y coordinates drawn from the
+	 * origin. The value returned from this method will be 0-2pi.
+	 * 
 	 * @param x
 	 * @param y
 	 * @return
 	 */
 	public static double terminal(double x, double y) {
 		double ref = PI / 2;
-		if(x != 0)
+		if (x != 0) {
 			ref = abs(atan(y / x));
+		}
 		int quad = GeoUtils.quadrant(x, y) - 1;
 		return (quad * (PI / 2)) + ref;
 	}
-	
+
 	/**
 	 * Shorthand method for calling <code>terminal</code>
+	 * 
 	 * @param x
 	 * @param y
 	 * @return
@@ -153,10 +162,11 @@ public class GeoUtils {
 	public static double term(double x, double y) {
 		return terminal(x, y);
 	}
-	
+
 	/**
-	 * Computes the reference angle for the given x, y coordinates drawn from the origin.
-	 * The value returned from this method will be between -pi/2 and pi/2.
+	 * Computes the reference angle for the given x, y coordinates drawn from the origin. The value
+	 * returned from this method will be between -pi/2 and pi/2.
+	 * 
 	 * @param x
 	 * @param y
 	 * @return
@@ -169,20 +179,24 @@ public class GeoUtils {
 
 	/**
 	 * Computes the quadrant the given point lies in based on the origin (0, 0).
-	 * @param x x-coord of the point
-	 * @param y y-coord of the point
+	 * 
+	 * @param x
+	 *            x-coord of the point
+	 * @param y
+	 *            y-coord of the point
 	 * @return int value 1, 2, 3 or 4 representing the point's quadrant based on the origin.
 	 */
 	public static int quadrant(double x, double y) {
-		if(x >= 0 && y >= 0)
+		if (x >= 0 && y >= 0) {
 			return 1;
-		else if(x < 0 && y > 0)
+		} else if (x < 0 && y > 0) {
 			return 2;
-		else if(x <= 0 && y <= 0)
+		} else if (x <= 0 && y <= 0) {
 			return 3;
-		else if(x > 0 && y < 0)
+		} else if (x > 0 && y < 0) {
 			return 4;
-		else
+		} else {
 			return 0;
+		}
 	}
 }

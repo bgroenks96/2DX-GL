@@ -16,6 +16,7 @@ import java.awt.image.*;
 
 /**
  * Provides static utility methods for color and pixel management.
+ * 
  * @author Brian Groenke
  * @since 2DX 1.0 (1st Edition)
  */
@@ -51,7 +52,7 @@ public class ColorUtils {
 		}
 		return vals;
 	}
-	
+
 	public static int[] unpackInt(int[] vals, int argb) {
 		switch (vals.length) {
 		case 3:
@@ -74,12 +75,11 @@ public class ColorUtils {
 
 	public static int packInt(int... rgbs) {
 
-		
 		if (rgbs.length != 3 && rgbs.length != 4) {
 			throw (new IllegalArgumentException(
 					"args must be valid RGB, ARGB or RGBA value."));
 		}
-		
+
 		int color = rgbs[0];
 		for (int i = 1; i < rgbs.length; i++) {
 			color = (color << 8) + rgbs[i];
@@ -89,6 +89,7 @@ public class ColorUtils {
 
 	/**
 	 * Assumes the image to be of integer-pixel format.
+	 * 
 	 * @param bi
 	 * @return
 	 */

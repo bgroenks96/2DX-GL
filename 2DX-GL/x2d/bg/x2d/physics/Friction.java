@@ -18,7 +18,7 @@ import bg.x2d.math.*;
 /**
  * 
  * @author Brian Groenke
- *
+ * 
  */
 public class Friction extends Force {
 
@@ -27,15 +27,17 @@ public class Friction extends Force {
 
 	/**
 	 * 
-	 * @param staticCoeff static friction
-	 * @param kineticCoeff kinetic friction
+	 * @param staticCoeff
+	 *            static friction
+	 * @param kineticCoeff
+	 *            kinetic friction
 	 * @param g
 	 */
 	public Friction(float staticCoeff, float kineticCoeff, Gravity g) {
 		fsc = staticCoeff;
 		fkc = kineticCoeff;
 		fg = g.getVec2f().getMagnitude();
-		vecf = new Vector2f(0,0);
+		vecf = new Vector2f(0, 0);
 	}
 
 	/**
@@ -48,7 +50,7 @@ public class Friction extends Force {
 		dsc = staticCoeff;
 		dkc = kineticCoeff;
 		dg = g.getVec2d().getMagnitude();
-		vecd = new Vector2d(0,0);
+		vecd = new Vector2d(0, 0);
 	}
 
 	@Override
@@ -79,7 +81,7 @@ public class Friction extends Force {
 
 	@Override
 	public double getNewtonForce(double mass) {
-		return (vecd != null) ? vecd.getMagnitude():vecf.getMagnitude();
+		return (vecd != null) ? vecd.getMagnitude() : vecf.getMagnitude();
 	}
 
 	@Override
@@ -91,66 +93,62 @@ public class Friction extends Force {
 	 *     which case static friction will never be applied.
 	 * @param vec velocity vector being accelerated
 	 */
-	public Vector2f applyTo(float time, float mass, Vector2f forceSum, Vector2f vec) {
+	public Vector2f applyTo(float time, float mass, Vector2f forceSum,
+			Vector2f vec) {
 
 		boolean noForceSum = (forceSum == null);
-		if(noForceSum)
+		if (noForceSum) {
 			forceSum = new Vector2f(Float.MAX_VALUE, Float.MAX_VALUE);
+		}
 
 		float sx = fsc * mass * fg;
-		if(forceSum.getMagnitude() > sx || !FloatMath.equals(vec.getMagnitude(), 0)) {
+		if (forceSum.getMagnitude() > sx
+				|| !FloatMath.equals(vec.getMagnitude(), 0)) {
 
 			float f = fkc * mass * fg;
 
-			// set the force vector's magnitude according to kinetic friction and angle according to the current
-			// velocity.  Adding or subtracting pi doesn't technically matter, but for cleanliness we should try
+			// set the force vector's magnitude according to kinetic friction and angle according to
+			// the current
+			// velocity. Adding or subtracting pi doesn't technically matter, but for cleanliness we
+			// should try
 			// to prevent the value from being outside of 0-2pi.
 			float vecAngle = vec.rads();
-			vecf.setFromPolar(f, (vecAngle >= Math.PI) ? vecAngle - (float)Math.PI:vecAngle + (float)Math.PI);
+			vecf.setFromPolar(f, (vecAngle >= Math.PI) ? vecAngle
+					- (float) Math.PI : vecAngle + (float) Math.PI);
 		} else {
 			vecf.setFromPolar(forceSum.getMagnitude(), forceSum.rads());
 		}
 
 		float signX = Math.signum(vec.x);
 		float signY = Math.signum(vec.y);
-		vec = super.applyTo(time, mass, (noForceSum) ? null:forceSum, vec);
-		if(Math.signum(vec.x) != signX) {
+		vec = super.applyTo(time, mass, (noForceSum) ? null : forceSum, vec);
+		if (Math.signum(vec.x) != signX) {
 			vec.x = 0;
 			vecf.x = 0;
 		}
-		if(Math.signum(vec.y) != signY) {
+		if (Math.signum(vec.y) != signY) {
 			vec.y = 0;
 			vecf.y = 0;
 		}
 		return vec;
 
 		/*
-		boolean noForceSum = (forceSum == null);
-		if(noForceSum)
-			forceSum = new Vector2f(Float.MAX_VALUE, Float.MAX_VALUE);
-
-		Vector2f fneg = forceSum.negateNew();
-
-		float sx = Math.abs(fsx * mass * fg);
-		if(Math.abs(forceSum.x) > sx || !FloatMath.equals(vec.x, 0)) {
-			vecf.x = fkx * mass * fg * -Math.signum(vec.x);
-		} else
-			vecf.x = fneg.x;
-
-		float sy = Math.abs(fsy * mass * fg);
-		if(Math.abs(forceSum.y) > sy || !FloatMath.equals(vec.y, 0))
-			vecf.y = fky * mass * fg * -Math.signum(vec.y);
-		else
-			vecf.y = fneg.y;
-
-		float signX = Math.signum(vec.x);
-		float signY = Math.signum(vec.y);
-	    vec = super.applyTo(time, mass, (noForceSum) ? null:forceSum, vec);
-		if(Math.signum(vec.x) != signX)
-			vec.x = 0;
-		if(Math.signum(vec.y) != signY)
-			vec.y = 0;
-		return vec;
+		 * boolean noForceSum = (forceSum == null); if(noForceSum) forceSum = new
+		 * Vector2f(Float.MAX_VALUE, Float.MAX_VALUE);
+		 * 
+		 * Vector2f fneg = forceSum.negateNew();
+		 * 
+		 * float sx = Math.abs(fsx * mass * fg); if(Math.abs(forceSum.x) > sx ||
+		 * !FloatMath.equals(vec.x, 0)) { vecf.x = fkx * mass * fg * -Math.signum(vec.x); } else
+		 * vecf.x = fneg.x;
+		 * 
+		 * float sy = Math.abs(fsy * mass * fg); if(Math.abs(forceSum.y) > sy ||
+		 * !FloatMath.equals(vec.y, 0)) vecf.y = fky * mass * fg * -Math.signum(vec.y); else vecf.y
+		 * = fneg.y;
+		 * 
+		 * float signX = Math.signum(vec.x); float signY = Math.signum(vec.y); vec =
+		 * super.applyTo(time, mass, (noForceSum) ? null:forceSum, vec); if(Math.signum(vec.x) !=
+		 * signX) vec.x = 0; if(Math.signum(vec.y) != signY) vec.y = 0; return vec;
 		 */
 	}
 
@@ -158,33 +156,40 @@ public class Friction extends Force {
 	/**
 	 * 
 	 */
-	public Vector2d applyTo(double time, double mass, Vector2d forceSum, Vector2d vec) {
+	public Vector2d applyTo(double time, double mass, Vector2d forceSum,
+			Vector2d vec) {
 		boolean noForceSum = (forceSum == null);
-		if(noForceSum)
-			forceSum = new Vector2d(Double.POSITIVE_INFINITY, Double.POSITIVE_INFINITY);
+		if (noForceSum) {
+			forceSum = new Vector2d(Double.POSITIVE_INFINITY,
+					Double.POSITIVE_INFINITY);
+		}
 
 		double sx = dsc * mass * dg;
-		if(forceSum.getMagnitude() > sx || !DoubleMath.equals(vec.getMagnitude(), 0)) {
+		if (forceSum.getMagnitude() > sx
+				|| !DoubleMath.equals(vec.getMagnitude(), 0)) {
 
 			double f = dkc * mass * dg;
 
-			// set the force vector's magnitude according to kinetic friction and angle according to the current
-			// velocity.  Adding or subtracting pi doesn't technically matter, but for cleanliness we should try
+			// set the force vector's magnitude according to kinetic friction and angle according to
+			// the current
+			// velocity. Adding or subtracting pi doesn't technically matter, but for cleanliness we
+			// should try
 			// to prevent the value from being outside of 0-2pi.
 			double vecAngle = vec.rads();
-			vecd.setFromPolar(f, (vecAngle >= Math.PI) ? vecAngle - (float)Math.PI:vecAngle + (float)Math.PI);
+			vecd.setFromPolar(f, (vecAngle >= Math.PI) ? vecAngle
+					- (float) Math.PI : vecAngle + (float) Math.PI);
 		} else {
 			vecd.setFromPolar(forceSum.getMagnitude(), forceSum.rads());
 		}
 
 		double signX = Math.signum(vec.x);
 		double signY = Math.signum(vec.y);
-		vec = super.applyTo(time, mass, (noForceSum) ? null:forceSum, vec);
-		if(Math.signum(vec.x) != signX) {
+		vec = super.applyTo(time, mass, (noForceSum) ? null : forceSum, vec);
+		if (Math.signum(vec.x) != signX) {
 			vec.x = 0;
 			vecd.x = 0;
 		}
-		if(Math.signum(vec.y) != signY) {
+		if (Math.signum(vec.y) != signY) {
 			vec.y = 0;
 			vecd.y = 0;
 		}

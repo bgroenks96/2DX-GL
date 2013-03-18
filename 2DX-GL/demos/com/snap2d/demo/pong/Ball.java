@@ -23,7 +23,7 @@ import com.snap2d.world.*;
 
 /**
  * @author Brian Groenke
- *
+ * 
  */
 public class Ball extends Entity {
 
@@ -52,7 +52,8 @@ public class Ball extends Entity {
 		this.listener = listener;
 		phys = new BallPhysics(new Vector2f(INIT_VEL, INIT_VEL / 3));
 		Ellipse2D shape = new Ellipse2D.Double(0, 0, BALL_SIZE, BALL_SIZE);
-		coll = new CollisionModel(shape, Color.BLACK, new AffineTransform(), true);
+		coll = new CollisionModel(shape, Color.BLACK, new AffineTransform(),
+				true);
 	}
 
 	/**
@@ -60,11 +61,12 @@ public class Ball extends Entity {
 	 */
 	@Override
 	public void render(Graphics2D g, float interpolation) {
-		if(!shouldRender)
+		if (!shouldRender) {
 			return;
+		}
 		double wx = worldLoc.dx;
 		double wy = worldLoc.dy;
-		int x,y;
+		int x, y;
 		wy = interpolate(wy, ly, interpolation); // interpolate with the last position
 		wx = interpolate(wx, lx, interpolation);
 		Point p = world.worldToScreen(wx, wy);
@@ -82,10 +84,13 @@ public class Ball extends Entity {
 		lx = getWorldX();
 		ly = getWorldY();
 		applyVector(phys.getVelocity2f(), 1);
-		if(!world.viewContains(worldBounds)) {
-			if(worldLoc.dx + worldBounds.getWidth() < world.getX() || worldLoc.dx > world.getWorldWidth() + world.getX()) {
+		if (!world.viewContains(worldBounds)) {
+			if (worldLoc.dx + worldBounds.getWidth() < world.getX()
+					|| worldLoc.dx > world.getWorldWidth() + world.getX()) {
 				listener.outOfBounds(this);
-			} else if(worldLoc.dy >= world.getY() || worldLoc.dy - worldBounds.getHeight() <= world.getY() - world.getWorldHeight()) {
+			} else if (worldLoc.dy >= world.getY()
+					|| worldLoc.dy - worldBounds.getHeight() <= world.getY()
+							- world.getWorldHeight()) {
 				phys.collide(1, 0, PhysicsNode.Collision.X);
 			}
 		}
@@ -128,11 +133,12 @@ public class Ball extends Entity {
 	}
 
 	/**
-	 * Simple physics implementation for the Pong ball based primarily on the 2DX-GL physics library.
-	 * Note that this implementation does NOT behave like the actual Pong game because standard physics
-	 * collisions are used.
+	 * Simple physics implementation for the Pong ball based primarily on the 2DX-GL physics
+	 * library. Note that this implementation does NOT behave like the actual Pong game because
+	 * standard physics collisions are used.
+	 * 
 	 * @author Brian Groenke
-	 *
+	 * 
 	 */
 	private class BallPhysics extends StandardPhysics implements GamePhysics {
 
@@ -165,7 +171,7 @@ public class Ball extends Entity {
 		 */
 		@Override
 		public double getVelocity() {
-			return (vecd != null) ? vecd.getMagnitude():vecf.getMagnitude();
+			return (vecd != null) ? vecd.getMagnitude() : vecf.getMagnitude();
 		}
 
 		/**

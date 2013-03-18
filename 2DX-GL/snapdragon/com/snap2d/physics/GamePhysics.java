@@ -16,15 +16,18 @@ import bg.x2d.geo.*;
 import bg.x2d.physics.*;
 
 /**
- * Extends the PhysicsNode interface to provide a framework for more complex physics
- * calculations suitable for game programming.
- * <br/><br/>
- * <b>This interface is subject to change!  The Snapdragon2D Physics API is still under development.</b>
+ * Extends the PhysicsNode interface to provide a framework for more complex physics calculations
+ * suitable for game programming. <br/>
+ * <br/>
+ * <b>This interface is subject to change! The Snapdragon2D Physics API is still under
+ * development.</b>
+ * 
  * @author Brian Groenke
- *
+ * 
  */
 public interface GamePhysics extends PhysicsNode {
-	
+
 	public Vector2f collideWith2f(GamePhysics node);
+
 	public Vector2d collideWith2d(GamePhysics node);
 }

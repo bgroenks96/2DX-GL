@@ -16,48 +16,79 @@ import java.util.*;
 
 import bg.x2d.*;
 
+import com.nativelibs4java.opencl.*;
+
 /**
  * Object that represents configuration data for Java2D rendering.
+ * 
  * @author Brian Groenke
- *
+ * 
  */
 public class GLConfig {
 
 	HashMap<Property, String> configMap = new HashMap<Property, String>();
 
 	public GLConfig() {
-		for(Property p:Property.values())
+		for (Property p : Property.values()) {
 			configMap.put(p, p.defValue);
+		}
 	}
-	
+
 	/**
-	 * Creates a GLConfig optimized to defaults appropriate for the current system.
-	 * If the underlying OS is Windows, the default Property values are changed to take
-	 * advantage of Windows native D3D systems over OpenGL and set other Windows-specific
-	 * configurations.  Otherwise, the default Property values are used (they are, by default,
-	 * more optimized for Linux/Solaris/Macintosh systems).
+	 * Creates a GLConfig optimized to defaults appropriate for the current system. If the
+	 * underlying OS is Windows, the default Property values are changed to take advantage of
+	 * Windows native D3D systems over OpenGL and set other Windows-specific configurations.
+	 * Otherwise, the default Property values are used (they are, by default, more optimized for
+	 * Linux/Solaris/Macintosh systems). On Linux systems, if the current Java runtime's version is
+	 * 1.7 or higher, XRender will be favored over OpenGL.
+	 * 
 	 * @return
 	 */
 	public static GLConfig getDefaultSystemConfig() {
-		if(Local.getPlatform().toLowerCase().contains("windows")) {
-			GLConfig config = new GLConfig();
+		String os = Local.getPlatform().toLowerCase();
+		GLConfig config = new GLConfig();
+		if(!checkOpenCLSupport())
+			config.set(Property.SNAP2D_USE_OPENCL, "false");
+		
+		if (os.contains("windows")) {
 			config.set(Property.USE_D3D, "true");
 			config.set(Property.NO_DDRAW, "false");
 			config.set(Property.USE_OPENGL, "false");
 			config.set(Property.ACC_THRESHOLD, "0");
 			return config;
-		} else
-			return new GLConfig();
+		} else if ((os.contains("linux") || os.contains("nix"))
+				&& Local.minJavaVersion(1, 7)) {
+			config = new GLConfig();
+			config.set(Property.USE_NIX_XRENDER, "true");
+			config.set(Property.USE_OPENGL, "false");
+			return config;
+		} else {
+			return config;
+		}
+	}
+	
+	public static boolean checkOpenCLSupport() {
+		if (JavaCL.listPlatforms() == null
+				|| JavaCL.listPlatforms().length == 0) {
+			System.out.println("[Snap2D] No supported OpenCL drivers detected");
+			return false;
+		}
+		
+		return true;
 	}
 
 	/**
 	 * Sets the system configuration property for Java graphics rendering.
-	 * @param property Property to set
-	 * @param value the String value for the property; ignores null values
+	 * 
+	 * @param property
+	 *            Property to set
+	 * @param value
+	 *            the String value for the property; ignores null values
 	 */
 	public void set(Property property, String value) {
-		if(value == null)
+		if (value == null) {
 			return;
+		}
 		configMap.put(property, value);
 	}
 
@@ -65,55 +96,79 @@ public class GLConfig {
 	 * Package-only method to apply set properties.
 	 */
 	void apply() {
-		for(Property f:Property.values()) {
+		for (Property f : Property.values()) {
 			f.applyProperty(configMap);
 		}
 	}
 
 	/**
-	 * Properties used by Java2D (configurable at start or by System.setProperty).
-	 * Note that not all properties may be supported on every platform.
-	 * See http://docs.oracle.com/javase/1.5.0/docs/guide/2d/flags.html for more info.
+	 * Properties used by Java2D (configurable at start or by System.setProperty). Note that not all
+	 * properties may be supported on every platform. See
+	 * http://docs.oracle.com/javase/1.5.0/docs/guide/2d/flags.html for more info.
+	 * 
 	 * @author Brian Groenke
-	 *
+	 * 
 	 */
 	public enum Property {
 		/**
 		 * Boolean (default=true)
 		 */
-		USE_OPENGL("sun.java2d.opengl", "true"), 
+		USE_OPENGL("sun.java2d.opengl", "true"),
 		/**
 		 * Boolean (default=false) * MS-Windows only *
 		 */
-		USE_D3D("sun.java2d.d3d", "false"), 
+		USE_D3D("sun.java2d.d3d", "false"),
 		/**
-		 * Boolean (default=true)  * MS-Windows only *
+		 * Boolean (default=false) *Linux/Unix only*
 		 */
-		NO_DDRAW("sun.java2d.noddraw", "true"), 
+		USE_NIX_XRENDER("sun.java2d.xrender", "false"),
 		/**
-		 * Integer (default=null)  * MS-Windows only *
+		 * Boolean (default=true) * MS-Windows only *
+		 */
+		NO_DDRAW("sun.java2d.noddraw", "true"),
+		/**
+		 * Integer (default=null) * MS-Windows only *
 		 */
 		ACC_THRESHOLD("sun.java2d.accthreshold", null),
+		/**
+		 * Boolean (default=true)
+		 */
+		ALLOW_RASTER_STEAL("sun.java2d.allowrastersteal", "true"),
 
 		/**
 		 * String - list form - (default=null)
 		 */
 		TRACE("sun.java2d.trace", null),
-		
+
 		/**
-		 * Boolean (default=false)  * Linux/Solaris only *
+		 * Boolean (default=false) * Linux/Solaris only *
 		 */
 		PM_OFF_SCREEN("sun.java2d.pmoffscreen", "false"),
-		
+
 		/**
-		 * Boolean (default=true)   * MS-Windows only *
+		 * Boolean (default=true) * MS-Windows only *
+		 * <br/><br/>
+		 * Sets whether or not Snapdragon2D should try to force Windows to use a
+		 * high resolution timer by starting an indefinite sleeping thread.
 		 */
 		SNAP2D_WINDOWS_HIGH_RES_TIMER("com.snap2d.gl.force_timer", "true"),
-		
+
 		/**
 		 * Boolean (default=true)
+		 * <br/><br/>
+		 * Sets whether or not FPS and TPS will be printed to stdout on each frame.
 		 */
-		SNAP2D_PRINT_RENDER_STAT("com.snap2d.gl.printframes", "true");
+		SNAP2D_PRINT_RENDER_STAT("com.snap2d.gl.printframes", "true"),
+		
+		/**
+		 * Boolean (default=false)
+		 * <br/><br/>
+		 * Sets whether or not Snapdragon2D should use OpenCL to offload
+		 * some rendering computations to the GPU.  For some applications and/or on
+		 * some systems, the massive computation speed boost may not be worth the RAM-VRAM
+		 * transfer overhead.
+		 */
+		SNAP2D_USE_OPENCL("com.snap2d.gl.opencl", "false");
 
 		private String property, defValue;
 
@@ -124,8 +179,9 @@ public class GLConfig {
 
 		private void applyProperty(HashMap<Property, String> config) {
 			String value = config.get(this);
-			if(value !=null)
+			if (value != null) {
 				System.setProperty(property, value);
+			}
 		}
 	}
 }

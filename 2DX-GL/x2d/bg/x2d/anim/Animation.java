@@ -18,13 +18,12 @@ import java.util.*;
 import java.util.List;
 
 /**
- * A collection of Segments that perform operations on a Graphics object's
- * transform to create timed animation effects. The Segments provided will be
- * played in order over their respective time durations. When the Animation is
- * drawn, the current cumulative changes made to the AffineTransform of the
- * Graphics object are applied, and when released, the original Graphics
- * transform is restored. This allows for independent Animations per drawn
- * object in a simple, managed time model.
+ * A collection of Segments that perform operations on a Graphics object's transform to create timed
+ * animation effects. The Segments provided will be played in order over their respective time
+ * durations. When the Animation is drawn, the current cumulative changes made to the
+ * AffineTransform of the Graphics object are applied, and when released, the original Graphics
+ * transform is restored. This allows for independent Animations per drawn object in a simple,
+ * managed time model.
  * 
  * @author Brian Groenke
  * @since 2DX 1.0 (1st Edition)
@@ -42,15 +41,12 @@ public class Animation implements Drawable {
 	 * Creates this animation with the given segments.
 	 * 
 	 * @param segments
-	 *            the Segments of this animation. <b>Must contain all Segments
-	 *            when this constructor is called</b>. An internal list is
-	 *            created with the contents of the given list, so any changes
-	 *            made to the given list will not be reflected in the Animation
-	 *            queue.
+	 *            the Segments of this animation. <b>Must contain all Segments when this constructor
+	 *            is called</b>. An internal list is created with the contents of the given list, so
+	 *            any changes made to the given list will not be reflected in the Animation queue.
 	 * @param autoLoop
-	 *            if true this animation will automatically reset after
-	 *            completion, else the responsibility will be left to the
-	 *            caller.
+	 *            if true this animation will automatically reset after completion, else the
+	 *            responsibility will be left to the caller.
 	 */
 	public Animation(List<Segment> segments, boolean autoLoop) {
 		this(segments.toArray(new Segment[segments.size()]), autoLoop);
@@ -60,15 +56,12 @@ public class Animation implements Drawable {
 	 * Creates this animation with the given segments.
 	 * 
 	 * @param segments
-	 *            the Segments of this animation. <b>Must contain all Segments
-	 *            when this constructor is called</b>. An internal list is
-	 *            created with the contents of the given list, so any changes
-	 *            made to the given list will not be reflected in the Animation
-	 *            queue.
+	 *            the Segments of this animation. <b>Must contain all Segments when this constructor
+	 *            is called</b>. An internal list is created with the contents of the given list, so
+	 *            any changes made to the given list will not be reflected in the Animation queue.
 	 * @param autoLoop
-	 *            if true this animation will automatically reset after
-	 *            completion, else the responsibility will be left to the
-	 *            caller.
+	 *            if true this animation will automatically reset after completion, else the
+	 *            responsibility will be left to the caller.
 	 */
 	public Animation(Segment[] segments, boolean autoLoop) {
 		if (segments == null || segments.length <= 0) {
@@ -83,10 +76,9 @@ public class Animation implements Drawable {
 	}
 
 	/**
-	 * Initiates the transformation for whatever Segment is currently in effect
-	 * and sets the transform on the given Graphics2D object. Everything drawn
-	 * between when this method is called and <code>release</code> is called
-	 * will be affected by the transformations of this Animation.
+	 * Initiates the transformation for whatever Segment is currently in effect and sets the
+	 * transform on the given Graphics2D object. Everything drawn between when this method is called
+	 * and <code>release</code> is called will be affected by the transformations of this Animation.
 	 */
 	@Override
 	public void draw(Graphics2D g2d) {
@@ -99,8 +91,8 @@ public class Animation implements Drawable {
 	}
 
 	/**
-	 * Resets the original AffineTranform of the Graphics2D object so the
-	 * transformations will no longer affect it.
+	 * Resets the original AffineTranform of the Graphics2D object so the transformations will no
+	 * longer affect it.
 	 * 
 	 * @param g2d
 	 */
@@ -109,9 +101,8 @@ public class Animation implements Drawable {
 	}
 
 	/**
-	 * Calls <code>reset</code> on all of the Segments in this Animation's dump
-	 * queue, if and only if this Animation is finished. This must be called
-	 * before this Animation will play again.
+	 * Calls <code>reset</code> on all of the Segments in this Animation's dump queue, if and only
+	 * if this Animation is finished. This must be called before this Animation will play again.
 	 */
 	public void resetAll() {
 		if (!finis) {
@@ -126,8 +117,7 @@ public class Animation implements Drawable {
 	}
 
 	/**
-	 * Checks to see if this Animation is finished (all Segments have
-	 * completed).
+	 * Checks to see if this Animation is finished (all Segments have completed).
 	 * 
 	 * @return true if finished, false otherwise.
 	 */
@@ -145,10 +135,9 @@ public class Animation implements Drawable {
 	}
 
 	/**
-	 * Advances the current Segment by calling its <code>transform</code>
-	 * method. Also performs checks on the the Segment's validity and moves to
-	 * the next Segment if it has been finished. Does nothing if all Segments
-	 * have finished.
+	 * Advances the current Segment by calling its <code>transform</code> method. Also performs
+	 * checks on the the Segment's validity and moves to the next Segment if it has been finished.
+	 * Does nothing if all Segments have finished.
 	 */
 	protected void advance() {
 		if (finis) {

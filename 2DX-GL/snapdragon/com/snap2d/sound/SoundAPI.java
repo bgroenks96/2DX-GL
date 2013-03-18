@@ -13,43 +13,51 @@
 package com.snap2d.sound;
 
 /**
- * SoundAPI acts as an entrance point to the Snapdragon2D Sound API.  You MUST call the <code>init</code> method
- * before an instance of Sound2D can be obtained.
- * <br/><br/>
- * Note: A shutdown hook is added to the system to ensure that sound-based resources are cleaned up properly.
- * You may still shutdown a Sound2D instance at any time.  The shutdown hook will simply abort its shutdown operation.
+ * SoundAPI acts as an entrance point to the Snapdragon2D Sound API. You MUST call the
+ * <code>init</code> method before an instance of Sound2D can be obtained. <br/>
+ * <br/>
+ * Note: A shutdown hook is added to the system to ensure that sound-based resources are cleaned up
+ * properly. You may still shutdown a Sound2D instance at any time. The shutdown hook will simply
+ * abort its shutdown operation.
+ * 
  * @author Brian Groenke
- *
+ * 
  */
 public class SoundAPI {
-	
-	private SoundAPI() {}
-	
+
+	private SoundAPI() {
+	}
+
 	static Sound2D sound2d;
-	
+
 	public static void init() {
-		if(sound2d != null)
+		if (sound2d != null) {
 			return;
+		}
 		System.out.println("Snapdragon2D Sound API - initializing libraries");
 		sound2d = new Sound2D();
-		Runtime.getRuntime().addShutdownHook(new Thread(new CleanupSoundSystem()));
+		Runtime.getRuntime().addShutdownHook(
+				new Thread(new CleanupSoundSystem()));
 		System.out.println("Snapdragon2D Sound API - initialized");
 	}
-	
+
 	public static Sound2D getSound2D() throws IllegalStateException {
-		if(sound2d == null)
-			throw(new IllegalStateException("SoundAPI not yet initialized"));
+		if (sound2d == null) {
+			throw (new IllegalStateException("SoundAPI not yet initialized"));
+		}
 		return sound2d;
 	}
-	
+
 	private static class CleanupSoundSystem implements Runnable {
 
 		@Override
 		public void run() {
-			if(sound2d != null)
-				if(sound2d.isInitialized())
+			if (sound2d != null) {
+				if (sound2d.isInitialized()) {
 					sound2d.shutdown();
+				}
+			}
 		}
-		
+
 	}
 }

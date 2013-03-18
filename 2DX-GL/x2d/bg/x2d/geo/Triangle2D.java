@@ -21,15 +21,13 @@ public class Triangle2D extends Shapes2D {
 	}
 
 	/**
-	 * Draws a rotated version of the shape on screen. The properties of the
-	 * shape must have been set either by having been drawn or calling the
-	 * <code>setProperties(...)</code> method. Else, a GeoException will be
-	 * thrown. <br>
+	 * Draws a rotated version of the shape on screen. The properties of the shape must have been
+	 * set either by having been drawn or calling the <code>setProperties(...)</code> method. Else,
+	 * a GeoException will be thrown. <br>
 	 * <br>
-	 * Note: The user is responsible for clearing any previously drawn figure.
-	 * This method will draw the rotated shape on screen using the currently set
-	 * properties. It does not make any attempt to clear the screen or the last
-	 * shape drawn.
+	 * Note: The user is responsible for clearing any previously drawn figure. This method will draw
+	 * the rotated shape on screen using the currently set properties. It does not make any attempt
+	 * to clear the screen or the last shape drawn.
 	 * 
 	 * @param degrees
 	 *            the number of degrees

@@ -19,17 +19,18 @@ import java.math.*;
 
 /**
  * Implementation of a floating point vector in 2-dimensional coordinate space.
+ * 
  * @author Brian Groenke
  * @since 2DX 1.0 (1st Edition)
  */
 public class Vector2f {
 
 	private static int defaultPrecision = 5;
-	
+
 	public volatile float x, y;
-	
+
 	private volatile float mag, angle;
-	
+
 	public volatile int precision = defaultPrecision;
 
 	/**
@@ -51,36 +52,40 @@ public class Vector2f {
 		mag = copy.mag;
 		angle = copy.angle;
 	}
-	
+
 	public static Vector2f fromPolar(float mag, float angle) {
 		return new Vector2f(0, 0).setFromPolar(mag, angle);
 	}
 
 	/**
-	 * Sets the number of decimal places to the right where vector math should be rounded.
-	 * All Vector2f objects will be initialized to this value.
+	 * Sets the number of decimal places to the right where vector math should be rounded. All
+	 * Vector2f objects will be initialized to this value.
+	 * 
 	 * @param precision
 	 */
 	public static void setDefaultPrecision(int precision) {
-		if(precision >= 0)
+		if (precision >= 0) {
 			defaultPrecision = precision;
+		}
 	}
-	
+
 	/**
-	 * Returns the current decimal precision value for vector math.  Default is 5 (i.e. x.#####).
+	 * Returns the current decimal precision value for vector math. Default is 5 (i.e. x.#####).
+	 * 
 	 * @return
 	 */
 	public static int getDecimalPrecision() {
 		return defaultPrecision;
 	}
-	
+
 	private void init() {
 		angle = (float) GeoUtils.terminal(x, y);
 		mag = (float) sqrt(pow(x, 2) + pow(y, 2));
 	}
-	
+
 	private void checkPrecision() {
-		BigDecimal bd = BigDecimal.valueOf(x).setScale(precision, RoundingMode.HALF_UP);
+		BigDecimal bd = BigDecimal.valueOf(x).setScale(precision,
+				RoundingMode.HALF_UP);
 		x = bd.floatValue();
 		bd = BigDecimal.valueOf(y).setScale(precision, RoundingMode.HALF_UP);
 		y = bd.floatValue();
@@ -91,20 +96,21 @@ public class Vector2f {
 		checkPrecision();
 		return (float) toDegrees(angle);
 	}
-	
+
 	public float rads() {
 		checkPrecision();
 		return angle;
 	}
-	
+
 	public float getMagnitude() {
 		checkPrecision();
 		return mag;
 	}
-	
+
 	public Vector2f setFromPolar(float mag, float angle) {
-		if(mag < 0)
+		if (mag < 0) {
 			mag = -mag;
+		}
 		x = (float) (mag * cos(angle));
 		y = (float) (mag * sin(angle));
 		this.mag = mag;
@@ -152,11 +158,11 @@ public class Vector2f {
 	}
 
 	public Vector2f addNew(Vector2f arg) {
-		return new Vector2f(x += arg.x, y+= arg.y);
+		return new Vector2f(x += arg.x, y += arg.y);
 	}
 
 	public Vector2f subNew(Vector2f arg) {
-		return new Vector2f(x -= arg.x, y-= arg.y);
+		return new Vector2f(x -= arg.x, y -= arg.y);
 	}
 
 	public Vector2f multNew(float factor) {
@@ -187,8 +193,7 @@ public class Vector2f {
 
 	public final void normalize() {
 		float norm;
-		norm = (float) 
-				(1.0/Math.sqrt(this.x * this.x + this.y * this.y));
+		norm = (float) (1.0 / Math.sqrt(this.x * this.x + this.y * this.y));
 		this.x *= norm;
 		this.y *= norm;
 		checkPrecision();
@@ -204,7 +209,9 @@ public class Vector2f {
 
 	/**
 	 * Rotates this vector by given radians.
-	 * @param angle rotation value IN RADIANS
+	 * 
+	 * @param angle
+	 *            rotation value IN RADIANS
 	 * @return this vector for chain calls.
 	 */
 	public Vector2f rotate(float rads) {
@@ -234,27 +241,28 @@ public class Vector2f {
 	public Vector2f negateNew() {
 		float x = -this.x;
 		float y = -this.y;
-		return new Vector2f(x,y);
+		return new Vector2f(x, y);
 	}
-	
+
 	public Vector2f negateX() {
 		x = -x;
 		checkPrecision();
 		return this;
 	}
-	
+
 	public Vector2f negateY() {
 		y = -y;
 		checkPrecision();
 		return this;
 	}
-	
+
 	public Point2D.Float applyTo(Point2D.Float p, float multiplier) {
 		return new Point2D.Float(p.x + (x * multiplier), p.y + (y * multiplier));
 	}
-	
+
 	@Override
 	public String toString() {
-		return "mag="+mag+" theta="+Math.toDegrees(angle)+" ["+x+", "+y+"]";
+		return "mag=" + mag + " theta=" + Math.toDegrees(angle) + " [" + x
+				+ ", " + y + "]";
 	}
 }

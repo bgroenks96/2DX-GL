@@ -12,9 +12,9 @@
 
 package bg.x2d.gen;
 
-import java.awt.Point;
+import java.awt.*;
 
-import bg.x2d.geo.PointLD;
+import bg.x2d.geo.*;
 
 /**
  * Generates a random point using the given x and y bounds.

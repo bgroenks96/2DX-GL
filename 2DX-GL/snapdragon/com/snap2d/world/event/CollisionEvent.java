@@ -21,18 +21,18 @@ public class CollisionEvent extends EntityEvent {
 	 * 
 	 */
 	private static final long serialVersionUID = -2631149230119417861L;
-	
+
 	private EntityCollision[] colls;
 
 	/**
 	 * 
 	 * @param source
 	 */
-	public CollisionEvent(Entity source, EntityCollision...colls) {
+	public CollisionEvent(Entity source, EntityCollision... colls) {
 		super(source);
 		this.colls = colls;
 	}
-	
+
 	public EntityCollision[] getCollisions() {
 		return colls;
 	}

@@ -17,30 +17,34 @@ import java.net.*;
 
 /**
  * Provides static general utility methods.
+ * 
  * @author Brian Groenke
  * @since 2DX 1.0 (1st Edition)
  */
 public class Utils {
-	
-	public static final File TEMP_DIR = new File(System.getProperty("java.io.tmpdir") + File.separator +
-			".com_snap2d_tmp");
-	
+
+	public static final File TEMP_DIR = new File(
+			System.getProperty("java.io.tmpdir") + File.separator
+					+ ".com_snap2d_tmp");
+
 	static {
 		boolean chk = false;
-		if(TEMP_DIR.exists())
+		if (TEMP_DIR.exists()) {
 			try {
 				removeDirectory(TEMP_DIR, true);
 			} catch (FileNotFoundException e1) {
 				e1.printStackTrace();
 			}
-		for(int i = 0; i < 5; i++) {
-			chk = TEMP_DIR.mkdir();
-			if(chk)
-				break;
 		}
-		if(!chk)
+		for (int i = 0; i < 5; i++) {
+			chk = TEMP_DIR.mkdir();
+			if (chk) {
+				break;
+			}
+		}
+		if (!chk) {
 			System.err.println("Snapdragon2D: error creating temp-dir");
-		else {
+		} else {
 			Runtime.getRuntime().addShutdownHook(new Thread(new Runnable() {
 
 				@Override
@@ -48,59 +52,66 @@ public class Utils {
 					try {
 						removeDirectory(TEMP_DIR, true);
 					} catch (FileNotFoundException e) {
-						System.err.println("Snapdragon2D: failed to remove temp-dir");
+						System.err
+								.println("Snapdragon2D: failed to remove temp-dir");
 					}
 				}
-				
+
 			}));
 		}
 	}
 
-	private Utils() {};
-	
+	private Utils() {
+	};
+
 	/**
-	 * Closes the InputStream, catching the exception and returning
-	 * false on failure.  In the case that stream is null, this method will
-	 * quietly return false.
-	 * @param stream InputStream to close; a null value will cause false to be returned
+	 * Closes the InputStream, catching the exception and returning false on failure. In the case
+	 * that stream is null, this method will quietly return false.
+	 * 
+	 * @param stream
+	 *            InputStream to close; a null value will cause false to be returned
 	 * @return true if successful, false if null or otherwise.
 	 */
 	public static boolean closeStream(InputStream stream) {
-		if(stream == null)
+		if (stream == null) {
 			return false;
+		}
 		try {
 			stream.close();
 		} catch (IOException e) {
 			e.printStackTrace();
 			return false;
 		}
-		
+
 		return true;
 	}
-	
+
 	/**
-	 * Closes the OutputStream, catching the exception and returning
-	 * false on failure.  In the case that stream is null, this method will
-	 * quietly return false.
-	 * @param stream OutputStream to close; a null value will cause false to be returned
+	 * Closes the OutputStream, catching the exception and returning false on failure. In the case
+	 * that stream is null, this method will quietly return false.
+	 * 
+	 * @param stream
+	 *            OutputStream to close; a null value will cause false to be returned
 	 * @return true if successful, false if null or otherwise.
 	 */
 	public static boolean closeStream(OutputStream stream) {
-		if(stream == null)
+		if (stream == null) {
 			return false;
+		}
 		try {
 			stream.close();
 		} catch (IOException e) {
 			e.printStackTrace();
 			return false;
 		}
-		
+
 		return true;
 	}
-	
+
 	/**
-	 * Performs the recommended intermediary step of using toURI and then toURL to convert the File object.
-	 * The MalformedURLException is caught if thrown and null will be returned.
+	 * Performs the recommended intermediary step of using toURI and then toURL to convert the File
+	 * object. The MalformedURLException is caught if thrown and null will be returned.
+	 * 
 	 * @param f
 	 * @return the URL or null on error.
 	 */
@@ -112,38 +123,39 @@ public class Utils {
 			return null;
 		}
 	}
-	
+
 	/**
-	 * Writes the data from the given InputStream to a file of the specified name in Java's default temp-dir.
-	 * The given InputStream is closed by this method after writing completes.
+	 * Writes the data from the given InputStream to a file of the specified name in Java's default
+	 * temp-dir. The given InputStream is closed by this method after writing completes.
+	 * 
 	 * @param in
 	 * @param fileName
 	 * @throws IOException
 	 * @return a File object representing the newly created temp-file.
 	 */
-	public static File writeToTempStorage(InputStream in, String fileName) throws IOException {
+	public static File writeToTempStorage(InputStream in, String fileName)
+			throws IOException {
 		BufferedInputStream buffIn = new BufferedInputStream(in);
 		File outFile = new File(TEMP_DIR + File.separator + fileName);
-		BufferedOutputStream buffOut = new BufferedOutputStream(new FileOutputStream(outFile));
+		BufferedOutputStream buffOut = new BufferedOutputStream(
+				new FileOutputStream(outFile));
 		byte[] buff = new byte[8124];
 		int len;
-		while((len=buffIn.read(buff)) > 0) {
+		while ((len = buffIn.read(buff)) > 0) {
 			buffOut.write(buff, 0, len);
 		}
 		buffOut.close();
 		buffIn.close();
 		return outFile;
 	}
-	
+
 	/**
-	 * Recursively removes all subfiles of the given directory and deletes it if
-	 * desired.
+	 * Recursively removes all subfiles of the given directory and deletes it if desired.
 	 * 
 	 * @param dir
 	 *            The directory to clear/delete.
 	 * @param delete
-	 *            removes the now empty directory if true, else it is left
-	 *            alone.
+	 *            removes the now empty directory if true, else it is left alone.
 	 * @return true if successful. False otherwise.
 	 * @throws FileNotFoundException
 	 *             if the given File isn't a directory.
@@ -169,34 +181,38 @@ public class Utils {
 		if (delete) {
 			deleted = dir.delete();
 		}
-		
+
 		return deleted;
 	}
-	
-	public static <T> T[] arrayDelete(T[] arr, T[] dest, T...dels) {
-		if(arr == null || dest == null || dest.length != arr.length - dels.length)
-			throw(new IllegalArgumentException("null or invalid array argument"));
-		for(int i = 0; i < dels.length; i++) {
-			for(int ii = 0, offs = 0; ii < arr.length; ii++) {
-				if(ii >= dest.length)
+
+	public static <T> T[] arrayDelete(T[] arr, T[] dest, T... dels) {
+		if (arr == null || dest == null
+				|| dest.length != arr.length - dels.length) {
+			throw (new IllegalArgumentException(
+					"null or invalid array argument"));
+		}
+		for (int i = 0; i < dels.length; i++) {
+			for (int ii = 0, offs = 0; ii < arr.length; ii++) {
+				if (ii >= dest.length) {
 					return null;
-				if(arr[ii] != dels[i])
+				}
+				if (arr[ii] != dels[i]) {
 					dest[ii - offs] = arr[ii];
-				else
+				} else {
 					offs++;
+				}
 			}
 		}
-		
+
 		return dest;
 	}
-	
+
 	public static int interpolate(int n, int lastN, float interpolation) {
-		return (int) Math.round(((n - lastN) * interpolation + lastN));
+		return Math.round(((n - lastN) * interpolation + lastN));
 	}
-	
+
 	/**
-	 * Computes the size of an Object by serializing it to memory and checking
-	 * the buffer size.
+	 * Computes the size of an Object by serializing it to memory and checking the buffer size.
 	 * 
 	 * @param obj
 	 * @return

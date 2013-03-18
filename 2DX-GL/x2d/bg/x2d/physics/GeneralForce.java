@@ -17,7 +17,7 @@ import bg.x2d.geo.*;
 /**
  * 
  * @author Brian Groenke
- *
+ * 
  */
 public class GeneralForce extends Force {
 
@@ -39,7 +39,7 @@ public class GeneralForce extends Force {
 
 	@Override
 	public void setForceVector(Vector2f vec) {
-		if(vec != null) {
+		if (vec != null) {
 			vecd = null;
 			vecf = vec;
 		}
@@ -47,7 +47,7 @@ public class GeneralForce extends Force {
 
 	@Override
 	public void setForceVector(Vector2d vec) {
-		if(vec != null) {
+		if (vec != null) {
 			vecf = null;
 			vecd = vec;
 		}
@@ -65,7 +65,7 @@ public class GeneralForce extends Force {
 
 	@Override
 	public double getNewtonForce(double mass) {
-		return (vecf != null) ? vecf.getMagnitude():vecd.getMagnitude();
+		return (vecf != null) ? vecf.getMagnitude() : vecd.getMagnitude();
 	}
 
 	@Override
@@ -79,7 +79,8 @@ public class GeneralForce extends Force {
 	 * @param vec velocity vector to be accelerated by force.
 	 * @return the modified Vector2f object (allows for chain calls).
 	 */
-	public Vector2f applyTo(float time, float mass, Vector2f forceSum, Vector2f vec) {
+	public Vector2f applyTo(float time, float mass, Vector2f forceSum,
+			Vector2f vec) {
 		Vector2f vecf = this.vecf.divNew(mass);
 		vec.add(vecf.multNew(time));
 		return vec;
@@ -94,7 +95,8 @@ public class GeneralForce extends Force {
 	 * @param vec velocity vector to be accelerated by force.
 	 * @return the modified Vector2f object (allows for chain calls).
 	 */
-	public Vector2d applyTo(double time, double mass, Vector2d forceSum, Vector2d vec) {
+	public Vector2d applyTo(double time, double mass, Vector2d forceSum,
+			Vector2d vec) {
 		Vector2d vecd = this.vecd.divNew(mass);
 		vec.add(vecd.multNew(time));
 		return vec;

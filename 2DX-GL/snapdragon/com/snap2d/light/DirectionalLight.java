@@ -14,7 +14,7 @@ package com.snap2d.light;
 
 /**
  * @author Brian Groenke
- *
+ * 
  */
 public class DirectionalLight extends Light {
 
@@ -34,7 +34,7 @@ public class DirectionalLight extends Light {
 	 */
 	@Override
 	public boolean contains(int x, int y) {
-		
+
 		return false;
 	}
 }

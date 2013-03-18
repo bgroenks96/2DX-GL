@@ -12,16 +12,14 @@
 
 package bg.x2d.geo;
 
-import bg.x2d.TDXException;
+import bg.x2d.*;
 
 public class GeoException extends TDXException {
 
 	/**
-	 * The standard exception thrown by all classes in the bg.tdx.geo package
-	 * when a Geometric error occurs (often caused by invalid arguments passed
-	 * to a geometry method).<br>
-	 * This class does nothing but subclass type TDXException and slap its own
-	 * name onto it.
+	 * The standard exception thrown by all classes in the bg.tdx.geo package when a Geometric error
+	 * occurs (often caused by invalid arguments passed to a geometry method).<br>
+	 * This class does nothing but subclass type TDXException and slap its own name onto it.
 	 */
 	private static final long serialVersionUID = 975059383220158740L;
 

@@ -18,10 +18,10 @@ import java.awt.font.*;
 
 /**
  * @author Brian Groenke
- *
+ * 
  */
 public class Text extends RenderedComponent {
-	
+
 	String text;
 	Paint paint;
 	Font font;
@@ -33,16 +33,17 @@ public class Text extends RenderedComponent {
 	 * @param width
 	 * @param height
 	 */
-	public Text(int x, int y, String text, Paint paint, Font font, FontRenderContext renderContext) {
-		super(x, y, (int) font.getStringBounds(text, renderContext).getWidth(), 
+	public Text(int x, int y, String text, Paint paint, Font font,
+			FontRenderContext renderContext) {
+		super(x, y, (int) font.getStringBounds(text, renderContext).getWidth(),
 				(int) font.getStringBounds(text, renderContext).getHeight());
 		this.paint = paint;
 		this.text = text;
 		this.font = font;
 		this.renderContext = renderContext;
-		
+
 	}
-	
+
 	int lx, ly;
 
 	/**
@@ -54,35 +55,36 @@ public class Text extends RenderedComponent {
 		g.setFont(font);
 		g.drawString(text, x, y);
 	}
-	
+
 	public void setText(String str) {
 		this.text = str;
 		recalculateSize();
 	}
-	
+
 	public String getText() {
 		return text;
 	}
-	
+
 	protected void recalculateSize() {
-		super.setRawBounds(rawx, rawy, (int) font.getStringBounds(text, renderContext).getWidth(), 
+		super.setRawBounds(rawx, rawy,
+				(int) font.getStringBounds(text, renderContext).getWidth(),
 				(int) font.getStringBounds(text, renderContext).getHeight());
 	}
 
 	/**
-	 * Override to perform mouse event actions.  Default implementation does nothing.
+	 * Override to perform mouse event actions. Default implementation does nothing.
 	 */
 	@Override
 	public void processMouseEvent(MouseEvent me) {
 		//
 	}
-	
+
 	/**
-	 * Override to perform key event actions.  Default implementation does nothing.
+	 * Override to perform key event actions. Default implementation does nothing.
 	 */
 	@Override
 	public void processKeyEvent(KeyEvent e) {
-		
+
 	}
 
 	/**

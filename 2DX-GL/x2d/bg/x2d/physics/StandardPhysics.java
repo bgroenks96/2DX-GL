@@ -15,18 +15,19 @@ package bg.x2d.physics;
 import bg.x2d.geo.*;
 
 /**
- * A PhysicsNode that represents standard (real) physical forces acting upon an object.
- * Gravity is built in and will always be called by <code>applyForces</code>.
+ * A PhysicsNode that represents standard (real) physical forces acting upon an object. Gravity is
+ * built in and will always be called by <code>applyForces</code>.
+ * 
  * @author Brian Groenke
- *
+ * 
  */
 public class StandardPhysics implements PhysicsNode {
-	
+
 	Gravity g = new Gravity();
-	
+
 	protected Vector2f vecf;
 	protected Vector2d vecd;
-	
+
 	double mass;
 
 	/**
@@ -38,7 +39,7 @@ public class StandardPhysics implements PhysicsNode {
 		this.mass = objMass;
 		vecf = vec;
 	}
-	
+
 	public StandardPhysics(Vector2d vec, double objMass) {
 		this.mass = objMass;
 		vecd = vec;
@@ -56,7 +57,7 @@ public class StandardPhysics implements PhysicsNode {
 
 	@Override
 	public double getVelocity() {
-		return (vecd != null) ? vecd.getMagnitude():vecf.getMagnitude();
+		return (vecd != null) ? vecd.getMagnitude() : vecf.getMagnitude();
 	}
 
 	@Override
@@ -79,10 +80,10 @@ public class StandardPhysics implements PhysicsNode {
 	@Override
 	public Vector2f applyForces(float time, Force... f) {
 		g.applyTo(time, (float) mass, null, vecf);
-		
+
 		Vector2f vecSum = new Vector2f(g.getVec2f());
-		for(Force force:f) {
-			force.applyTo(time, (float)mass, vecSum, vecf);
+		for (Force force : f) {
+			force.applyTo(time, (float) mass, vecSum, vecf);
 			vecSum.add(force.getVec2f());
 		}
 		return vecf;
@@ -91,9 +92,9 @@ public class StandardPhysics implements PhysicsNode {
 	@Override
 	public Vector2d applyForces(double time, Force... f) {
 		g.applyTo(time, mass, null, vecd);
-		
+
 		Vector2d vecSum = new Vector2d(g.getVec2d());
-		for(Force force:f) {
+		for (Force force : f) {
 			force.applyTo(time, mass, vecSum, vecd);
 			vecSum.add(force.getVec2d());
 		}
@@ -111,39 +112,40 @@ public class StandardPhysics implements PhysicsNode {
 	 * @return
 	 */
 	public Vector2f collide(float velFactor, float surfaceAngle, Collision type) {
-		//int q = GeoUtils.quadrant(vecf.x, vecf.y);
-		
-		if(type == Collision.X) {
+		// int q = GeoUtils.quadrant(vecf.x, vecf.y);
+
+		if (type == Collision.X) {
 			vecf.negateY().mult(velFactor);
-		} else if(type == Collision.XY) {
+		} else if (type == Collision.XY) {
 			vecf.negate().mult(velFactor);
 		} else {
 			vecf.negateX();
-			if(type == Collision.ANGLED) {
-				vecf.rotate(surfaceAngle - ((float)Math.PI / 2));
+			if (type == Collision.ANGLED) {
+				vecf.rotate(surfaceAngle - ((float) Math.PI / 2));
 			}
 			vecf.mult(velFactor);
 		}
-		
+
 		return vecf;
 	}
 
 	@Override
-	public Vector2d collide(double velFactor, double surfaceAngle, Collision type) {
-		//int q = GeoUtils.quadrant(vecd.x, vecd.y);
-		
-		if(type == Collision.X) {
+	public Vector2d collide(double velFactor, double surfaceAngle,
+			Collision type) {
+		// int q = GeoUtils.quadrant(vecd.x, vecd.y);
+
+		if (type == Collision.X) {
 			vecd.negateY().mult(velFactor);
-		} else if(type == Collision.XY) {
+		} else if (type == Collision.XY) {
 			vecd.negate().mult(velFactor);
 		} else {
 			vecd.negateX();
-			if(type == Collision.ANGLED) {
+			if (type == Collision.ANGLED) {
 				vecd.rotate(surfaceAngle - (Math.PI / 2));
 			}
 			vecd.mult(velFactor);
 		}
-		
+
 		return vecd;
 	}
 

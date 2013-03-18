@@ -20,7 +20,7 @@ import com.snap2d.world.*;
 
 /**
  * @author Brian Groenke
- *
+ * 
  */
 public class GenericEntity extends Entity {
 
@@ -28,13 +28,14 @@ public class GenericEntity extends Entity {
 	 * 
 	 */
 	private static final long serialVersionUID = 949575200050379961L;
-	
+
 	private static final CollisionModel model;
 	private static final Color COLOR = Color.GREEN;
 	private static final int SIZE = 50;
-	
+
 	static {
-		model = new CollisionModel(new Rectangle2D.Double(0, 0, SIZE, SIZE), COLOR, new AffineTransform(), true);
+		model = new CollisionModel(new Rectangle2D.Double(0, 0, SIZE, SIZE),
+				COLOR, new AffineTransform(), true);
 	}
 
 	/**
@@ -51,12 +52,13 @@ public class GenericEntity extends Entity {
 	 */
 	@Override
 	public void render(Graphics2D g, float interpolation) {
-		if(!shouldRender)
+		if (!shouldRender) {
 			return;
+		}
 		double wx = worldLoc.dx;
 		double wy = worldLoc.dy;
 		Point p = world.worldToScreen(wx, wy);
-		int x,y;
+		int x, y;
 		x = p.x;
 		y = p.y;
 		g.setPaint(COLOR);
@@ -68,7 +70,7 @@ public class GenericEntity extends Entity {
 	 */
 	@Override
 	public void update(long nanoTimeNow, long nanosSinceLastUpdate) {
-		
+
 	}
 
 	/**
@@ -76,7 +78,7 @@ public class GenericEntity extends Entity {
 	 */
 	@Override
 	public void onResize(Dimension oldSize, Dimension newSize) {
-		
+
 	}
 
 	/**

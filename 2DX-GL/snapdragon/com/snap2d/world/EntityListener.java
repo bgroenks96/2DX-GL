@@ -15,9 +15,11 @@ package com.snap2d.world;
 import com.snap2d.world.event.*;
 
 public interface EntityListener {
-	
+
 	public void onCollision(CollisionEvent collEvt);
+
 	public void onAdd(AddEvent addEvt);
+
 	public void onRemove(RemoveEvent remEvt);
-	
+
 }

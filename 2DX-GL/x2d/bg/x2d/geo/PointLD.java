@@ -16,9 +16,10 @@ import java.awt.*;
 import java.awt.geom.*;
 
 /**
- * Point Long-Double.  Implementation of a 2D point that stores its value as a double and allows
- * quick access also as a rounded int or long.  Qualifies polymorphically as a Point or Point2D, so
+ * Point Long-Double. Implementation of a 2D point that stores its value as a double and allows
+ * quick access also as a rounded int or long. Qualifies polymorphically as a Point or Point2D, so
  * it can often be passed to Java2D functions (including AWT/Swing).
+ * 
  * @author Brian Groenke
  * @since 2DX 1.0 (1st Edition)
  */
@@ -55,19 +56,19 @@ public class PointLD extends Point {
 	public double getY() {
 		return dy;
 	}
-	
+
 	@Override
 	public void setLocation(double x, double y) {
 		this.dx = x;
 		this.dy = y;
 		super.setLocation(x, y);
 	}
-	
+
 	@Override
 	public void setLocation(Point2D p) {
 		setLocation(p.getX(), p.getY());
 	}
-	
+
 	@Override
 	public void setLocation(Point p) {
 		setLocation(p.getX(), p.getY());
@@ -88,13 +89,13 @@ public class PointLD extends Point {
 	public int getIntY() {
 		return (int) Math.round(dy);
 	}
-	
+
 	public Point2D.Double getDoublePoint() {
 		return new Point2D.Double(dx, dy);
 	}
-	
+
 	public Point2D.Float getFloatPoint() {
-		return new Point2D.Float((float)dx, (float)dy);
+		return new Point2D.Float((float) dx, (float) dy);
 	}
 
 	@Override

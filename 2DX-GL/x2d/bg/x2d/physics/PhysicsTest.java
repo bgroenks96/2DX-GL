@@ -20,8 +20,9 @@ import bg.x2d.physics.PhysicsNode.Collision;
 
 /**
  * Test application for the 2DX Physics Engine.
+ * 
  * @author Brian Groenke
- *
+ * 
  */
 public class PhysicsTest extends JApplet {
 
@@ -44,11 +45,12 @@ public class PhysicsTest extends JApplet {
 	public void init() {
 		try {
 			UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
-		} catch (Exception e) {}
-		
+		} catch (Exception e) {
+		}
+
 		Vector2f.setDefaultPrecision(8);
 		FloatMath.setPrecision(8);
-		
+
 		friction = new Friction(0.0f, 0.0f, new Gravity());
 		forces[0] = friction;
 	}
@@ -61,13 +63,14 @@ public class PhysicsTest extends JApplet {
 		add(BorderLayout.CENTER, panel);
 		JButton toggle = new JButton("Run");
 		toggle.addActionListener(new RunListener());
-		JButton settings  = new JButton("Settings");
+		JButton settings = new JButton("Settings");
 		settings.addActionListener(new SettingsDialog());
 		btns.add(toggle);
 		btns.add(settings);
 		btns.setBackground(Color.GRAY);
 		add(BorderLayout.SOUTH, btns);
-		panel.init((-getWidth() / 2.0f), (-getHeight() / 2.0f), getWidth() , (getHeight() - btns.getPreferredSize().height));
+		panel.init((-getWidth() / 2.0f), (-getHeight() / 2.0f), getWidth(),
+				(getHeight() - btns.getPreferredSize().height));
 		updateComponents();
 
 		shouldRender = true;
@@ -88,7 +91,7 @@ public class PhysicsTest extends JApplet {
 					}
 
 				}).start();
-				while(shouldRender) {
+				while (shouldRender) {
 					panel.repaint();
 					try {
 						Thread.sleep(sleepTime);
@@ -110,10 +113,11 @@ public class PhysicsTest extends JApplet {
 	}
 
 	public void updateComponents() {
-		if(rect != null)
+		if (rect != null) {
 			panel.detach(rect);
-		sp = new StandardPhysics(new Vector2f(0,0), mass);
-		PointLD p = (rect != null) ? rect.worldLoc:new PointLD(0, 0);
+		}
+		sp = new StandardPhysics(new Vector2f(0, 0), mass);
+		PointLD p = (rect != null) ? rect.worldLoc : new PointLD(0, 0);
 		rect = new Entity(sp, p, panel.view, size);
 		panel.attach(rect);
 	}
@@ -160,32 +164,37 @@ public class PhysicsTest extends JApplet {
 
 		@Override
 		public void paintComponent(Graphics g) {
-			if(running)
+			if (running) {
 				updatePhysics();
-			else
+			} else {
 				last = 0;
+			}
 			Graphics2D g2 = (Graphics2D) g;
 			g.setColor(Color.LIGHT_GRAY);
 			g.fillRect(0, 0, getWidth(), getHeight());
-			for(Entity e:entities) {
+			for (Entity e : entities) {
 				e.draw(g2);
 			}
 			g2.dispose();
 		}
 
 		long last = 0;
+
 		private void updatePhysics() {
 			double now = System.nanoTime();
-			if(last == 0)
+			if (last == 0) {
 				last = (long) now;
-			if(now - last > 20000000) {
+			}
+			if (now - last > 20000000) {
 				float secs = (float) ((now - last) / 1.0E9);
-				for(Entity e:entities) {
-					if(e.ignorePhysicsUpdates)
+				for (Entity e : entities) {
+					if (e.ignorePhysicsUpdates) {
 						continue;
+					}
 					PhysicsNode node = e.pnode;
 					node.applyForces(secs * ppm, forces);
-					Point2D.Float np = node.getVelocity2f().applyTo(e.worldLoc.getFloatPoint(), ppm * secs);
+					Point2D.Float np = node.getVelocity2f().applyTo(
+							e.worldLoc.getFloatPoint(), ppm * secs);
 					e.setWorldLoc(np.getX(), np.getY());
 					checkCollision(e, secs);
 				}
@@ -195,24 +204,25 @@ public class PhysicsTest extends JApplet {
 
 		private void checkCollision(Entity e, float time) {
 			/*
-			if(!view.worldContains(e.getWorldBounds())) {
-				e.pnode.collide((float)collFrac);
-				Rectangle2D rect = view.moveInBounds(e.getWorldBounds());
-				e.setWorldLoc(rect.getX(), rect.getY());
-			}
+			 * if(!view.worldContains(e.getWorldBounds())) { e.pnode.collide((float)collFrac);
+			 * Rectangle2D rect = view.moveInBounds(e.getWorldBounds()); e.setWorldLoc(rect.getX(),
+			 * rect.getY()); }
 			 */
 			Rectangle2D worldBounds = e.getWorldBounds();
 			Rectangle2D inBounds = view.moveInBounds(worldBounds);
-			if(inBounds.getX() == e.worldLoc.getX() && inBounds.getY() == e.worldLoc.getY())
+			if (inBounds.getX() == e.worldLoc.getX()
+					&& inBounds.getY() == e.worldLoc.getY()) {
 				return;
+			}
 			Collision ctype;
-			if(worldBounds.getX() != inBounds.getX())
+			if (worldBounds.getX() != inBounds.getX()) {
 				ctype = Collision.Y;
-			else if(worldBounds.getY() != inBounds.getY())
+			} else if (worldBounds.getY() != inBounds.getY()) {
 				ctype = Collision.X;
-			else
+			} else {
 				ctype = Collision.XY;
-			e.pnode.collide((float)collFrac, 0.0f, ctype);
+			}
+			e.pnode.collide((float) collFrac, 0.0f, ctype);
 			e.setWorldLoc(inBounds.getX(), inBounds.getY());
 		}
 
@@ -227,14 +237,15 @@ public class PhysicsTest extends JApplet {
 			public void mousePressed(MouseEvent arg0) {
 				int x = arg0.getX();
 				int y = arg0.getY();
-				for(Entity e:entities) {
-					if(e.getBounds().contains(x, y)) {
+				for (Entity e : entities) {
+					if (e.getBounds().contains(x, y)) {
 						proc = e;
 						break;
 					}
 				}
-				if(proc == null)
+				if (proc == null) {
 					return;
+				}
 				proc.pnode.setVelocity(new Vector2f(0, 0));
 				proc.ignorePhysicsUpdates = true;
 				prOffsX = arg0.getX() - proc.getBounds().x;
@@ -245,15 +256,17 @@ public class PhysicsTest extends JApplet {
 				ly = y;
 			}
 
-
 			@Override
 			public void mouseReleased(MouseEvent arg0) {
 				drag = false;
-				if(proc == null)
+				if (proc == null) {
 					return;
-				if(running) {
-					float xvel = (float) ((arg0.getX() - lx) / ppm / ((System.nanoTime() - mark) / 1.0E9));
-					float yvel = (float) ((ly - arg0.getY()) / ppm / ((System.nanoTime() - mark) / 1.0E9));
+				}
+				if (running) {
+					float xvel = (float) ((arg0.getX() - lx) / ppm / ((System
+							.nanoTime() - mark) / 1.0E9));
+					float yvel = (float) ((ly - arg0.getY()) / ppm / ((System
+							.nanoTime() - mark) / 1.0E9));
 					proc.pnode.setVelocity(new Vector2f(xvel, yvel));
 				}
 				proc.ignorePhysicsUpdates = false;
@@ -261,8 +274,10 @@ public class PhysicsTest extends JApplet {
 
 			@Override
 			public void mouseDragged(MouseEvent arg0) {
-				if(proc != null)
-					proc.setScreenLoc(arg0.getX() - prOffsX, arg0.getY() - prOffsY);
+				if (proc != null) {
+					proc.setScreenLoc(arg0.getX() - prOffsX, arg0.getY()
+							- prOffsY);
+				}
 			}
 
 		}
@@ -297,7 +312,8 @@ public class PhysicsTest extends JApplet {
 		}
 
 		public Rectangle2D.Double getWorldBounds() {
-			return new Rectangle2D.Double(worldLoc.getX(), worldLoc.getY(), size, size);
+			return new Rectangle2D.Double(worldLoc.getX(), worldLoc.getY(),
+					size, size);
 		}
 
 		public Rectangle getBounds() {
@@ -320,7 +336,8 @@ public class PhysicsTest extends JApplet {
 			y1 = ymin;
 			x2 = xmax;
 			y2 = ymax;
-			screenView = new Rectangle(0, 0, Math.round(x2 - x1), Math.round(y2 - y1));
+			screenView = new Rectangle(0, 0, Math.round(x2 - x1), Math.round(y2
+					- y1));
 		}
 
 		public void reposition(float xmin, float ymin, float xmax, float ymax) {
@@ -334,7 +351,8 @@ public class PhysicsTest extends JApplet {
 		public Point worldToScreen(Point p) {
 			float x = (float) p.getX();
 			float y = (float) p.getY();
-			return new Point(Math.round(x - x1), Math.round((y2 - y1) - (y - y1)));
+			return new Point(Math.round(x - x1), Math.round((y2 - y1)
+					- (y - y1)));
 		}
 
 		public PointLD screenToWorld(Point p) {
@@ -344,11 +362,17 @@ public class PhysicsTest extends JApplet {
 		}
 
 		public boolean worldContains(Rectangle2D r) {
-			Rectangle2D.Float worldBounds = new Rectangle2D.Float(x1, y1, (x2 - x1), (y2 - y1));
-			double xsig = Math.signum(Math.abs(r.getX()) - Math.abs(x1)), ysig = Math.signum(Math.abs(r.getY()) - Math.abs(y1));
-			return worldBounds.contains(r.getX(), r.getY()) && worldBounds.contains(r.getX(), r.getY() + r.getHeight() * ysig)
-					&& worldBounds.contains(r.getX() + r.getWidth() * xsig, r.getY() + r.getHeight() * ysig)
-					&& worldBounds.contains(r.getX() + r.getWidth() * xsig, r.getY());
+			Rectangle2D.Float worldBounds = new Rectangle2D.Float(x1, y1,
+					(x2 - x1), (y2 - y1));
+			double xsig = Math.signum(Math.abs(r.getX()) - Math.abs(x1)), ysig = Math
+					.signum(Math.abs(r.getY()) - Math.abs(y1));
+			return worldBounds.contains(r.getX(), r.getY())
+					&& worldBounds.contains(r.getX(), r.getY() + r.getHeight()
+							* ysig)
+					&& worldBounds.contains(r.getX() + r.getWidth() * xsig,
+							r.getY() + r.getHeight() * ysig)
+					&& worldBounds.contains(r.getX() + r.getWidth() * xsig,
+							r.getY());
 		}
 
 		public Rectangle2D.Double moveInBounds(Rectangle2D r) {
@@ -357,32 +381,38 @@ public class PhysicsTest extends JApplet {
 
 			Rectangle2D.Double inBounds = new Rectangle2D.Double();
 			boolean minSet = false;
-			if(x < x1) {
+			if (x < x1) {
 				inBounds.x = x1;
 				minSet = true;
-			} else
+			} else {
 				inBounds.x = x;
-			if(y - r.getHeight() < y1) {
+			}
+			if (y - r.getHeight() < y1) {
 				inBounds.y = y1 + r.getHeight();
 				minSet = true;
-			} else
+			} else {
 				inBounds.y = y;
-			if(x + r.getWidth() > x2)
+			}
+			if (x + r.getWidth() > x2) {
 				inBounds.x = x2 - r.getWidth();
-			else if(!minSet)
+			} else if (!minSet) {
 				inBounds.x = x;
-			if(y > y2)
+			}
+			if (y > y2) {
 				inBounds.y = y2;
-			else if(!minSet)
+			} else if (!minSet) {
 				inBounds.y = y;
+			}
 			inBounds.width = r.getWidth();
 			inBounds.height = r.getHeight();
 			return inBounds;
 		}
 
 		public boolean screenContains(Rectangle r) {
-			return screenView.contains(r.getX(), r.getY()) && screenView.contains(r.getX(), r.getY() + r.getHeight())
-					&& screenView.contains(r.getX() + r.getWidth(), r.getY() + r.getHeight())
+			return screenView.contains(r.getX(), r.getY())
+					&& screenView.contains(r.getX(), r.getY() + r.getHeight())
+					&& screenView.contains(r.getX() + r.getWidth(), r.getY()
+							+ r.getHeight())
 					&& screenView.contains(r.getX(), r.getY() + r.getHeight());
 		}
 	}
@@ -391,12 +421,12 @@ public class PhysicsTest extends JApplet {
 
 		@Override
 		public void actionPerformed(ActionEvent e) {
-			if(running) {
+			if (running) {
 				running = false;
-				((JButton)e.getSource()).setText("Run");
+				((JButton) e.getSource()).setText("Run");
 			} else {
 				running = true;
-				((JButton)e.getSource()).setText("Stop");
+				((JButton) e.getSource()).setText("Stop");
 			}
 		}
 
@@ -411,7 +441,8 @@ public class PhysicsTest extends JApplet {
 
 		private static final int TEXT_FIELDS = 10;
 
-		String[] textFieldNames = new String[] {"mass", "ppm", "size", "collFrac", "frictionStatic", "frictionKinetic", "sleepTime"};
+		String[] textFieldNames = new String[] { "mass", "ppm", "size",
+				"collFrac", "frictionStatic", "frictionKinetic", "sleepTime" };
 		JTextField[] textFields = new JTextField[textFieldNames.length];
 		JCheckBox antiGrav = new JCheckBox("Anti-gravity");
 
@@ -421,7 +452,7 @@ public class PhysicsTest extends JApplet {
 
 			Box main = Box.createVerticalBox();
 
-			for(int i = 0; i < textFieldNames.length; i++) {
+			for (int i = 0; i < textFieldNames.length; i++) {
 				JPanel p = new JPanel();
 				p.setOpaque(false);
 				JTextField jtf = new JTextField(TEXT_FIELDS);
@@ -444,8 +475,8 @@ public class PhysicsTest extends JApplet {
 
 		@Override
 		public void actionPerformed(ActionEvent e) {
-			for(int i = 0; i < textFields.length; i++) {
-				switch(i) {
+			for (int i = 0; i < textFields.length; i++) {
+				switch (i) {
 				case 0:
 					textFields[i].setText(String.valueOf(mass));
 					break;
@@ -477,9 +508,9 @@ public class PhysicsTest extends JApplet {
 			@Override
 			public void windowClosing(WindowEvent e) {
 				float fsx = 0.0f, fsy = 0.0f;
-				for(int i = 0; i < textFields.length; i++) {
+				for (int i = 0; i < textFields.length; i++) {
 					try {
-						switch(i) {
+						switch (i) {
 						case 0:
 							mass = Double.parseDouble(textFields[i].getText());
 							break;
@@ -490,7 +521,8 @@ public class PhysicsTest extends JApplet {
 							size = Integer.parseInt(textFields[i].getText());
 							break;
 						case 3:
-							collFrac = Double.parseDouble(textFields[i].getText());
+							collFrac = Double.parseDouble(textFields[i]
+									.getText());
 							break;
 						case 4:
 							fsx = Float.parseFloat(textFields[i].getText());
@@ -503,19 +535,23 @@ public class PhysicsTest extends JApplet {
 							break;
 						}
 					} catch (NumberFormatException nfe) {
-						JOptionPane.showMessageDialog(null, "Variable setting did not complete properly:\n"
-								+ nfe.toString(), "Parsing Error", JOptionPane.WARNING_MESSAGE);
+						JOptionPane.showMessageDialog(null,
+								"Variable setting did not complete properly:\n"
+										+ nfe.toString(), "Parsing Error",
+								JOptionPane.WARNING_MESSAGE);
 					}
 				}
-				
+
 				updateComponents();
-				
-				if(antiGrav.isSelected()) {
+
+				if (antiGrav.isSelected()) {
 					forces = new Force[2];
-					forces[0] = new GeneralForce(new Vector2f(0.0f, -Gravity.STANDARD * (float)mass));
-				} else
+					forces[0] = new GeneralForce(new Vector2f(0.0f,
+							-Gravity.STANDARD * (float) mass));
+				} else {
 					forces = new Force[1];
-				
+				}
+
 				friction = new Friction(fsx, fsy, new Gravity());
 				forces[forces.length - 1] = friction;
 			}

@@ -14,10 +14,10 @@ package bg.x2d.geo;
 
 /**
  * @author Brian Groenke
- *
+ * 
  */
 public class Scale {
-	
+
 	double ratio;
 
 	/**
@@ -26,15 +26,15 @@ public class Scale {
 	public Scale(double ratio) {
 		this.ratio = ratio;
 	}
-	
+
 	public double scale(double num) {
 		return num * ratio;
 	}
-	
+
 	public int scale(int num) {
 		return (int) Math.round(num * ratio);
 	}
-	
+
 	public double getRatio() {
 		return ratio;
 	}

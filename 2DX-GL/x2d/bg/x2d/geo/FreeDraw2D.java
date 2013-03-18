@@ -12,17 +12,14 @@
 
 package bg.x2d.geo;
 
-import java.awt.Graphics;
-import java.awt.Graphics2D;
-import java.awt.Paint;
+import java.awt.*;
 
-import bg.x2d.Background;
+import bg.x2d.*;
 
 /**
- * Superclass of all undefined geometric construction tools, most prominently
- * {@link Paintbrush2D}. FreeDraw2D defines certain generic methods regarding a
- * {@link Background} object and Graphics2D <code>canvas</code> object that all
- * subclasses of it will utilize.
+ * Superclass of all undefined geometric construction tools, most prominently {@link Paintbrush2D}.
+ * FreeDraw2D defines certain generic methods regarding a {@link Background} object and Graphics2D
+ * <code>canvas</code> object that all subclasses of it will utilize.
  * 
  * @since 2DX 1.0 (1st Edition)
  */
@@ -33,15 +30,15 @@ public abstract class FreeDraw2D {
 	Background background;
 	@Deprecated
 	Graphics2D canvas;
-	
+
 	Paint paint;
-	
+
 	public void setCanvasPaint(Paint p) {
-		if(p != null)
+		if (p != null) {
 			paint = p;
+		}
 	}
 
-	
 	// ----- DEPRECATED ------ //
 	@Deprecated
 	public void setBackground(Background b) {

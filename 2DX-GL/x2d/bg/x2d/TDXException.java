@@ -13,9 +13,9 @@
 package bg.x2d;
 
 /**
- * Generic exception thrown by classes in the 2DX software when internal
- * errors occur. This class should not be extended, nor thrown by objects
- * outside of the 2DX API itself.
+ * Generic exception thrown by classes in the 2DX software when internal errors occur. This class
+ * should not be extended, nor thrown by objects outside of the 2DX API itself.
+ * 
  * @author Brian Groenke
  * @since 2DX 1.0 (1st Edition)
  */

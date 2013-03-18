@@ -12,10 +12,11 @@
 
 package com.snap2d;
 
-import java.util.concurrent.ThreadFactory;
+import java.util.concurrent.*;
 
 /**
  * Creates new daemon threads.
+ * 
  * @author Brian Groenke
  * 
  */

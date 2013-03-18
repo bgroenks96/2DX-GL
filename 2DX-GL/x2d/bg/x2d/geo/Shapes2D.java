@@ -20,11 +20,11 @@ import java.awt.*;
 import bg.x2d.*;
 
 /**
- * The superclass class for all generic 2-Dimensional figures. Subclasses of
- * Shapes2D in the geometry package are generally pre-defined, regular shapes
- * (drawn using rotations). The shape and all of its attributes are created when
- * the constructor is invoked but not drawn until <code>draw(Graphics2D)</code>
- * is called.
+ * The superclass class for all generic 2-Dimensional figures. Subclasses of Shapes2D in the
+ * geometry package are generally pre-defined, regular shapes (drawn using rotations). The shape and
+ * all of its attributes are created when the constructor is invoked but not drawn until
+ * <code>draw(Graphics2D)</code> is called.
+ * 
  * @author Brian Groenke
  * @since 2DX 1.0 (1st Edition)
  */
@@ -50,8 +50,8 @@ public abstract class Shapes2D {
 	}
 
 	/**
-	 * Create this Shapes2D with all of the given attributes. This
-	 * implementation just calls setProperties
+	 * Create this Shapes2D with all of the given attributes. This implementation just calls
+	 * setProperties
 	 * 
 	 * @param x
 	 * @param y
@@ -72,10 +72,11 @@ public abstract class Shapes2D {
 		locx = x;
 		locy = y;
 	}
-	
+
 	public void setPaint(Paint p) {
-		if(p != null)
+		if (p != null) {
 			this.paint = p;
+		}
 	}
 
 	public void draw(Graphics2D g) {
@@ -108,12 +109,10 @@ public abstract class Shapes2D {
 	}
 
 	/**
-	 * Algorithm that uses a trigonometric rotation formula to translate a point
-	 * from its current location x degrees to a new position on the coordinate
-	 * plane. This method is used internally and is intended for use in
-	 * calculating Polygon coordinate values. Note: This method uses and returns
-	 * integer values. Mathematical operations resulting in non-integer values
-	 * are rounded.
+	 * Algorithm that uses a trigonometric rotation formula to translate a point from its current
+	 * location x degrees to a new position on the coordinate plane. This method is used internally
+	 * and is intended for use in calculating Polygon coordinate values. Note: This method uses and
+	 * returns integer values. Mathematical operations resulting in non-integer values are rounded.
 	 * 
 	 * @param p
 	 * @param origin
@@ -140,12 +139,11 @@ public abstract class Shapes2D {
 	}
 
 	/**
-	 * Draws any regular polygon using the given arguments and number of sides.
-	 * This is called by each subclass's individual draw...() method.
+	 * Draws any regular polygon using the given arguments and number of sides. This is called by
+	 * each subclass's individual draw...() method.
 	 * 
 	 * @param loc
-	 *            Top left corner of the bounding box this shape should be drawn
-	 *            in.
+	 *            Top left corner of the bounding box this shape should be drawn in.
 	 * @param start
 	 *            Starting point for rotations.
 	 * @param size

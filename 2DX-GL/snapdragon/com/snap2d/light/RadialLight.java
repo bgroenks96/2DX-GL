@@ -16,10 +16,10 @@ import java.awt.geom.*;
 
 /**
  * @author Brian Groenke
- *
+ * 
  */
 public class RadialLight extends Light {
-	
+
 	Ellipse2D geom;
 
 	/**

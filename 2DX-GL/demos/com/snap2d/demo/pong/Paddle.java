@@ -24,7 +24,7 @@ import com.snap2d.world.*;
 
 /**
  * @author Brian Groenke
- *
+ * 
  */
 public class Paddle extends Entity implements MouseEventClient, KeyEventClient {
 
@@ -46,19 +46,23 @@ public class Paddle extends Entity implements MouseEventClient, KeyEventClient {
 	 * @param worldBounds
 	 * @param world
 	 */
-	public Paddle(Point2D worldLoc, World2D world, InputDispatch input, boolean useMouse) {
+	public Paddle(Point2D worldLoc, World2D world, InputDispatch input,
+			boolean useMouse) {
 		super(worldLoc, world);
 		initBounds(PADDLE_SIZE.width, PADDLE_SIZE.height);
 
-		if(useMouse)
+		if (useMouse) {
 			input.registerMouseClient(this);
-		else
+		} else {
 			input.registerKeyClient(this);
+		}
 		this.useMouse = useMouse;
 
-		if(coll == null)
-			coll = new CollisionModel(new Rectangle(0,0,screenBounds.width, screenBounds.height), 
-					Color.BLACK, new AffineTransform(), true);
+		if (coll == null) {
+			coll = new CollisionModel(new Rectangle(0, 0, screenBounds.width,
+					screenBounds.height), Color.BLACK, new AffineTransform(),
+					true);
+		}
 	}
 
 	/**
@@ -71,8 +75,8 @@ public class Paddle extends Entity implements MouseEventClient, KeyEventClient {
 		// fields directly.
 		double wx = worldLoc.dx;
 		double wy = worldLoc.dy;
-		int x,y;
-		if(useMouse) {
+		int x, y;
+		if (useMouse) {
 			x = screenLoc.x;
 			y = screenLoc.y;
 		} else {
@@ -81,7 +85,7 @@ public class Paddle extends Entity implements MouseEventClient, KeyEventClient {
 			x = p.x;
 			y = p.y;
 		}
-		int margin = (useMouse) ? -10:10;
+		int margin = (useMouse) ? -10 : 10;
 		g.setColor(PADDLE_COLOR);
 		g.fillRect(x + margin, y, PADDLE_SIZE.width, PADDLE_SIZE.height);
 	}
@@ -93,23 +97,26 @@ public class Paddle extends Entity implements MouseEventClient, KeyEventClient {
 	public void update(long nanoTimeNow, long nanosSinceLastUpdate) {
 		lx = worldLoc.getX();
 		ly = worldLoc.getY();
-		if(up && !down) {
+		if (up && !down) {
 
 			// this is just a fancy way using Vectors to change the
-			// paddle's position.  It's essentially equivalent to: x + moveAmount
+			// paddle's position. It's essentially equivalent to: x + moveAmount
 			MOVE_VECTOR.y = Math.abs(MOVE_VECTOR.y);
 			applyVector(MOVE_VECTOR, 1);
 		}
 
-		if(down && !up) {
+		if (down && !up) {
 			MOVE_VECTOR.y = -Math.abs(MOVE_VECTOR.y);
 			applyVector(MOVE_VECTOR, 1);
 		}
 
-		if(worldLoc.getY() > world.getY())
+		if (worldLoc.getY() > world.getY()) {
 			setWorldLoc(getWorldX(), world.getY());
-		else if(worldLoc.getY() - worldBounds.getHeight() < world.getY() - world.getWorldHeight())
-			setWorldLoc(getWorldX(), world.getY() - world.getWorldHeight() + worldBounds.getHeight());
+		} else if (worldLoc.getY() - worldBounds.getHeight() < world.getY()
+				- world.getWorldHeight()) {
+			setWorldLoc(getWorldX(), world.getY() - world.getWorldHeight()
+					+ worldBounds.getHeight());
+		}
 	}
 
 	/**
@@ -117,10 +124,11 @@ public class Paddle extends Entity implements MouseEventClient, KeyEventClient {
 	 */
 	@Override
 	public void onResize(Dimension oldSize, Dimension newSize) {
-		if(useMouse) {
+		if (useMouse) {
 			setScreenLoc(newSize.width - PADDLE_SIZE.width, getScreenY());
-		} else
+		} else {
 			setScreenLoc(0, 0);
+		}
 		lx = getWorldX();
 		ly = getWorldY();
 	}
@@ -155,18 +163,20 @@ public class Paddle extends Entity implements MouseEventClient, KeyEventClient {
 	 */
 	@Override
 	public void processKeyEvent(KeyEvent e) {
-		switch(e.getKeyCode()) {
+		switch (e.getKeyCode()) {
 		case KeyEvent.VK_W:
-			if(e.getID() == KeyEvent.KEY_PRESSED)
+			if (e.getID() == KeyEvent.KEY_PRESSED) {
 				up = true;
-			else if(e.getID() == KeyEvent.KEY_RELEASED)
+			} else if (e.getID() == KeyEvent.KEY_RELEASED) {
 				up = false;
+			}
 			break;
 		case KeyEvent.VK_S:
-			if(e.getID() == KeyEvent.KEY_PRESSED)
+			if (e.getID() == KeyEvent.KEY_PRESSED) {
 				down = true;
-			else if(e.getID() == KeyEvent.KEY_RELEASED)
+			} else if (e.getID() == KeyEvent.KEY_RELEASED) {
 				down = false;
+			}
 			break;
 		}
 	}
@@ -176,11 +186,14 @@ public class Paddle extends Entity implements MouseEventClient, KeyEventClient {
 	 */
 	@Override
 	public void processMouseEvent(MouseEvent me) {
-		if(me.getID() == MouseEvent.MOUSE_MOVED) {
+		if (me.getID() == MouseEvent.MOUSE_MOVED) {
 			// in this case, we want to set by the screen location because we
 			// are doing it in relation to the mouse
-			if(me.getY() > PADDLE_SIZE.height / 2 && me.getY() < world.getViewHeight() - PADDLE_SIZE.height / 2)
+			if (me.getY() > PADDLE_SIZE.height / 2
+					&& me.getY() < world.getViewHeight() - PADDLE_SIZE.height
+							/ 2) {
 				setScreenLoc(getScreenX(), me.getY() - PADDLE_SIZE.height / 2);
+			}
 		}
 	}
 

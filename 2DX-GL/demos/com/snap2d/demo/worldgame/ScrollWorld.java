@@ -20,7 +20,7 @@ import com.snap2d.world.*;
 
 /**
  * @author Brian Groenke
- *
+ * 
  */
 public class ScrollWorld extends World2D implements GameWorld, Renderable {
 
@@ -53,12 +53,14 @@ public class ScrollWorld extends World2D implements GameWorld, Renderable {
 	@Override
 	public void update(long nanoTimeNow, long nanosSinceLastUpdate) {
 		manager.update(nanoTimeNow, nanosSinceLastUpdate);
-		for(Entity e:entities) {
-			if(!viewIntersects(e.getWorldBounds())) {
-				if(manager.contains(e))
+		for (Entity e : entities) {
+			if (!viewIntersects(e.getWorldBounds())) {
+				if (manager.contains(e)) {
 					manager.unregister(e);
-			} else if(!manager.contains(e))
+				}
+			} else if (!manager.contains(e)) {
 				manager.register(e);
+			}
 		}
 	}
 
@@ -67,7 +69,7 @@ public class ScrollWorld extends World2D implements GameWorld, Renderable {
 	 */
 	@Override
 	public void onResize(Dimension oldSize, Dimension newSize) {
-		for(Entity e:entities) {
+		for (Entity e : entities) {
 			e.onResize(oldSize, newSize);
 		}
 	}
@@ -134,9 +136,10 @@ public class ScrollWorld extends World2D implements GameWorld, Renderable {
 	 */
 	@Override
 	public Entity entityAt(double x, double y) {
-		for(Entity e:entities) {
-			if(e.getCompatibleBounds().contains(x, y))
+		for (Entity e : entities) {
+			if (e.getCompatibleBounds().contains(x, y)) {
 				return e;
+			}
 		}
 		return null;
 	}

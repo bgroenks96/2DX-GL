@@ -15,8 +15,7 @@ package bg.x2d.gen;
 import java.awt.*;
 
 /**
- * Generates a random polygon with n sides and inside of the specified
- * Rectangle.
+ * Generates a random polygon with n sides and inside of the specified Rectangle.
  * 
  * @author Brian
  * @since 2DX 1.0 (1st Edition)

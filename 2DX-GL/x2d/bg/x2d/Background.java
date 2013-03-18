@@ -17,9 +17,9 @@ import java.awt.*;
 import bg.x2d.anim.*;
 
 /**
- * Objects of type Background define a Paint or Graphics2D object as a standard
- * to be used among other 2DX objects when repainting frames. If no Paint object
- * is specified, the passed Graphics2D object will be used as a background.
+ * Objects of type Background define a Paint or Graphics2D object as a standard to be used among
+ * other 2DX objects when repainting frames. If no Paint object is specified, the passed Graphics2D
+ * object will be used as a background.
  * 
  * @since 2DX 1.0 (1st Edition)
  */

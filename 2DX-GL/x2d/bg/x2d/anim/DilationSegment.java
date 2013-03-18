@@ -16,9 +16,8 @@ import java.awt.*;
 import java.awt.geom.*;
 
 /**
- * Segment that scales the AffineTransform of this Graphics object based on x,y
- * scale factors, time duration and size of the canvas being draw upon
- * (optional).
+ * Segment that scales the AffineTransform of this Graphics object based on x,y scale factors, time
+ * duration and size of the canvas being draw upon (optional).
  * 
  * @author Brian Groenke
  * @since 2DX 1.0 (1st Edition)
@@ -30,10 +29,9 @@ public class DilationSegment implements Segment {
 	private Dimension contextSize;
 
 	/**
-	 * Creates a new DilationSegment that will keep objects centered when
-	 * scaling using the given <code>contextSize</code>. DilationSegment is
-	 * immutable, but changes made to the passed Dimension object will be
-	 * reflected upon the scaling operation.
+	 * Creates a new DilationSegment that will keep objects centered when scaling using the given
+	 * <code>contextSize</code>. DilationSegment is immutable, but changes made to the passed
+	 * Dimension object will be reflected upon the scaling operation.
 	 * 
 	 * @param scalex
 	 * @param scaley
@@ -52,9 +50,8 @@ public class DilationSegment implements Segment {
 	}
 
 	/**
-	 * Creates a new DilationSegment that makes no attempt to keep objects
-	 * centered when scaling. Calls
-	 * <code>DilationSegment(scalex,scaley,null,duration)</code>.
+	 * Creates a new DilationSegment that makes no attempt to keep objects centered when scaling.
+	 * Calls <code>DilationSegment(scalex,scaley,null,duration)</code>.
 	 * 
 	 * @param scalex
 	 * @param scaley
@@ -66,8 +63,8 @@ public class DilationSegment implements Segment {
 	}
 
 	/**
-	 * Creates a new DilationSegment that makes no attempt to keep objects
-	 * centered when scaling and uses the same x and y scale factors. Calls
+	 * Creates a new DilationSegment that makes no attempt to keep objects centered when scaling and
+	 * uses the same x and y scale factors. Calls
 	 * <code>DilationSegment(scale,scale,null,duration)</code>.
 	 * 
 	 * @param scale
@@ -84,8 +81,7 @@ public class DilationSegment implements Segment {
 	}
 
 	/**
-	 * This implementation returns the average between the x and y scale
-	 * factors.
+	 * This implementation returns the average between the x and y scale factors.
 	 */
 	@Override
 	public double getUpdateInterval() {
@@ -101,9 +97,8 @@ public class DilationSegment implements Segment {
 	}
 
 	/**
-	 * Scales this AfineTransform the appropriate amount since the last call in
-	 * the time frame. If the context size was specified, a translation will be
-	 * enacted to keep the objects centered.
+	 * Scales this AfineTransform the appropriate amount since the last call in the time frame. If
+	 * the context size was specified, a translation will be enacted to keep the objects centered.
 	 */
 	@Override
 	public void transform(AffineTransform affine) {

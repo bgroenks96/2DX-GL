@@ -25,18 +25,20 @@ import com.snap2d.input.*;
 
 /**
  * Provides a mechanism for rendering UI components to the screen using the rendering engine's
- * default interface.  RenderedLayout keeps and manages a collection of RenderedCopmonents that
- * it is responsible for rendering, updating, resizing, and animating.  It implements the
- * MouseEventClient and KeyEventClient interfaces so that it can be registered with an InputDispatch to forward
- * input events to child components.
- * <br/><br/>
+ * default interface. RenderedLayout keeps and manages a collection of RenderedCopmonents that it is
+ * responsible for rendering, updating, resizing, and animating. It implements the MouseEventClient
+ * and KeyEventClient interfaces so that it can be registered with an InputDispatch to forward input
+ * events to child components. <br/>
+ * <br/>
  * Note: It is recommended that this class be handled by only one thread at a time, or is externally
- *     synchronized, as it frequently interfaces with non-thread-safe Java Collections.
+ * synchronized, as it frequently interfaces with non-thread-safe Java Collections.
+ * 
  * @author Brian Groenke
- *
+ * 
  */
-public class RenderedLayout implements Renderable, MouseEventClient, KeyEventClient {
-	
+public class RenderedLayout implements Renderable, MouseEventClient,
+		KeyEventClient {
+
 	public static final int FOCUS_GAINED = 0xFFFFFF0, FOCUS_LOST = 0xFFFFFF1;
 
 	public AffineTransform generalTransform = new AffineTransform();
@@ -44,7 +46,8 @@ public class RenderedLayout implements Renderable, MouseEventClient, KeyEventCli
 	private final int INIT_WT, INIT_HT;
 	private Component parent;
 	private int wt, ht;
-	private boolean autoScaleSize = true, autoScaleLoc = true, aspectRatio = true;
+	private boolean autoScaleSize = true, autoScaleLoc = true,
+			aspectRatio = true;
 
 	private ArrayList<RenderedComponent> compList = new ArrayList<RenderedComponent>();
 	private HashMap<RenderedComponent, Animation> compAnims = new HashMap<RenderedComponent, Animation>();
@@ -66,12 +69,13 @@ public class RenderedLayout implements Renderable, MouseEventClient, KeyEventCli
 	@Override
 	public void render(Graphics2D g, float interpolation) {
 		AffineTransform prevTransform = g.getTransform();
-		if(generalTransform != null)
+		if (generalTransform != null) {
 			g.setTransform(generalTransform);
+		}
 
-		for(RenderedComponent comp : compList) {
+		for (RenderedComponent comp : compList) {
 			Animation anim = compAnims.get(comp);
-			if(anim == null) {
+			if (anim == null) {
 				comp.render(g, interpolation);
 			} else {
 				anim.draw(g);
@@ -88,25 +92,26 @@ public class RenderedLayout implements Renderable, MouseEventClient, KeyEventCli
 	 */
 	@Override
 	public void update(long nanoTimeNow, long nanosSinceLastUpdate) {
-		for(RenderedComponent comp : compList) {
+		for (RenderedComponent comp : compList) {
 			comp.update(nanoTimeNow, nanosSinceLastUpdate);
 		}
 	}
 
 	/**
-	 * Applies auto-scaling/translation to all children if configured to do so.
-	 * The child's <code>onResize</code> method is invoked after scaling has occurred.
+	 * Applies auto-scaling/translation to all children if configured to do so. The child's
+	 * <code>onResize</code> method is invoked after scaling has occurred.
 	 */
 	@Override
 	public void onResize(Dimension oldSize, Dimension newSize) {
-		if(oldSize == null)
+		if (oldSize == null) {
 			return;
+		}
 		double xratio = newSize.getWidth() / oldSize.getWidth();
 		double yratio = newSize.getHeight() / oldSize.getHeight();
 
-		if(autoScaleSize) {
-			if(aspectRatio) {
-				double ratio = (wt >= ht) ? xratio:yratio;
+		if (autoScaleSize) {
+			if (aspectRatio) {
+				double ratio = (wt >= ht) ? xratio : yratio;
 				wt = (int) Math.round(ratio * INIT_WT);
 				ht = (int) Math.round(ratio * INIT_HT);
 			} else {
@@ -115,14 +120,14 @@ public class RenderedLayout implements Renderable, MouseEventClient, KeyEventCli
 			}
 		}
 
-		for(RenderedComponent child:compList) {
+		for (RenderedComponent child : compList) {
 			int cwt = child.getWidth();
 			int cht = child.getHeight();
 			Point cloc = child.getLocation();
 
-			if(autoScaleSize) {
-				if(child.keepAspectRatio) {
-					double ratio = (cwt >= cht) ? xratio:yratio;
+			if (autoScaleSize) {
+				if (child.keepAspectRatio) {
+					double ratio = (cwt >= cht) ? xratio : yratio;
 					cwt = (int) Math.round(ratio * child.getRawWidth());
 					cht = (int) Math.round(ratio * child.getRawHeight());
 				} else {
@@ -131,9 +136,13 @@ public class RenderedLayout implements Renderable, MouseEventClient, KeyEventCli
 				}
 			}
 
-			if(autoScaleLoc) {
-				cloc.x = (int) Math.round((child.getRawLocation().x / (double)INIT_WT) * newSize.getWidth());
-				cloc.y = (int) Math.round((child.getRawLocation().y / (double)INIT_HT) * newSize.getHeight());
+			if (autoScaleLoc) {
+				cloc.x = (int) Math
+						.round((child.getRawLocation().x / (double) INIT_WT)
+								* newSize.getWidth());
+				cloc.y = (int) Math
+						.round((child.getRawLocation().y / (double) INIT_HT)
+								* newSize.getHeight());
 			}
 
 			child.setBounds(cloc.x, cloc.y, cwt, cht);
@@ -153,35 +162,39 @@ public class RenderedLayout implements Renderable, MouseEventClient, KeyEventCli
 	public void processMouseEvent(MouseEvent me) {
 		Point mloc = new Point(me.getX(), me.getY());
 
-		switch(me.getID()) {
+		switch (me.getID()) {
 		case MouseEvent.MOUSE_PRESSED:
-			if(lastPressLoc == null)
+			if (lastPressLoc == null) {
 				lastPressLoc = new Point(mloc);
-			for(RenderedComponent rc:compList) {
-				if(rc.getBounds().contains(mloc)) {
-					if(!rc.hasFocus()) {
+			}
+			for (RenderedComponent rc : compList) {
+				if (rc.getBounds().contains(mloc)) {
+					if (!rc.hasFocus()) {
 						rc.focusChanged(FOCUS_GAINED);
 					}
-					
+
 					rc.processMouseEvent(me);
-				} else if(rc.getBounds().contains(lastPressLoc)) {
-					if(rc.hasFocus()) {
+				} else if (rc.getBounds().contains(lastPressLoc)) {
+					if (rc.hasFocus()) {
 						rc.focusChanged(FOCUS_LOST);
 					}
 				}
 			}
-			
+
 			lastPressLoc.setLocation(mloc);
 			break;
 		default:
-			if(lastLoc == null)
+			if (lastLoc == null) {
 				lastLoc = new Point(mloc);
-			for(RenderedComponent rc:compList) {
-				if(rc.getBounds().contains(mloc)) {
+			}
+			for (RenderedComponent rc : compList) {
+				if (rc.getBounds().contains(mloc)) {
 					rc.processMouseEvent(me);
-				} else if(rc.getBounds().contains(lastLoc)) {
-					MouseEvent exit = new MouseEvent(me.getComponent(), MouseEvent.MOUSE_EXITED, me.getWhen(), 
-							me.getModifiers(), mloc.x, mloc.y, me.getClickCount(), me.isPopupTrigger());
+				} else if (rc.getBounds().contains(lastLoc)) {
+					MouseEvent exit = new MouseEvent(me.getComponent(),
+							MouseEvent.MOUSE_EXITED, me.getWhen(),
+							me.getModifiers(), mloc.x, mloc.y,
+							me.getClickCount(), me.isPopupTrigger());
 					rc.processMouseEvent(exit);
 				}
 			}
@@ -191,33 +204,37 @@ public class RenderedLayout implements Renderable, MouseEventClient, KeyEventCli
 	}
 
 	/**
-	 * All components will receive key input events.  It is the components' responsibility
-	 * to handle when they have the appropriate focus.
+	 * All components will receive key input events. It is the components' responsibility to handle
+	 * when they have the appropriate focus.
 	 */
 	@Override
 	public void processKeyEvent(KeyEvent e) {
-		for(RenderedComponent rc:compList) {
+		for (RenderedComponent rc : compList) {
 			rc.processKeyEvent(e);
 		}
 	}
-	
+
 	// ----- MISC ------ //
-	
+
 	/**
-	 * Sets an Animation for the given component.  The Animation
-	 * will be started on the next render cycle.
+	 * Sets an Animation for the given component. The Animation will be started on the next render
+	 * cycle.
+	 * 
 	 * @param rc
 	 * @param anim
 	 */
 	public void setAnimation(RenderedComponent rc, Animation anim) {
-		if(compList.get(compList.indexOf(rc)) == null)
+		if (compList.get(compList.indexOf(rc)) == null) {
 			return;
+		}
 		compAnims.put(rc, anim);
 	}
 
 	/**
 	 * Removes a previously set Animation for a component, if one exists.
-	 * @param rc the RenderedComponent for which the animation should be removed.
+	 * 
+	 * @param rc
+	 *            the RenderedComponent for which the animation should be removed.
 	 * @return
 	 */
 	public boolean cancelAnimation(RenderedComponent rc) {
@@ -226,6 +243,7 @@ public class RenderedLayout implements Renderable, MouseEventClient, KeyEventCli
 
 	/**
 	 * Sets whether or not children should be automatically scaled after a resize.
+	 * 
 	 * @param autoScale
 	 */
 	public void setAutoScaleSize(boolean autoScale) {
@@ -233,8 +251,9 @@ public class RenderedLayout implements Renderable, MouseEventClient, KeyEventCli
 	}
 
 	/**
-	 * Sets whether or not children should be automatically translated to maintain
-	 * relative location after a resize.
+	 * Sets whether or not children should be automatically translated to maintain relative location
+	 * after a resize.
+	 * 
 	 * @param autoScale
 	 */
 	public void setAutoScaleLoc(boolean autoScale) {
@@ -242,8 +261,9 @@ public class RenderedLayout implements Renderable, MouseEventClient, KeyEventCli
 	}
 
 	/**
-	 * Sets whether or not to keep this RenderedLayout's aspect ratio.  Has no effect
-	 * on the scaling of child components.
+	 * Sets whether or not to keep this RenderedLayout's aspect ratio. Has no effect on the scaling
+	 * of child components.
+	 * 
 	 * @param aspect
 	 * @see com.snap2d.ui.RenderedComponent#keepAspectRatio
 	 */
@@ -266,17 +286,18 @@ public class RenderedLayout implements Renderable, MouseEventClient, KeyEventCli
 	public RenderedComponent remove(int ind) {
 		return compList.remove(ind);
 	}
-	
+
 	public RenderedComponent getAt(int index) {
 		return compList.get(index);
 	}
-	
+
 	public int indexOf(RenderedComponent rc) {
 		return compList.indexOf(rc);
 	}
 
 	/**
 	 * Returns a copy of the internal List that stores components.
+	 * 
 	 * @return
 	 */
 	public List<RenderedComponent> getComponents() {

@@ -19,7 +19,7 @@ import java.awt.image.*;
 
 /**
  * @author Brian Groenke
- *
+ * 
  */
 public class TextField extends Text {
 
@@ -36,8 +36,9 @@ public class TextField extends Text {
 	private Rectangle strBounds = new Rectangle();
 
 	/**
-	 * Creates a new TextField component at the given coordinates with the assigned size, font, text color,
-	 * and FontRenderContext.
+	 * Creates a new TextField component at the given coordinates with the assigned size, font, text
+	 * color, and FontRenderContext.
+	 * 
 	 * @param x
 	 * @param y
 	 * @param text
@@ -59,13 +60,14 @@ public class TextField extends Text {
 
 	@Override
 	public void render(Graphics2D g, float interpolation) {
-		if(background == null) {
+		if (background == null) {
 			g.setColor(Color.WHITE);
 			g.fillRect(x, y, wt, ht);
-		} else
+		} else {
 			g.drawImage(background, x, y, wt, ht, null);
+		}
 
-		if(System.currentTimeMillis() - lastCaretChange > 500) {
+		if (System.currentTimeMillis() - lastCaretChange > 500) {
 			renderCaret = !renderCaret;
 			lastCaretChange = System.currentTimeMillis();
 		}
@@ -73,28 +75,40 @@ public class TextField extends Text {
 		g.setFont(font);
 		metrics = g.getFontMetrics();
 		int ht = metrics.getHeight();
-		int wt = (int)metrics.getStringBounds(editable.toString(), g).getWidth();
+		int wt = (int) metrics.getStringBounds(editable.toString(), g)
+				.getWidth();
 		strBounds.setBounds(x, y, wt, ht);
 
-		if(renderCaret && focused) {
+		if (renderCaret && focused) {
 			g.setColor(caretColor);
-			g.fillRect(x + X_PAD + wt - ((int)metrics.getStringBounds(editable.substring(caretPos), g).getWidth()), 
+			g.fillRect(
+					x
+							+ X_PAD
+							+ wt
+							- ((int) metrics.getStringBounds(
+									editable.substring(caretPos), g).getWidth()),
 					y + (this.ht - ht) / 2, CARET_WT, ht);
 		}
 
-		if(renderSel) {
+		if (renderSel) {
 			int st = Math.min(caretPos, selStart);
 			int en = Math.max(caretPos, selStart);
 			String str = editable.substring(st, en);
 			g.setColor(selColor);
-			g.fillRect(x + X_PAD + (int)metrics.getStringBounds(editable.substring(0, st), g).getHeight(), y + (this.ht - ht) / 2, 
-					(int)metrics.getStringBounds(str, g).getWidth(), ht);
+			g.fillRect(
+					x
+							+ X_PAD
+							+ (int) metrics.getStringBounds(
+									editable.substring(0, st), g).getHeight(),
+					y + (this.ht - ht) / 2,
+					(int) metrics.getStringBounds(str, g).getWidth(), ht);
 			g.setColor(Color.WHITE);
 		} else {
 			g.setPaint(paint);
 		}
-		
-		g.drawString(editable.toString(), x + X_PAD, y + (this.ht - (this.ht - ht)));
+
+		g.drawString(editable.toString(), x + X_PAD, y
+				+ (this.ht - (this.ht - ht)));
 	}
 
 	/**
@@ -114,7 +128,8 @@ public class TextField extends Text {
 	}
 
 	/**
-	 * Sets the TextField's background image.  The default background is just a white rectangle.
+	 * Sets the TextField's background image. The default background is just a white rectangle.
+	 * 
 	 * @param background
 	 */
 	public void setBackground(BufferedImage background) {
@@ -128,19 +143,21 @@ public class TextField extends Text {
 	public BufferedImage getBackground() {
 		return background;
 	}
-	
+
 	public void setSelectionColor(Color color) {
-		if(color != null)
+		if (color != null) {
 			this.selColor = color;
+		}
 	}
-	
+
 	public Color getSelectionColor() {
 		return selColor;
 	}
 
 	public void setCaretColor(Color color) {
-		if(color != null)
+		if (color != null) {
 			this.caretColor = color;
+		}
 	}
 
 	public Color getCaretColor() {
@@ -148,7 +165,7 @@ public class TextField extends Text {
 	}
 
 	public void setCaretPos(int newCaretPos) {
-		if(newCaretPos >= 0 && newCaretPos <= editable.length()) {
+		if (newCaretPos >= 0 && newCaretPos <= editable.length()) {
 			caretPos = newCaretPos;
 		}
 	}
@@ -165,40 +182,42 @@ public class TextField extends Text {
 	 */
 	@Override
 	public void processMouseEvent(MouseEvent me) {
-		if(me.getID() == MouseEvent.MOUSE_EXITED) {
+		if (me.getID() == MouseEvent.MOUSE_EXITED) {
 			me.getComponent().setCursor(pre);
 			pre = null;
-		} else if(pre == null) {
+		} else if (pre == null) {
 			pre = me.getComponent().getCursor();
-			me.getComponent().setCursor(Cursor.getPredefinedCursor(Cursor.TEXT_CURSOR));
+			me.getComponent().setCursor(
+					Cursor.getPredefinedCursor(Cursor.TEXT_CURSOR));
 		}
 
-		switch(me.getID()) {
+		switch (me.getID()) {
 		case MouseEvent.MOUSE_RELEASED:
 			selStopped = true;
 			break;
 		case MouseEvent.MOUSE_DRAGGED:
-			if(!renderSel)
+			if (!renderSel) {
 				selStart = caretPos;
-			//renderSel = true;
+			}
+			// renderSel = true;
 		case MouseEvent.MOUSE_PRESSED:
-			if(selStopped) {
+			if (selStopped) {
 				selStopped = false;
 				renderSel = false;
 			}
 
-			if(strBounds.contains(me.getX(), me.getY())) {
+			if (strBounds.contains(me.getX(), me.getY())) {
 				int mx = me.getX() - strBounds.x;
 				char[] chars = editable.toString().toCharArray();
 				int tot = 0;
-				for(int i = 0; i < chars.length; i++) {
+				for (int i = 0; i < chars.length; i++) {
 					tot += metrics.charWidth(chars[i]);
-					if(mx <= tot) {
+					if (mx <= tot) {
 						caretPos = i;
 						break;
 					}
 				}
-			} else if(me.getX() > strBounds.x + strBounds.width) {
+			} else if (me.getX() > strBounds.x + strBounds.width) {
 				caretPos = editable.length();
 			}
 			break;
@@ -210,28 +229,32 @@ public class TextField extends Text {
 	 */
 	@Override
 	public void processKeyEvent(KeyEvent ke) {
-		if(focused && ke.getID() == KeyEvent.KEY_PRESSED) {
-			switch(ke.getKeyCode()) {
+		if (focused && ke.getID() == KeyEvent.KEY_PRESSED) {
+			switch (ke.getKeyCode()) {
 			case KeyEvent.VK_BACK_SPACE:
-				if(caretPos > 0)
+				if (caretPos > 0) {
 					editable.deleteCharAt(--caretPos);
+				}
 				break;
 			case KeyEvent.VK_LEFT:
-				if(caretPos > 0)
+				if (caretPos > 0) {
 					caretPos--;
+				}
 				break;
 			case KeyEvent.VK_RIGHT:
-				if(caretPos < editable.length())
+				if (caretPos < editable.length()) {
 					caretPos++;
+				}
 				break;
 			default:
 				char c = ke.getKeyChar();
-				if(c != KeyEvent.CHAR_UNDEFINED) {
-					if(caretPos == editable.length()) {
+				if (c != KeyEvent.CHAR_UNDEFINED) {
+					if (caretPos == editable.length()) {
 						editable.append(c);
 						caretPos++;
-					} else
+					} else {
 						editable.insert((caretPos++), c);
+					}
 				}
 			}
 		}
@@ -239,7 +262,7 @@ public class TextField extends Text {
 
 	@Override
 	public void focusChanged(int evt) {
-		switch(evt) {
+		switch (evt) {
 		case RenderedLayout.FOCUS_GAINED:
 			focused = true;
 			break;

@@ -25,22 +25,26 @@ import bg.x2d.utils.*;
 
 /**
  * Provides static utility methods for loading and scaling image resources.
+ * 
  * @author Brian Groenke
- *
+ * 
  */
 public class ImageLoader {
 
-	private ImageLoader() {}
+	private ImageLoader() {
+	}
 
 	/**
-	 * Loads a BufferedImage from the given InputStream.  The caller is responsible
-	 * for closing the stream.
+	 * Loads a BufferedImage from the given InputStream. The caller is responsible for closing the
+	 * stream.
+	 * 
 	 * @param stream
 	 * @return the loaded BufferedImage, or null if an error occurred.
 	 */
 	public static BufferedImage load(InputStream stream) {
-		if(stream == null)
+		if (stream == null) {
 			return null;
+		}
 		BufferedImage img = null;
 		try {
 			img = ImageIO.read(stream);
@@ -52,12 +56,14 @@ public class ImageLoader {
 
 	/**
 	 * Loads a BufferedImage from the given URL.
+	 * 
 	 * @param location
 	 * @return
 	 */
 	public static BufferedImage load(URL location) {
-		if(location == null)
+		if (location == null) {
 			return null;
+		}
 		BufferedImage img = null;
 		InputStream in = null;
 		try {
@@ -73,19 +79,25 @@ public class ImageLoader {
 	}
 
 	/**
-	 * Scales the given BufferedImage based on display size.  The Dimensions <code>prevDisp</code>
+	 * Scales the given BufferedImage based on display size. The Dimensions <code>prevDisp</code>
 	 * represents the screen dimensions <code>img</code> is sized for by default.
-	 * @param img the BufferedImage to scale
-	 * @param prevDisp display size <code>img</code> is sized to be viewed on.
-	 * @param quality quality of the scaling operation
-	 * @param aspectRatio true if the image's aspect ratio should be maintained, false otherwise
+	 * 
+	 * @param img
+	 *            the BufferedImage to scale
+	 * @param prevDisp
+	 *            display size <code>img</code> is sized to be viewed on.
+	 * @param quality
+	 *            quality of the scaling operation
+	 * @param aspectRatio
+	 *            true if the image's aspect ratio should be maintained, false otherwise
 	 * @return the scaled BufferedImage
 	 */
-	public static BufferedImage scaleFrom(BufferedImage img, Dimension prevDisp, ScaleQuality quality, boolean aspectRatio) {
+	public static BufferedImage scaleFrom(BufferedImage img,
+			Dimension prevDisp, ScaleQuality quality, boolean aspectRatio) {
 		Dimension screen = Toolkit.getDefaultToolkit().getScreenSize();
 		Dimension newSize = new Dimension();
-		if(aspectRatio) {
-			if(img.getWidth() >= img.getHeight()) {
+		if (aspectRatio) {
+			if (img.getWidth() >= img.getHeight()) {
 				double ratio = screen.getWidth() / prevDisp.getWidth();
 				newSize.setSize(img.getWidth() * ratio, img.getHeight() * ratio);
 			} else {
@@ -93,8 +105,10 @@ public class ImageLoader {
 				newSize.setSize(img.getWidth() * ratio, img.getHeight() * ratio);
 			}
 		} else {
-			newSize.setSize(img.getWidth() * (screen.getWidth() / prevDisp.getWidth()),
-					img.getHeight() * (screen.getHeight() / prevDisp.getHeight()));
+			newSize.setSize(
+					img.getWidth() * (screen.getWidth() / prevDisp.getWidth()),
+					img.getHeight()
+							* (screen.getHeight() / prevDisp.getHeight()));
 		}
 		return ImageUtils.scaleImage(img, newSize, img.getType(), quality);
 	}

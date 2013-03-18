@@ -15,17 +15,16 @@ package bg.x2d.gen;
 import java.util.*;
 
 /**
- * Generates a random number between the specified bounds using the
- * parameterized number type. <br>
- * This implementation of Generator finds a pseudo-random number between the max
- * and min specified, using a simple algorithm that incorporates Math.random(). <br>
- * NumberGenerator will only take number types that are part of the Java(tm)
- * language package (Integer, Double, Long, Float, Short, Byte).
+ * Generates a random number between the specified bounds using the parameterized number type. <br>
+ * This implementation of Generator finds a pseudo-random number between the max and min specified,
+ * using a simple algorithm that incorporates Math.random(). <br>
+ * NumberGenerator will only take number types that are part of the Java(tm) language package
+ * (Integer, Double, Long, Float, Short, Byte).
  * 
  * @author Brian
  * 
- * @param <T>Any of the Java primitive values (through auto-boxing) or their
- *        respective class representations.
+ * @param <T>Any of the Java primitive values (through auto-boxing) or their respective class
+ *        representations.
  * @since 2DX 1.0 (1st Edition)
  */
 public class NumberGenerator<T extends Number> implements Generator<T> {
@@ -62,7 +61,7 @@ public class NumberGenerator<T extends Number> implements Generator<T> {
 		double high = ((Number) highBound).doubleValue();
 		double diff = high - low;
 		Double result = low + (rand.nextDouble() * diff);
-		
+
 		if (lowBound instanceof Double) {
 			return (T) result;
 		} else if (lowBound instanceof Integer) {
@@ -80,9 +79,9 @@ public class NumberGenerator<T extends Number> implements Generator<T> {
 					"NumberGenerator only supports the Java(tm) language Number (java.lang.Number) types."));
 		}
 	}
-	
+
 	public static void main(String[] args) {
-		Integer i = new NumberGenerator<Integer>(-50,50).generate();
+		Integer i = new NumberGenerator<Integer>(-50, 50).generate();
 		System.out.println(i.intValue());
 	}
 }

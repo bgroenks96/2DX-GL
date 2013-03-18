@@ -12,25 +12,19 @@
 
 package com.snap2d.input;
 
-import java.awt.AWTEvent;
-import java.awt.KeyEventDispatcher;
-import java.awt.KeyboardFocusManager;
-import java.awt.Toolkit;
-import java.awt.event.AWTEventListener;
-import java.awt.event.KeyEvent;
-import java.awt.event.MouseEvent;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Iterator;
+import java.awt.*;
+import java.awt.event.*;
+import java.util.*;
 import java.util.List;
 
-import com.snap2d.ThreadManager;
+import com.snap2d.*;
 
 /**
  * Receives input events directly from Java's Abstract Windowing Toolkit and dispatches them to
  * registered listeners.
+ * 
  * @author Brian Groenke
- *
+ * 
  */
 public class InputDispatch {
 

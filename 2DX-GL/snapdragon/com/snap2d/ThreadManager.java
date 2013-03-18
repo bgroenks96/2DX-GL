@@ -12,15 +12,13 @@
 
 package com.snap2d;
 
-import java.util.concurrent.Callable;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
-import java.util.concurrent.Future;
+import java.util.concurrent.*;
 
 /**
  * Manages standard and daemon thread pools for the Snapdragon2D Engine.
+ * 
  * @author Brian Groenke
- *
+ * 
  */
 public final class ThreadManager {
 
@@ -64,20 +62,19 @@ public final class ThreadManager {
 	}
 
 	/**
-	 * Sets the size of the current thread pool for the ThreadManager class.
-	 * This method calls shutdown() on the current thread pool object then
-	 * instantiates a new ExecutorService using the same reference with the
-	 * number of threads specified. Make sure to call this method either a)
-	 * before launching any thread jobs or b) when you are sure the threads in
-	 * the current pool can be shutdown.
+	 * Sets the size of the current thread pool for the ThreadManager class. This method calls
+	 * shutdown() on the current thread pool object then instantiates a new ExecutorService using
+	 * the same reference with the number of threads specified. Make sure to call this method either
+	 * a) before launching any thread jobs or b) when you are sure the threads in the current pool
+	 * can be shutdown.
 	 * 
 	 * @param nthreads
-	 *            The number of threads in the new thread pool. If n < 1, a
-	 *            cached thread pool will be created.
+	 *            The number of threads in the new thread pool. If n < 1, a cached thread pool will
+	 *            be created.
 	 */
 	public static void setThreadCount(int nthreads) {
 		threadPool.shutdown();
-		
+
 		if (nthreads < 1) {
 			n = 0;
 			threadPool = Executors.newCachedThreadPool();
@@ -89,8 +86,7 @@ public final class ThreadManager {
 	}
 
 	/**
-	 * The number of threads in the current thread pool, or zero if the current
-	 * pool is cached.
+	 * The number of threads in the current thread pool, or zero if the current pool is cached.
 	 * 
 	 * @return
 	 */

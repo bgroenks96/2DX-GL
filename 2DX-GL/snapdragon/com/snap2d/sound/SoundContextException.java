@@ -14,7 +14,7 @@ package com.snap2d.sound;
 
 /**
  * @author Brian Groenke
- *
+ * 
  */
 public class SoundContextException extends Exception {
 

@@ -17,10 +17,10 @@ import java.awt.*;
 import javax.swing.*;
 
 /**
- * Represents the underlying frame used to display rendered content on screen.  Display
- * creates a JFrame used to display a RenderControl's BufferStrategy.  This is essentially
- * the entry point for graphics rendering in Snapdragon2D and works tightly in conjunction with
- * RenderControl.
+ * Represents the underlying frame used to display rendered content on screen. Display creates a
+ * JFrame used to display a RenderControl's BufferStrategy. This is essentially the entry point for
+ * graphics rendering in Snapdragon2D and works tightly in conjunction with RenderControl.
+ * 
  * @author Brian Groenke
  * @since Snapdragon2D 1.0
  */
@@ -33,6 +33,7 @@ public class Display {
 
 	/**
 	 * Creates the Display with default GLConfig.
+	 * 
 	 * @param width
 	 * @param height
 	 * @param type
@@ -42,25 +43,30 @@ public class Display {
 	}
 
 	/**
-	 * Creates the Display and initializes Java2D with the given GLConfig settings.
-	 * If <code>config</code> is null, Java's default configuration will be used.
-	 * @param width width of the window (irrelevant for Type.FULLSCREEN)
-	 * @param height height of the window (irrelevant for Type.FULLSCREEN)
-	 * @param type the type of Display to be shown
-	 * @param config the graphics configuration to use.
+	 * Creates the Display and initializes Java2D with the given GLConfig settings. If
+	 * <code>config</code> is null, Java's default configuration will be used.
+	 * 
+	 * @param width
+	 *            width of the window (irrelevant for Type.FULLSCREEN)
+	 * @param height
+	 *            height of the window (irrelevant for Type.FULLSCREEN)
+	 * @param type
+	 *            the type of Display to be shown
+	 * @param config
+	 *            the graphics configuration to use.
 	 */
 	public Display(int width, int height, Type type, GLConfig config) {
 		this.wt = width;
 		this.ht = height;
 		this.type = type;
-		if(config != null)
+		if (config != null) {
 			config.apply();
+		}
 		init();
 	}
 
 	/**
-	 * Internal method that performs initiation of the Display. Called by the
-	 * constructor.
+	 * Internal method that performs initiation of the Display. Called by the constructor.
 	 */
 	protected void init() {
 		switch (type) {
@@ -86,6 +92,7 @@ public class Display {
 
 	/**
 	 * Sets this Display's window title.
+	 * 
 	 * @param str
 	 */
 	public void setTitle(String str) {
@@ -93,20 +100,22 @@ public class Display {
 	}
 
 	/**
-	 * Sets the location on screen.  Should only be used for WINDOWED Displays.
+	 * Sets the location on screen. Should only be used for WINDOWED Displays.
+	 * 
 	 * @param x
 	 * @param y
 	 */
 	public void setLocation(int x, int y) {
 		frame.setLocation(x, y);
 	}
-	
+
 	public Component getAsComponent() {
 		return frame;
 	}
 
 	/**
-	 * Sets the size of the frame.  Should only be used for WINDOWED Displays.
+	 * Sets the size of the frame. Should only be used for WINDOWED Displays.
+	 * 
 	 * @param x
 	 * @param y
 	 */
@@ -116,15 +125,18 @@ public class Display {
 
 	/**
 	 * Sets whether the frame is decorated.
+	 * 
 	 * @param undecorated
 	 */
 	public void setUndecorated(boolean undecorated) {
 		frame.setUndecorated(undecorated);
 	}
-	
+
 	/**
 	 * Only applicable for decorated, WINDOWED Displays.
-	 * @param onClose specified in the JFrame class
+	 * 
+	 * @param onClose
+	 *            specified in the JFrame class
 	 */
 	public void setDefaultCloseOperation(int onClose) {
 		frame.setDefaultCloseOperation(onClose);
@@ -138,38 +150,39 @@ public class Display {
 	}
 
 	/**
-	 * Sets the Display type.  This will force the Display to recreate the JFrame
-	 * internally and migrate the rendering handle (if existent).
+	 * Sets the Display type. This will force the Display to recreate the JFrame internally and
+	 * migrate the rendering handle (if existent).
+	 * 
 	 * @param dispType
 	 */
 	public void setType(Type dispType) {
 		boolean wasActive = false;
-		if(rc != null) {
-			wasActive= rc.isActive();
+		if (rc != null) {
+			wasActive = rc.isActive();
 			rc.setRenderActive(false);
 		}
 		boolean frameVisible = frame.isShowing();
 		frame.dispose();
 		type = dispType;
 		init();
-		if(rc != null) {
+		if (rc != null) {
 			frame.add(rc.canvas);
 			rc.setRenderActive(wasActive);
 		}
-		if(frameVisible)
+		if (frameVisible) {
 			show();
+		}
 	}
 
 	/**
-	 * Convenience method for
-	 * <code>Toolkit.getDefaultToolkit().getScreenSize()</code>.
+	 * Convenience method for <code>Toolkit.getDefaultToolkit().getScreenSize()</code>.
 	 * 
 	 * @return the local monitor's screen dimensions.
 	 */
 	public Dimension getScreenSize() {
 		return Toolkit.getDefaultToolkit().getScreenSize();
 	}
-	
+
 	/**
 	 * @return the current size of this Display regardless of whether or not it is being shown.
 	 */
@@ -178,14 +191,15 @@ public class Display {
 	}
 
 	/**
-	 * Creates a new RenderControl to be used as a rendering handle for drawing to
-	 * this Display.  This method creates the renderer and adds it to the frame.
-	 * Call <code>show()</code> to show the Display.
+	 * Creates a new RenderControl to be used as a rendering handle for drawing to this Display.
+	 * This method creates the renderer and adds it to the frame. Call <code>show()</code> to show
+	 * the Display.
+	 * 
 	 * @param buffs
 	 * @return
 	 */
 	public RenderControl getRenderControl(int buffs) {
-		if(rc != null) {
+		if (rc != null) {
 			rc.setRenderActive(false);
 			frame.remove(rc.canvas);
 			rc.dispose();
@@ -196,43 +210,48 @@ public class Display {
 	}
 
 	/**
-	 * Shows this Display's frame on screen.  If this is a fullscreen window, this method will set
+	 * Shows this Display's frame on screen. If this is a fullscreen window, this method will set
 	 * the frame to be activated as the system's full screen display view.
 	 */
 	public void show() {
-		if(type == Type.FULLSCREEN) {
-			GraphicsDevice d = GraphicsEnvironment.getLocalGraphicsEnvironment().getDefaultScreenDevice();
-			if(d.isFullScreenSupported() && type.useNativeFullscreen)
+		if (type == Type.FULLSCREEN) {
+			GraphicsDevice d = GraphicsEnvironment
+					.getLocalGraphicsEnvironment().getDefaultScreenDevice();
+			if (d.isFullScreenSupported() && type.useNativeFullscreen) {
 				d.setFullScreenWindow(frame);
-			else
+			} else {
 				frame.setVisible(true);
-		} else
+			}
+		} else {
 			frame.setVisible(true);
+		}
 		wt = frame.getWidth();
 		ht = frame.getHeight();
 	}
 
 	/**
-	 * Hides this Display's frame on screen.  If this is a fullscreen window, this method will remove
-	 * the frame from the system's full screen display view.  For windowed mode, this will minimize the
-	 * window on most desktop environments.
+	 * Hides this Display's frame on screen. If this is a fullscreen window, this method will remove
+	 * the frame from the system's full screen display view. For windowed mode, this will minimize
+	 * the window on most desktop environments.
 	 */
 	public void hide() {
 		rc.setRenderActive(false);
-		GraphicsDevice d = GraphicsEnvironment.getLocalGraphicsEnvironment().getDefaultScreenDevice();
+		GraphicsDevice d = GraphicsEnvironment.getLocalGraphicsEnvironment()
+				.getDefaultScreenDevice();
 		d.setFullScreenWindow(null);
 		frame.setVisible(false);
 	}
 
 	/**
-	 * Disposes this Display and its rendering handle (if any).  Once disposed, a Display object should
-	 * be discarded.  It's a good idea to call this only when the game is exiting.
+	 * Disposes this Display and its rendering handle (if any). Once disposed, a Display object
+	 * should be discarded. It's a good idea to call this only when the game is exiting.
 	 */
 	public void dispose() {
-		if(rc != null) {
+		if (rc != null) {
 			rc.dispose();
 		}
-		GraphicsDevice d = GraphicsEnvironment.getLocalGraphicsEnvironment().getDefaultScreenDevice();
+		GraphicsDevice d = GraphicsEnvironment.getLocalGraphicsEnvironment()
+				.getDefaultScreenDevice();
 		d.setFullScreenWindow(null);
 		frame.dispose();
 	}
@@ -240,21 +259,23 @@ public class Display {
 	public enum Type {
 
 		WINDOWED, FULLSCREEN;
-		
+
 		boolean useNativeFullscreen = true;
-		
+
 		/**
-		 * Only relevant for Type.FULLSCREEN mode.  Sets the Display as a native fullscreen window rather
-		 * than just displaying a screen-sized frame.  This feature is especially useful on Windows systems.
-		 * <br/><br/>
-		 * Note: Using this feature will often cause the native graphics driver to enforce settings like vertical-sync
-		 *     or triple buffering on the rendering system.
+		 * Only relevant for Type.FULLSCREEN mode. Sets the Display as a native fullscreen window
+		 * rather than just displaying a screen-sized frame. This feature is especially useful on
+		 * Windows systems. <br/>
+		 * <br/>
+		 * Note: Using this feature will often cause the native graphics driver to enforce settings
+		 * like vertical-sync or triple buffering on the rendering system.
+		 * 
 		 * @param nativeFullscreen
 		 */
 		public void setUseNativeFullscreen(boolean nativeFullscreen) {
 			this.useNativeFullscreen = nativeFullscreen;
 		}
-		
+
 		public boolean isNativeFullscreen() {
 			return useNativeFullscreen;
 		}

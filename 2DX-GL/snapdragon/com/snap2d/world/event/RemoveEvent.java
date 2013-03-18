@@ -16,7 +16,7 @@ import com.snap2d.world.*;
 
 /**
  * @author Brian Groenke
- *
+ * 
  */
 public class RemoveEvent extends EntityEvent {
 

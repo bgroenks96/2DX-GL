@@ -17,8 +17,7 @@ import java.awt.geom.*;
 import java.awt.image.*;
 
 /**
- * Provides static convenience methods for performing geometric operations on
- * images.
+ * Provides static convenience methods for performing geometric operations on images.
  * 
  * @author Brian
  * @since 2DX 1.0 (1st Edition)
@@ -31,8 +30,7 @@ public class ImageUtils {
 	}
 
 	/**
-	 * Returns a rotated AffineTransform object that can be used to rotate an
-	 * image.
+	 * Returns a rotated AffineTransform object that can be used to rotate an image.
 	 * 
 	 * @param img
 	 *            The Image to be rotated
@@ -52,8 +50,7 @@ public class ImageUtils {
 	}
 
 	/**
-	 * Draws a rotated version of the given Image to the specified Graphics2D
-	 * object.
+	 * Draws a rotated version of the given Image to the specified Graphics2D object.
 	 * 
 	 * @param img
 	 *            The Image to be rotated
@@ -76,8 +73,7 @@ public class ImageUtils {
 	}
 
 	/**
-	 * Returns a rotated AffineTransform object that can be used to rotate an
-	 * image.
+	 * Returns a rotated AffineTransform object that can be used to rotate an image.
 	 * 
 	 * @param img
 	 *            The Image to be rotated
@@ -86,8 +82,8 @@ public class ImageUtils {
 	 * @param theta
 	 *            Rotation value
 	 * @param radians
-	 *            true if theta should be interpreted as a radian value, false
-	 *            if theta should be interpreted as a degree value.
+	 *            true if theta should be interpreted as a radian value, false if theta should be
+	 *            interpreted as a degree value.
 	 * @return the rotated (and translated) AffineTransform
 	 */
 	public static AffineTransform rotateImage(Image img, Point location,
@@ -105,8 +101,7 @@ public class ImageUtils {
 	}
 
 	/**
-	 * Draws a rotated version of the given Image to the specified Graphics2D
-	 * object.
+	 * Draws a rotated version of the given Image to the specified Graphics2D object.
 	 * 
 	 * @param img
 	 *            The Image to be rotated
@@ -117,8 +112,8 @@ public class ImageUtils {
 	 * @param theta
 	 *            Rotation value
 	 * @param radians
-	 *            true if theta should be interpreted as a radian value, false
-	 *            if theta should be interpreted as a degree value.
+	 *            true if theta should be interpreted as a radian value, false if theta should be
+	 *            interpreted as a degree value.
 	 * @return the rotated (and translated) AffineTransform
 	 */
 	public static AffineTransform rotateImage(Image img, Point location,
@@ -137,9 +132,9 @@ public class ImageUtils {
 	}
 
 	/**
-	 * Performs a AffineTransform scaling operation relative to the generic
-	 * Image provided. The returned AffineTransform can be used to draw a scaled
-	 * version of the Image on screen. High quality is not guaranteed.
+	 * Performs a AffineTransform scaling operation relative to the generic Image provided. The
+	 * returned AffineTransform can be used to draw a scaled version of the Image on screen. High
+	 * quality is not guaranteed.
 	 * 
 	 * @param img
 	 *            The Image to be scaled.
@@ -147,8 +142,8 @@ public class ImageUtils {
 	 *            The location the Image should be drawn at.
 	 * @param newSize
 	 *            The dimensions the scaled Image should be.
-	 * @return a scaled and translated AffineTransform that can be used to draw
-	 *         a scaled version of the Image.
+	 * @return a scaled and translated AffineTransform that can be used to draw a scaled version of
+	 *         the Image.
 	 */
 	public static AffineTransform scaleImage(Image img, Point location,
 			Dimension newSize) {
@@ -160,9 +155,9 @@ public class ImageUtils {
 	}
 
 	/**
-	 * Takes any generic Image and scales it to a new size. The returned Image
-	 * is a BufferedImage upon which the scaled image is drawn upon. This
-	 * method calls <code>scaleImage(img, newSize, BufferedImage.TYPE_INT_ARGB, highQuality)</code>.
+	 * Takes any generic Image and scales it to a new size. The returned Image is a BufferedImage
+	 * upon which the scaled image is drawn upon. This method calls
+	 * <code>scaleImage(img, newSize, BufferedImage.TYPE_INT_ARGB, highQuality)</code>.
 	 * 
 	 * @param img
 	 *            Any generic Image or Image subclass to be scaled (doesn't affect the BufferedImage
@@ -171,13 +166,15 @@ public class ImageUtils {
 	 *            the dimensions for the new Image.
 	 * @return a BufferedImage with the scaled Image drawn onto it.
 	 */
-	public static BufferedImage scaleImage(Image img, Dimension newSize, ScaleQuality quality) {
+	public static BufferedImage scaleImage(Image img, Dimension newSize,
+			ScaleQuality quality) {
 		return scaleImage(img, newSize, BufferedImage.TYPE_INT_ARGB, quality);
 	}
 
 	/**
-	 * Legacy method.  Calls standard image scaling method with ScaleQuality.NORM.
+	 * Legacy method. Calls standard image scaling method with ScaleQuality.NORM.
 	 * <code>scaleImage(Image,Dimension,ScaleQuality)</code> should be preferred.
+	 * 
 	 * @param img
 	 * @param newSize
 	 * @return
@@ -187,41 +184,51 @@ public class ImageUtils {
 	}
 
 	/**
-	 * Takes any Image and scales it to a new size. This method draws
-	 * the image onto a BufferedImage of the specified size.  Various rendering operations
-	 * are set depending on the value of <code>quality</cdoe>.
+	 * Takes any Image and scales it to a new size. This method draws the image onto a BufferedImage
+	 * of the specified size. Various rendering operations are set depending on the value of
+	 * <code>quality</cdoe>.
 	 * 
 	 * @param bi
 	 *            The Image to be scaled.
 	 * @param newSize
 	 *            The new size for the image
 	 * @param imgType
-	 *            The new BufferedImage type (defined in the BufferedImage
-	 *            class)
+	 *            The new BufferedImage type (defined in the BufferedImage class)
 	 * @param quality
 	 *            The scaling quality of the newly rendered image.
 	 * @return the image scaled and drawn onto a BufferedImage
 	 */
-	public static BufferedImage scaleImage(Image img, Dimension newSize, int imgType, 
-			ScaleQuality quality) {
+	public static BufferedImage scaleImage(Image img, Dimension newSize,
+			int imgType, ScaleQuality quality) {
 		BufferedImage bi = new BufferedImage((int) newSize.getWidth(),
 				(int) newSize.getHeight(), BufferedImage.TYPE_INT_ARGB);
 		Graphics2D g = bi.createGraphics();
-		g.setRenderingHint(RenderingHints.KEY_INTERPOLATION, RenderingHints.VALUE_INTERPOLATION_BILINEAR);
-		switch(quality) {
+		g.setRenderingHint(RenderingHints.KEY_INTERPOLATION,
+				RenderingHints.VALUE_INTERPOLATION_BILINEAR);
+		switch (quality) {
 		case HIGH:
-			g.setRenderingHint(RenderingHints.KEY_INTERPOLATION, RenderingHints.VALUE_INTERPOLATION_BICUBIC);
-			g.setRenderingHint(RenderingHints.KEY_ALPHA_INTERPOLATION, RenderingHints.VALUE_ALPHA_INTERPOLATION_QUALITY);
-			g.setRenderingHint(RenderingHints.KEY_RENDERING, RenderingHints.VALUE_RENDER_QUALITY);
-			g.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
-			g.setRenderingHint(RenderingHints.KEY_COLOR_RENDERING, RenderingHints.VALUE_COLOR_RENDER_QUALITY);
+			g.setRenderingHint(RenderingHints.KEY_INTERPOLATION,
+					RenderingHints.VALUE_INTERPOLATION_BICUBIC);
+			g.setRenderingHint(RenderingHints.KEY_ALPHA_INTERPOLATION,
+					RenderingHints.VALUE_ALPHA_INTERPOLATION_QUALITY);
+			g.setRenderingHint(RenderingHints.KEY_RENDERING,
+					RenderingHints.VALUE_RENDER_QUALITY);
+			g.setRenderingHint(RenderingHints.KEY_ANTIALIASING,
+					RenderingHints.VALUE_ANTIALIAS_ON);
+			g.setRenderingHint(RenderingHints.KEY_COLOR_RENDERING,
+					RenderingHints.VALUE_COLOR_RENDER_QUALITY);
 			break;
 		case SPEED:
-			g.setRenderingHint(RenderingHints.KEY_INTERPOLATION, RenderingHints.VALUE_INTERPOLATION_NEAREST_NEIGHBOR);
-			g.setRenderingHint(RenderingHints.KEY_ALPHA_INTERPOLATION, RenderingHints.VALUE_ALPHA_INTERPOLATION_SPEED);
-			g.setRenderingHint(RenderingHints.KEY_RENDERING, RenderingHints.VALUE_RENDER_SPEED);
-			g.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_OFF);
-			g.setRenderingHint(RenderingHints.KEY_COLOR_RENDERING, RenderingHints.VALUE_COLOR_RENDER_SPEED);
+			g.setRenderingHint(RenderingHints.KEY_INTERPOLATION,
+					RenderingHints.VALUE_INTERPOLATION_NEAREST_NEIGHBOR);
+			g.setRenderingHint(RenderingHints.KEY_ALPHA_INTERPOLATION,
+					RenderingHints.VALUE_ALPHA_INTERPOLATION_SPEED);
+			g.setRenderingHint(RenderingHints.KEY_RENDERING,
+					RenderingHints.VALUE_RENDER_SPEED);
+			g.setRenderingHint(RenderingHints.KEY_ANTIALIASING,
+					RenderingHints.VALUE_ANTIALIAS_OFF);
+			g.setRenderingHint(RenderingHints.KEY_COLOR_RENDERING,
+					RenderingHints.VALUE_COLOR_RENDER_SPEED);
 		case NORM:
 			break;
 		}
@@ -229,26 +236,29 @@ public class ImageUtils {
 		g.dispose();
 		return bi;
 	}
-	
+
 	/**
-	 * Legacy method.  Provided for backwards compatibility.
-	 * @param scaleType Note that this argument is ignored in the modern implementation of this method.
-	 * @return BufferedImage scaled using the preferred <code>scaleImage(Image,Dimension,int,ScaleQuality)</code> method.
+	 * Legacy method. Provided for backwards compatibility.
+	 * 
+	 * @param scaleType
+	 *            Note that this argument is ignored in the modern implementation of this method.
+	 * @return BufferedImage scaled using the preferred
+	 *         <code>scaleImage(Image,Dimension,int,ScaleQuality)</code> method.
 	 */
-	public static BufferedImage scaleBufferedImage(BufferedImage img, Dimension newSize, int imgType, int scaleType) {
+	public static BufferedImage scaleBufferedImage(BufferedImage img,
+			Dimension newSize, int imgType, int scaleType) {
 		return scaleImage(img, newSize, imgType, ScaleQuality.NORM);
 	}
 
 	/**
-	 * Converts a BufferedImage to the specified type by drawing it onto a new
-	 * BufferedImage. The data and dimensions of the given image are preserved.
+	 * Converts a BufferedImage to the specified type by drawing it onto a new BufferedImage. The
+	 * data and dimensions of the given image are preserved.
 	 * 
 	 * @param bi
 	 *            The BufferedImage to convert.
 	 * @param outType
 	 *            The type of BufferedImage that should be returned.
-	 * @return the new BufferedImage of type <code>outType</code> that is a copy
-	 *         of <code>bi</code>
+	 * @return the new BufferedImage of type <code>outType</code> that is a copy of <code>bi</code>
 	 */
 	public static BufferedImage convertBufferedImage(BufferedImage bi,
 			int outType) {
@@ -261,15 +271,14 @@ public class ImageUtils {
 	}
 
 	/**
-	 * Converts any Image to a BufferedImage of the specified type. The data and
-	 * dimensions of the given Image are preserved.
+	 * Converts any Image to a BufferedImage of the specified type. The data and dimensions of the
+	 * given Image are preserved.
 	 * 
 	 * @param img
 	 *            The Image to convert.
 	 * @param outType
 	 *            The type of BufferedImage that should be returned.
-	 * @return the new BufferedImage of type <code>outType</code> that is a copy
-	 *         of <code>img</code>
+	 * @return the new BufferedImage of type <code>outType</code> that is a copy of <code>img</code>
 	 */
 	public static BufferedImage convertImage(Image img, int outType) {
 		BufferedImage newImage = new BufferedImage(img.getWidth(null),
@@ -281,8 +290,8 @@ public class ImageUtils {
 	}
 
 	/**
-	 * Convenience method to create a native platform compatible BufferedImage.
-	 * A native image will, in most cases, boost performance.
+	 * Convenience method to create a native platform compatible BufferedImage. A native image will,
+	 * in most cases, boost performance.
 	 * 
 	 * @param wt
 	 *            width of the image
@@ -293,13 +302,14 @@ public class ImageUtils {
 	 * @return the newly created BufferedImage object
 	 */
 	public static BufferedImage getNativeImage(int wt, int ht) {
-		return GraphicsEnvironment.getLocalGraphicsEnvironment().getDefaultScreenDevice()
-				.getDefaultConfiguration().createCompatibleImage(wt, ht, Transparency.TRANSLUCENT);
+		return GraphicsEnvironment.getLocalGraphicsEnvironment()
+				.getDefaultScreenDevice().getDefaultConfiguration()
+				.createCompatibleImage(wt, ht, Transparency.TRANSLUCENT);
 	}
 
 	/**
-	 * Convenience method to create a native platform compatible BufferedImage.
-	 * A native image will, in most cases, boost performance.
+	 * Convenience method to create a native platform compatible BufferedImage. A native image will,
+	 * in most cases, boost performance.
 	 * 
 	 * @param wt
 	 *            width of the image
@@ -310,7 +320,8 @@ public class ImageUtils {
 	 * @return the newly created BufferedImage object
 	 */
 	public static BufferedImage getNativeImage(Image orig) {
-		GraphicsDevice d = GraphicsEnvironment.getLocalGraphicsEnvironment().getDefaultScreenDevice();
+		GraphicsDevice d = GraphicsEnvironment.getLocalGraphicsEnvironment()
+				.getDefaultScreenDevice();
 		GraphicsConfiguration c = d.getDefaultConfiguration();
 		BufferedImage nimg = c.createCompatibleImage(orig.getWidth(null),
 				orig.getHeight(null), Transparency.TRANSLUCENT);
@@ -327,15 +338,17 @@ public class ImageUtils {
 			return nativeType;
 		}
 
-		GraphicsDevice d = GraphicsEnvironment.getLocalGraphicsEnvironment().getDefaultScreenDevice();
+		GraphicsDevice d = GraphicsEnvironment.getLocalGraphicsEnvironment()
+				.getDefaultScreenDevice();
 		GraphicsConfiguration c = d.getDefaultConfiguration();
-		BufferedImage nat = c.createCompatibleImage(1, 1, Transparency.TRANSLUCENT);
+		BufferedImage nat = c.createCompatibleImage(1, 1,
+				Transparency.TRANSLUCENT);
 		return (nativeType = nat.getType());
 	}
 
 	/**
-	 * Convenience method for creating a new compatible VolatileImage using the
-	 * given Graphics context.
+	 * Convenience method for creating a new compatible VolatileImage using the given Graphics
+	 * context.
 	 * 
 	 * @param wt
 	 *            the width of the new image
@@ -345,29 +358,28 @@ public class ImageUtils {
 	 * @see VolatileImage
 	 */
 	public static VolatileImage createVolatileImage(int wt, int ht) {
-		GraphicsDevice d = GraphicsEnvironment.getLocalGraphicsEnvironment().getDefaultScreenDevice();
+		GraphicsDevice d = GraphicsEnvironment.getLocalGraphicsEnvironment()
+				.getDefaultScreenDevice();
 		GraphicsConfiguration c = d.getDefaultConfiguration();
 		return c.createCompatibleVolatileImage(wt, ht);
 	}
 
 	/**
-	 * Convenience method that calls the validate(...) method on the given
-	 * VolatileImage using the GraphicsConfiguration returned by
-	 * <code>((Graphics2D)g).getDeviceConfiguration()</code>.
+	 * Convenience method that calls the validate(...) method on the given VolatileImage using the
+	 * GraphicsConfiguration returned by <code>((Graphics2D)g).getDeviceConfiguration()</code>.
 	 * 
 	 * @param vi
 	 *            the VolatileImage to be validated.
 	 * @param g
 	 *            the Graphics object to use for the GraphicsConfiguration.
-	 * @return an integer value specified by the {@link GraphicsConfiguration}
-	 *         class.
+	 * @return an integer value specified by the {@link GraphicsConfiguration} class.
 	 * @see VolatileImage
 	 */
 	public static int validateVI(VolatileImage vi, Graphics g) {
 		Graphics2D g2d = (Graphics2D) g;
 		return vi.validate(g2d.getDeviceConfiguration());
 	}
-	
+
 	public enum ScaleQuality {
 		HIGH, NORM, SPEED;
 	}

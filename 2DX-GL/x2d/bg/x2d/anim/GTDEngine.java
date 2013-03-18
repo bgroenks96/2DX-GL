@@ -15,33 +15,27 @@
  */
 package bg.x2d.anim;
 
-import java.awt.EventQueue;
-import java.awt.Graphics2D;
-import java.lang.reflect.InvocationTargetException;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Iterator;
+import java.awt.*;
+import java.lang.reflect.*;
+import java.util.*;
 import java.util.List;
 
-import javax.swing.SwingUtilities;
+import javax.swing.*;
 
 /**
- * The base GTD animation engine provided by the 2DX library. Users are
- * encouraged to override the <code>drawFrame</code> method in particular to
- * implement project specific code. It is important, however, that this method
- * calls upon <code>runTasks</code> so that the registered Drawable objects can
- * be painted on-screen with each frame. <br>
+ * The base GTD animation engine provided by the 2DX library. Users are encouraged to override the
+ * <code>drawFrame</code> method in particular to implement project specific code. It is important,
+ * however, that this method calls upon <code>runTasks</code> so that the registered Drawable
+ * objects can be painted on-screen with each frame. <br>
  * <br>
- * GTD (Graphical Task Distribution Engine) submits its tasks to the
- * AWTEventQueue to be executed in order to avoid concurrent graphics
- * modification and adhere to Sun's recommended AWT/Swing programming behavior.
- * To ensure the best performance possible, it is recommended that you avoid
- * submitting other tasks to the AWTEventQueue while animating, so that the AWT
- * thread's execution of graphical tasks can be completed as quickly as
- * possible. <br>
+ * GTD (Graphical Task Distribution Engine) submits its tasks to the AWTEventQueue to be executed in
+ * order to avoid concurrent graphics modification and adhere to Sun's recommended AWT/Swing
+ * programming behavior. To ensure the best performance possible, it is recommended that you avoid
+ * submitting other tasks to the AWTEventQueue while animating, so that the AWT thread's execution
+ * of graphical tasks can be completed as quickly as possible. <br>
  * <br>
- * <b>Note: Do not use SwingUtilities.invokeAndWait() (or any other blocking
- * method) in any Drawable objects passed to an GTDEngine.</b>
+ * <b>Note: Do not use SwingUtilities.invokeAndWait() (or any other blocking method) in any Drawable
+ * objects passed to an GTDEngine.</b>
  * 
  * @author Brian
  * @since 2DX 1.0 (1st Edition)
@@ -49,22 +43,19 @@ import javax.swing.SwingUtilities;
 public abstract class GTDEngine implements Animator {
 
 	/**
-	 * The current ArrayList that represents the engine's registered Drawable
-	 * tasks.
+	 * The current ArrayList that represents the engine's registered Drawable tasks.
 	 */
 	protected final List<Drawable> tasks = Collections
 			.synchronizedList(new ArrayList<Drawable>());
 	/**
-	 * The boolean value that represents this engine's current blocking
-	 * configuration.
+	 * The boolean value that represents this engine's current blocking configuration.
 	 */
 	protected boolean wait = true;
 
 	/**
-	 * Orders this engine to draw an updated frame onto the given Graphics2D
-	 * object. Users are encouraged to override this method so that they can
-	 * implement their own procedure. It is important, however, that
-	 * <code>runTasks(Graphics2D)</code><br>
+	 * Orders this engine to draw an updated frame onto the given Graphics2D object. Users are
+	 * encouraged to override this method so that they can implement their own procedure. It is
+	 * important, however, that <code>runTasks(Graphics2D)</code><br>
 	 * is called in order to execute all the engine's registered Drawable tasks.
 	 * 
 	 * @param g2
@@ -77,9 +68,8 @@ public abstract class GTDEngine implements Animator {
 	}
 
 	/**
-	 * Registers the given Drawable with this engine to be drawn with call to
-	 * drawFrame(). This method is synchronized to prevent concurrent editing of
-	 * the internal task List.
+	 * Registers the given Drawable with this engine to be drawn with call to drawFrame(). This
+	 * method is synchronized to prevent concurrent editing of the internal task List.
 	 * 
 	 * @param d
 	 *            the Drawable to be registered
@@ -91,16 +81,15 @@ public abstract class GTDEngine implements Animator {
 	}
 
 	/**
-	 * Removes the passed Drawable from this engine's task list, so it will no
-	 * longer be executed in future update calls. If the Drawable is not
-	 * recognized, nothing happens and <code>false</code> is returned. This
-	 * method is synchronized to prevent concurrent editing of the internal task
-	 * List.
+	 * Removes the passed Drawable from this engine's task list, so it will no longer be executed in
+	 * future update calls. If the Drawable is not recognized, nothing happens and
+	 * <code>false</code> is returned. This method is synchronized to prevent concurrent editing of
+	 * the internal task List.
 	 * 
 	 * @param d
 	 *            the Drawable object to be removed.
-	 * @return <code>true</code> if the Drawable existed in the engine's task
-	 *         list, or <code>false</code> otherwise.
+	 * @return <code>true</code> if the Drawable existed in the engine's task list, or
+	 *         <code>false</code> otherwise.
 	 */
 	public synchronized boolean decommission(Drawable d) {
 		synchronized (tasks) {
@@ -109,9 +98,9 @@ public abstract class GTDEngine implements Animator {
 	}
 
 	/**
-	 * Configures this engine's blocking protocol. If set to true, the internal
-	 * runTasks() method will block until all tasks have finished executing.
-	 * Else, the method will return without waiting.<br>
+	 * Configures this engine's blocking protocol. If set to true, the internal runTasks() method
+	 * will block until all tasks have finished executing. Else, the method will return without
+	 * waiting.<br>
 	 * The default configuration is true.
 	 * 
 	 * @param block
@@ -132,8 +121,8 @@ public abstract class GTDEngine implements Animator {
 	}
 
 	/**
-	 * Fetches a copy of the engine's current task list. This method is
-	 * synchronized to prevent concurrent editing of the internal task List.
+	 * Fetches a copy of the engine's current task list. This method is synchronized to prevent
+	 * concurrent editing of the internal task List.
 	 * 
 	 * @return the ArrayList<Drawable> containing the registered Drawables.
 	 */
@@ -144,8 +133,8 @@ public abstract class GTDEngine implements Animator {
 	}
 
 	/**
-	 * Called to execute all currently registered Drawables. Blocks until all
-	 * tasks have completed, if this engine is configured to do so.<br>
+	 * Called to execute all currently registered Drawables. Blocks until all tasks have completed,
+	 * if this engine is configured to do so.<br>
 	 * This method cannot be overridden by subclasses.
 	 * 
 	 * @param g2

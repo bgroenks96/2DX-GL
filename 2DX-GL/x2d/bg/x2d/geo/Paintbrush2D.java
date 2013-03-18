@@ -16,19 +16,17 @@ import java.awt.*;
 import java.util.*;
 
 /**
- * Paintbrush provides an easy to use utility to draw figures and polygons.
- * Calling its <code>nextStroke</code> method will add the specified coordinate
- * to the object's list, and can be immediately drawn onto the canvas if the
- * boolean passed is true.<br>
- * The width and height parameters in the constructors should be the size of the
- * component of which you are painting on, while the Graphics parameter is the
- * Graphics object the component uses in its <code>paint</code> method.<br>
- * Paintbrush will allow you to draw arbitrary, open figures, however, they are
- * not able to be treated as objects and cannot be specifically redrawn/undrawn.
- * It will also allow you to create a Polygon from your figure which will
- * automatically close the first and last points with a straight line. The
- * <code>drawPolygon</code> method will return the Polygon object you have
- * created as well as draw/fill the shape on screen.<br>
+ * Paintbrush provides an easy to use utility to draw figures and polygons. Calling its
+ * <code>nextStroke</code> method will add the specified coordinate to the object's list, and can be
+ * immediately drawn onto the canvas if the boolean passed is true.<br>
+ * The width and height parameters in the constructors should be the size of the component of which
+ * you are painting on, while the Graphics parameter is the Graphics object the component uses in
+ * its <code>paint</code> method.<br>
+ * Paintbrush will allow you to draw arbitrary, open figures, however, they are not able to be
+ * treated as objects and cannot be specifically redrawn/undrawn. It will also allow you to create a
+ * Polygon from your figure which will automatically close the first and last points with a straight
+ * line. The <code>drawPolygon</code> method will return the Polygon object you have created as well
+ * as draw/fill the shape on screen.<br>
  * <br>
  * <code>
  * public void exampleMethod() {<br>
@@ -66,14 +64,14 @@ import java.util.*;
 public class Paintbrush2D extends FreeDraw2D {
 
 	ArrayList<int[]> coords;
-	
+
 	public Paintbrush2D() {
-		coords = new ArrayList<int[]> ();
+		coords = new ArrayList<int[]>();
 	}
 
 	@Deprecated
 	public Paintbrush2D(int width, int height, Graphics g) {
-		//super(g);
+		// super(g);
 		coords = new ArrayList<int[]>();
 	}
 
@@ -84,13 +82,12 @@ public class Paintbrush2D extends FreeDraw2D {
 	 * @param g
 	 */
 	public Paintbrush2D(int width, int height, Graphics2D g) {
-		//super(g);
+		// super(g);
 		coords = new ArrayList<int[]>();
 	}
 
 	/**
-	 * Adds the passed coordinate to the Paintbrush's list and optionally draws
-	 * it onto the canvas.
+	 * Adds the passed coordinate to the Paintbrush's list and optionally draws it onto the canvas.
 	 * 
 	 * @param x
 	 *            the x coordinate of the point
@@ -116,9 +113,9 @@ public class Paintbrush2D extends FreeDraw2D {
 	}
 
 	/**
-	 * Clears the currently stored coordinates list and sets it to the passed x
-	 * and y point arrays. Each position will correspond to its equivalent in
-	 * the opposite array. i.e. (xpoints[0],ypoints[0]) is a point.
+	 * Clears the currently stored coordinates list and sets it to the passed x and y point arrays.
+	 * Each position will correspond to its equivalent in the opposite array. i.e.
+	 * (xpoints[0],ypoints[0]) is a point.
 	 * 
 	 * @param xpoints
 	 *            An array of x points corresponding to an array of y points.
@@ -165,14 +162,14 @@ public class Paintbrush2D extends FreeDraw2D {
 	 * Draws a polygon using the currently set coordinates to the canvas.
 	 * 
 	 * @param fill
-	 *            determines whether or not to fill the drawn polygon, or just
-	 *            draw an outline.
+	 *            determines whether or not to fill the drawn polygon, or just draw an outline.
 	 * @return the constructed Polygon object.
 	 * @throws GeoException
 	 * @see java.awt.Polygon
 	 */
 
-	public Polygon drawPolygon(Graphics canvas, boolean fill) throws GeoException {
+	public Polygon drawPolygon(Graphics canvas, boolean fill)
+			throws GeoException {
 		if (coords.size() == 0) {
 			throw (new GeoException("Empty coordinate data."));
 		} else {
@@ -191,8 +188,8 @@ public class Paintbrush2D extends FreeDraw2D {
 	}
 
 	/**
-	 * Removes the last set point from the coordinate list. This will NOT undraw
-	 * anything from the canvas.
+	 * Removes the last set point from the coordinate list. This will NOT undraw anything from the
+	 * canvas.
 	 */
 
 	public void deleteLast() {
@@ -213,8 +210,7 @@ public class Paintbrush2D extends FreeDraw2D {
 	 * @param index
 	 * @return an int array representing a x and y coordinate.
 	 * @throws GeoException
-	 *             if argument is less than zero or greater than the current
-	 *             array capacity.
+	 *             if argument is less than zero or greater than the current array capacity.
 	 */
 
 	public int[] getStrokeAt(int index) throws GeoException {
@@ -231,7 +227,7 @@ public class Paintbrush2D extends FreeDraw2D {
 	}
 
 	/**
-	 * Clears this Paintbrush object's coordinate/stroke data.  Does nothing to the screen.
+	 * Clears this Paintbrush object's coordinate/stroke data. Does nothing to the screen.
 	 * 
 	 * @see #isCleared()
 	 */
@@ -241,8 +237,8 @@ public class Paintbrush2D extends FreeDraw2D {
 	}
 
 	/**
-	 * @return <code>true</code> if the internal coordinate ArrayList is empty.
-	 *         <code>false</code> otherwise.
+	 * @return <code>true</code> if the internal coordinate ArrayList is empty. <code>false</code>
+	 *         otherwise.
 	 */
 
 	public boolean isCleared() {

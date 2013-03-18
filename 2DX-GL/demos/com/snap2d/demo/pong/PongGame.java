@@ -29,19 +29,20 @@ import com.snap2d.world.event.*;
 
 /**
  * Base class for Pong demo
+ * 
  * @author Brian Groenke
- *
+ * 
  */
 public class PongGame {
 
-	Display disp;        // Our Display window object
-	RenderControl rc;    // Our handle for controlling the rendering engine
-	EntityManager em;    // Our managing facility for game Entities
-	World2D world;       // The world in which our game exists...
+	Display disp; // Our Display window object
+	RenderControl rc; // Our handle for controlling the rendering engine
+	EntityManager em; // Our managing facility for game Entities
+	World2D world; // The world in which our game exists...
 
 	InputDispatch input; // Our dispatcher for AWT input events
 
-	Ball ball;           // The Ball.  We will need to reuse this elsewhere in the class.
+	Ball ball; // The Ball. We will need to reuse this elsewhere in the class.
 
 	int lscore, rscore;
 
@@ -54,7 +55,8 @@ public class PongGame {
 
 		// initialize Display; Type is an inner type of Display
 		// the Display size doesn't really matter since we are using full-screen mode
-		disp = new Display(800, 600, Type.FULLSCREEN, GLConfig.getDefaultSystemConfig());
+		disp = new Display(800, 600, Type.FULLSCREEN,
+				GLConfig.getDefaultSystemConfig());
 		disp.setTitle("Snapdragon2D: Pong Demo");
 
 		// obtain a rendering handle from Display
@@ -67,33 +69,39 @@ public class PongGame {
 
 		Dimension dispSize = disp.getSize();
 		// create a new background Renderable for the game using the size of our Display.
-		GameBackground background = new GameBackground(dispSize.width, dispSize.height);
+		GameBackground background = new GameBackground(dispSize.width,
+				dispSize.height);
 
-		// add the background as a Renderable.  Note how it's added at position 0 because
+		// add the background as a Renderable. Note how it's added at position 0 because
 		// the background should be the FIRST thing rendered.
 		rc.addRenderable(background, 0);
 
 		// create a new World where the origin is the center of the screen.
-		// we will map pixels to world units 1:1 because there is a limited amount of physics or realistic
+		// we will map pixels to world units 1:1 because there is a limited amount of physics or
+		// realistic
 		// simulation we have to deal with in this demo.
-		world = new World2D(-dispSize.width / 2.0, dispSize.height / 2.0, dispSize.width, dispSize.height, 1);
+		world = new World2D(-dispSize.width / 2.0, dispSize.height / 2.0,
+				dispSize.width, dispSize.height, 1);
 
 		// now we start adding our entities.
 		// I have chosen for this simple game to manage their initial locations here....
 		// but this can easily be done within the Entity's constructor.
 
 		// add the ball first, because that's where we're assigning our listener
-		PointLD ballStart = world.screenToWorld(dispSize.width / 2, dispSize.height / 2);
+		PointLD ballStart = world.screenToWorld(dispSize.width / 2,
+				dispSize.height / 2);
 		ball = new Ball(ballStart, world, new ScoreListener());
 		em.register(ball, new BallCollisionListener());
 
-		Paddle p1 = new Paddle(world.screenToWorld(dispSize.width - Paddle.PADDLE_SIZE.width, 0), world, input, true);
+		Paddle p1 = new Paddle(world.screenToWorld(dispSize.width
+				- Paddle.PADDLE_SIZE.width, 0), world, input, true);
 		Paddle p2 = new Paddle(world.screenToWorld(0, 0), world, input, false);
 		em.register(p1);
 		em.register(p2);
 
 		// show the Display and tell the rendering handle to start the game loop.
-		// typically the Display should be shown first to ensure everything is ready to start rendering.
+		// typically the Display should be shown first to ensure everything is ready to start
+		// rendering.
 		disp.show();
 		rc.startRenderLoop();
 	}
@@ -108,10 +116,11 @@ public class PongGame {
 		 */
 		@Override
 		public void outOfBounds(Ball b) {
-			if(b.getScreenX() <= 0)
+			if (b.getScreenX() <= 0) {
 				rscore++;
-			else
+			} else {
 				lscore++;
+			}
 			b.setWorldLoc(0, 0);
 		}
 
@@ -159,7 +168,7 @@ public class PongGame {
 		GameBackground(int wt, int ht) {
 			this.wt = wt;
 			this.ht = ht;
-			
+
 			// create a roughly good enough scale for our score string locations.
 			sx = new Scale(wt / 1920.0);
 			sy = new Scale(ht / 1080.0);
@@ -176,7 +185,8 @@ public class PongGame {
 			g.fillRect(0, 0, wt, ht);
 			g.setColor(Color.WHITE);
 			g.setFont(new Font("Arial", Font.BOLD, sy.scale(48)));
-			int rwt = (int) g.getFontMetrics().getStringBounds(SCORE_STR + rscore, g).getWidth();
+			int rwt = (int) g.getFontMetrics()
+					.getStringBounds(SCORE_STR + rscore, g).getWidth();
 			g.drawString(SCORE_STR + lscore, SCORE_X, SCORE_Y);
 			g.drawString(SCORE_STR + rscore, wt - SCORE_X - rwt, SCORE_Y);
 		}
@@ -210,7 +220,8 @@ public class PongGame {
 		 */
 		@Override
 		public void processKeyEvent(KeyEvent e) {
-			if(e.getID() == KeyEvent.KEY_PRESSED && e.getKeyCode() == KeyEvent.VK_ESCAPE) {
+			if (e.getID() == KeyEvent.KEY_PRESSED
+					&& e.getKeyCode() == KeyEvent.VK_ESCAPE) {
 				disp.dispose(); // fully dispose our Display on exit
 				System.exit(0);
 			}

@@ -24,17 +24,16 @@ public class Gravity extends Force {
 		ga = mpss;
 		initVectors();
 	}
-	
+
 	public Gravity() {
 		this(STANDARD);
 	}
-
 
 	private void initVectors() {
 		vecf = new Vector2f(0, ga);
 		vecd = new Vector2d(0, ga);
 	}
-	
+
 	@Override
 	/**
 	 * Gravity implementation does nothing.
@@ -62,11 +61,12 @@ public class Gravity extends Force {
 	}
 
 	/**
-	 * F = ma
-	 * The newton force exerted by gravity depends on the mass of the object.
-	 * Therefore, the force (in N) is determined by multiplying the given
-	 * mass value by the value of gravity's acceleration.
-	 * @param mass mass of the object in Kg (required).
+	 * F = ma The newton force exerted by gravity depends on the mass of the object. Therefore, the
+	 * force (in N) is determined by multiplying the given mass value by the value of gravity's
+	 * acceleration.
+	 * 
+	 * @param mass
+	 *            mass of the object in Kg (required).
 	 * @return the force exerted on the object with the given mass in Newtons (N).
 	 */
 	@Override
@@ -76,26 +76,35 @@ public class Gravity extends Force {
 
 	/**
 	 * Applies the forces of this Gravity object to the given Vector2f.
-	 * @param time seconds to accelerate the given vector
-	 * @param mass of the object in Kg.  Irrelevant for gravitational force.
-	 * @param vec velocity vector to be accelerated by Gravity.
+	 * 
+	 * @param time
+	 *            seconds to accelerate the given vector
+	 * @param mass
+	 *            of the object in Kg. Irrelevant for gravitational force.
+	 * @param vec
+	 *            velocity vector to be accelerated by Gravity.
 	 * @return the modified Vector2f object (allows for chain calls).
 	 */
 	@Override
-	public Vector2f applyTo(float time, float mass, Vector2f forceSum, Vector2f vec) {
+	public Vector2f applyTo(float time, float mass, Vector2f forceSum,
+			Vector2f vec) {
 		return vec.add(vecf.multNew(time));
 	}
 
 	/**
 	 * Applies the forces of this Gravity object to the given Vector2d.
-	 * @param time seconds to accelerate the given vector (assumed to be
-	 * velocity).
-	 * @param mass of the object in Kg.  Irrelevant for gravitational force.
-	 * @param vec velocity vector to be accelerated by Gravity.
+	 * 
+	 * @param time
+	 *            seconds to accelerate the given vector (assumed to be velocity).
+	 * @param mass
+	 *            of the object in Kg. Irrelevant for gravitational force.
+	 * @param vec
+	 *            velocity vector to be accelerated by Gravity.
 	 * @return the modified Vector2d object (allows for chain calls).
 	 */
 	@Override
-	public Vector2d applyTo(double time, double mass, Vector2d forceSum, Vector2d vec) {
+	public Vector2d applyTo(double time, double mass, Vector2d forceSum,
+			Vector2d vec) {
 		return vec.add(vecd.multNew(time));
 	}
 

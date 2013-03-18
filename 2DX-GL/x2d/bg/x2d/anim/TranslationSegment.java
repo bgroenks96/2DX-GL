@@ -15,8 +15,8 @@ package bg.x2d.anim;
 import java.awt.geom.*;
 
 /**
- * Segment that translates the AffineTransform the specified amounts on the x
- * and y axes for the specified amount of time.
+ * Segment that translates the AffineTransform the specified amounts on the x and y axes for the
+ * specified amount of time.
  * 
  * @author Brian Groenke
  * @since 2DX 1.0 (1st Edition)
@@ -28,8 +28,8 @@ public class TranslationSegment implements Segment {
 	private double dxint, dyint, hyint;
 
 	/**
-	 * Creates a new TranslationSegment that translates <code>deltax</code>
-	 * accross the x axis and <code>deltay</code> on the y axis.
+	 * Creates a new TranslationSegment that translates <code>deltax</code> accross the x axis and
+	 * <code>deltay</code> on the y axis.
 	 * 
 	 * @param deltax
 	 *            amount to translate on the x axis
@@ -54,8 +54,8 @@ public class TranslationSegment implements Segment {
 	}
 
 	/**
-	 * This implementation returns the magnitude of the vector formed by delta x
-	 * and delta y (aka the hypotenuse).
+	 * This implementation returns the magnitude of the vector formed by delta x and delta y (aka
+	 * the hypotenuse).
 	 */
 	@Override
 	public double getUpdateInterval() {

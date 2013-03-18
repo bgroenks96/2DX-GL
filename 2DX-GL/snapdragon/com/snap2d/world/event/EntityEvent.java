@@ -18,15 +18,15 @@ import com.snap2d.world.*;
 
 /**
  * @author Brian Groenke
- *
+ * 
  */
 public class EntityEvent extends EventObject {
-	
+
 	/**
 	 * 
 	 */
 	private static final long serialVersionUID = 8003284877529027936L;
-	
+
 	/**
 	 * @param source
 	 */

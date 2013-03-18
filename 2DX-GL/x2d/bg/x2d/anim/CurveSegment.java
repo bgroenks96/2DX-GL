@@ -12,7 +12,7 @@
 
 package bg.x2d.anim;
 
-import java.awt.geom.AffineTransform;
+import java.awt.geom.*;
 
 /**
  * 
@@ -49,8 +49,7 @@ public class CurveSegment implements Segment {
 	}
 
 	/**
-	 * Bezier curves are neither linear nor a function. Thus, update intervals
-	 * are undefined.
+	 * Bezier curves are neither linear nor a function. Thus, update intervals are undefined.
 	 * 
 	 * @return {@link Segment.INTERVAL_UNDEF}
 	 */

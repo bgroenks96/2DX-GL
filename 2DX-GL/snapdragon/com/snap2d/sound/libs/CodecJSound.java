@@ -22,10 +22,11 @@ import javax.sound.sampled.*;
 import paulscode.sound.*;
 
 /**
- * Implementation of ICodec from the PaulsCode Sound System library for all JavaSound supported file formats.
- * This class simply utilizes the JavaSound API's pre-existing codecs.
+ * Implementation of ICodec from the PaulsCode Sound System library for all JavaSound supported file
+ * formats. This class simply utilizes the JavaSound API's pre-existing codecs.
+ * 
  * @author Brian Groenke
- *
+ * 
  */
 public class CodecJSound implements ICodec {
 
@@ -36,8 +37,9 @@ public class CodecJSound implements ICodec {
 	@Override
 	public void cleanup() {
 		try {
-			if(audioIn != null)
+			if (audioIn != null) {
 				audioIn.close();
+			}
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
@@ -62,10 +64,11 @@ public class CodecJSound implements ICodec {
 
 	@Override
 	public AudioFormat getAudioFormat() {
-		if(audioIn != null)
+		if (audioIn != null) {
 			return audioIn.getFormat();
-		else
+		} else {
 			return null;
+		}
 	}
 
 	@Override
@@ -103,7 +106,7 @@ public class CodecJSound implements ICodec {
 
 	@Override
 	public SoundBuffer read() {
-		if(audioIn == null || audioIn.getFormat() == null) {
+		if (audioIn == null || audioIn.getFormat() == null) {
 			System.err.println("CodecJSound: null stream/format");
 			return null;
 		}
@@ -113,29 +116,31 @@ public class CodecJSound implements ICodec {
 			buff = new byte[SoundSystemConfig.getStreamingBufferSize()];
 			int read = 0, tot = 0;
 			boolean shouldBreak = false;
-			while(!endOfStream() && tot < buff.length) {
+			while (!endOfStream() && tot < buff.length) {
 				sync.acquire();
 				try {
 					read = audioIn.read(buff, tot, buff.length - read);
-					if(read <= 0) {
+					if (read <= 0) {
 						eos = true;
 						shouldBreak = true;
 					}
-					tot+=read;
+					tot += read;
 				} catch (IOException e) {
 					e.printStackTrace();
 				} finally {
 					sync.release();
 				}
-				
-				if(shouldBreak)
+
+				if (shouldBreak) {
 					break;
+				}
 			}
 
-			if(tot <= 0)
+			if (tot <= 0) {
 				return null;
-			else if(tot < buff.length)
+			} else if (tot < buff.length) {
 				buff = trimArray(buff, tot);
+			}
 		} catch (InterruptedException e1) {
 			e1.printStackTrace();
 		}
@@ -144,14 +149,15 @@ public class CodecJSound implements ICodec {
 
 	@Override
 	public SoundBuffer readAll() {
-		if(audioIn == null || audioIn.getFormat() == null) {
+		if (audioIn == null || audioIn.getFormat() == null) {
 			System.err.println("CodecJSound: null stream/format");
 			return null;
 		}
-		
-		if(endOfStream())
+
+		if (endOfStream()) {
 			return null;
-		
+		}
+
 		SoundBuffer buffer = null;
 		try {
 			AudioFormat format = audioIn.getFormat();
@@ -160,21 +166,27 @@ public class CodecJSound implements ICodec {
 			int fileSize = format.getChannels()
 					* (int) audioIn.getFrameLength()
 					* format.getSampleSizeInBits() / 8;
-			if(fileSize > 0) {
+			if (fileSize > 0) {
 				fullBuffer = new byte[fileSize];
 				int read = 0, tot = 0;
-				while((read=audioIn.read(fullBuffer, tot, fullBuffer.length - tot)) !=-1 && tot < SoundSystemConfig.getMaxFileSize())
-					tot+=read;
+				while ((read = audioIn.read(fullBuffer, tot, fullBuffer.length
+						- tot)) != -1
+						&& tot < SoundSystemConfig.getMaxFileSize()) {
+					tot += read;
+				}
 			} else {
-				byte[] smallBuffer = new byte[SoundSystemConfig.getFileChunkSize()];
+				byte[] smallBuffer = new byte[SoundSystemConfig
+						.getFileChunkSize()];
 				int read, tot = 0;
-				while((read=audioIn.read(smallBuffer)) != -1) {
-					tot+=read;
-					if(fullBuffer == null)
+				while ((read = audioIn.read(smallBuffer)) != -1) {
+					tot += read;
+					if (fullBuffer == null) {
 						fullBuffer = new byte[tot];
-					if(fullBuffer.length < tot) {
+					}
+					if (fullBuffer.length < tot) {
 						fullBuffer = Arrays.copyOf(fullBuffer, tot);
-						System.arraycopy(smallBuffer, 0, fullBuffer, fullBuffer.length - read - 1, read);
+						System.arraycopy(smallBuffer, 0, fullBuffer,
+								fullBuffer.length - read - 1, read);
 					}
 				}
 			}
@@ -196,8 +208,9 @@ public class CodecJSound implements ICodec {
 	}
 
 	private byte[] trimArray(byte[] bytes, int maxLen) {
-		if(maxLen <= 0 || bytes == null || bytes.length <= 0)
+		if (maxLen <= 0 || bytes == null || bytes.length <= 0) {
 			return null;
+		}
 		byte[] newArr = new byte[maxLen];
 		System.arraycopy(bytes, 0, newArr, 0, maxLen);
 		return newArr;

@@ -15,8 +15,8 @@ package bg.x2d.anim;
 import java.awt.geom.*;
 
 /**
- * Segment that rotates the AffineTransform a specified number of degrees, over
- * a specified amount of time and around an optional anchor point.
+ * Segment that rotates the AffineTransform a specified number of degrees, over a specified amount
+ * of time and around an optional anchor point.
  * 
  * @author Brian Groenke
  * @since 2DX 1.0 (1st Edition)
@@ -28,18 +28,16 @@ public class RotationSegment implements Segment {
 	private Point2D anchor;
 
 	/**
-	 * Creates a new RotationSegment that rotates <code>deltaTheta</code>
-	 * degrees for <code>duration</code> milliseconds around <code>anchor</code>
-	 * point.
+	 * Creates a new RotationSegment that rotates <code>deltaTheta</code> degrees for
+	 * <code>duration</code> milliseconds around <code>anchor</code> point.
 	 * 
 	 * @param deltaTheta
 	 *            the total degrees to rotate
 	 * @param duration
 	 *            the total time duration for the segment
 	 * @param anchor
-	 *            anchor point for the rotation; if null, the Graphics object
-	 *            default anchor will be used (usually the x,y coordinate of
-	 *            drawn objects).
+	 *            anchor point for the rotation; if null, the Graphics object default anchor will be
+	 *            used (usually the x,y coordinate of drawn objects).
 	 */
 	public RotationSegment(int deltaTheta, long duration, Point2D anchor) {
 		dtInt = (double) deltaTheta / duration;
@@ -83,7 +81,8 @@ public class RotationSegment implements Segment {
 		long diff = 0;
 		if (isValid() && (diff = curr - last) > 0) {
 			if (anchor != null) {
-				affine.rotate(Math.toRadians(dtInt * diff), anchor.getX(), anchor.getY());
+				affine.rotate(Math.toRadians(dtInt * diff), anchor.getX(),
+						anchor.getY());
 			} else {
 				affine.rotate(Math.toRadians(dtInt * diff));
 			}

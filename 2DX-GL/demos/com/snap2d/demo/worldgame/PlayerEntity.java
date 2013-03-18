@@ -22,7 +22,7 @@ import com.snap2d.world.*;
 
 /**
  * @author Brian Groenke
- *
+ * 
  */
 public class PlayerEntity extends Entity {
 
@@ -30,16 +30,18 @@ public class PlayerEntity extends Entity {
 	 * 
 	 */
 	private static final long serialVersionUID = 9092508303423927199L;
-	
+
 	public static final int SIZE = 50;
-	
+
 	private static final CollisionModel model;
-	private static final Vector2f FORWARD = new Vector2f(0, 10), RIGHT = new Vector2f(10, 0);
-	
+	private static final Vector2f FORWARD = new Vector2f(0, 10),
+			RIGHT = new Vector2f(10, 0);
+
 	int lx, ly;
-	
+
 	static {
-		model = new CollisionModel(new Ellipse2D.Double(0, 0, SIZE, SIZE), Color.RED, new AffineTransform(), true);
+		model = new CollisionModel(new Ellipse2D.Double(0, 0, SIZE, SIZE),
+				Color.RED, new AffineTransform(), true);
 	}
 
 	/**
@@ -56,7 +58,7 @@ public class PlayerEntity extends Entity {
 	 */
 	@Override
 	public void render(Graphics2D g, float interpolation) {
-		
+
 	}
 
 	/**
@@ -73,7 +75,7 @@ public class PlayerEntity extends Entity {
 	 */
 	@Override
 	public void onResize(Dimension oldSize, Dimension newSize) {
-		
+
 	}
 
 	/**
