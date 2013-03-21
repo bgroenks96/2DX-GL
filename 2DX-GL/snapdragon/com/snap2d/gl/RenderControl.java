@@ -16,21 +16,12 @@ import java.awt.*;
 import java.awt.RenderingHints.Key;
 import java.awt.event.*;
 import java.awt.image.*;
-import java.io.*;
 import java.util.*;
 import java.util.List;
 import java.util.concurrent.*;
 
-import org.bridj.*;
-
 import bg.x2d.*;
-import bg.x2d.ImageUtils;
-import bg.x2d.utils.*;
 
-import com.nativelibs4java.opencl.*;
-import com.nativelibs4java.opencl.CLMem.MapFlags;
-import com.nativelibs4java.opencl.CLMem.Usage;
-import com.nativelibs4java.util.*;
 import com.snap2d.*;
 
 /**
@@ -51,14 +42,12 @@ public class RenderControl {
 	public static int stopTimeout = 2000;
 
 	private static final long RESIZE_TIMER = (long) 1.0E8;
-	private static final String CL_PROG = CL_LIB_LOC + "/RenderingKernels.cl",
-			KERNEL1 = "render_px";
 
 	/**
 	 * Determines whether or not auto-resizing should be used. True by default.
 	 */
 	public volatile boolean auto = true;
-	
+
 	/**
 	 * True if hardware acceleration (VolatileImage) should be used, false otherwise.
 	 */
@@ -85,22 +74,12 @@ public class RenderControl {
 	protected Map<RenderingHints.Key, Object> renderOps;
 
 	private Semaphore loopChk = new Semaphore(1, true);
-	private volatile boolean fastRenderingMode;
-
-	// ----- JavaCL components -------- //
-	private CLProgram clProg;
-	private CLKernel renderKernel;
-	private CLQueue clQueue;
-	private CLContext clContext;
-	private CLBuffer<Integer> dataBuff, gBuff;
-	private Pointer<Integer> dPtr, gPtr;
-	private int[] globalWorkSizes;
-
-	// -------------------------------- //
 
 	/**
 	 * Creates a RenderControl object that can be used to render data to a Display. A Canvas object
-	 * is created internally with a managed BufferStrategy.
+	 * is created internally with a managed BufferStrategy.  RenderControl renders everything to a
+	 * VolatileImage back buffer before drawing to the Canvas, so creating the BufferStrategy with
+	 * 1-2 buffers is recommended for best performance.
 	 * 
 	 * @param buffs
 	 *            the number of buffers the BufferStrategy should be created with.
@@ -108,13 +87,6 @@ public class RenderControl {
 	protected RenderControl(int buffs) {
 		this.canvas = new Canvas();
 		this.buffs = buffs;
-
-		try {
-			initOpenCL();
-		} catch (IOException e1) {
-			System.err.println("[Snap2D] Error initializing OpenCL");
-			e1.printStackTrace();
-		}
 
 		renderOps = new HashMap<RenderingHints.Key, Object>();
 		loop = new RenderLoop();
@@ -183,24 +155,7 @@ public class RenderControl {
 	}
 
 	/**
-	 * Fast rendering mode will draw all Renderables to a hardware accelerated VolatileImage
-	 * and immediately draw it to screen.  This will usually result in a massive performance
-	 * boost over the normal rendering methods at the cost of post processing capabilities.
-	 * All effects that require direct pixel buffer access (i.e. gamma correction, per-pixel lighting,
-	 * etc) will not be active in fast rendering mode.
-	 * @param fastRender true if fast rendering mode should be enabled, false otherwise
-	 */
-	public void setFastRenderingMode(boolean fastRender) {
-		fastRenderingMode = fastRender;
-		System.out.println("[Snap2D] fast_rendering_mode=" + fastRenderingMode);
-	}
-	
-	public boolean isInFastRenderingMode() {
-		return fastRenderingMode;
-	}
-	
-	/**
-	 * Enable/disable hardware accelerated rendering of images. True by default.
+	 * Enable/disable hardware accelerated rendering on the back buffer. True by default.
 	 * 
 	 * @param accelerated
 	 */
@@ -224,7 +179,7 @@ public class RenderControl {
 		addQueue.clear();
 		delQueue.clear();
 		renderOps.clear();
-		pri.flush();
+		//pri.flush();
 		if (accBuff != null) {
 			accBuff.flush();
 		}
@@ -235,22 +190,10 @@ public class RenderControl {
 		pixelData = null;
 		canvas = null;
 		loop = null;
-		pri = null;
+		//pri = null;
 		accBuff = null;
 		autoResize = null;
 		taskCallback = null;
-
-		// Manually release OpenCL resources to ensure everything is cleaned up ASAP.
-		if(clContext != null) { // generally a sufficient check to see if OpenCL initialized correctly
-			clProg.release();
-			renderKernel.release();
-			clQueue.release();
-			clContext.release();
-			dataBuff.release();
-			gBuff.release();
-			dPtr.release();
-			gPtr.release();
-		}
 	}
 
 	/**
@@ -316,7 +259,9 @@ public class RenderControl {
 		}
 	}
 
+	@Deprecated
 	/**
+	 * No longer supported.
 	 * Enables/disables gamma correction on the rendered image.
 	 * 
 	 * @param enabled
@@ -325,11 +270,13 @@ public class RenderControl {
 		applyGamma = enabled;
 	}
 
+	@Deprecated
 	/**
+	 * No longer supported.
 	 * @return true if gamma correction is enabled, false otherwise.
 	 */
 	public boolean isGammaEnabled() {
-		return applyGamma && !fastRenderingMode;
+		return applyGamma;
 	}
 
 	/**
@@ -446,8 +393,6 @@ public class RenderControl {
 			.getRuntime().availableProcessors(), new RenderThreadFactory());
 	ArrayList<RenderRow> rowCache = new ArrayList<RenderRow>();
 
-	int[] testArr;
-
 	/**
 	 * Internal method that is called by RenderLoop to draw rendered data to the screen. The back
 	 * buffer's data is copied to the main image which, if hardware acceleration is enabled, is
@@ -469,101 +414,51 @@ public class RenderControl {
 			return;
 		}
 
-		int priHeight = pri.getHeight();
-
 		Graphics2D g = (Graphics2D) bs.getDrawGraphics();
 		g.setRenderingHints(renderOps);
 		g.setColor(CANVAS_BACK);
 		g.fillRect(0, 0, canvas.getWidth(), canvas.getHeight());
 		try {
-			
-			if (fastRenderingMode) {
-				// Check the status of the VolatileImage and update/re-create it if neccessary.
-				if (accBuff == null || accBuff.getWidth() != pri.getWidth()
-						|| accBuff.getHeight() != pri.getHeight()) {
-					accBuff = ImageUtils.createVolatileImage(pri.getWidth(),
-							pri.getHeight());
-					accBuff.setAccelerationPriority(1.0f);
-				}
-				int stat = 0;
-				do {
-					if ((stat = ImageUtils.validateVI(accBuff, g)) != VolatileImage.IMAGE_OK) {
-						if (stat == VolatileImage.IMAGE_INCOMPATIBLE) {
-							accBuff = ImageUtils.createVolatileImage(
-									pri.getWidth(), pri.getHeight());
-							accBuff.setAccelerationPriority(1.0f);
-						}
-					}
 
-					Graphics2D img = accBuff.createGraphics();
-					for (Renderable r : renderables) {
-						r.render(img, interpolation);
-					}
-					img.dispose();
-				} while (accBuff.contentsLost());
-				
-				g.drawImage(accBuff, 0, 0, null);
-			} else {
-				// If acceleration is now disabled but was previously enabled, release system
-				// resources held by
-				// VolatileImage and set the reference to null.
-				if (accBuff != null) {
-					accBuff.flush();
-					accBuff = null;
-				}
-				
-				Graphics2D g2 = pri.createGraphics();
-				for (Renderable r : renderables) {
-					r.render(g2, interpolation);
-				}
-				g2.dispose();
-				
-				if (clContext != null) {
-					Pointer<Integer> dPtr = dataBuff.map(clQueue, MapFlags.Write);
-					dPtr.setInts(pixelData);
-					dataBuff.unmap(clQueue, dPtr);
-					renderKernel.setArgs(pixelData.length, (applyGamma) ? 1 : 0,
-							dataBuff, gBuff);
-					CLEvent exec = renderKernel.enqueueNDRange(clQueue,
-							globalWorkSizes);
-					dPtr = dataBuff.map(clQueue, MapFlags.Read, exec);
-					dPtr.getInts(pixelData);
-					dataBuff.unmap(clQueue, dPtr);
-				} else {
-					Future<?> finalRow = null;
-					for (int y = 0; y < priHeight; y++) {
-
-						if (y >= priHeight || y < 0) {
-							continue;
-						}
-
-						if (y >= rowCache.size()) {
-							rowCache.add(new RenderRow(y));
-						}
-						Future<?> task = renderPool.submit(rowCache.get(y));
-						if (y == priHeight - 1) {
-							finalRow = task;
-						}
-					}
-
-					while (!finalRow.isDone()) {
-						;
-					}
-				}
-				
-				g.drawImage(pri, 0, 0, null);
+			// Check the status of the VolatileImage and update/re-create it if necessary.
+			if (accBuff == null || accBuff.getWidth() != canvas.getWidth()
+					|| accBuff.getHeight() != canvas.getHeight()) {
+				accBuff = ImageUtils.createVolatileImage(canvas.getWidth(),
+						canvas.getHeight());
+				accBuff.setAccelerationPriority((accelerated) ? 1.0f:0.0f);
 			}
+			int stat = 0;
+			do {
+				if ((stat = ImageUtils.validateVI(accBuff, g)) != VolatileImage.IMAGE_OK) {
+					if (stat == VolatileImage.IMAGE_INCOMPATIBLE) {
+						accBuff = ImageUtils.createVolatileImage(
+								canvas.getWidth(), canvas.getHeight());
+						accBuff.setAccelerationPriority((accelerated) ? 1.0f:0.0f);
+					}
+				}
+
+				Graphics2D img = accBuff.createGraphics();
+				for (Renderable r : renderables) {
+					r.render(img, interpolation);
+				}
+				img.dispose();
+			} while (accBuff.contentsLost());
+
+			g.drawImage(accBuff, 0, 0, null);
 		} finally {
 			g.dispose();
 		}
-		
+
 		if (!bs.contentsLost() && canvas.getParent() != null) {
 			bs.show();
 		}
 	}
 
 	/**
-	 * Used in concurrent rendering.
+	 * Not currently used - replaced
+	 * by faster, direct Volatile Image rendering.  As of build 102,
+	 * the Snapdragon2D Java2D rendering engine no longer supports per-pixel
+	 * post processing.
 	 * 
 	 * @author Brian Groenke
 	 */
@@ -611,6 +506,7 @@ public class RenderControl {
 
 	}
 
+	/*
 	private void initOpenCL() throws IOException {
 		if(!Boolean.getBoolean("com.snap2d.gl.opencl"))
 			return;
@@ -636,38 +532,7 @@ public class RenderControl {
 		System.out.println("[Snap2D] Initialized " + platform.getName() + " "
 				+ platform.getVersion());
 	}
-
-	/**
-	 * Instantiates the BufferedImage used for drawing onto the screen.
-	 * 
-	 * @param wt
-	 * @param ht
 	 */
-	private void createImages(int wt, int ht) {
-
-		pri = ImageUtils.getNativeImage(wt, ht);
-		if (!(pri.getRaster().getDataBuffer() instanceof DataBufferInt)) {
-			pri = new BufferedImage(wt, ht, BufferedImage.TYPE_INT_ARGB_PRE);
-		}
-		
-		pri.setAccelerationPriority((accelerated) ? 1.0f:0.0f);
-
-		pixelData = ColorUtils.getImageData(pri);
-
-		if(clContext == null)
-			return;
-
-		if(dPtr != null)
-			dPtr.release();
-
-		if(dataBuff != null)
-			dataBuff.release();
-
-		dPtr = Pointer.allocateInts(pixelData.length).order(
-				clContext.getByteOrder());
-		dataBuff = clContext.createBuffer(Usage.InputOutput, dPtr, false);
-		globalWorkSizes = new int[] { pixelData.length };
-	}
 
 	/**
 	 * Loop where render/update logic is executed.
@@ -781,13 +646,6 @@ public class RenderControl {
 					if (updateGamma) {
 						gammaTable.setGamma(gamma);
 						updateGamma = false;
-
-						if(clContext != null) {
-							Pointer<Integer> gPtr = gBuff.map(clQueue,
-									MapFlags.Write);
-							gPtr.setInts(gammaTable.getTable());
-							gBuff.unmap(clQueue, gPtr);
-						}
 					}
 
 					double now = System.nanoTime();
@@ -797,10 +655,6 @@ public class RenderControl {
 						if (initSize == null) {
 							initSize = new Dimension(canvas.getWidth(),
 									canvas.getHeight());
-						}
-
-						if (pri == null) {
-							createImages(canvas.getWidth(), canvas.getHeight());
 						}
 
 						int updateCount = 0;
@@ -912,7 +766,6 @@ public class RenderControl {
 				ht = 1;
 			}
 
-			createImages(wt, ht);
 			if (auto) {
 				Iterator<Renderable> itr = rtasks.listIterator();
 				while (itr.hasNext()) {
@@ -947,3 +800,42 @@ public class RenderControl {
 		}
 	}
 }
+
+
+/*
+// If acceleration is now disabled but was previously enabled, release system
+// resources held by
+// VolatileImage and set the reference to null.
+if (accBuff != null) {
+	accBuff.flush();
+	accBuff = null;
+}
+
+Graphics2D g2 = pri.createGraphics();
+for (Renderable r : renderables) {
+	r.render(g2, interpolation);
+}
+g2.dispose();
+
+Future<?> finalRow = null;
+for (int y = 0; y < priHeight; y++) {
+
+	if (y >= priHeight || y < 0) {
+		continue;
+	}
+
+	if (y >= rowCache.size()) {
+		rowCache.add(new RenderRow(y));
+	}
+	Future<?> task = renderPool.submit(rowCache.get(y));
+	if (y == priHeight - 1) {
+		finalRow = task;
+	}
+}
+
+while (!finalRow.isDone()) {
+	;
+}
+
+g.drawImage(pri, 0, 0, null);
+*/
