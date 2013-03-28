@@ -1,5 +1,5 @@
 /*
- * Copyright © 2011-2013 Brian Groenke
+ * Copyright � 2011-2013 Brian Groenke
  * All rights reserved.
  * 
  *  This file is part of the 2DX Graphics Library.
@@ -16,6 +16,7 @@
 package bg.x2d;
 
 import java.io.*;
+import java.lang.reflect.*;
 import java.net.*;
 import java.util.*;
 
@@ -52,7 +53,8 @@ public abstract class Local {
 	JVM_X86 = "x86", NATIVE_WIN32 = "/win32", NATIVE_WIN64 = "/win64",
 			NATIVE_LINUX32 = "/linux32", NATIVE_LINUX64 = "/linux64",
 			NATIVE_BSD32 = "/freebsd32", NATIVE_BSD64 = "/freebsd64",
-			NATIVE_MAC32 = "/mac32", NATIVE_MAC64 = "/mac64";
+			NATIVE_MAC32 = "/mac32", NATIVE_MAC64 = "/mac64", NATIVE_SOLARIS32 = "/solaris32",
+			NATIVE_SOLARIS64 = "/solaris64";
 
 	private static String[] nativeSupported;
 
@@ -222,9 +224,46 @@ public abstract class Local {
 	public static String getNativeLibraryLocation() {
 		return nativeLib;
 	}
+	
+	/**
+	 * Returns the current platform's directory name for native libraries.
+	 * Used both by 2DX native libraries and third party native dependencies.
+	 * @return
+	 */
+	public static String getNativeLibraryPlatform() {
+		return current;
+	}
 
 	public static boolean isNativeCodeSupported() {
 		return Arrays.binarySearch(nativeSupported, current) >= 0;
+	}
+	
+	/**
+	 * Adds the given path string to the "java.library.path" system property.
+	 * This method is sort of a hack, as it utilizes Java Reflections to set
+	 * an field used internally in the java.lang.ClassLoader system class.
+	 * This allows the original path variable loaded at runtime to be changed,
+	 * as well as setting the external system property.
+	 * @param s
+	 * @throws IOException
+	 */
+	public static void addToLibPath(String s) throws IOException {
+		try {
+			// This enables the java.library.path to be modified at runtime
+			// From a Sun engineer at http://forums.sun.com/thread.jspa?threadID=707176
+			Field field = ClassLoader.class.getDeclaredField("usr_paths");
+			field.setAccessible(true);
+			String[] paths = (String[]) field.get(null);
+			String[] tmp = new String[paths.length+1];
+			System.arraycopy(paths, 0, tmp, 0, paths.length);
+			tmp[paths.length] = s;
+			field.set(null, tmp);
+			System.setProperty("java.library.path", System.getProperty("java.library.path") + File.pathSeparator + s);
+		} catch (IllegalAccessException e) {
+			throw new IOException("Failed to get permissions to set library path");
+		} catch (NoSuchFieldException e) {
+			throw new IOException("Failed to get field handle to set library path");
+		}
 	}
 
 	/**
@@ -263,7 +302,7 @@ public abstract class Local {
 
 	private static synchronized void checkNativeSupport() {
 
-		final int SYS_COUNT = 8; // this must be changed if platforms are added/removed.
+		final int SYS_COUNT = 10; // this must be changed if platforms are added/removed.
 
 		HashSet<String> supported = new HashSet<String>();
 		for (int i = 0; i < SYS_COUNT; i++) {
@@ -321,6 +360,19 @@ public abstract class Local {
 			case 7:
 				platform = NATIVE_MAC64;
 				if (getPlatform().toLowerCase().contains("mac")
+						&& getJavaArch().equals(JVM_X64)) {
+					current = platform;
+				}
+			case 8:
+				platform = NATIVE_SOLARIS32;
+				if (getPlatform().toLowerCase().contains("solaris")
+						&& getJavaArch().equals(JVM_X86)) {
+					current = platform;
+				}
+				break;
+			case 9:
+				platform = NATIVE_SOLARIS64;
+				if (getPlatform().toLowerCase().contains("solaris")
 						&& getJavaArch().equals(JVM_X64)) {
 					current = platform;
 				}

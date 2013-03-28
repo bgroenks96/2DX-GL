@@ -1,0 +1,25 @@
+The 2DX Project Changelog
+
+Alpha dev:
+-------------------
+init-build=0000-103
+commit-build=
+
+2DX-GL:
+  Local.java-
+    -Added 'addToLibPath' method; uses reflections hack to modify system classloader path variable programmatically.
+    -Added 'getNativeLibraryPlatform' method; returns current platform directory string for native libraries
+    -Added native platform variable for Solaris
+Snapdragon2D:
+  Sound2D.java-
+    -Updated import for new CodecJSound package location
+  GLDisplay-
+    -Initial work on JOGL Display
+  GLRenderControl-
+    -Initial work on JOGL Rendering handle
+  JOGLNativeLibLoader.java-
+    -Used to load native JOGL JARs from jogl-native JAR bundle.
+  GLConfig-
+    -Removed USE_OPEN_CL property and OpenCL support check method
+  JOGLConfig-
+    -Copied from GLConfig and modified for applicable JOGL options

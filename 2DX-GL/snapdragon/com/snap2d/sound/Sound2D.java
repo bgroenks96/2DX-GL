@@ -16,8 +16,6 @@ import paulscode.sound.*;
 import paulscode.sound.codecs.*;
 import paulscode.sound.libraries.*;
 
-import com.snap2d.sound.libs.*;
-
 /**
  * Main class for the Snapdragon2D Sound API. Allows you to initialize and shutdown the sound
  * system, as well as configure master-settings about Sound processing. You can obtain an instance

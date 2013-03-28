@@ -16,8 +16,6 @@ import java.util.*;
 
 import bg.x2d.*;
 
-import com.nativelibs4java.opencl.*;
-
 /**
  * Object that represents configuration data for Java2D rendering.
  * 
@@ -47,8 +45,6 @@ public class GLConfig {
 	public static GLConfig getDefaultSystemConfig() {
 		String os = Local.getPlatform().toLowerCase();
 		GLConfig config = new GLConfig();
-		if(!checkOpenCLSupport())
-			config.set(Property.SNAP2D_USE_OPENCL, "false");
 		
 		if (os.contains("windows")) {
 			config.set(Property.USE_D3D, "true");
@@ -65,16 +61,6 @@ public class GLConfig {
 		} else {
 			return config;
 		}
-	}
-	
-	public static boolean checkOpenCLSupport() {
-		if (JavaCL.listPlatforms() == null
-				|| JavaCL.listPlatforms().length == 0) {
-			System.out.println("[Snap2D] No supported OpenCL drivers detected");
-			return false;
-		}
-		
-		return true;
 	}
 
 	/**
@@ -158,17 +144,7 @@ public class GLConfig {
 		 * <br/><br/>
 		 * Sets whether or not FPS and TPS will be printed to stdout on each frame.
 		 */
-		SNAP2D_PRINT_RENDER_STAT("com.snap2d.gl.printframes", "true"),
-		
-		/**
-		 * Boolean (default=false)
-		 * <br/><br/>
-		 * Sets whether or not Snapdragon2D should use OpenCL to offload
-		 * some rendering computations to the GPU.  For some applications and/or on
-		 * some systems, the massive computation speed boost may not be worth the RAM-VRAM
-		 * transfer overhead.
-		 */
-		SNAP2D_USE_OPENCL("com.snap2d.gl.opencl", "false");
+		SNAP2D_PRINT_RENDER_STAT("com.snap2d.gl.printframes", "true");
 
 		private String property, defValue;
 

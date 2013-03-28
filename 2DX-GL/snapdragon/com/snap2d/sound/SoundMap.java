@@ -48,7 +48,7 @@ public class SoundMap {
 	 */
 	ATTENUATION_LINEAR = SoundSystemConfig.ATTENUATION_LINEAR;
 
-	static final int Z = 20;
+	static final int Z = -20;
 
 	static Point2D.Float listener;
 
