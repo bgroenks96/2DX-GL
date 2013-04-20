@@ -27,7 +27,8 @@ To-do (next commit):
 Snapdragon2D
 Project dev status: Alpha
 To-do (next commit):
--Built-in, basic UI features (implementations of RenderedComponent)
+-Sprite collision model editor
+-OpenGL rendering engine (via JOGL 2.0 libraries)
 -Lighting engine
 -Snapdragon2D physics package
 
