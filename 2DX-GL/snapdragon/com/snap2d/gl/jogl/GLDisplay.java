@@ -63,6 +63,7 @@ public class GLDisplay {
 				frame.setSize(SCREEN);
 		}
 		frame.add(canvas);
+		frame.setIgnoreRepaint(false);
 	}
 	
 	public GLRenderControl getRenderControl() {
@@ -129,10 +130,39 @@ public class GLDisplay {
 	}
 	
 	public static void main(String[] args) {
-		GLDisplay gldisp = new GLDisplay(800, 600, Type.FULLSCREEN, new JOGLConfig());
+		GLDisplay gldisp = new GLDisplay(800, 600, Type.WINDOWED, new JOGLConfig());
 		gldisp.setExitOnClose(true);
 		gldisp.show();
-		gldisp.getRenderControl().setRenderActive(true);
+		GLRenderControl rc = gldisp.getRenderControl();
+		rc.setRenderActive(true);
+	}
+	
+	static class TestObj implements GLRenderable {
+
+		/**
+		 *
+		 */
+		@Override
+		public void render(GLHandle handle, float interpolation) {
+			
+		}
+
+		/**
+		 *
+		 */
+		@Override
+		public void update(long nanoTimeNow, long nanosSinceLastUpdate) {
+			
+		}
+
+		/**
+		 *
+		 */
+		@Override
+		public void onResize(Dimension oldSize, Dimension newSize) {
+			
+		}
+		
 	}
 
 }

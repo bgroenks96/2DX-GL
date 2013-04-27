@@ -17,7 +17,7 @@ import java.util.*;
 import bg.x2d.*;
 
 /**
- * Object that represents configuration data for Java2D rendering.
+ * Graphics Library Config - Object that represents configuration data for Java2D rendering.
  * 
  * @author Brian Groenke
  * 
@@ -144,7 +144,15 @@ public class GLConfig {
 		 * <br/><br/>
 		 * Sets whether or not FPS and TPS will be printed to stdout on each frame.
 		 */
-		SNAP2D_PRINT_RENDER_STAT("com.snap2d.gl.printframes", "true");
+		SNAP2D_PRINT_RENDER_STAT("com.snap2d.gl.printframes", "true"),
+		
+		/**
+		 * Boolean (default=true)
+		 * <br/><br/>
+		 * If true, initialization and modification to the rendering engine configuration
+		 * will be printed to stdout.
+		 */
+		SNAP2D_PRINT_J2D_CONFIG("com.snap2d.gl.printconfig", "true");
 
 		private String property, defValue;
 
@@ -158,6 +166,14 @@ public class GLConfig {
 			if (value != null) {
 				System.setProperty(property, value);
 			}
+		}
+		
+		public String getProperty() {
+			return property;
+		}
+		
+		public String getValue() {
+			return defValue;
 		}
 	}
 }

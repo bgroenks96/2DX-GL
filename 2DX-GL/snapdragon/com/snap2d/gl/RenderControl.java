@@ -23,6 +23,7 @@ import java.util.concurrent.*;
 import bg.x2d.*;
 
 import com.snap2d.*;
+import com.snap2d.gl.GLConfig.Property;
 
 /**
  * Acts as a rendering handle to a Display. This class handles the core game update/render thread.
@@ -106,6 +107,8 @@ public class RenderControl {
 				setRenderActive(false);
 			}
 		});
+		
+		printInitReport();
 	}
 
 	public void startRenderLoop() {
@@ -306,7 +309,7 @@ public class RenderControl {
 
 	/**
 	 * Registers the Renderable object with this RenderControl to be rendered on screen. The
-	 * render() method will be called and the RenderData object used to show the image on screen.
+	 * render(Graphics2D,float) method will be called to draw to the Graphics context.
 	 * 
 	 * @param r
 	 *            the Renderable object to be called when rendering.
@@ -572,7 +575,7 @@ public class RenderControl {
 						if (Local.getPlatform().toLowerCase()
 								.contains("windows")
 								&& Boolean
-								.getBoolean("com.snap2d.gl.force_timer")) {
+								.getBoolean(Property.SNAP2D_WINDOWS_HIGH_RES_TIMER.getProperty())) {
 							System.out
 							.println("[Snap2D] started windows sleeper daemon");
 							Thread.sleep(Long.MAX_VALUE);
@@ -592,12 +595,13 @@ public class RenderControl {
 						try {
 							Thread.sleep(800);
 							if (!Boolean
-									.getBoolean("com.snap2d.gl.printframes")) {
+									.getBoolean(Property.SNAP2D_PRINT_RENDER_STAT.getProperty())) {
 								continue;
 							}
 							while (!printFrames) {
 								;
 							}
+							System.out.print("[Snap2D] ");
 							System.out.println(fps + " fps " + tps + " ticks");
 							printFrames = false;
 						} catch (InterruptedException e) {
@@ -797,6 +801,15 @@ public class RenderControl {
 			t.setPriority(Thread.MAX_PRIORITY);
 			nthreads++;
 			return t;
+		}
+	}
+	
+	private void printInitReport() {
+		if(!Boolean.getBoolean(Property.SNAP2D_PRINT_J2D_CONFIG.getProperty()))
+			return;
+		Logger.println("initialized Java2D graphics pipeline");
+		for(GLConfig.Property glp:Property.values()) {
+			Logger.println(glp.getProperty()+"="+glp.getValue());
 		}
 	}
 }

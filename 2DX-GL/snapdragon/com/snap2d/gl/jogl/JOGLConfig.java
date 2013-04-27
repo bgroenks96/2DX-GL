@@ -77,13 +77,29 @@ public class JOGLConfig {
 		 * Boolean (default=true)
 		 */
 		NO_ERASE_BACKGROUND("sun.awt.noerasebackground", "true"),
+		
+		/**
+		 * Boolean (default=true) * MS-Windows only *
+		 * <br/><br/>
+		 * Sets whether or not Snapdragon2D should try to force Windows to use a
+		 * high resolution timer by starting an indefinite sleeping thread.
+		 */
+		SNAP2D_WINDOWS_HIGH_RES_TIMER("com.snap2d.gl.force_timer", "true"),
 
 		/**
 		 * Boolean (default=true)
 		 * <br/><br/>
 		 * Sets whether or not FPS and TPS will be printed to stdout on each frame.
 		 */
-		SNAP2D_PRINT_RENDER_STAT("com.snap2d.gl.printframes", "true");
+		SNAP2D_PRINT_RENDER_STAT("com.snap2d.gl.printframes", "true"),
+		
+		/**
+		 * Boolean (default=true)
+		 * <br/><br/>
+		 * If true, initialization and modifications to the OpenGL rendering engine
+		 * configuration will be printed to stdout.
+		 */
+		SNAP2D_PRINT_GL_CONFIG("com.snap2d.gl.jogl.printconfig", "true");
 
 		private String property, defValue;
 
@@ -97,6 +113,14 @@ public class JOGLConfig {
 			if (value != null) {
 				System.setProperty(property, value);
 			}
+		}
+		
+		public String getProperty() {
+			return property;
+		}
+		
+		public String getValue() {
+			return defValue;
 		}
 	}
 }

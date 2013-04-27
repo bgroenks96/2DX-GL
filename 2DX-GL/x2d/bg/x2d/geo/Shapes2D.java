@@ -81,11 +81,13 @@ public abstract class Shapes2D {
 
 	public void draw(Graphics2D g) {
 		g.setPaint(paint);
+		g.translate(locx, locy);
 		if (filled) {
 			g.fillPolygon(shape);
 		} else {
 			g.drawPolygon(shape);
 		}
+		g.translate(-locx, -locy);
 	}
 
 	public Polygon getShape() {

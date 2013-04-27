@@ -31,6 +31,36 @@ public class GeoUtils {
 
 	private GeoUtils() {
 	}
+	
+	/**
+	 * Computes the intersection point between two lines, if one exists.
+	 * @param x1 a first x point of the first line
+	 * @param y1 a first y point of the first line
+	 * @param x2 a second x point of the first line
+	 * @param y2 a second y point of the first line
+	 * @param x3 a first x point of the second line
+	 * @param y3 a first y point of the second line
+	 * @param x4 a second x point of the second line
+	 * @param y4 a second y point of the second line
+	 * @return the intersection point, or null if one doesn't exist.
+	 */
+	public static PointLD lineIntersection(double x1, double y1, double x2, double y2, double x3, double y3, double x4, double y4) {
+		if(x2 - x1 == 0 || x4 - x3 == 0)
+			return null;
+		double m1 = (y2 - y1) / (x2 - x1);
+		double spx1 = m1 * -x1;
+		double yint1 = spx1 + y1;
+		double m2 = (y4 - y3) / (x4 - x3);
+		double spx2 = m2 * -x3;
+		double yint2 = spx2 + y3;
+		double nt = (yint1 < 0) ? yint2 + yint1 : yint2 - yint1;
+		double terms = (m2 < 0) ? m1 + m2 : m1 - m2;
+		if(terms == 0)
+			return null;
+		double xp = nt / terms;
+		double yp = m1 * xp + yint1;
+		return new PointLD(xp, yp);
+	}
 
 	/**
 	 * Finds the midpoint of the line segment connecting the two given points.

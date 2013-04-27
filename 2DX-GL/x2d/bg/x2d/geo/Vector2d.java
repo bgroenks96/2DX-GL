@@ -255,6 +255,23 @@ public class Vector2d {
 		checkPrecision();
 		return this;
 	}
+	
+	public Vector2d clamp(double min, double max) {
+		if(mag < min)
+			setFromPolar(min, angle);
+		if(mag > max)
+			setFromPolar(max, angle);
+		return this;
+	}
+	
+	public Vector2d clampNew(double min, double max) {
+		Vector2d copy = new Vector2d(this);
+		if(mag < min)
+			copy.setFromPolar(min, angle);
+		if(mag > max)
+			copy.setFromPolar(max, angle);
+		return copy;
+	}
 
 	public Point2D.Double applyTo(Point2D.Double p, double multiplier) {
 		return new Point2D.Double(p.x + (x * multiplier), p.y

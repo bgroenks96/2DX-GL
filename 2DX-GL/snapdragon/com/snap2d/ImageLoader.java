@@ -18,10 +18,14 @@ import java.io.*;
 import java.net.*;
 
 import javax.imageio.*;
+import javax.media.opengl.*;
 
 import bg.x2d.*;
 import bg.x2d.ImageUtils.ScaleQuality;
 import bg.x2d.utils.*;
+
+import com.jogamp.opengl.util.texture.*;
+import com.snap2d.gl.jogl.*;
 
 /**
  * Provides static utility methods for loading and scaling image resources.
@@ -30,6 +34,12 @@ import bg.x2d.utils.*;
  * 
  */
 public class ImageLoader {
+	
+	/*
+	 * File type wrappings for JOGL TextureIO constants.
+	 */
+	public static final String JPG = TextureIO.JPG, PNG = TextureIO.PNG, GIF = TextureIO.GIF,
+			TIFF = TextureIO.TIFF, PAM = TextureIO.PAM, PPM = TextureIO.PPM, DDS = TextureIO.DDS;
 
 	private ImageLoader() {
 	}
@@ -108,8 +118,19 @@ public class ImageLoader {
 			newSize.setSize(
 					img.getWidth() * (screen.getWidth() / prevDisp.getWidth()),
 					img.getHeight()
-							* (screen.getHeight() / prevDisp.getHeight()));
+					* (screen.getHeight() / prevDisp.getHeight()));
 		}
 		return ImageUtils.scaleImage(img, newSize, img.getType(), quality);
+	}
+
+	public static Texture2D loadTexture(URL url, String fileType, boolean mipmap) throws IOException {
+		Texture tex = null;
+		try {
+			tex = TextureIO.newTexture(url, mipmap, fileType);
+		} catch(GLException gl) {
+			System.err.println("[Snap2D] OpenGL error in loading texture:");
+			gl.printStackTrace();
+		}
+		return new Texture2D(tex);
 	}
 }

@@ -21,6 +21,7 @@ import bg.x2d.utils.*;
 
 /**
  * Allows for precise, efficient collision detection between two image-based entities.
+ * CollisionModel uses bitmask evaluation to determine if two models overlap in screen space.
  * 
  * @author Brian Groenke
  * 

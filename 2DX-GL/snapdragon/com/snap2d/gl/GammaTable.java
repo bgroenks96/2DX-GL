@@ -25,8 +25,6 @@ import bg.x2d.utils.*;
  */
 public class GammaTable {
 
-	public static final String CL_KERNEL_ID = "calc_gamma";
-
 	private static final float COLORS = 255;
 	private static final int TABLE_SIZE = 256;
 

@@ -79,6 +79,7 @@ class JOGLNativeLibLoader {
 			jarIn.closeEntry();
 			entry = jarIn.getNextJarEntry();
 		}
+		jarIn.close();
 		
 		return true;
 	}

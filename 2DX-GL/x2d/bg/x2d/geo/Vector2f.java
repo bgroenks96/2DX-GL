@@ -255,6 +255,23 @@ public class Vector2f {
 		checkPrecision();
 		return this;
 	}
+	
+	public Vector2f clamp(float min, float max) {
+		if(mag < min)
+			setFromPolar(min, angle);
+		if(mag > max)
+			setFromPolar(max, angle);
+		return this;
+	}
+	
+	public Vector2f clampNew(float min, float max) {
+		Vector2f copy = new Vector2f(this);
+		if(mag < min)
+			copy.setFromPolar(min, angle);
+		if(mag > max)
+			copy.setFromPolar(max, angle);
+		return copy;
+	}
 
 	public Point2D.Float applyTo(Point2D.Float p, float multiplier) {
 		return new Point2D.Float(p.x + (x * multiplier), p.y + (y * multiplier));
