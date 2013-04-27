@@ -27,7 +27,7 @@ To-do (next commit):
 Snapdragon2D
 Project dev status: Alpha
 To-do (next commit):
--Sprite collision model editor
+-SnapScript scripting language and execution engine
 -OpenGL rendering engine (via JOGL 2.0 libraries)
 -Lighting engine
 -Snapdragon2D physics package
@@ -36,3 +36,4 @@ Follow @The2DXProject on Twitter for real-time updates on development of the pro
 
 Additional credits:
     Snapdragon2D Sound API utilizes SoundSystem for Java by Paul Lamb [www.paulscode.com]
+    OpenGL renderer utilizes JOGL 2.0 by JogAmp [www.jogamp.org]
