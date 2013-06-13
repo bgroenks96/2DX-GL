@@ -1,5 +1,5 @@
 /*
- *  Copyright © 2011-2013 Brian Groenke
+ *  Copyright ï¿½ 2011-2013 Brian Groenke
  *  All rights reserved.
  * 
  *  This file is part of the 2DX Graphics Library.
@@ -13,6 +13,7 @@
 package com.snap2d.script;
 
 /**
+ * Contains static byte values used in the script's compiled, bytecode instruction set.
  * @author Brian Groenke
  *
  */
@@ -22,5 +23,8 @@ final class Bytecodes {
 
 	public static final byte END_CMD = 0x0, ALLOC_INT = 0x1, ALLOC_FLOAT = 0x2, ALLOC_STRING = 0x3, ALLOC_BOOL = 0x4, STORE_VAR = 0x5, 
 			REF_VAR = 0x6, INVOKE_FUNC = 0x7, INVOKE_JAVA_FUNC = 0x8, TYPE_INT = 0x9, TYPE_FLOAT = 0xA, TYPE_STRING = 0xB, TYPE_BOOL = 0xC,
-			IF = 0xD, TRUE = 0xE, FALSE = 0xF, SKIP = 0x10;
+			IF = 0xD, TRUE = 0xE, FALSE = 0xF, SKIP = 0x10, FOR_START = 0x11, FOR_COND = 0x12, FOR_OP = 0x13, ADD = 0x14, SUBTRACT = 0x15,
+			MULTIPLY = 0x16, DIVIDE = 0x17, POW = 0x18, SHIFT_LEFT = 0x19, SHIFT_RIGHT = 0x1A, EVAL = 0x1B, READ_INT = 0x1C,
+			READ_FLOAT = 0x1D, READ_OP = 0x1F, READ_STR = 0x20, STR_VAR = 0x21, STR_START = 0x22, REALLOC = 0x23, AND = 0x24, OR = 0x25,
+			RETURN = 0x26, END_COND = 0x27, ELSE_IF = 0x28, ELSE = 0x29;
 }

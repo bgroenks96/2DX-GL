@@ -59,9 +59,9 @@ public class Paddle extends Entity implements MouseEventClient, KeyEventClient {
 		this.useMouse = useMouse;
 
 		if (coll == null) {
-			coll = new CollisionModel(new Rectangle(0, 0, screenBounds.width,
-					screenBounds.height), Color.BLACK, new AffineTransform(),
-					true);
+			Point[] ptarr = new Point[] {new Point(0,0), new Point(0, screenBounds.height),
+					new Point(screenBounds.width, screenBounds.height), new Point(screenBounds.width, 0)};
+			coll = new CollisionModel(ptarr, 0, 0, world);
 		}
 	}
 
@@ -81,7 +81,7 @@ public class Paddle extends Entity implements MouseEventClient, KeyEventClient {
 			y = screenLoc.y;
 		} else {
 			wy = interpolate(wy, ly, interpolation); // interpolate with the last position
-			Point p = world.worldToScreen(wx, wy);
+			Point p = world.worldToScreen(wx, wy, worldBounds.getHeight());
 			x = p.x;
 			y = p.y;
 		}
@@ -110,12 +110,10 @@ public class Paddle extends Entity implements MouseEventClient, KeyEventClient {
 			applyVector(MOVE_VECTOR, 1);
 		}
 
-		if (worldLoc.getY() > world.getY()) {
-			setWorldLoc(getWorldX(), world.getY());
-		} else if (worldLoc.getY() - worldBounds.getHeight() < world.getY()
-				- world.getWorldHeight()) {
-			setWorldLoc(getWorldX(), world.getY() - world.getWorldHeight()
-					+ worldBounds.getHeight());
+		if (worldLoc.getY() < world.getY() - world.getWorldHeight()) {
+			setWorldLoc(getWorldX(), world.getY() - world.getWorldHeight());
+		} else if (worldLoc.getY() + worldBounds.getHeight() > world.getY()) {
+			setWorldLoc(getWorldX(), world.getY() - worldBounds.getHeight());
 		}
 	}
 

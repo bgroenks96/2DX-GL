@@ -389,8 +389,6 @@ public class GLRenderControl implements GLEventListener {
 	
 	float rot = 1.0f;
 	void renderTriangleTest(GL2 gl) {
-		gl.glMatrixMode(GL2.GL_MODELVIEW);
-		gl.glRotatef(rot, 0.0f, 0.0f, 1.0f);
 		gl.glBegin(GL2.GL_POLYGON);
 		gl.glColor3f(0, 0, 1.0f);
 		gl.glVertex2f(-0.9f, 0.1f);

@@ -12,8 +12,10 @@
 
 package bg.x2d.utils;
 
+import java.awt.*;
 import java.io.*;
 import java.net.*;
+import java.util.*;
 
 /**
  * Provides static general utility methods.
@@ -25,7 +27,7 @@ public class Utils {
 
 	public static final File TEMP_DIR = new File(
 			System.getProperty("java.io.tmpdir") + File.separator
-					+ ".com_snap2d_tmp");
+			+ ".com_snap2d_tmp");
 
 	static {
 		boolean chk = false;
@@ -53,7 +55,7 @@ public class Utils {
 						removeDirectory(TEMP_DIR, true);
 					} catch (FileNotFoundException e) {
 						System.err
-								.println("Snapdragon2D: failed to remove temp-dir");
+						.println("Snapdragon2D: failed to remove temp-dir");
 					}
 				}
 
@@ -149,6 +151,22 @@ public class Utils {
 		return outFile;
 	}
 
+	public static String readText(URL url) {
+		String text = null;
+		try {
+			BufferedReader br = new BufferedReader(new InputStreamReader(url.openStream()));
+			StringBuilder sb = new StringBuilder();
+			String next;
+			while((next=br.readLine()) != null) 
+				sb.append(next + System.getProperty("line.separator"));
+			br.close();
+			text = sb.toString();
+		} catch(IOException e) {
+			e.printStackTrace();
+		}
+		return text;
+	}
+
 	/**
 	 * Recursively removes all subfiles of the given directory and deletes it if desired.
 	 * 
@@ -224,5 +242,44 @@ public class Utils {
 		oos.writeObject(obj);
 		oos.close();
 		return bos.size();
+	}
+	
+	/**
+	 * Copies the contents of the given array into an array of the specified size.
+	 * @param array the array to be copied ("resized")
+	 * @param newSize the new size
+	 * @return
+	 */
+	@SuppressWarnings("unchecked")
+	public static <T> T[] resizeArray(T[] array, int newSize) {
+		return Arrays.copyOf(array, newSize);
+		/*
+		Class<T> type = (Class<T>) array.getClass();
+		T[] narr = (T[]) Array.newInstance(type, newSize);
+		for(int i=0;i<narr.length;i++) {
+			if(i < array.length)
+				narr[i] = array[i];
+			else
+				narr[i] = null;
+		}
+		return narr;
+		*/
+	}
+	
+	public static boolean urlExists(URL url) {
+		try {
+			url.openStream();
+			return true;
+		} catch (IOException e) {
+			return false;
+		}
+	}
+	
+	public static Dimension getScreenSize() {
+		return Toolkit.getDefaultToolkit().getScreenSize();
+	}
+	
+	public static int getScreenResolution() {
+		return Toolkit.getDefaultToolkit().getScreenResolution();
 	}
 }

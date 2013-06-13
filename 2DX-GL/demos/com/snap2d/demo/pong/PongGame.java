@@ -78,15 +78,13 @@ public class PongGame {
 
 		// create a new World where the origin is the center of the screen.
 		// we will map pixels to world units 1:1 because there is a limited amount of physics or
-		// realistic
-		// simulation we have to deal with in this demo.
+		// realistic simulation we have to deal with in this demo.
 		world = new World2D(-dispSize.width / 2.0, dispSize.height / 2.0,
 				dispSize.width, dispSize.height, 1);
 
 		// now we start adding our entities.
 		// I have chosen for this simple game to manage their initial locations here....
 		// but this can easily be done within the Entity's constructor.
-
 		// add the ball first, because that's where we're assigning our listener
 		PointLD ballStart = world.screenToWorld(dispSize.width / 2,
 				dispSize.height / 2);
@@ -94,8 +92,8 @@ public class PongGame {
 		em.register(ball, new BallCollisionListener());
 
 		Paddle p1 = new Paddle(world.screenToWorld(dispSize.width
-				- Paddle.PADDLE_SIZE.width, 0), world, input, true);
-		Paddle p2 = new Paddle(world.screenToWorld(0, 0), world, input, false);
+				- Paddle.PADDLE_SIZE.width, 0, Paddle.PADDLE_SIZE.height), world, input, true);
+		Paddle p2 = new Paddle(world.screenToWorld(0, 0, Paddle.PADDLE_SIZE.height), world, input, false);
 		em.register(p1);
 		em.register(p2);
 

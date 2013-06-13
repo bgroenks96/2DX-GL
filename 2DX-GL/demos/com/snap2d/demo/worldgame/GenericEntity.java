@@ -1,5 +1,5 @@
 /*
- *  Copyright Â© 2011-2013 Brian Groenke
+ *  Copyright © 2011-2013 Brian Groenke
  *  All rights reserved.
  * 
  *  This file is part of the 2DX Graphics Library.
@@ -29,14 +29,10 @@ public class GenericEntity extends Entity {
 	 */
 	private static final long serialVersionUID = 949575200050379961L;
 
-	private static final CollisionModel model;
+	private static CollisionModel model;
+	
 	private static final Color COLOR = Color.GREEN;
 	private static final int SIZE = 50;
-
-	static {
-		model = new CollisionModel(new Rectangle2D.Double(0, 0, SIZE, SIZE),
-				COLOR, new AffineTransform(), true);
-	}
 
 	/**
 	 * @param worldLoc
@@ -45,6 +41,9 @@ public class GenericEntity extends Entity {
 	public GenericEntity(Point2D worldLoc, World2D world) {
 		super(worldLoc, world);
 		super.initBounds(SIZE, SIZE);
+		Point[] ptarr = new Point[] {new Point(0,0), new Point(0, screenBounds.height),
+				new Point(screenBounds.width, screenBounds.height), new Point(screenBounds.width, 0)};
+		model = new CollisionModel(ptarr, 0, 0, world);
 	}
 
 	/**

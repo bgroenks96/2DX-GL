@@ -107,6 +107,12 @@ public class Vector2f {
 		return mag;
 	}
 
+	/**
+	 * Sets the direction and magnitude of this vector from polar coordinates.
+	 * @param mag
+	 * @param angle direction angle in radians
+	 * @return
+	 */
 	public Vector2f setFromPolar(float mag, float angle) {
 		if (mag < 0) {
 			mag = -mag;

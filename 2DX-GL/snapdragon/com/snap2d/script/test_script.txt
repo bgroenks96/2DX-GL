@@ -1,0 +1,15 @@
+void HelloWorld(string msg, int count) {
+
+}
+
+string GetName() {
+
+}
+
+void AddTimer(int time) {
+    
+}
+
+float Sqrt(float x) {
+  
+}

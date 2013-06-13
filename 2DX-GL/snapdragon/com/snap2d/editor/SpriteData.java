@@ -15,8 +15,11 @@ package com.snap2d.editor;
 import java.awt.*;
 import java.awt.image.*;
 import java.io.*;
+import java.net.*;
 
 import javax.imageio.*;
+
+import bg.x2d.utils.*;
 
 /**
  * Represents image and collision model data for Entities or "sprites."
@@ -30,23 +33,37 @@ public class SpriteData implements Serializable {
 	 * 
 	 */
 	private static final long serialVersionUID = -7379057230930174395L;
-	
+
 	public static final String FILE_SUFFIX = "sdat";
-	
+
 	public String imgName;
 	public Point[] vertices;
-	
+	public int wt, ht;
+
 	/**
 	 * Set by the static load method.  NOT saved with the data file.
 	 */
 	public transient BufferedImage loadedImage;
-	
-	public static SpriteData load(File file) throws FileNotFoundException, IOException, ClassNotFoundException {
-		ObjectInputStream objIn = new ObjectInputStream(new FileInputStream(file));
+
+	/**
+	 * 
+	 * @param loc the URL where the file can be found (local 'file:' or remote 'http:/ftp:' directory)
+	 * @param fileName name of the file (no extension)
+	 * @return
+	 * @throws FileNotFoundException
+	 * @throws IOException
+	 * @throws ClassNotFoundException
+	 */
+	public static SpriteData load(URL loc, String fileName) throws IOException, ClassNotFoundException {
+		ObjectInputStream objIn = new ObjectInputStream(new URL(loc + "/" + fileName).openStream());
 		SpriteData data = (SpriteData) objIn.readObject();
 		objIn.close();
-		file = new File(file.getParent() + File.separator + data.imgName);
-		data.loadedImage = ImageIO.read(file);
+		URL img = new URL(loc.toString() + "/" + data.imgName);
+		if(Utils.urlExists(img)) 
+			data.loadedImage = ImageIO.read(img);
+		else
+			System.err.println("failed to locate sprite image in local directory: " + data.imgName);
+
 		return data;
 	}
 

@@ -1,5 +1,5 @@
 /*
- *  Copyright Â© 2011-2013 Brian Groenke
+ *  Copyright © 2011-2013 Brian Groenke
  *  All rights reserved.
  * 
  *  This file is part of the 2DX Graphics Library.
@@ -14,6 +14,7 @@ package com.snap2d.world;
 
 import java.awt.*;
 import java.awt.geom.*;
+import java.awt.image.*;
 import java.io.*;
 
 import bg.x2d.geo.*;
@@ -107,10 +108,9 @@ public abstract class Entity implements Renderable, Serializable {
 	 */
 	public void setScreenLoc(int nx, int ny) {
 		screenLoc.setLocation(nx, ny);
-		worldLoc.setLocation(world.screenToWorld(nx, ny));
 		screenBounds.setLocation(screenLoc);
-		worldBounds.setRect(worldLoc.dx, worldLoc.dy, worldBounds.getWidth(),
-				worldBounds.getHeight());
+		worldBounds = world.convertScreenRect(screenBounds);
+		worldLoc.setLocation(worldBounds.getX(), worldBounds.getY());
 	}
 
 	/**
@@ -122,10 +122,9 @@ public abstract class Entity implements Renderable, Serializable {
 	 */
 	public void setWorldLoc(double nx, double ny) {
 		worldLoc.setLocation(nx, ny);
-		screenLoc.setLocation(world.worldToScreen(nx, ny));
-		screenBounds.setLocation(screenLoc);
-		worldBounds.setRect(worldLoc.dx, worldLoc.dy, worldBounds.getWidth(),
-				worldBounds.getHeight());
+		worldBounds.setRect(nx, ny, worldBounds.getWidth(), worldBounds.getHeight());
+		screenBounds = world.convertWorldRect(worldBounds);
+		screenLoc.setLocation(screenBounds.x, screenBounds.y);
 	}
 
 	public void applyVector(Vector2f vec, float mult) {
@@ -141,7 +140,7 @@ public abstract class Entity implements Renderable, Serializable {
 	/**
 	 * Returns a Rectangle2D representing the Entity's bounds in world space. Note that these bounds
 	 * are created against a <b>Cartesian</b> coordinate system <b>NOT the screen</b> coordinate
-	 * system, so Java2D geometry functions will not work.
+	 * system, so Java2D geometry functions will not work correctly.
 	 * 
 	 * @return
 	 */
@@ -183,15 +182,12 @@ public abstract class Entity implements Renderable, Serializable {
 			return false;
 		}
 		CollisionModel cmodel = getCollisionModel();
-		Rectangle collRect = world.convertWorldRect(coll);
-		return cmodel.collidesWith(collRect, screenBounds, e.screenBounds,
-				e.getCollisionModel());
+		return cmodel.collidesWith(0, 0, 0, 0, e.getCollisionModel());
 	}
 
 	/**
-	 * This method uses the same process as <code>collidesWith(Entity)</code> but returns the low
-	 * precision intersection box if the two entity's CollisionModels are in collision.
-	 * 
+	 * This method uses the same process as <code>collidesWith(Entity)</code> but returns an EntityCollision
+	 * object that contains the collided Entity and low precision collision box.
 	 * @param e
 	 * @return the computed intersection box between the two Entities in world space or null if no
 	 *         collision
@@ -203,13 +199,25 @@ public abstract class Entity implements Renderable, Serializable {
 			return null;
 		}
 		CollisionModel cmodel = getCollisionModel();
-		Rectangle collRect = world.convertWorldRect(coll);
-		if (cmodel.collidesWith(collRect, screenBounds, e.screenBounds,
-				e.getCollisionModel())) {
+		if (cmodel.collidesWith(getWorldX(), getWorldY(), e.getWorldX(), e.getWorldY(), e.getCollisionModel())) {
 			return new EntityCollision(e, coll);
 		} else {
 			return null;
 		}
+	}
+	
+	/**
+	 * Convenience method provided for drawing the BufferedImage of an Entity in world space.
+	 * The coordinates are assumed to have been converted from world space, so the image height
+	 * is subtracted from the Y value to compensate for the change in position representation
+	 * (World2D Cartesian system recognizes point locations as bottom left - Java2D uses top left).
+	 * @param g graphics object to render on
+	 * @param sx x coordinate of the Entity in screen space
+	 * @param sy y coordinate of the Entity in screen space (without height subtracted)
+	 * @param img the sprite image to draw
+	 */
+	public static void renderWorldSprite(Graphics2D g, int sx, int sy, BufferedImage img) {
+		g.drawImage(img, sx, sy - img.getHeight(), null);
 	}
 
 	/**

@@ -1,5 +1,5 @@
 /*
- *  Copyright Â© 2011-2013 Brian Groenke
+ *  Copyright © 2011-2013 Brian Groenke
  *  All rights reserved.
  * 
  *  This file is part of the 2DX Graphics Library.
@@ -40,8 +40,7 @@ public class PlayerEntity extends Entity {
 	int lx, ly;
 
 	static {
-		model = new CollisionModel(new Ellipse2D.Double(0, 0, SIZE, SIZE),
-				Color.RED, new AffineTransform(), true);
+		model = null;
 	}
 
 	/**

@@ -1,5 +1,5 @@
 /*
- *  Copyright Â© 2011-2013 Brian Groenke
+ *  Copyright © 2011-2013 Brian Groenke
  *  All rights reserved.
  * 
  *  This file is part of the 2DX Graphics Library.
@@ -32,8 +32,8 @@ import com.snap2d.input.*;
 public class WorldGame {
 
 	public static final int WORLD_MIN_X = -5000, WORLD_MAX_Y = 5000,
-			WORLD_WT = 10000, WORLD_HT = 10000, ENTITY_NUMBER = 2500,
-			SCROLL_TICK = 20;
+			WORLD_WT = 10000, WORLD_HT = 10000, ENTITY_NUMBER = 1800,
+			SCROLL_TICK = 16;
 
 	Display disp;
 	RenderControl rc;

@@ -1,5 +1,5 @@
 /*
- *  Copyright Â© 2011-2013 Brian Groenke
+ *  Copyright © 2011-2013 Brian Groenke
  *  All rights reserved.
  * 
  *  This file is part of the 2DX Graphics Library.
@@ -13,143 +13,147 @@
 package com.snap2d.world;
 
 import java.awt.*;
-import java.awt.geom.*;
-import java.awt.image.*;
-import java.math.*;
+import java.util.*;
 
-import bg.x2d.utils.*;
+import bg.x2d.geo.*;
+
+import com.snap2d.editor.*;
+
 
 /**
- * Allows for precise, efficient collision detection between two image-based entities.
- * CollisionModel uses bitmask evaluation to determine if two models overlap in screen space.
- * 
+ * Allows for precise, efficient collision detection between two entities with polygon bounding.
+ * The Snapdragon2D SpriteEditor can be used to create and save polygon bounds for images.
  * @author Brian Groenke
  * 
  */
 public class CollisionModel {
-
-	BigInteger[] bitmasks;
-
+	
+	LineSeg[] poly;
+	public PointLD[] wpts;
+	
 	/**
-	 * Creates a collision model based on the pixel data of the given image. The excluded color is
-	 * the pixel value that is ignored in the image data. For images with a transparent background,
-	 * this value should be 0. Otherwise, the integer value of the background pixel should be used.
-	 * 
-	 * @param img
-	 *            the image from which pixel data will be read.
-	 * @param excludedColor
-	 *            the pixel value that will be ignored.
+	 * Note: width/height of the polygon is defined by the greatest dist between its points along the X/Y axes, or in other words,
+	 * the dimensions of its rectangular bounds.
+	 * @param pts the points of the polygon bounds (in order)
+	 * @param wt width of the polygon
+	 * @param ht height of the polygon
+	 * @param world the world in which the entity represented by this model resides
 	 */
-	public CollisionModel(BufferedImage img, int excludedColor) {
-		init(img, excludedColor);
-	}
-
-	/**
-	 * Draws the given geometry onto a BufferedImage and uses the image to create a CollisionModel.
-	 * 
-	 * @param geometry
-	 * @param texture
-	 * @param transform
-	 * @param fill
-	 */
-	public CollisionModel(Shape geometry, Paint texture,
-			AffineTransform transform, boolean fill) {
-		Rectangle bounds = geometry.getBounds();
-		BufferedImage img = new BufferedImage(bounds.width, bounds.height,
-				BufferedImage.TYPE_INT_ARGB_PRE);
-		Graphics2D g = img.createGraphics();
-		g.setPaint(texture);
-		g.setTransform(transform);
-		if (fill) {
-			g.fill(geometry);
-		} else {
-			g.draw(geometry);
+	public CollisionModel(Point[] pts, int wt, int ht, World2D world) {
+		this.wpts = new PointLD[pts.length];
+		double ppu = world.getPixelsPerUnit();
+		for(int i=0; i < pts.length; i++) {
+			wpts[i] = new PointLD(pts[i].x / ppu, (ht - pts[i].y) / ppu);
 		}
-		g.dispose();
-		init(img, 0);
-	}
-
-	private void init(BufferedImage img, int excludedColor) {
-		int[] data = ColorUtils.getImageData(img);
-		int wt = img.getWidth();
-		int ht = img.getHeight();
-		bitmasks = new BigInteger[ht];
-		for (int y = 0; y < ht; y++) {
-			BigInteger bitmask = BigInteger.valueOf(0);
-			for (int x = 0; x < wt; x++) {
-				if (data[x + (y * wt)] != excludedColor) {
-					bitmask = bitmask.shiftLeft(1).add(BigInteger.ONE);
-				} else {
-					bitmask = bitmask.shiftLeft(1);
-				}
+		poly = new LineSeg[pts.length];
+		PointLD last = null;
+		ArrayList<LineSeg> lazyList = new ArrayList<LineSeg>();
+		for(PointLD p:wpts) {
+			if(last == null) {
+				last = p;
+				continue;
 			}
-			bitmasks[y] = bitmask;
+			
+			LineSeg seg = new LineSeg(last, p);
+			lazyList.add(seg);
+			last = p;
 		}
+		lazyList.add(new LineSeg(last, wpts[0]));
+		lazyList.toArray(poly);
 	}
-
-	/**
-	 * Checks to see if the bitmasks of the two entities share common bits (thus are colliding).
-	 * 
-	 * @param collisionArea
-	 *            the area in screen coordinates where the two rectangles overlap
-	 * @param thisObj
-	 *            the object in screen space represented by this CollisionModel
-	 * @param otherObj
-	 *            the object in screen space to check for collision.
-	 * @param otherModel
-	 *            the CollisionModel representing the other object.
-	 * @return true if the bitmasks of the two objects' CollisionModels overlap in space (the models
-	 *         are colliding), false otherwise
-	 * @throws IllegalStateException
-	 *             if <code>release</code> has been invoked on this CollisionModel
-	 */
-	public boolean collidesWith(Rectangle collisionArea, Rectangle thisObj,
-			Rectangle otherObj, CollisionModel otherModel)
-			throws IllegalStateException {
-		if (bitmasks == null) {
-			throw (new IllegalStateException("no collision data"));
+	
+	public CollisionModel(SpriteData spriteData, World2D world) {
+		this(spriteData.vertices, spriteData.wt, spriteData.ht, world);
+	}
+	
+	public boolean collidesWith(double x, double y, double cx, double cy, CollisionModel coll) {
+		return testCollision(x, y, cx, cy, coll) || coll.testCollision(cx, cy, x, y, this);
+	}
+	
+	private boolean testCollision(double x, double y, double cx, double cy, CollisionModel coll) {
+		double minx = Double.MAX_VALUE;
+		for(PointLD p:wpts) {
+			double px = p.getX() + x;
+			minx = Math.min(px, minx);
 		}
-		int x1 = Math.max(0, collisionArea.x - thisObj.x);
-		int y1 = Math.max(0, collisionArea.y - thisObj.y);
-		int x2 = Math.max(0, collisionArea.x - otherObj.x);
-		int y2 = Math.max(0, collisionArea.y - otherObj.y);
-		int wt = collisionArea.width;
-		int ht = collisionArea.height;
-		for (int y = 0; y < ht; y++) {
-			if (y1 + y > bitmasks.length) {
-				return false;
+		double lx = minx - 1;
+		for(PointLD p:coll.wpts) {
+			double px = p.getX() + cx;
+			double py = p.getY() + cy;
+			int crossCount = 0;
+			for(LineSeg seg:poly) {
+				PointLD intrsec = GeoUtils.lineIntersection(lx, py, px, py, seg.x1 + x, seg.y1 + y, seg.x2 + x, seg.y2 + y);
+				if(intrsec == null)
+					continue;
+				float sx = (float) (intrsec.getX() - x);
+				float sy = (float) (intrsec.getY() - y);
+				if(seg.hasPoint(sx, sy) && sx < (px-x))
+					crossCount++;
 			}
-			BigInteger bitmask1 = bitmasks[y1 + y];
-			BigInteger bitmask2 = otherModel.bitmasks[y2 + y];
-			BigInteger mask = BigInteger.ZERO.not();
-			int startOffs = thisObj.width - (wt + x1);
-			mask = (mask.shiftLeft(thisObj.width - x1 + 1).not()).and(mask
-					.shiftLeft(startOffs));
-			bitmask1 = bitmask1.and(mask);
-			bitmask1 = bitmask1.shiftRight(startOffs);
-			mask = BigInteger.ZERO.not();
-			startOffs = otherObj.width - (wt + x2);
-			mask = (mask.shiftLeft(otherObj.width - x2 + 1).not()).and(mask
-					.shiftLeft(startOffs));
-			bitmask2 = bitmask2.and(mask);
-			bitmask2 = bitmask2.shiftRight(startOffs);
-			if (!bitmask1.and(bitmask2).equals(BigInteger.ZERO)) {
+			if(crossCount % 2 != 0) // if the ray intersects an odd number of times, there is a collision
 				return true;
-			}
 		}
+		
 		return false;
 	}
-
-	/*
-	 * public void testWriteToFile() { PrintWriter pw = null; try { pw = new PrintWriter(new
-	 * File("/home/+ y]; BigInteger bitmask2 = otherModel.bitmasks[y2 + y]; BigInteger mask =
-	 * BigInteger.ZERO.not(); int startOffs = thisObj.width -
-	 * brian/Desktop/" + Math.random() + ".txt")); } catch (FileNotFoundException e) {
-	 * e.printStackTrace(); return; }
-	 * 
-	 * int wt = bitmasks[0].bitLength(); int ht = bitmasks.length; for(int y = ht - 1; y >= 0; y--)
-	 * { BigInteger bitmask = bitmasks[y]; for(int x = wt - 1; x >= 0; x--) { long a =
-	 * bitmask.shiftRight(x).and(BigInteger.ONE).longValue(); if(a != 0) pw.print("1"); else
-	 * pw.print("0"); } pw.println(); } pw.close(); }
+	
+	private class LineSeg {
+		
+		float x1, y1, x2, y2;
+		
+		LineSeg(float x1, float y1, float x2, float y2) {
+			this.x1 = x1;
+			this.y1 = y1;
+			this.x2 = x2;
+			this.y2 = y2;
+		}
+		
+		/**
+		 * @param p1 first point - all values casted to float
+		 * @param p2 second point - all values casted to float
+		 */
+		LineSeg(Point p1, Point p2) {
+			this.x1 = (float) p1.getX();
+			this.y1 = (float) p1.getY();
+			this.x2 = (float) p2.getX();
+			this.y2 = (float) p2.getY();
+		}
+		
+		boolean hasPoint(float x, float y) {
+			return x <= Math.max(x1, x2) && x >= Math.min(x1, x2) &&
+					y <= Math.max(y1, y2) && y >= Math.min(y1, y2);
+		}
+		
+		@Override
+		public String toString() {
+			return "[("+x1+", "+y1+"), ("+x2+", "+y2+")]";
+		}
+	}
+	
+	/**
+	 * Creates an approximation of a circular bounding area represented by a polygon.
+	 * The smaller the angle increment, the more accurate the polygon will be.  The larger
+	 * the increment, the better performance/memory-use will be.
+	 * @param size diameter of the circle in pixels.
+	 * @param angleIncrem the angle (in radians) between each computed point on the circle for drawing lines
+	 * @return an array of ordered polygon points in screen space
 	 */
+	public static Point[] createCircleBounds(int size, double angleIncrem) {
+		if(size <= 0)
+			throw(new IllegalArgumentException("circle size must be greater than zero"));
+		
+		int radius = size / 2;
+		ArrayList<Point> ptlist = new ArrayList<Point>();
+		ptlist.add(new Point(0, radius));
+		for(double angle=angleIncrem;angle < Math.PI * 2; angle += angleIncrem) {
+			double x = radius * Math.cos(angle);
+			double y = radius * Math.sin(angle);
+			float tx = (float) (x + radius);
+			float ty = (float) (size - (y + radius));
+			ptlist.add(new Point(Math.round(tx), Math.round(ty)));
+		}
+		Point[] ptarr = new Point[ptlist.size()];
+		ptlist.toArray(ptarr);
+		return ptarr;
+	}
 }

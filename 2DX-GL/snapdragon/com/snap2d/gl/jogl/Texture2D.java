@@ -32,19 +32,19 @@ public class Texture2D {
 		this.tex = tex;
 	}
 	
-	public void bind(GL gl) {
+	void bind(GL gl) {
 		tex.bind(gl);
 	}
 	
-	public void destroy(GL gl) {
+	void destroy(GL gl) {
 		tex.destroy(gl);
 	}
 	
-	public void enable(GL gl) {
+	void enable(GL gl) {
 		tex.enable(gl);
 	}
 	
-	public void disable(GL gl) {
+	void disable(GL gl) {
 		tex.disable(gl);
 	}
 	
@@ -68,19 +68,19 @@ public class Texture2D {
 		return tex.getTarget();
 	}
 	
-	public void setTexParameterf(GL gl, int param, float val) {
+	void setTexParameterf(GL gl, int param, float val) {
 		tex.setTexParameterf(gl, param, val);
 	}
 	
-	public void setTexParameterfv(GL gl, int param, float[] params, int offs) {
+	void setTexParameterfv(GL gl, int param, float[] params, int offs) {
 		tex.setTexParameterfv(gl, param, params, offs);
 	}
 	
-	public void setTexParameteri(GL gl, int param, int val) {
+	void setTexParameteri(GL gl, int param, int val) {
 		tex.setTexParameterf(gl, param, val);
 	}
 	
-	public void setTexParameteri(GL gl, int param, int[] params, int offs) {
+	void setTexParameteri(GL gl, int param, int[] params, int offs) {
 		tex.setTexParameteriv(gl, param, params, offs);
 	}
 	

@@ -45,21 +45,39 @@ public class GeoUtils {
 	 * @return the intersection point, or null if one doesn't exist.
 	 */
 	public static PointLD lineIntersection(double x1, double y1, double x2, double y2, double x3, double y3, double x4, double y4) {
-		if(x2 - x1 == 0 || x4 - x3 == 0)
+		boolean m1u = (x2 - x1) == 0;
+		boolean m2u = (x4 - x3) == 0;
+		if(m1u && m2u)
 			return null;
+		else if(m1u) {
+			double m = (y4 - y3) / (x4 - x3);
+			double spx = m * -x3;
+			double yint = spx + y3;
+			return new PointLD(x1, m * x1 + yint);
+		} else if(m2u) {
+			double m = (y2 - y1) / (x2 - x1);
+			double spx = m * -x1;
+			double yint = spx + y1;
+			return new PointLD(x3, m * x3 + yint);
+		}
+		
 		double m1 = (y2 - y1) / (x2 - x1);
 		double spx1 = m1 * -x1;
 		double yint1 = spx1 + y1;
 		double m2 = (y4 - y3) / (x4 - x3);
 		double spx2 = m2 * -x3;
 		double yint2 = spx2 + y3;
-		double nt = (yint1 < 0) ? yint2 + yint1 : yint2 - yint1;
-		double terms = (m2 < 0) ? m1 + m2 : m1 - m2;
+		double nt = yint2 - yint1;
+		double terms = m1 - m2;
 		if(terms == 0)
 			return null;
 		double xp = nt / terms;
 		double yp = m1 * xp + yint1;
 		return new PointLD(xp, yp);
+	}
+	
+	public static void main(String[] args) {
+		System.out.println(lineIntersection(0, 0, 10, 0, 2, 4, 6, -10));
 	}
 
 	/**

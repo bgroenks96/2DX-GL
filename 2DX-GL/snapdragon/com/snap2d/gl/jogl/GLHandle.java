@@ -19,86 +19,91 @@ import javax.media.opengl.*;
  *
  */
 public class GLHandle {
-	
+
 	protected GL3bc gl;
-	
-	boolean texEnabled;
-	
+
+	boolean texEnabled, texBound;
+
 	protected GLHandle() {
 		//
 	}
-	
+
 	public void setTextureEnabled(boolean enabled) {
 		if(enabled)
 			gl.glEnable(GL.GL_TEXTURE_2D);
 		else
 			gl.glDisable(GL.GL_TEXTURE_2D);
 	}
-	
+
 	public void bindTexture(Texture2D tex) {
 		if(!texEnabled) {
 			tex.enable(gl);
 			texEnabled = true;
 		}
-		
+
 		tex.bind(gl);
+		texBound = true;
 	}
-	
+
 	public void disableTexturing() {
 		if(texEnabled) {
 			gl.glDisable(GL.GL_TEXTURE_2D);
 			texEnabled = false;
 		}
 	}
-	
+
 	public void setColor3f(float r, float g, float b) {
 		gl.glColor3f(r, g, b);
 	}
-	
+
 	public void setColor4f(float r, float g, float b, float a) {
 		gl.glColor4f(r, g, b, a);
 	}
-	
+
 	float theta, tx, ty, sx, sy;
-	
+
 	public void setRotation(float theta) {
 		this.theta = theta;
 	}
-	
+
 	public void setTranslation(float x, float y) {
 		this.tx = x;
 		this.ty = y;
 	}
-	
+
 	public void setScale(float sx, float sy) {
 		this.sx = sx;
 		this.sy = sy;
 	}
-	
+
 	public void pushTransform() {
 		gl.glPushMatrix();
 		gl.glTranslatef(tx, ty, 0);
 		gl.glRotatef(theta, 0, 0, 1);
 		gl.glScalef(sx, sy, 1);
 	}
-	
+
 	public void popTransform() {
 		gl.glPopMatrix();
 	}
-	
+
 	public void drawRect(int x, int y, int wt, int ht) {
 		gl.glBegin(GL2.GL_POLYGON);
-		gl.glTexCoord2f(-1.0f, -1.0f);
+		if(texBound)
+			gl.glTexCoord2f(-1.0f, -1.0f);
 		gl.glVertex2f(x, y);
-		gl.glTexCoord2f(-1.0f, 1.0f);
+		if(texBound)
+			gl.glTexCoord2f(-1.0f, 1.0f);
 		gl.glVertex2f(x, y + ht);
-		gl.glTexCoord2f(1.0f, 1.0f);
+		if(texBound)
+			gl.glTexCoord2f(1.0f, 1.0f);
 		gl.glVertex2f(x + wt, y + ht);
-		gl.glTexCoord2f(1.0f, -1.0f);
+		if(texBound)
+			gl.glTexCoord2f(1.0f, -1.0f);
 		gl.glVertex2f(x + wt, y);
 		gl.glEnd();
 	}
-	
+
 	/**
 	 * Fetches the GL pipeline represented by this GLHandle.
 	 * <b>JOGL must be in your build path to use the classes directly.</b>

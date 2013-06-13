@@ -51,9 +51,7 @@ public class Ball extends Entity {
 		initBounds(BALL_SIZE, BALL_SIZE);
 		this.listener = listener;
 		phys = new BallPhysics(new Vector2f(INIT_VEL, INIT_VEL / 3));
-		Ellipse2D shape = new Ellipse2D.Double(0, 0, BALL_SIZE, BALL_SIZE);
-		coll = new CollisionModel(shape, Color.BLACK, new AffineTransform(),
-				true);
+		coll = new CollisionModel(CollisionModel.createCircleBounds(BALL_SIZE, Math.PI / 6), BALL_SIZE, BALL_SIZE, world);
 	}
 
 	/**

@@ -1,5 +1,5 @@
 /*
- *  Copyright © 2011-2013 Brian Groenke
+ *  Copyright ï¿½ 2011-2013 Brian Groenke
  *  All rights reserved.
  * 
  *  This file is part of the 2DX Graphics Library.
@@ -17,14 +17,14 @@ package com.snap2d.script;
  *
  */
 public class ScriptSource {
-	
-	String src;
+
+	private String src;
 	
 	public ScriptSource(String src) {
 		this.src = src;
 	}
-
-	public void compile() {
-		
+	
+	public String getSource() {
+		return src;
 	}
 }

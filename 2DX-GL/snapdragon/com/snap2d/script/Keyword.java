@@ -1,5 +1,5 @@
 /*
- *  Copyright © 2011-2013 Brian Groenke
+ *  Copyright ï¿½ 2011-2013 Brian Groenke
  *  All rights reserved.
  * 
  *  This file is part of the 2DX Graphics Library.
@@ -26,11 +26,13 @@ enum Keyword {
 	DIVIDE("/", Flags.OP, Flags.ARG_NUM, 2, Flags.RETURN_MATCH_ARG), POW("^", Flags.OP, Flags.ARG_NUM, 2, Flags.RETURN_MATCH_ARG),
 	SHIFT_RIGHT(">>", Flags.OP, Flags.ARG_INT, 2, Flags.RETURN_INT), SHIFT_LEFT("<<", Flags.OP, Flags.ARG_INT, 2, Flags.RETURN_INT), 
 	ASSIGN("=", Flags.OP, Flags.ARG_ASSIGN, 2, Flags.RETURN_MATCH_ARG),EQUALS("==", Flags.OP, Flags.ARG_MATCH, 2, Flags.RETURN_BOOL), 
-	NOT_EQUALS("!=", Flags.OP, Flags.ARG_MATCH, 2, Flags.RETURN_BOOL), NOT("!", Flags.OP);
+	NOT_EQUALS("!=", Flags.OP, Flags.ARG_MATCH, 2, Flags.RETURN_BOOL), NOT("!", Flags.OP), GREATER(">", Flags.OP, Flags.ARG_NUM, 2, Flags.RETURN_BOOL),
+	LESSER("<", Flags.OP, Flags.ARG_NUM, 2, Flags.RETURN_BOOL), STR_MARK("\"", Flags.DELIMITER), OR("|", Flags.OP, Flags.ARG_BOOL, 2, Flags.RETURN_BOOL),
+	AND("&", Flags.OP, Flags.ARG_BOOL, 2, Flags.RETURN_BOOL), TRUE("true", Flags.STATEMENT), FALSE("false", Flags.STATEMENT);
 	
 	private static final int TYPE_POS = 0, ARG_TYPE_POS = 1, ARG_COUNT_POS = 2, RETURN_POS = 3;
 	
-	String sym;
+	final String sym;
 	int[] specs;
 
 	/**
@@ -81,5 +83,21 @@ enum Keyword {
 			if(k.sym.equals(sym))
 				return k;
 		return null;
+	}
+	
+	public static boolean isDelimiter(String s) {
+		Keyword k = getFromSymbol(s);
+		if(k == null || k.getType() != Flags.DELIMITER)
+			return false;
+		else
+			return true;
+	}
+	
+	public static boolean isOperator(String s) {
+		Keyword k = getFromSymbol(s);
+		if(k == null || k.getType() != Flags.OP)
+			return false;
+		else
+			return true;
 	}
 }
