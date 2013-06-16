@@ -25,7 +25,8 @@ import bg.x2d.geo.*;
  */
 public abstract class WorldImpl {
 	
-	protected double viewX, viewY, maxX, minY, wt, ht, ppu;
+	protected double viewX, viewY, maxX, minY, wt, ht;
+	protected float ppu;
 	protected int swt, sht;
 
 	/**
@@ -45,26 +46,14 @@ public abstract class WorldImpl {
 	 *            the number of pixels per unit in world space
 	 */
 	public WorldImpl(double minX, double maxY, int viewWidth, int viewHeight,
-			double ppu) {
+			float ppu) {
 		this.viewX = minX;
 		this.viewY = maxY;
 		setViewSize(viewWidth, viewHeight, ppu);
 	}
 
-	@Deprecated
-	/**
-	 * The Rectangle2D returned is not compatible with the built in Java2D functions due to the
-	 * inverted Y-axis.  If you need a compatible world bounds for geometry checking, use
-	 * #getCompatibleBounds.
-	 * <br/><br/>
-	 * It is recommended that you explicitly 
-	 * use #getX, #getY, #getWorldWidth, and #getWorldWidth as opposed
-	 * to this method to avoid bugs produced by incompatible coordinate system geometry.
-	 * @return the viewport of the 2D coordinate system currently on screen (in world coordinates)
-	 * @see getCompatibleBounds
-	 */
-	public Rectangle2D getBounds() {
-		return new Rectangle2D.Double(viewX, viewY, wt, ht);
+	public Rect2D getBounds() {
+		return new Rect2D(viewX, viewY, wt, ht);
 	}
 
 	/**
@@ -106,7 +95,7 @@ public abstract class WorldImpl {
 	 * @param ppu
 	 *            the new pixels per unit of world space.
 	 */
-	public void setViewSize(int viewWidth, int viewHeight, double ppu) {
+	public void setViewSize(int viewWidth, int viewHeight, float ppu) {
 		this.swt = viewWidth;
 		this.sht = viewHeight;
 		if (ppu <= 0) {
@@ -136,14 +125,13 @@ public abstract class WorldImpl {
 		return ht;
 	}
 
-	public double getPixelsPerUnit() {
+	public float getPixelsPerUnit() {
 		return ppu;
 	}
 
 	/**
 	 * Checks for a collision between the two rectangles and returns the calculated area of
-	 * collision (if one exists). Note that the returned Rectangle2D is not compatible and
-	 * represents the collision area in world coordinates.
+	 * collision (if one exists).
 	 * 
 	 * @param r1
 	 *            rectangle to test for collision with second
@@ -151,14 +139,14 @@ public abstract class WorldImpl {
 	 *            rectangle to test for collision with first
 	 * @return a rectangle representing the overlap of the two rectangles in world space.
 	 */
-	public Rectangle2D.Double checkCollision(Rectangle2D r1, Rectangle2D r2) {
-		double x1 = r1.getMinX();
+	public Rect2D checkCollision(Rect2D r1, Rect2D r2) {
+		double x1 = r1.getX();
 		double x1m = r1.getMaxX();
-		double y1 = r1.getMinY();
+		double y1 = r1.getY();
 		double y1m = y1 + r1.getHeight(); ///
-		double x2 = r2.getMinX();
+		double x2 = r2.getX();
 		double x2m = r2.getMaxX();
-		double y2 = r2.getMinY();
+		double y2 = r2.getY();
 		double y2m = y2 + r2.getHeight(); ///
 
 		double xOverlap = Math.max(0, Math.min(x1m, x2m) - Math.max(x1, x2));
@@ -167,19 +155,19 @@ public abstract class WorldImpl {
 		if (xOverlap == 0 || yOverlap == 0) {
 			return null;
 		} else {
-			return new Rectangle2D.Double(Math.max(x1, x2), Math.max(y1, y2),
+			return new Rect2D(Math.max(x1, x2), Math.max(y1, y2),
 					xOverlap, yOverlap);
 		}
 	}
 
 	/**
-	 * Checks if the given Rectangle2D is fully contained within this World2D's viewport.
+	 * Checks if the given Rect2D is fully contained within this World2D's viewport.
 	 * 
 	 * @param rect
 	 *            the bounding box in world coordinates to check.
 	 * @return
 	 */
-	public boolean viewContains(Rectangle2D rect) {
+	public boolean viewContains(Rect2D rect) {
 		double vx = getX();
 		double vy = getY();
 		double vwt = getWorldWidth();
@@ -192,13 +180,13 @@ public abstract class WorldImpl {
 	}
 
 	/**
-	 * Checks if the given Rectangle2D intersects with this World2D's viewport.
+	 * Checks if the given Rect2D intersects with this World2D's viewport.
 	 * 
 	 * @param rect
 	 *            the bounding box in world coordinates to check for intersection
 	 * @return
 	 */
-	public boolean viewIntersects(Rectangle2D rect) {
+	public boolean viewIntersects(Rect2D rect) {
 		double vx = getX();
 		double vy = getY();
 		double vwt = getWorldWidth();
@@ -241,14 +229,14 @@ public abstract class WorldImpl {
 	}
 
 	/**
-	 * Converts the given Rectangle2D representing bounds in world space to corresponding Rectangle
+	 * Converts the given Rect2D representing bounds in world space to corresponding Rectangle
 	 * bounds in screen space. This method first converts the x,y coordinates, then scales the
 	 * rectangle by this World2D's current pixels-per-unit value.
 	 * 
 	 * @param r
 	 * @return
 	 */
-	public Rectangle convertWorldRect(Rectangle2D r) {
+	public Rectangle convertWorldRect(Rect2D r) {
 		Point sp = worldToScreen(r.getX(), r.getY());
 		int wt = (int) Math.round(r.getWidth() * ppu);
 		int ht = (int) Math.round(r.getHeight() * ppu);
@@ -256,18 +244,18 @@ public abstract class WorldImpl {
 	}
 
 	/**
-	 * Converts the given Rectangle representing bounds in screen space to corresponding Rectangle2D
+	 * Converts the given Rectangle representing bounds in screen space to corresponding Rect2D
 	 * bounds in world space. This method first converts the x,y coordinates, then scales the
 	 * rectangle by this World2D's current pixels-per-unit value.
 	 * 
 	 * @param r
 	 * @return
 	 */
-	public Rectangle2D.Double convertScreenRect(Rectangle r) {
+	public Rect2D convertScreenRect(Rectangle r) {
 		PointLD wp = screenToWorld(r.x, r.y);
 		double wt = r.width / ppu;
 		double ht = r.height / ppu;
-		return new Rectangle2D.Double(wp.dx, wp.dy, wt, ht);
+		return new Rect2D(wp.dx, wp.dy, wt, ht);
 	}
 
 	/**
@@ -278,7 +266,7 @@ public abstract class WorldImpl {
 	 */
 	@Deprecated
 	public boolean worldContains(Rectangle2D rect) {
-		return viewContains(rect);
+		return viewContains(new Rect2D(rect.getX(), rect.getY(), rect.getWidth(), rect.getHeight()));
 	}
 
 	/**
@@ -289,6 +277,6 @@ public abstract class WorldImpl {
 	 */
 	@Deprecated
 	public boolean worldIntersects(Rectangle2D rect) {
-		return viewIntersects(rect);
+		return viewIntersects(new Rect2D(rect.getX(), rect.getY(), rect.getWidth(), rect.getHeight()));
 	}
 }

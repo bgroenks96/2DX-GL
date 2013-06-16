@@ -13,7 +13,6 @@
 package com.snap2d.world;
 
 import java.awt.*;
-import java.awt.geom.*;
 
 import bg.x2d.geo.*;
 
@@ -55,7 +54,7 @@ public class World2D extends WorldImpl {
 	 *            the number of pixels per unit in world space
 	 */
 	public World2D(double minX, double maxY, int viewWidth, int viewHeight,
-			double ppu) {
+			float ppu) {
 		super(minX, maxY, viewWidth, viewHeight, ppu);
 	}
 
@@ -106,7 +105,7 @@ public class World2D extends WorldImpl {
 	}
 
 	/**
-	 * Converts the given Rectangle2D representing bounds in world space to corresponding Rectangle
+	 * Converts the given Rect2D representing bounds in world space to corresponding Rectangle
 	 * bounds in screen space. This method first converts the x,y coordinates, then scales the
 	 * rectangle by this World2D's current pixels-per-unit value.
 	 * 
@@ -114,7 +113,7 @@ public class World2D extends WorldImpl {
 	 * @return
 	 */
 	@Override
-	public Rectangle convertWorldRect(Rectangle2D r) {
+	public Rectangle convertWorldRect(Rect2D r) {
 		Point sp = worldToScreen(r.getX(), r.getY());
 		int wt = (int) Math.round(r.getWidth() * ppu);
 		int ht = (int) Math.round(r.getHeight() * ppu);
@@ -122,7 +121,7 @@ public class World2D extends WorldImpl {
 	}
 
 	/**
-	 * Converts the given Rectangle representing bounds in screen space to corresponding Rectangle2D
+	 * Converts the given Rectangle representing bounds in screen space to corresponding Rect2D
 	 * bounds in world space. This method first converts the x,y coordinates, then scales the
 	 * rectangle by this World2D's current pixels-per-unit value.
 	 * 
@@ -130,10 +129,10 @@ public class World2D extends WorldImpl {
 	 * @return
 	 */
 	@Override
-	public Rectangle2D.Double convertScreenRect(Rectangle r) {
+	public Rect2D convertScreenRect(Rectangle r) {
 		PointLD wp = screenToWorld(r.x, r.y);
 		double wt = r.width / ppu;
 		double ht = r.height / ppu;
-		return new Rectangle2D.Double(wp.dx, wp.dy - ht, wt, ht);
+		return new Rect2D(wp.dx, wp.dy - ht, wt, ht);
 	}
 }

@@ -35,7 +35,7 @@ public class ScrollWorld extends World2D implements GameWorld, Renderable {
 	 * @param ppu
 	 */
 	public ScrollWorld(double minX, double maxY, int viewWidth, int viewHeight,
-			double ppu) {
+			float ppu) {
 		super(minX, maxY, viewWidth, viewHeight, ppu);
 	}
 

@@ -39,7 +39,7 @@ public abstract class Entity implements Renderable, Serializable {
 	protected Point screenLoc;
 	protected PointLD worldLoc;
 	protected Rectangle screenBounds;
-	protected Rectangle2D worldBounds;
+	protected Rect2D worldBounds;
 	protected World2D world;
 
 	protected boolean shouldRender = true;
@@ -138,13 +138,9 @@ public abstract class Entity implements Renderable, Serializable {
 	}
 
 	/**
-	 * Returns a Rectangle2D representing the Entity's bounds in world space. Note that these bounds
-	 * are created against a <b>Cartesian</b> coordinate system <b>NOT the screen</b> coordinate
-	 * system, so Java2D geometry functions will not work correctly.
-	 * 
-	 * @return
+	 * @return a Rect2D representing the Entity's bounds in world space.
 	 */
-	public Rectangle2D getWorldBounds() {
+	public Rect2D getWorldBounds() {
 		return worldBounds;
 	}
 
@@ -176,7 +172,7 @@ public abstract class Entity implements Renderable, Serializable {
 	 * @return true if the Entities are in collision, false otherwise.
 	 */
 	public boolean collidesWith(Entity e) {
-		Rectangle2D coll = world
+		Rect2D coll = world
 				.checkCollision(this.worldBounds, e.worldBounds);
 		if (coll == null) {
 			return false;
@@ -193,7 +189,7 @@ public abstract class Entity implements Renderable, Serializable {
 	 *         collision
 	 */
 	public EntityCollision getCollision(Entity e) {
-		Rectangle2D coll = world
+		Rect2D coll = world
 				.checkCollision(this.worldBounds, e.worldBounds);
 		if (coll == null) {
 			return null;
@@ -246,9 +242,9 @@ public abstract class Entity implements Renderable, Serializable {
 
 	public class EntityCollision {
 		Entity e;
-		Rectangle2D collisionBox;
+		Rect2D collisionBox;
 
-		EntityCollision(Entity e, Rectangle2D collisionBox) {
+		EntityCollision(Entity e, Rect2D collisionBox) {
 			this.e = e;
 			this.collisionBox = collisionBox;
 		}
