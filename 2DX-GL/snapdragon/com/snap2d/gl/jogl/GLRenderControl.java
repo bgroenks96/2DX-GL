@@ -109,8 +109,6 @@ public class GLRenderControl implements GLEventListener {
 		gl.glViewport(0, 0, width, height);
 		gl.glMatrixMode(GL2.GL_PROJECTION);
 		gl.glLoadIdentity();
-		gl.glOrtho(-width, width, -height, height, -1, 1);
-		gl.glLoadIdentity();
 
 	}
 
@@ -387,14 +385,16 @@ public class GLRenderControl implements GLEventListener {
 		}
 	}
 	
-	float rot = 1.0f;
 	void renderTriangleTest(GL2 gl) {
+		gl.glOrtho(-500, 500, -500, 500, 0, 1);
+		gl.glMatrixMode(GL2.GL_MODELVIEW);
+		gl.glLoadIdentity();
 		gl.glBegin(GL2.GL_POLYGON);
 		gl.glColor3f(0, 0, 1.0f);
-		gl.glVertex2f(-0.9f, 0.1f);
-		gl.glVertex2f(0.1f, 0.1f);
-		gl.glVertex2f(0.1f, -0.9f);
-		gl.glVertex2f(-0.9f, -0.9f);
+		gl.glVertex2f(-400f, 200f);
+		gl.glVertex2f(-400f, 0);
+		gl.glVertex2f(-200f, 0);
+		gl.glVertex2f(-200f, 200f);
 		gl.glEnd();
 		/*
 		gl.glBegin(GL.GL_TRIANGLES);

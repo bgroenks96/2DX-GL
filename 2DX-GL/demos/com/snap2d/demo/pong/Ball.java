@@ -51,7 +51,7 @@ public class Ball extends Entity {
 		initBounds(BALL_SIZE, BALL_SIZE);
 		this.listener = listener;
 		phys = new BallPhysics(new Vector2f(INIT_VEL, INIT_VEL / 3));
-		coll = new CollisionModel(CollisionModel.createCircleBounds(BALL_SIZE, Math.PI / 6), BALL_SIZE, BALL_SIZE, world);
+		coll = new CollisionModel(CollisionModel.createCircleBounds(BALL_SIZE, Math.PI / 2), BALL_SIZE, BALL_SIZE, world);
 	}
 
 	/**
@@ -67,7 +67,7 @@ public class Ball extends Entity {
 		int x, y;
 		wy = interpolate(wy, ly, interpolation); // interpolate with the last position
 		wx = interpolate(wx, lx, interpolation);
-		Point p = world.worldToScreen(wx, wy);
+		Point p = world.worldToScreen(wx, wy, worldBounds.getHeight());
 		x = p.x;
 		y = p.y;
 		g.setColor(BALL_COLOR);

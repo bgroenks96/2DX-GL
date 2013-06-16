@@ -29,7 +29,7 @@ import com.snap2d.editor.*;
 public class CollisionModel {
 	
 	LineSeg[] poly;
-	public PointLD[] wpts;
+	PointLD[] wpts;
 	
 	/**
 	 * Note: width/height of the polygon is defined by the greatest dist between its points along the X/Y axes, or in other words,
@@ -144,7 +144,7 @@ public class CollisionModel {
 		
 		int radius = size / 2;
 		ArrayList<Point> ptlist = new ArrayList<Point>();
-		ptlist.add(new Point(0, radius));
+		ptlist.add(new Point(radius * 2, radius));
 		for(double angle=angleIncrem;angle < Math.PI * 2; angle += angleIncrem) {
 			double x = radius * Math.cos(angle);
 			double y = radius * Math.sin(angle);

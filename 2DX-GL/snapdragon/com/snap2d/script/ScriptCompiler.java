@@ -263,7 +263,7 @@ class ScriptCompiler {
 			String bool = src.substring(pos + 1, src.indexOf(Keyword.ARG_END.sym, pos)).trim();
 			parseBoolean(bool, src, pos + 1);
 			pos = src.indexOf(Keyword.ARG_END.sym, pos) + 1;
-			buff.put(Bytecodes.END_COND);
+			buff.put(Bytecodes.END_COND); // signal end of if condition - NOT END OF BLOCK
 			int bst = src.indexOf(Keyword.BLOCK_BEGIN.sym, pos);
 			int end = src.indexOf(Keyword.END.sym, pos);
 			String blockSrc;
@@ -284,7 +284,43 @@ class ScriptCompiler {
 			this.buff = prev;
 			
 			char[] chars = src.toCharArray();
-			
+			StringBuilder sb = new StringBuilder();
+			for(int i=endPos+1;i<chars.length;i++) {
+				char c = chars[i];
+				if(Character.isWhitespace(c) && sb.length() == 0)
+					continue;
+				else if(Character.isWhitespace(c) || Keyword.isDelimiter(String.valueOf(c))) {
+					if(!sb.toString().equals(Keyword.ELSE.sym))
+						cont = false;
+					else {
+						int stBlock = src.indexOf(Keyword.BLOCK_BEGIN.sym, i);
+						String stElse = src.substring(i, stBlock).trim();
+						if(stElse.isEmpty() || String.valueOf(c).equals(Keyword.BLOCK_BEGIN)) {
+							endPos = findBlockEnd(chars, stBlock + 1);
+							if(endPos < 0)
+								throw(new ScriptCompilationException("reached end of block without closing delimeter", src, pos));
+							String elseBlock = src.substring(stBlock + 1, endPos);
+							buff.put(Bytecodes.ELSE);
+							prev = this.buff;
+							this.buff = ByteBuffer.allocate(INIT_BUFFER_ALLOC);
+							parseMain(elseBlock, 0);
+							prev.putInt(buff.position());
+							this.buff.flip();
+							prev.put(buff);
+							this.buff = prev;
+							cont = false;
+						} else {
+							String expif = src.substring(i, src.indexOf(Keyword.ARG_BEGIN.sym, i)).trim();
+							if(!expif.equals(Keyword.IF.sym))
+								throw(new ScriptCompilationException("illegal conditional delimeter: " + src.charAt(i), src, pos));
+							endPos = src.indexOf(Keyword.ARG_BEGIN.sym, i) - 1;
+							buff.put(Bytecodes.ELSE_IF);
+						}
+					}
+					break;
+				} else
+					sb.append(c);
+			}
 		}
 		return endPos + 1;
 	}

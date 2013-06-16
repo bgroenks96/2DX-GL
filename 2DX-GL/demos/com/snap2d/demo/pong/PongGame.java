@@ -92,8 +92,8 @@ public class PongGame {
 		em.register(ball, new BallCollisionListener());
 
 		Paddle p1 = new Paddle(world.screenToWorld(dispSize.width
-				- Paddle.PADDLE_SIZE.width, 0, Paddle.PADDLE_SIZE.height), world, input, true);
-		Paddle p2 = new Paddle(world.screenToWorld(0, 0, Paddle.PADDLE_SIZE.height), world, input, false);
+				- Paddle.PADDLE_SIZE.width - 10, 0, Paddle.PADDLE_SIZE.height), world, input, true);
+		Paddle p2 = new Paddle(world.screenToWorld(10, 0, Paddle.PADDLE_SIZE.height), world, input, false);
 		em.register(p1);
 		em.register(p2);
 

@@ -36,7 +36,7 @@ public class Paddle extends Entity implements MouseEventClient, KeyEventClient {
 	public static final Dimension PADDLE_SIZE = new Dimension(20, 150);
 	public static final Color PADDLE_COLOR = Color.WHITE;
 
-	private static final Vector2f MOVE_VECTOR = new Vector2f(0, 20);
+	private static final Vector2f MOVE_VECTOR = new Vector2f(0, 30);
 	private static CollisionModel coll;
 
 	double lx, ly;
@@ -61,7 +61,7 @@ public class Paddle extends Entity implements MouseEventClient, KeyEventClient {
 		if (coll == null) {
 			Point[] ptarr = new Point[] {new Point(0,0), new Point(0, screenBounds.height),
 					new Point(screenBounds.width, screenBounds.height), new Point(screenBounds.width, 0)};
-			coll = new CollisionModel(ptarr, 0, 0, world);
+			coll = new CollisionModel(ptarr, PADDLE_SIZE.width, PADDLE_SIZE.height, world);
 		}
 	}
 
@@ -85,9 +85,8 @@ public class Paddle extends Entity implements MouseEventClient, KeyEventClient {
 			x = p.x;
 			y = p.y;
 		}
-		int margin = (useMouse) ? -10 : 10;
 		g.setColor(PADDLE_COLOR);
-		g.fillRect(x + margin, y, PADDLE_SIZE.width, PADDLE_SIZE.height);
+		g.fillRect(x, y, PADDLE_SIZE.width, PADDLE_SIZE.height);
 	}
 
 	/**

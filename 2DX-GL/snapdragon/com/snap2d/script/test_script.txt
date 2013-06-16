@@ -7,7 +7,12 @@ string GetName() {
 }
 
 void AddTimer(int time) {
+    bool b = true;
+    if(b) {
+        int i = 2;
+    } else {
     
+    }
 }
 
 float Sqrt(float x) {

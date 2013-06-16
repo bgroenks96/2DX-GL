@@ -199,7 +199,7 @@ public abstract class Entity implements Renderable, Serializable {
 			return null;
 		}
 		CollisionModel cmodel = getCollisionModel();
-		if (cmodel.collidesWith(getWorldX(), getWorldY(), e.getWorldX(), e.getWorldY(), e.getCollisionModel())) {
+		if(cmodel.collidesWith(getWorldX(), getWorldY(), e.getWorldX(), e.getWorldY(), e.getCollisionModel())) {
 			return new EntityCollision(e, coll);
 		} else {
 			return null;

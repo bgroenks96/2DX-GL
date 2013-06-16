@@ -1,5 +1,5 @@
 /*
- *  Copyright Â© 2011-2013 Brian Groenke
+ *  Copyright © 2011-2013 Brian Groenke
  *  All rights reserved.
  * 
  *  This file is part of the 2DX Graphics Library.
@@ -36,10 +36,7 @@ import bg.x2d.geo.*;
  * @since Snapdragon2D 1.0
  * 
  */
-public class World2D {
-
-	protected double minX, minY, maxX, maxY, wt, ht, ppu;
-	protected int swt, sht;
+public class World2D extends WorldImpl {
 
 	/**
 	 * Creates this World2D with the specified starting x,y coordinates and view size.
@@ -59,178 +56,7 @@ public class World2D {
 	 */
 	public World2D(double minX, double maxY, int viewWidth, int viewHeight,
 			double ppu) {
-		this.minX = minX;
-		this.minY = maxY;
-		setViewSize(viewWidth, viewHeight, ppu);
-	}
-
-	@Deprecated
-	/**
-	 * The Rectangle2D returned is not compatible with the built in Java2D functions due to the
-	 * inverted Y-axis.  If you need a compatible world bounds for geometry checking, use
-	 * #getCompatibleBounds.
-	 * <br/><br/>
-	 * It is recommended that you explicitly 
-	 * use #getX, #getY, #getWorldWidth, and #getWorldWidth as opposed
-	 * to this method to avoid bugs produced by incompatible coordinate system geometry.
-	 * @return the viewport of the 2D coordinate system currently on screen (in world coordinates)
-	 * @see getCompatibleBounds
-	 */
-	public Rectangle2D getBounds() {
-		return new Rectangle2D.Double(minX, minY, wt, ht);
-	}
-
-	/**
-	 * This method subtracts height from the Y value to compensate for the inverted Y-axis. Bounds
-	 * returned from this method will function correctly with the built-in Java geometry system.
-	 * 
-	 * @return
-	 */
-	public Rectangle2D getCompatibleBounds() {
-		return new Rectangle2D.Double(minX, minY - ht, wt, ht);
-	}
-
-	/**
-	 * @return the viewport's minimum x value in world space
-	 */
-	public double getX() {
-		return minX;
-	}
-
-	/**
-	 * @return the viewport's maximum y value in world space
-	 */
-	public double getY() {
-		return minY;
-	}
-
-	/**
-	 * Moves the world's viewport to the specified location.
-	 * 
-	 * @param minX
-	 *            the new x position in world space
-	 * @param maxY
-	 *            the new y position in world space
-	 */
-	public void setLocation(double minX, double maxY) {
-		this.minX = minX;
-		this.minY = maxY;
-		this.maxX = minX + wt;
-		this.maxY = maxY - ht;
-	}
-
-	/**
-	 * Sets the dimensions and scale of the world's view.
-	 * 
-	 * @param viewWidth
-	 *            the new width of the area drawn on screen
-	 * @param viewHeight
-	 *            the new height of the area drawn on screen
-	 * @param ppu
-	 *            the new pixels per unit of world space.
-	 */
-	public void setViewSize(int viewWidth, int viewHeight, double ppu) {
-		this.swt = viewWidth;
-		this.sht = viewHeight;
-		if (ppu <= 0) {
-			throw (new IllegalArgumentException(
-					"illegal pixel-per-unit value: " + ppu));
-		}
-		this.ppu = ppu;
-		maxX = minX + (viewWidth / ppu);
-		maxY = minY - (viewHeight / ppu);
-		wt = Math.abs(maxX - minX);
-		ht = Math.abs(maxY - minY);
-	}
-
-	public int getViewWidth() {
-		return swt;
-	}
-
-	public int getViewHeight() {
-		return sht;
-	}
-
-	public double getWorldWidth() {
-		return wt;
-	}
-
-	public double getWorldHeight() {
-		return ht;
-	}
-
-	public double getPixelsPerUnit() {
-		return ppu;
-	}
-
-	/**
-	 * Checks for a collision between the two rectangles and returns the calculated area of
-	 * collision (if one exists). Note that the returned Rectangle2D is not compatible and
-	 * represents the collision area in world coordinates.
-	 * 
-	 * @param r1
-	 *            rectangle to test for collision with second
-	 * @param r2
-	 *            rectangle to test for collision with first
-	 * @return a rectangle representing the overlap of the two rectangles in world space.
-	 */
-	public Rectangle2D.Double checkCollision(Rectangle2D r1, Rectangle2D r2) {
-		double x1 = r1.getMinX();
-		double x1m = r1.getMaxX();
-		double y1 = r1.getMinY();
-		double y1m = y1 + r1.getHeight(); ///
-		double x2 = r2.getMinX();
-		double x2m = r2.getMaxX();
-		double y2 = r2.getMinY();
-		double y2m = y2 + r2.getHeight(); ///
-
-		double xOverlap = Math.max(0, Math.min(x1m, x2m) - Math.max(x1, x2));
-		double yOverlap = Math.max(0, Math.min(y1m, y2m) - Math.max(y1, y2));
-
-		if (xOverlap == 0 || yOverlap == 0) {
-			return null;
-		} else {
-			return new Rectangle2D.Double(Math.max(x1, x2), Math.max(y1, y2),
-					xOverlap, yOverlap);
-		}
-	}
-
-	/**
-	 * Checks if the given Rectangle2D is fully contained within this World2D's viewport.
-	 * 
-	 * @param rect
-	 *            the bounding box in world coordinates to check.
-	 * @return
-	 */
-	public boolean viewContains(Rectangle2D rect) {
-		double vx = getX();
-		double vy = getY();
-		double vwt = getWorldWidth();
-		double vht = getWorldHeight();
-		boolean inYBounds = rect.getY() + rect.getHeight() < vy
-				&& rect.getY() > vy - vht;
-		boolean inXBounds = rect.getX() > vx
-				&& rect.getX() + rect.getWidth() < vx + vwt;
-		return inYBounds && inXBounds;
-	}
-
-	/**
-	 * Checks if the given Rectangle2D intersects with this World2D's viewport.
-	 * 
-	 * @param rect
-	 *            the bounding box in world coordinates to check for intersection
-	 * @return
-	 */
-	public boolean viewIntersects(Rectangle2D rect) {
-		double vx = getX();
-		double vy = getY();
-		double vwt = getWorldWidth();
-		double vht = getWorldHeight();
-		boolean inYBounds = rect.getY() < vy && 
-				rect.getY() + rect.getHeight() > vy - vht;
-		boolean inXBounds = rect.getX() + rect.getWidth() > vx && 
-				rect.getX() < vx + vwt;
-		return inYBounds && inXBounds;
+		super(minX, maxY, viewWidth, viewHeight, ppu);
 	}
 
 	/**
@@ -242,16 +68,17 @@ public class World2D {
 	 *            y coordinate on screen
 	 * @return the corresponding point in world space
 	 */
+	@Override
 	public PointLD screenToWorld(int x, int y) {
-		double x1 = (x / ppu) + minX;
-		double y1 = minY - (y / ppu);
+		double x1 = (x / ppu) + viewX;
+		double y1 = viewY - (y / ppu);
 		return new PointLD(x1, y1);
 	}
 	
 	public PointLD screenToWorld(int x, int y, int ht) {
 		double wht = ht / ppu;
-		double x1 = (x / ppu) + minX;
-		double y1 = minY - (y / ppu);
+		double x1 = (x / ppu) + viewX;
+		double y1 = viewY - (y / ppu);
 		return new PointLD(x1, y1 - wht);
 	}
 
@@ -264,16 +91,17 @@ public class World2D {
 	 *            y coordinate in the world
 	 * @return the corresponding point in screen space
 	 */
+	@Override
 	public Point worldToScreen(double x, double y) {
-		int x1 = (int) Math.round((x - minX) * ppu);
-		int y1 = (int) Math.round((ht - (y - maxY)) * ppu);
+		int x1 = (int) Math.round((x - viewX) * ppu);
+		int y1 = (int) Math.round((ht - (y - minY)) * ppu);
 		return new Point(x1, y1);
 	}
 	
 	public Point worldToScreen(double x, double y, double worldHt) {
 		int sht = (int) Math.round(worldHt * ppu);
-		int x1 = (int) Math.round((x - minX) * ppu);
-		int y1 = (int) Math.round((ht - (y - maxY)) * ppu);
+		int x1 = (int) Math.round((x - viewX) * ppu);
+		int y1 = (int) Math.round((ht - (y - minY)) * ppu);
 		return new Point(x1, y1 - sht);
 	}
 
@@ -285,6 +113,7 @@ public class World2D {
 	 * @param r
 	 * @return
 	 */
+	@Override
 	public Rectangle convertWorldRect(Rectangle2D r) {
 		Point sp = worldToScreen(r.getX(), r.getY());
 		int wt = (int) Math.round(r.getWidth() * ppu);
@@ -300,32 +129,11 @@ public class World2D {
 	 * @param r
 	 * @return
 	 */
+	@Override
 	public Rectangle2D.Double convertScreenRect(Rectangle r) {
 		PointLD wp = screenToWorld(r.x, r.y);
 		double wt = r.width / ppu;
 		double ht = r.height / ppu;
 		return new Rectangle2D.Double(wp.dx, wp.dy - ht, wt, ht);
-	}
-
-	/**
-	 * Replaced by more appropriately named {@link #viewContains}
-	 * 
-	 * @param rect
-	 * @return
-	 */
-	@Deprecated
-	public boolean worldContains(Rectangle2D rect) {
-		return viewContains(rect);
-	}
-
-	/**
-	 * Replaced by more appropriately named {@link #viewIntersects}
-	 * 
-	 * @param rect
-	 * @return
-	 */
-	@Deprecated
-	public boolean worldIntersects(Rectangle2D rect) {
-		return viewIntersects(rect);
 	}
 }
