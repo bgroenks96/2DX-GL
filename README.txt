@@ -14,8 +14,7 @@ Official builds are in the 'release_jars' directory and source folders labeled b
 
 Code in the primary source folders ('snapdragon' and 'x2d') is under development and may or may not be complete/working.
 
-If you decide to use 2DX/Snap2D for actual application production, I would appreicate it if you let me know on GitHub or
-by any other means so that I know to be careful about making changes!
+If you decide to use 2DX/Snap2D for actual application production, I would appreicate it if you let me know on GitHub or by any other means so that I know to be careful about making changes!
 
 The 'builds' folder in the project directory contains the latest development builds.
 NOTE: These JARs are typically stable, but may not have all features fully implemented or complete.
