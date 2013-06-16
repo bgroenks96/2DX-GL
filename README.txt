@@ -6,8 +6,7 @@
 
 Snapdragon2D
    A 2D Java game engine built on 2DX-GL.  Snapdragon2D utilizes and extends the 2DX-GL API by re-applying its
-   functionality and providing its own infrastructure for game development.  Snapdragon2D aims to squeeze the best
-   quality and performance through manipulation of the Java standard libraries.
+   functionality and providing its own infrastructure for game development.  Snapdragon2D aims to squeeze the best quality and performance through manipulation of the Java standard libraries.
    **N.B.** Has absolutely no connection to or affiliation with the Qualcomm Snapdragon(tm) mobile processor family.
 
 Official builds are in the 'release_jars' directory and source folders labeled build##.
@@ -30,7 +29,6 @@ Snapdragon2D
 Project dev status: Alpha
 To-do (next commit):
 -SnapScript scripting language and execution engine
--SnapScript scripting engine
 -OpenGL rendering engine (via JOGL 2.0 libraries)
 -Snapdragon2D physics package
 
