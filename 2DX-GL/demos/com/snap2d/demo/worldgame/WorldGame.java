@@ -21,6 +21,8 @@ import bg.x2d.geo.*;
 import com.snap2d.gl.*;
 import com.snap2d.gl.Display.Type;
 import com.snap2d.input.*;
+import com.snap2d.world.*;
+import com.snap2d.world.event.*;
 
 /**
  * Demo "game" for showing how to manage world and world scrolling with character movement
@@ -38,6 +40,7 @@ public class WorldGame {
 	Display disp;
 	RenderControl rc;
 	ScrollWorld world;
+	PlayerEntity player;
 
 	InputDispatch input;
 
@@ -56,10 +59,15 @@ public class WorldGame {
 		rc = disp.getRenderControl(2);
 		rc.addRenderable(new StaticBackground(), 0);
 
-		world = new ScrollWorld(-200, 150, disp.getSize().width,
+		world = new ScrollWorld(-disp.getSize().width / 2, disp.getSize().height, disp.getSize().width,
 				disp.getSize().height, 2);
 		generateRandomEntities();
 		rc.addRenderable(new WorldUpdater(), RenderControl.POSITION_LAST);
+		
+		PointLD center = world.screenToWorld(disp.getSize().width / 2, disp.getSize().height / 2);
+		player = new PlayerEntity(new PointLD(center.dx - PlayerEntity.SIZE / 2, center.dy - PlayerEntity.SIZE / 2), world);
+		world.addEntity(player);
+		world.getManager().addEntityListener(new PlayerCollisionListener(), player);
 
 		disp.show();
 		rc.startRenderLoop();
@@ -84,6 +92,11 @@ public class WorldGame {
 		public void render(Graphics2D g, float interpolation) {
 			world.render(g, interpolation);
 		}
+		
+		/*
+		 * one vector can be applied to player entity for vertical movement, the other for horizontal.
+		 */
+		Vector2d vec1 = new Vector2d(SCROLL_TICK, 0), vec2 = new Vector2d(0, SCROLL_TICK);
 
 		/**
 		 *
@@ -92,14 +105,18 @@ public class WorldGame {
 		public void update(long nanoTimeNow, long nanosSinceLastUpdate) {
 			if (up) {
 				world.moveViewport(0, SCROLL_TICK);
+				player.applyVector(vec2, 1);
 			} else if (down) {
 				world.moveViewport(0, -SCROLL_TICK);
+				player.applyVector(vec2.negateNew(), 1);
 			}
 
 			if (right) {
 				world.moveViewport(SCROLL_TICK, 0);
+				player.applyVector(vec1, 1);
 			} else if (left) {
 				world.moveViewport(-SCROLL_TICK, 0);
+				player.applyVector(vec1.negateNew(), 1);
 			}
 
 			if (world.getX() < WORLD_MIN_X) {
@@ -127,9 +144,36 @@ public class WorldGame {
 		 */
 		@Override
 		public void onResize(Dimension oldSize, Dimension newSize) {
-
+			world.onResize(oldSize, newSize);
 		}
 
+	}
+	
+	private class PlayerCollisionListener implements EntityListener {
+
+		/**
+		 *
+		 */
+		@Override
+		public void onCollision(CollisionEvent collEvt) {
+			System.out.println("hello");
+		}
+
+		/**
+		 *
+		 */
+		@Override
+		public void onAdd(AddEvent addEvt) {
+			
+		}
+
+		/**
+		 *
+		 */
+		@Override
+		public void onRemove(RemoveEvent remEvt) {
+			
+		}
 	}
 
 	private class StaticBackground implements Renderable {

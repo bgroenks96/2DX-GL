@@ -147,5 +147,4 @@ public class ScrollWorld extends World2D implements GameWorld, Renderable {
 	public EntityManager getManager() {
 		return manager;
 	}
-
 }

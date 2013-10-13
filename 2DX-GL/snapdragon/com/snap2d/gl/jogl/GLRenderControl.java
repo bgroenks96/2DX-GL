@@ -75,7 +75,7 @@ public class GLRenderControl implements GLEventListener {
 			r.render(handle, loop.interpolation);
 		}
 		
-		renderTriangleTest(gl);
+		//renderTest(gl);
 	}
 
 	/**
@@ -106,9 +106,7 @@ public class GLRenderControl implements GLEventListener {
 		ht = height;
 
 		GL2 gl = arg0.getGL().getGL2();
-		gl.glViewport(0, 0, width, height);
-		gl.glMatrixMode(GL2.GL_PROJECTION);
-		gl.glLoadIdentity();
+		
 
 	}
 
@@ -385,7 +383,7 @@ public class GLRenderControl implements GLEventListener {
 		}
 	}
 	
-	void renderTriangleTest(GL2 gl) {
+	void renderTest(GL2 gl) {
 		gl.glOrtho(-500, 500, -500, 500, 0, 1);
 		gl.glMatrixMode(GL2.GL_MODELVIEW);
 		gl.glLoadIdentity();

@@ -4,29 +4,22 @@ import java.lang.reflect.*;
 import java.util.*;
 
 /**
- * Provides a Map that maps multiple values to a single key.
- * The actions performed by this class assume the backing arrays to be in sync with each other.
- * If at any point their sizes differ, a ConcurrentModifactionException will be thrown.
- * Note, however, that while this class may, in this nature, be fail-fast, it is not entirely.
- * No checking is implemented for individual value changes within the map, so it is possible that
- * concurrent changes may occur.  It is strongly recommended that instances of this class be synchronized
- * on an external lock object if being used concurrently.
+ * Provides a Map that maps multiple values to a single key.  This map is backed by a
+ * Hashtable that maps a single key to a dynamic array of values.  All read/write methods of Multimap
+ * are synchronized so objects may be modified asynchronously by multiple threads.
  * @author Brian Groenke
- *
- * @param <K>
- * @param <V>
+ * @param <K> the type for keys
+ * @param <V> the type for values
  */
 public class Multimap<K, V> extends AbstractMap<K, V> {
 
 	private static final int KEY_INIT = 0, VAL_INIT = 0, IN_VAL_INIT = 1;
 
-	K[] keys;
-	V[][] vals;
+	Hashtable<K, V[]> ktv;
 
 	@SuppressWarnings("unchecked")
 	public Multimap() {
-		keys = (K[]) new Object[KEY_INIT];
-		vals = (V[][]) new Object[VAL_INIT][];
+		ktv = new Hashtable<K, V[]>();
 	}
 
 	@SuppressWarnings("unchecked")
@@ -35,20 +28,21 @@ public class Multimap<K, V> extends AbstractMap<K, V> {
 		if(key == null || value == null)
 			throw(new IllegalArgumentException("null values not accepted"));
 		V prev = null;
-		int prevPos = -1;
-		if((prevPos = Arrays.binarySearch(keys, key)) >= 0) {
-			V[] varr = vals[prevPos];
-			prev = varr[varr.length - 1];
-			vals[prevPos] = Utils.resizeArray(varr, varr.length + 1);
-			vals[prevPos][vals[prevPos].length - 1] = value;
+		int ind = -1;
+		V[] varr = ktv.get(key);
+		if(varr != null) {
+			if((ind=findValueIndex(value, varr)) >= 0) {
+				prev = varr[ind];
+				varr[ind] = value;
+			} else {
+				
+			}
 		} else {
-			keys = Utils.resizeArray(keys, keys.length + 1);
-			vals = Utils.resizeArray(vals, vals.length + 1);
-			keys[keys.length - 1] = key;
-			vals[vals.length - 1] = (V[]) Array.newInstance(value.getClass(), IN_VAL_INIT);
-			vals[vals.length - 1][0] = value; 
+			varr = (V[]) Array.newInstance(value.getClass(), 1);
+			varr[0] = value;
 		}
-		verify();
+
+		ktv.put(key, varr);
 		return prev;
 	}
 
@@ -63,128 +57,136 @@ public class Multimap<K, V> extends AbstractMap<K, V> {
 	public synchronized V get(Object key) {
 		if(key == null)
 			throw(new IllegalArgumentException("null values not accepted"));
-		int pos = Arrays.binarySearch(keys, key);
-		if(pos < 0)
+		V[] varr = ktv.get(key);
+		if(varr != null)
+			return varr[0];
+		else
 			return null;
-		else {
-			return vals[pos][0];
-		}
 	}
 
 	public synchronized V get(Object key, int index) {
 		if(key == null)
 			throw(new IllegalArgumentException("null values not accepted"));
-		int pos = Arrays.binarySearch(keys, key);
-		if(pos < 0)
+		V[] varr = ktv.get(key);
+		if(varr != null)
+			return varr[index];
+		else
 			return null;
-		else {
-			return vals[pos][index];
-		}
 	}
 
 	public synchronized V[] getAll(Object key) {
 		if(key == null)
 			throw(new IllegalArgumentException("null values not accepted"));
-		int pos = Arrays.binarySearch(keys, key);
-		if(pos < 0)
-			return null;
-		else {
-			return vals[pos];
-		}
+		return ktv.get(key);
 	}
 
 	@Override
 	public synchronized V remove(Object key) {
 		if(key == null)
 			throw(new IllegalArgumentException("null values not accepted"));
-		int pos = Arrays.binarySearch(keys, key);
-		if(pos < 0)
-			return null;
-		else {
-			V prev = vals[pos][0];
-			keys[pos] = null;
-			vals[pos] = null;
-			trimArrays();
-			verify();
-			return prev;
-		}
+		return ktv.remove(key)[0];
 	}
 
 	public synchronized V remove(Object key, Object val) {
 		if(key == null)
 			throw(new IllegalArgumentException("null values not accepted"));
-		int pos = Arrays.binarySearch(keys, key);
-		if(pos < 0)
-			return null;
-		else {
-			int vpos = Arrays.binarySearch(vals[pos], val);
-			if(vpos < 0)
-				return null;
-			V prev = vals[pos][vpos];
-			vals[pos][vpos] = null;
-			trimArrays();
-			verify();
-			return prev;
+		V[] varr = ktv.get(key);
+		V prev = null;
+		if(varr != null) {
+			int ind = findValueIndex((V)val, varr);
+			if(ind >= 0) {
+				prev = varr[ind];
+				varr[ind] = null;
+				trimArray(varr, val.getClass(), varr.length - 1);
+			}
 		}
+		
+		return prev;
 	}
-	
+
 	/**
 	 * @return a Set with all Multimap values COPIED into it.  Changes will not be reflected.
 	 */
 	@Override
-	public Set<V> values() {
+	public synchronized Set<V> values() {
 		HashSet<V> vset = new HashSet<V>();
-		for(V[] varr:vals) {
+		for(V[] varr:ktv.values()) {
 			for(V v:varr)
 				vset.add(v);
 		}
 		return vset;
 	}
-	
+
 	/**
 	 * @return a Set with all Multimap keys COPIED into it.  Changes will not be reflected.
 	 */
 	@Override
-	public Set<K> keySet() {
+	public synchronized Set<K> keySet() {
 		HashSet<K> kset = new HashSet<K>();
-		for(K k:keys)
+		for(K k:ktv.keySet())
 			kset.add(k);
 		return kset;
 	}
 
 	@Override
-	public Set<java.util.Map.Entry<K, V>> entrySet() {
-
+	public synchronized Set<java.util.Map.Entry<K, V>> entrySet() {
 		return null;
 	}
 	
 	@Override
-	public String toString() {
+	public int size() {
+		return values().size();
+	}
+
+	@Override
+	public synchronized String toString() {
 		StringBuilder sb = new StringBuilder();
 		sb.append("{");
-		for(int i=0; i<keys.length;i++) {
-			K key = keys[i];
-			int pos	 = Arrays.binarySearch(keys, key);
-			for(int ii=0;ii<vals[pos].length;ii++) {
-				V val = vals[pos][ii];
-				sb.append(key + "=" + val + ((ii == vals[pos].length - 1 && i == keys.length - 1) ? "":", "));
+		for(K key:ktv.keySet()) {
+			sb.append(key + "=");
+			for(V val:ktv.get(key)) {
+				sb.append(val + ", ");
 			}
+			sb.deleteCharAt(sb.length() - 2);
 		}
 		sb.append("}");
 		return sb.toString();
 	}
 
+	private int findValueIndex(V val, V[] vset) {
+		for(int i=0; i < vset.length; i++) {
+			if(vset[i].equals(val))
+				return i;
+		}
+
+		return -1;
+	}
+	
 	/*
-	 * Checks for out-of-sync mappings and sorts the key/value arrays.
+	 * Appends the given object onto the existing array by allocating a new array with +1 size.
 	 */
-	private void verify() throws ConcurrentModificationException {
-		if(keys.length != vals.length)
-			throw(new ConcurrentModificationException("key/value mappings have become out of sync"));
-		Arrays.sort(keys);
-		for(V[] varr:vals)
-			Arrays.sort(varr);
+	private V[] append(V[] varr, V val) {
+		V[] narr = Arrays.copyOf(varr, varr.length + 1);
+		narr[narr.length - 1] = val;
+		return narr;
 	}
 
+	/*
+	 * Copies the contents of the array into a new smaller array, omitting any null values.
+	 */
+	private V[] trimArray(V[] arr, Class<?> type, int newSize) {
+		if(newSize >= arr.length)
+			throw(new IllegalArgumentException("new size must be less than previous"));
+		V[] narr = (V[]) Array.newInstance(type, newSize);
+		for(int i=0;i<narr.length;i++) {
+			if(arr[i] != null)
+				narr[i] = arr[i];
+		}
+		
+		return narr;
+	}
+
+	/*
 	private void trimArrays() {
 		int nulls = 0;
 		for(K k:keys)
@@ -244,5 +246,6 @@ public class Multimap<K, V> extends AbstractMap<K, V> {
 		if(vals.length > 0)
 			vals = Utils.resizeArray(vals, vals.length - nulls);
 	}
+	 */
 }
 

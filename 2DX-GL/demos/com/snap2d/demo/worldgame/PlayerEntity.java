@@ -33,15 +33,10 @@ public class PlayerEntity extends Entity {
 
 	public static final int SIZE = 50;
 
-	private static final CollisionModel model;
-	private static final Vector2f FORWARD = new Vector2f(0, 10),
-			RIGHT = new Vector2f(10, 0);
-
-	int lx, ly;
-
-	static {
-		model = null;
-	}
+	private static CollisionModel model;
+	private static final Triangle2D shape = new Triangle2D(0, 0, SIZE, Color.BLUE, true);
+	
+	int cwt, cht;
 
 	/**
 	 * @param worldLoc
@@ -50,6 +45,14 @@ public class PlayerEntity extends Entity {
 	public PlayerEntity(Point2D worldLoc, World2D world) {
 		super(worldLoc, world);
 		initBounds(SIZE, SIZE);
+		if(model == null) {
+			Polygon p = shape.getShape();
+			Point[] pts = new Point[p.npoints];
+			for(int i=0;i<p.npoints;i++) {
+				pts[i] = new Point(p.xpoints[i], p.ypoints[i]);
+			}
+			model = new CollisionModel(pts, SIZE, SIZE, world);
+		}
 	}
 
 	/**
@@ -57,7 +60,7 @@ public class PlayerEntity extends Entity {
 	 */
 	@Override
 	public void render(Graphics2D g, float interpolation) {
-
+		shape.draw(g);
 	}
 
 	/**
@@ -65,8 +68,7 @@ public class PlayerEntity extends Entity {
 	 */
 	@Override
 	public void update(long nanoTimeNow, long nanosSinceLastUpdate) {
-		lx = screenLoc.x;
-		ly = screenLoc.y;
+		//System.out.println(worldLoc);
 	}
 
 	/**
@@ -74,7 +76,9 @@ public class PlayerEntity extends Entity {
 	 */
 	@Override
 	public void onResize(Dimension oldSize, Dimension newSize) {
-
+		cwt = newSize.width;
+		cht = newSize.height;
+		shape.setLocation(cwt / 2 - SIZE / 2, cht / 2 - SIZE / 2);
 	}
 
 	/**

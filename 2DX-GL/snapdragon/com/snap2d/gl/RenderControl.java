@@ -75,6 +75,7 @@ public class RenderControl {
 	protected Map<RenderingHints.Key, Object> renderOps;
 
 	private Semaphore loopChk = new Semaphore(1, true);
+	private GLConfig config;
 
 	/**
 	 * Creates a RenderControl object that can be used to render data to a Display. A Canvas object
@@ -85,7 +86,8 @@ public class RenderControl {
 	 * @param buffs
 	 *            the number of buffers the BufferStrategy should be created with.
 	 */
-	protected RenderControl(int buffs) {
+	protected RenderControl(int buffs, GLConfig config) {
+		this.config = config;
 		this.canvas = new Canvas();
 		this.buffs = buffs;
 
@@ -808,8 +810,8 @@ public class RenderControl {
 		if(!Boolean.getBoolean(Property.SNAP2D_PRINT_J2D_CONFIG.getProperty()))
 			return;
 		Logger.println("initialized Java2D graphics pipeline");
-		for(GLConfig.Property glp:Property.values()) {
-			Logger.println(glp.getProperty()+"="+glp.getValue());
+		for(Property p:config.configMap.keySet()) {
+			Logger.println(p.getProperty()+"="+config.configMap.get(p));
 		}
 	}
 }

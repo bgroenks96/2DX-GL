@@ -1,20 +1,7 @@
 void HelloWorld(string msg, int count) {
-
+    string s = "hello" + "hello";
 }
 
-string GetName() {
-
-}
-
-void AddTimer(int time) {
-    bool b = true;
-    if(b) {
-        int i = 2;
-    } else {
-    
-    }
-}
-
-float Sqrt(float x) {
-  
+void CheckCondition(bool b) {
+    int i = 2 + 2;
 }

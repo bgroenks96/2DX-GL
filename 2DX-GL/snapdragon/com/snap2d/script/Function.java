@@ -20,11 +20,11 @@ import java.util.*;
  * @author Brian Groenke
  *
  */
-class Function implements Comparable<Function> {
+public class Function implements Comparable<Function> {
 
 	private static volatile long idTick = 0x400;
 
-	public ByteBuffer bytecode;
+	ByteBuffer bytecode;
 
 	private String name, src;
 	private String[] paramNames;
@@ -33,6 +33,8 @@ class Function implements Comparable<Function> {
 	private Keyword[] paramTypes;
 	private Keyword returnType;
 	private boolean javaFunc;
+	
+	private Method javaMethod; // only non-null for linked Java methods
 
 	/**
 	 * 
@@ -54,35 +56,45 @@ class Function implements Comparable<Function> {
 		id = idTick++;
 	}
 
-	Function(String name, Class<?> cl, Class<?>[] params) throws SecurityException, NoSuchMethodException {
+	Function(String name, Class<?> cl, Class<?>... params) throws SecurityException, NoSuchMethodException {
 		Method method = cl.getDeclaredMethod(name, params);
-		paramTypes = new Keyword[params.length];
+		this.name = name;
+		this.paramTypes = new Keyword[params.length];
+		this.paramNames = new String[params.length];
+		this.javaMethod = method;
 		for(int i=0;i<params.length;i++) {
 			Class<?> c = params[i];
-			if(c == String.class)
+			if(isString(c))
 				paramTypes[i] = Keyword.STRING;
-			else if(c == Integer.class)
+			else if(isInt(c))
 				paramTypes[i] = Keyword.INT;
-			else if(c == Float.class)
+			else if(isFloat(c))
 				paramTypes[i] = Keyword.FLOAT;
-			else if(c == Boolean.class)
+			else if(isBool(c))
 				paramTypes[i] = Keyword.BOOL;
 			else
 				throw(new IllegalArgumentException(c.getName() + " is not a supported script data type"));
+			paramNames[i] = "arg"+i;
 		}
 		Class<?> c = method.getReturnType();
-		if(c == String.class)
+		if(isString(c))
 			returnType = Keyword.STRING;
-		else if(c == Integer.class)
+		else if(isInt(c))
 			returnType = Keyword.INT;
-		else if(c == Float.class)
+		else if(isFloat(c))
 			returnType = Keyword.FLOAT;
-		else if(c == Boolean.class)
+		else if(isBool(c))
 			returnType = Keyword.BOOL;
+		else if(isVoid(c))
+			returnType = Keyword.VOID;
 		else
 			throw(new IllegalArgumentException(c.getName() + " is not a supported script data type"));
 		javaFunc = true;
 		id = idTick++;
+	}
+	
+	public Method getJavaMethod() {
+		return javaMethod;
 	}
 
 	public String getName() {
@@ -168,5 +180,40 @@ class Function implements Comparable<Function> {
 				return -1;
 			return paramTypes[0].compareTo(f.paramTypes[0]);
 		}
+	}
+	
+	static boolean isInt(Class<?> c) {
+		if(c.equals(Integer.class) || c.equals(int.class))
+			return true;
+		else 
+			return false;
+	}
+	
+	static boolean isFloat(Class<?> c) {
+		if(c.equals(Float.class) || c.equals(float.class) || c.equals(Double.class) || c.equals(double.class))
+			return true;
+		else
+			return false;
+	}
+	
+	static boolean isBool(Class<?> c) {
+		if(c.equals(Boolean.class) || c.equals(boolean.class))
+			return true;
+		else
+			return false;
+	}
+	
+	static boolean isString(Class<?> c) {
+		if(c.equals(String.class))
+			return true;
+		else
+			return false;
+	}
+	
+	static boolean isVoid(Class<?> c) {
+		if(c.equals(Void.class) || c.equals(void.class))
+			return true;
+		else
+			return false;
 	}
 }

@@ -13,8 +13,9 @@ abstract class MathRef {
 	private static HashMap<Character, Assoc> amap = new HashMap<Character, Assoc>();
 	private static HashMap<Character, MathOp> opMap = new HashMap<Character, MathOp>();
 
+	public static final char AND_BOOL = '@', OR_BOOL = '~', EQUALS = '=', NOT_EQUALS = '\u00AC';
 	public static final char[] OPERATORS = new char[] { '+', '-', '*', '/',
-		'|', '&', '#', '%', '^', '=' };
+		'|', '&', '#', '%', '^', EQUALS, '>', '<', AND_BOOL, OR_BOOL, NOT_EQUALS};
 	public static final char[] NUM_CHARS = new char[] { 'E' };
 	protected static final char MULTIPLY = OPERATORS[2];
 
@@ -71,6 +72,26 @@ abstract class MathRef {
 			case 9:
 				if (mathOp == null) {
 					mathOp = new EqualityOp();
+				}
+			case 10:
+				if (mathOp == null) {
+					mathOp = new GreaterOp();
+				}
+			case 11:
+				if (mathOp == null) {
+					mathOp = new LesserOp();
+				}
+			case 12:
+				if(mathOp == null) {
+					mathOp = new AndOp();
+				}
+			case 13:
+				if(mathOp == null) {
+					mathOp =  new OrOp();
+				}
+			case 14:
+				if(mathOp == null) {
+					mathOp = new NotEqualsOp();
 				}
 				p = 0;
 				assc = Assoc.UNDEF;
@@ -395,6 +416,96 @@ abstract class MathRef {
 		@Override
 		public int argCount() {
 			return 2;
+		}
+	}
+	
+	public static class GreaterOp implements MathOp {
+		@Override
+		public float eval(float... args) {
+			return (args[0] > args[1]) ? 1:0;
+		}
+		
+		@Override
+		public int argCount() {
+			return 2;
+		}
+	}
+	
+	public static class LesserOp implements MathOp {
+		@Override
+		public float eval(float... args) {
+			return (args[0] < args[1]) ? 1:0;
+		}
+		
+		@Override
+		public int argCount() {
+			return 2;
+		}
+	}
+	
+	public static class AndOp implements MathOp {
+
+		/**
+		 *
+		 */
+		@Override
+		public float eval(float... args) {
+			return (args[0] != 0 && args[1] != 0) ? 1:0;
+		}
+
+		/**
+		 *
+		 */
+		@Override
+		public int argCount() {
+			return 2;
+		}
+	}
+	
+	public static class OrOp implements MathOp {
+		
+		/**
+		 *
+		 */
+		@Override
+		public float eval(float... args) {
+			return (args[0] != 0|| args[1] != 0) ? 1:0;
+		}
+		
+		/**
+		 *
+		 */
+		@Override
+		public int argCount() {
+			return 2;
+		}
+	}
+	
+	public static class NotEqualsOp implements MathOp {
+		@Override
+		public float eval(float... args) {
+			return (args[0] != args[1]) ? 1:0;
+		}
+		
+		@Override
+		public int argCount() {
+			return 1;
+		}
+	}
+	
+	public static class NotOp implements MathOp {
+		
+		@Override
+		public float eval(float... args) {
+			if(args[0] == 0)
+				return 1;
+			else
+				return 0;
+		}
+		
+		@Override
+		public int argCount() {
+			return 1;
 		}
 	}
 }

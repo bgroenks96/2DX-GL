@@ -30,6 +30,7 @@ public class Display {
 	private Type type;
 	private JFrame frame;
 	private RenderControl rc;
+	private GLConfig graphicsConfig;
 
 	/**
 	 * Creates the Display with default GLConfig.
@@ -39,7 +40,7 @@ public class Display {
 	 * @param type
 	 */
 	public Display(int width, int height, Type type) {
-		this(width, height, type, new GLConfig());
+		this(width, height, type, GLConfig.getDefaultSystemConfig());
 	}
 
 	/**
@@ -56,6 +57,7 @@ public class Display {
 	 *            the graphics configuration to use.
 	 */
 	public Display(int width, int height, Type type, GLConfig config) {
+		this.graphicsConfig = config;
 		this.wt = width;
 		this.ht = height;
 		this.type = type;
@@ -204,7 +206,7 @@ public class Display {
 			frame.remove(rc.canvas);
 			rc.dispose();
 		}
-		rc = new RenderControl(buffs);
+		rc = new RenderControl(buffs, graphicsConfig);
 		frame.add(rc.canvas);
 		return rc;
 	}

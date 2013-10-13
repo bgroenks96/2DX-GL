@@ -40,6 +40,11 @@ public class ScriptCompilationException extends Exception {
 		else
 			this.message = message;
 	}
+	
+	public ScriptCompilationException(String message) {
+		super(message);
+		this.message = message;
+	}
 
 	@Override
 	public String getMessage() {
@@ -48,7 +53,7 @@ public class ScriptCompilationException extends Exception {
 
 	private String appendErrorInfo(String msg, String src, int cpos) {
 		char[] chars = src.toCharArray();
-		int n = 1;
+		int n = 0;
 		for(int i = 0; i < cpos; i++) {
 			if(chars[i] == lineSep)
 				n++;

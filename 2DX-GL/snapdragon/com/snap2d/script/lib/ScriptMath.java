@@ -1,0 +1,92 @@
+/*
+ *  Copyright © 2011-2013 Brian Groenke
+ *  All rights reserved.
+ * 
+ *  This file is part of the 2DX Graphics Library.
+ *
+ *  This Source Code Form is subject to the terms of the
+ *  Mozilla Public License, v. 2.0. If a copy of the MPL 
+ *  was not distributed with this file, You can obtain one at 
+ *  http://mozilla.org/MPL/2.0/.
+ */
+
+package com.snap2d.script.lib;
+
+import com.snap2d.script.*;
+
+/**
+ * @author Brian Groenke
+ *
+ */
+public class ScriptMath {
+	
+	@ScriptLink
+	public static double sqrt(double arg) {
+		return Math.sqrt(arg);
+	}
+	
+	@ScriptLink
+	public static double cbrt(double arg) {
+		return Math.cbrt(arg);
+	}
+	
+	@ScriptLink
+	public static double sin(double arg) {
+		return Math.sin(arg);
+	}
+	
+	@ScriptLink
+	public static double cos(double arg) {
+		return Math.cos(arg);
+	}
+	
+	@ScriptLink
+	public static double tan(double arg) {
+		return Math.tan(arg);
+	}
+	
+	@ScriptLink
+	public static double asin(double arg) {
+		return Math.asin(arg);
+	}
+	
+	@ScriptLink
+	public static double acos(double arg) {
+		return Math.acos(arg);
+	}
+	
+	@ScriptLink
+	public static double atan(double arg) {
+		return Math.atan(arg);
+	}
+	
+	@ScriptLink
+	/**
+	 * @param arg0 integer to be shifted
+	 * @param arg1 number of binary places to be shifted
+	 * @return
+	 */
+	public static int leftShift(int arg0, int arg1) {
+		return arg0 << arg1;
+	}
+	
+	@ScriptLink
+	public static int rightShift(int arg0, int arg1) {
+		return arg0 >> arg1;
+	}
+	
+	@ScriptLink
+	public static double absv(double arg0) {
+		return Math.abs(arg0);
+	}
+	
+	@ScriptLink
+	public static double min(double arg0, double arg1) {
+		return Math.min(arg0, arg1);
+	}
+	
+	@ScriptLink
+	public static double max(double arg0, double arg1) {
+		return Math.max(arg0, arg1);
+	}
+}

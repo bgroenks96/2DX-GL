@@ -22,10 +22,23 @@ public class GLHandle {
 
 	protected GL3bc gl;
 
+	double vx, vy, vwt, vht;
+	float ppu;
 	boolean texEnabled, texBound;
 
 	protected GLHandle() {
 		//
+	}
+	
+	public void setViewport(double x, double y, int viewWidth, int viewHeight, float ppu) {
+		vx = x;
+		vy = y;
+		vwt = viewWidth / ppu;
+		vht = viewHeight / ppu;
+		this.ppu = ppu;
+		gl.glOrtho(x, y, x + vwt, y + vht, 0, 1);
+		gl.glMatrixMode(GL2.GL_MODELVIEW);
+		gl.glLoadIdentity();
 	}
 
 	public void setTextureEnabled(boolean enabled) {
@@ -109,7 +122,7 @@ public class GLHandle {
 	 * <b>JOGL must be in your build path to use the classes directly.</b>
 	 * @return the JOGL GL control class
 	 */
-	public GL2 getGL() {
+	public GL3bc getGL() {
 		return gl;
 	}
 }

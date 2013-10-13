@@ -59,7 +59,7 @@ public class GenericEntity extends Entity {
 		Point p = world.worldToScreen(wx, wy);
 		int x, y;
 		x = p.x;
-		y = p.y;
+		y = p.y - SIZE;
 		g.setPaint(COLOR);
 		g.fillRect(x, y, SIZE, SIZE);
 	}

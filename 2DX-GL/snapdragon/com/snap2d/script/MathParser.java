@@ -127,6 +127,8 @@ class MathParser {
 
 		return ans;
 	}
+	
+	public static final char BRACE_OPEN = '{', BRACE_CLOSE = '}';
 
 	/*
 	 * Should be called with input string before calling calculate(String)
@@ -140,6 +142,13 @@ class MathParser {
 		char last = '0';
 		for (int i = 0; i < chars.length; i++) {
 			char c = chars[i];
+			if(isBrace(c)) {
+				int end = input.indexOf(BRACE_CLOSE, i);
+				output.append(((output.length() > 0) ? SEP:"") + input.substring(i, end + 1));
+				i = end;
+				continue;
+			}
+			
 			if (MathRef.isOperator(c)) {
 				Character peek = stack.peekFirst();
 				while (peek != null && peek != '(' && peek != ')'
@@ -148,8 +157,8 @@ class MathParser {
 					peek = stack.peekFirst();
 				}
 				stack.push(c);
-			} else if (isNumber(c) || Character.isLetter(c)) {
-				if (isNumber(last) || Character.isLetter(c)) {
+			} else if (isNumber(c) || Character.isLetter(c) || isBrace(c)) {
+				if (isNumber(last) || Character.isLetter(last)) {
 					output.append(c);
 				} else {
 					output.append(SEP + c);
@@ -240,5 +249,9 @@ class MathParser {
 	
 	public boolean isNonOpeningDelimter(char c) {
 		return isDelimter(c) && c != '(' && c != '[';
+	}
+	
+	public boolean isBrace(char c) {
+		return c == BRACE_OPEN || c == BRACE_CLOSE;
 	}
 }

@@ -23,12 +23,14 @@ enum Keyword {
 	BLOCK_BEGIN("{", Flags.DELIMITER), BLOCK_END("}", Flags.DELIMITER), SEPARATOR(",", Flags.DELIMITER), INT("int", Flags.TYPE), FLOAT("float", Flags.TYPE),
 	BOOL("bool", Flags.TYPE), STRING("string", Flags.TYPE), VOID("void", Flags.TYPE), ADD("+", Flags.OP, Flags.ARG_NUM, 2, Flags.RETURN_MATCH_ARG),
 	SUBTRACT("-", Flags.OP, Flags.ARG_NUM, 2, Flags.RETURN_MATCH_ARG), MULTIPLY("*", Flags.OP, Flags.ARG_NUM, 2, Flags.RETURN_MATCH_ARG), 
-	DIVIDE("/", Flags.OP, Flags.ARG_NUM, 2, Flags.RETURN_MATCH_ARG), POW("^", Flags.OP, Flags.ARG_NUM, 2, Flags.RETURN_MATCH_ARG),
-	SHIFT_RIGHT(">>", Flags.OP, Flags.ARG_INT, 2, Flags.RETURN_INT), SHIFT_LEFT("<<", Flags.OP, Flags.ARG_INT, 2, Flags.RETURN_INT), 
+	DIVIDE("/", Flags.OP, Flags.ARG_NUM, 2, Flags.RETURN_MATCH_ARG), POW("^", Flags.OP, Flags.ARG_NUM, 2, Flags.RETURN_MATCH_ARG), 
 	ASSIGN("=", Flags.OP, Flags.ARG_ASSIGN, 2, Flags.RETURN_MATCH_ARG),EQUALS("==", Flags.OP, Flags.ARG_MATCH, 2, Flags.RETURN_BOOL), 
-	NOT_EQUALS("!=", Flags.OP, Flags.ARG_MATCH, 2, Flags.RETURN_BOOL), NOT("!", Flags.OP), GREATER(">", Flags.OP, Flags.ARG_NUM, 2, Flags.RETURN_BOOL),
-	LESSER("<", Flags.OP, Flags.ARG_NUM, 2, Flags.RETURN_BOOL), STR_MARK("\"", Flags.DELIMITER), OR("|", Flags.OP, Flags.ARG_BOOL, 2, Flags.RETURN_BOOL),
-	AND("&", Flags.OP, Flags.ARG_BOOL, 2, Flags.RETURN_BOOL), TRUE("true", Flags.STATEMENT), FALSE("false", Flags.STATEMENT);
+	NOT_EQUALS("!=", Flags.OP, Flags.ARG_MATCH, 2, Flags.RETURN_BOOL), NOT("!", Flags.OP, 1, Flags.RETURN_BOOL), GREATER(">", Flags.OP, Flags.ARG_NUM, 2, Flags.RETURN_BOOL),
+	LESSER("<", Flags.OP, Flags.ARG_NUM, 2, Flags.RETURN_BOOL), STR_MARK("\"", Flags.DELIMITER), OR("||", Flags.OP, Flags.ARG_BOOL, 2, Flags.RETURN_BOOL),
+	AND("&&", Flags.OP, Flags.ARG_BOOL, 2, Flags.RETURN_BOOL), BITOR("|", Flags.OP, Flags.ARG_INT, 2, Flags.RETURN_INT), BITAND("&", Flags.OP, Flags.ARG_INT, 2, Flags.RETURN_INT),
+	TRUE("true", Flags.STATEMENT), FALSE("false", Flags.STATEMENT), RETURN("return", Flags.STATEMENT, Flags.ARG_DEF, 1), INCREM("++", Flags.OP, Flags.ARG_NUM, 1, Flags.RETURN_MATCH_ARG),
+	ADD_INCREM("+=", Flags.OP, Flags.ARG_NUM, 1, Flags.RETURN_MATCH_ARG), DECREM("--", Flags.OP, Flags.ARG_NUM, 1, Flags.RETURN_MATCH_ARG), 
+	MINUS_DECREM("-=", Flags.OP, Flags.ARG_NUM, 1, Flags.RETURN_MATCH_ARG);
 	
 	private static final int TYPE_POS = 0, ARG_TYPE_POS = 1, ARG_COUNT_POS = 2, RETURN_POS = 3;
 	
@@ -78,6 +80,13 @@ enum Keyword {
 		return sym;
 	}
 	
+	public String getEscapedSym() {
+		if(sym.equals("||"))
+			return "\\|\\|";
+		else
+			return sym;
+	}
+	
 	public static Keyword getFromSymbol(String sym) {
 		for(Keyword k:Keyword.values())
 			if(k.sym.equals(sym))
@@ -99,5 +108,20 @@ enum Keyword {
 			return false;
 		else
 			return true;
+	}
+	
+	public static int typeKeyToFlag(Keyword k) {
+		switch(k) {
+		case INT:
+			return Flags.TYPE_INT;
+		case FLOAT:
+			return Flags.TYPE_FLOAT;
+		case BOOL:
+			return Flags.TYPE_BOOL;
+		case STRING:
+			return Flags.TYPE_STRING;
+		default:
+			return -1;
+		}
 	}
 }
