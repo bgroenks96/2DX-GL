@@ -12,6 +12,8 @@
 
 package bg.x2d.math;
 
+import java.math.*;
+
 /**
  * @author Brian Groenke
  * 
@@ -53,6 +55,19 @@ public class DoubleMath {
 			x *= (power > 0) ? arg0 : 1 / arg0;
 		}
 		return x;
+	}
+	
+	/**
+	 * Returns the given double value rounded to n decimal places.
+	 * <br/>
+	 * Note: the current precision setting of the DoubleMath class does NOT affect the result
+	 * of this method.
+	 * @param arg0 the double value to round
+	 * @param n the scale (number of places) to which the double should be rounded
+	 * @return
+	 */
+	public static double round(double arg0, int n) {
+		return BigDecimal.valueOf(arg0).setScale(n, BigDecimal.ROUND_HALF_UP).doubleValue();
 	}
 
 	/**

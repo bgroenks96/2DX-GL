@@ -14,6 +14,8 @@ package com.snap2d.script;
 
 import java.util.*;
 
+import bg.x2d.math.*;
+
 /**
  * @author Brian Groenke
  *
@@ -21,8 +23,10 @@ import java.util.*;
 class MathParser {
 
 	public static final String SEP = ":";
+	
+	public int roundTo = 6;
 
-	protected float parse(String input) throws MathParseException {
+	protected double parse(String input) throws MathParseException {
 		StringBuilder sb = new StringBuilder(input);
 		sb.replace(0, sb.length(), sb.toString().replaceAll("\\s", ""));
 		sb.replace(0, sb.length(), findNegatives(sb.toString()));
@@ -32,7 +36,8 @@ class MathParser {
 					+ sb.toString());
 		}
 		
-		float result = calculate(sb.toString());
+		String rpn = shuntingYard(sb.toString());
+		double result = calculate(rpn);
 		return result;
 	}
 
@@ -71,20 +76,19 @@ class MathParser {
 	}
 
 	/*
-	 * Calculates the result with the String parsed by the shuntingYard(String)
+	 * Calculates the result of the String 'input' result of shuntingYard(String)
 	 */
-	protected float calculate(String input) throws MathParseException {
-		input = shuntingYard(input);
+	protected double calculate(String input) throws MathParseException {
 		StringBuilder num = new StringBuilder();
-		Vector<Float> numStack = new Vector<Float>(1, 1);
+		Vector<Double> numStack = new Vector<Double>(1, 1);
 		char[] chars = input.toCharArray();
 		for (int i = 0; i < chars.length; i++) {
-			if (isNumber(chars[i])) {
+			if (isNumber(chars[i]) || chars[i] == '-' && (i+1 < chars.length && isNumber(chars[i+1]))) { //check for negatives
 				num.append(chars[i]);
 			} else if (Character.toString(chars[i]).equals(SEP)) {
 				if (num.length() > 0) {
 					try {
-						float val = Float.parseFloat(num.toString());
+						double val = Double.parseDouble(num.toString());
 						numStack.add(val);
 						num.delete(0, num.length());
 						num.trimToSize();
@@ -100,9 +104,9 @@ class MathParser {
 							"error parsing input: too few operands"));
 				}
 
-				float x1 = numStack.get(numStack.size() - 2);
-				float x2 = numStack.get(numStack.size() - 1);
-				float res = MathRef.doOperator(chars[i], x1, x2);
+				double x1 = numStack.get(numStack.size() - 2);
+				double x2 = numStack.get(numStack.size() - 1);
+				double res = MathRef.doOperator(chars[i], x1, x2);
 				numStack.set(numStack.size() - 2, res);
 				numStack.setSize(numStack.size() - 1);
 			}
@@ -110,7 +114,7 @@ class MathParser {
 
 		if (num.length() > 0) {
 			try {
-				float val = Float.parseFloat(num.toString());
+				double val = Double.parseDouble(num.toString());
 				numStack.add(val);
 			} catch (NumberFormatException e) {
 				e.printStackTrace();
@@ -123,9 +127,9 @@ class MathParser {
 					"error parsing input: operand evaluation did not complete properly"));
 		}
 
-		float ans = numStack.firstElement();
+		double ans = numStack.firstElement();
 
-		return ans;
+		return DoubleMath.round(ans, roundTo);
 	}
 	
 	public static final char BRACE_OPEN = '{', BRACE_CLOSE = '}';
@@ -143,7 +147,7 @@ class MathParser {
 		for (int i = 0; i < chars.length; i++) {
 			char c = chars[i];
 			if(isBrace(c)) {
-				int end = input.indexOf(BRACE_CLOSE, i);
+				int end = findBraceClose(input, i);
 				output.append(((output.length() > 0) ? SEP:"") + input.substring(i, end + 1));
 				i = end;
 				continue;
@@ -158,7 +162,7 @@ class MathParser {
 				}
 				stack.push(c);
 			} else if (isNumber(c) || Character.isLetter(c) || isBrace(c)) {
-				if (isNumber(last) || Character.isLetter(last)) {
+				if (isNumber(last) || Character.isLetter(last) || output.length() == 0) {
 					output.append(c);
 				} else {
 					output.append(SEP + c);
@@ -178,7 +182,8 @@ class MathParser {
 				if (i < chars.length - 1 && !MathRef.isOperator(chars[i + 1]) && chars[i + 1] != ')') {
 					//stack.push(MathRef.getDefaultMultiplyOp());
 				}
-			}
+			} else if (Character.toString(c).equals(Keyword.CAST_INT.sym))
+				output.append(c);
 			last = c;
 		}
 
@@ -239,19 +244,35 @@ class MathParser {
 		}
 	}
 
-	public boolean isDelimter(char c) {
+	public boolean isDelimiter(char c) {
 		return (c == '(' || c == ')' || c == ',' || c == '[' || c == ']');
 	}
 	
 	public boolean isNonClosingDelimiter(char c) {
-		return isDelimter(c) && c != ']' && c != ')';
+		return isDelimiter(c) && c != ']' && c != ')';
 	}
 	
 	public boolean isNonOpeningDelimter(char c) {
-		return isDelimter(c) && c != '(' && c != '[';
+		return isDelimiter(c) && c != '(' && c != '[';
 	}
 	
 	public boolean isBrace(char c) {
 		return c == BRACE_OPEN || c == BRACE_CLOSE;
+	}
+	
+	public int findBraceClose(String input, int pos) {
+		char[] chars = input.toCharArray();
+		int start=0,end=0;
+		for(int i=pos; i < input.length(); i++) {
+			if(chars[i] == '{')
+				start++;
+			else if(chars[i] == '}') {
+				end++;
+				if(start == end)
+					return i;
+			}
+		}
+		
+		return -1;
 	}
 }

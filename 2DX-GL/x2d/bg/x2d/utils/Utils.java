@@ -266,6 +266,26 @@ public class Utils {
 		*/
 	}
 	
+	/**
+	 * Reverses the array so that all the values currently set from front to
+	 * back are reset to being back to front.
+	 * 
+	 * @param array
+	 * @return the reversed array.
+	 */
+	public static <T> T[] flipArray(T[] array) {
+		if (array == null) {
+			throw (new NullPointerException("passed array is of null value"));
+		}
+		T[] copy = Arrays.copyOf(array, array.length);
+		int inv = 0;
+		for (int i = array.length - 1; i >= 0; i--) {
+			array[i] = copy[inv];
+			inv++;
+		}
+		return array;
+	}
+	
 	public static boolean urlExists(URL url) {
 		try {
 			url.openStream();

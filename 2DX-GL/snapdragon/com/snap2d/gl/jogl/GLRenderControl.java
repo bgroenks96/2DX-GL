@@ -371,15 +371,15 @@ public class GLRenderControl implements GLEventListener {
 	private void printInitReport() {
 		if(!Boolean.getBoolean(Property.SNAP2D_PRINT_GL_CONFIG.getProperty()))
 			return;
-		Logger.println("initialized OpenGL graphics pipeline");
+		SnapLogger.println("initialized OpenGL graphics pipeline");
 		GLContext ctxt = canvas.getContext();
-		Logger.println("OpenGL-version: " + ctxt.getGLVersion());
+		SnapLogger.println("OpenGL-version: " + ctxt.getGLVersion());
 		boolean glsl = ctxt.hasGLSL();
-		Logger.println("GLSL-support=" + glsl);
+		SnapLogger.println("GLSL-support=" + glsl);
 		if(glsl)
-			Logger.print("GLSL-version: " + ctxt.getGLSLVersionString());
+			SnapLogger.print("GLSL-version: " + ctxt.getGLSLVersionString());
 		for(JOGLConfig.Property jglp : Property.values()) {
-			Logger.println(jglp.getProperty() + "=" + jglp.getValue());
+			SnapLogger.println(jglp.getProperty() + "=" + jglp.getValue());
 		}
 	}
 	

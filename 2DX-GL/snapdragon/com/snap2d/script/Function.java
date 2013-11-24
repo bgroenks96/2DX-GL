@@ -145,14 +145,14 @@ public class Function implements Comparable<Function> {
 	@Override
 	public String toString() {
 		StringBuilder sb = new StringBuilder("[" + returnType.getSymbol() + " " + name);
-		sb.append(Keyword.ARG_BEGIN.getSymbol());
+		sb.append(Keyword.PARAM_BEGIN.getSymbol());
 		if(paramTypes.length > 0) {
 			int i = 0;
 			for(Keyword k:paramTypes)
 				sb.append(k.getSymbol() + " " + paramNames[i++] + Keyword.SEPARATOR.getSymbol() + " ");
 			sb.delete(sb.length() - 2, sb.length());
 		}
-		sb.append(Keyword.ARG_END.getSymbol() + "]");
+		sb.append(Keyword.PARAM_END.getSymbol() + "]");
 		return sb.toString();
 	}
 

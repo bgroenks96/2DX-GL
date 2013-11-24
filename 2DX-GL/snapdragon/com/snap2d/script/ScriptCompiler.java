@@ -26,15 +26,12 @@ class ScriptCompiler {
 
 	final MathParser parser = new MathParser();
 
-	public float test(String math) throws MathParseException {
-		return parser.parse(math);
-	}
-
 	// ------------------ PRECOMPILER ------------------ //
 
 	public Multimap<String, Function> precompile(String...scripts) throws ScriptCompilationException {
 		Multimap<String, Function> fmap = new Multimap<String, Function>();
 		for(String script:scripts) {
+			script = removeComments(script);
 			Function[] farr = parseScript(script);
 			for(Function f:farr) {
 				fmap.put(f.getName(), f);
@@ -69,15 +66,15 @@ class ScriptCompiler {
 					allowDigits = true;
 				}
 			} else if(Keyword.isDelimiter(String.valueOf(c)) && nextFlush == Flags.DELIM_FLUSH) {
-				if(!String.valueOf(c).equals(Keyword.ARG_BEGIN.getSymbol()))
-					throw(new ScriptCompilationException("expected " + Keyword.ARG_BEGIN.getSymbol() +
+				if(!String.valueOf(c).equals(Keyword.PARAM_BEGIN.getSymbol()))
+					throw(new ScriptCompilationException("expected " + Keyword.PARAM_BEGIN.getSymbol() +
 							" in function declaration", src, i));
 				fname = buff.toString();
 				buff.delete(0, buff.length());
 				ekey = Flags.PC_RETURN;
 				nextFlush = Flags.W_FLUSH;
 				allowDigits = false;
-				int close = src.indexOf(Keyword.ARG_END.getSymbol(), i);
+				int close = src.indexOf(Keyword.PARAM_END.getSymbol(), i);
 				if(close < 0)
 					throw(new ScriptCompilationException("missing function delimeter", src, i));
 				String paramString = src.substring(i + 1, close);
@@ -149,9 +146,9 @@ class ScriptCompiler {
 		int offs = 0;
 		for(int i = start; i < src.length; i++) {
 			char c = src[i];
-			if(String.valueOf(c).equals(Keyword.ARG_BEGIN.getSymbol()))
+			if(String.valueOf(c).equals(Keyword.PARAM_BEGIN.getSymbol()))
 				offs++;
-			else if(String.valueOf(c).equals(Keyword.ARG_END.getSymbol())) {
+			else if(String.valueOf(c).equals(Keyword.PARAM_END.getSymbol())) {
 				if(offs > 0)
 					offs--;
 				else
@@ -160,6 +157,27 @@ class ScriptCompiler {
 		}
 		return -1;
 	}
+	
+	private String removeComments(String src) {
+		StringBuilder sb = new StringBuilder(src);
+		int ind = 0;
+		while(ind >= 0) {
+			int lrpos = sb.indexOf(Keyword.REM_LINE.sym, ind);
+			int brpos = sb.indexOf(Keyword.REM_START.sym, ind);
+			if((lrpos < brpos || brpos < 0) && lrpos >= 0) {
+				int newline = sb.indexOf("\n", lrpos);
+				sb.delete(lrpos, newline);
+				ind = lrpos;
+			} else if(brpos >= 0) {
+				int end = sb.indexOf(Keyword.REM_END.sym, brpos);
+				sb.delete(brpos, end + Keyword.REM_END.sym.length());
+			} else
+				ind = -1;
+		}
+		
+		return sb.toString();
+	}
+	
 	// ------------------ COMPILER ------------------ //
 
 	private static final int INIT_BUFFER_ALLOC = 0xF00, THRESHOLD = 0x100, REALLOC = 0x400;
@@ -184,7 +202,7 @@ class ScriptCompiler {
 
 			Keyword[] params = func.getParamTypes();
 			String[] names = func.getParamNames();
-			
+
 			if(params.length == 0)
 				buff.put(Bytecodes.NO_PARAMS);
 			else
@@ -204,19 +222,19 @@ class ScriptCompiler {
 				e.printStackTrace();
 				success = false;
 			}
-			
+
 			ByteBuffer finalBuff = ByteBuffer.allocateDirect(buff.position());
 			buff.flip();
 			finalBuff.put(buff).flip();
 			func.bytecode = finalBuff;
-			
+
 			buff.clear();
 			buff = null;
-			
+
 			stackVars.clear();
 			paramVars.clear();
 		}
-		
+
 		return success;
 	}
 
@@ -224,10 +242,11 @@ class ScriptCompiler {
 
 	private void parseMain(String src, int pos) throws ScriptCompilationException {
 		char[] chars = src.toCharArray();
+		HashMap<String, Variable> snapshot = new HashMap<String, Variable>(stackVars);
 		buff.put(Bytecodes.NEW_STACK);
 		StringBuilder strbuff = new StringBuilder();
 		List<Keyword> nextDelims = new ArrayList<Keyword>();
-		nextDelims.add(Keyword.ARG_BEGIN); nextDelims.add(Keyword.END);
+		nextDelims.add(Keyword.PARAM_BEGIN); nextDelims.add(Keyword.END);
 		for(int i=pos; i < chars.length; i++) {
 			char c = chars[i];
 			boolean delim = false, voidEndCmd = false;
@@ -244,7 +263,7 @@ class ScriptCompiler {
 					if(var != null) {
 						i = parseVarAssign(var.varType, str, src, false, i);
 					} else {
-						Function f = functions.get(str);
+						Function[] f = functions.getAll(str);
 						if(f == null)
 							throw(new ScriptCompilationException("unrecognized variable or function: " + str, src, i));
 						i = parseFunctionInvocation(f, src, i);
@@ -252,11 +271,11 @@ class ScriptCompiler {
 				} else {
 					switch(keyw) {
 					case IF:
-						i = parseConditional(src, src.indexOf(Keyword.ARG_BEGIN.sym, i));
+						i = parseConditional(src, src.indexOf(Keyword.PARAM_BEGIN.sym, i));
 						voidEndCmd = true;
 						break;
 					case FOR:
-						i = parseForLoop(src, src.indexOf(Keyword.ARG_BEGIN.sym, i));
+						i = parseForLoop(src, src.indexOf(Keyword.PARAM_BEGIN.sym, i));
 						voidEndCmd = true;
 						break;
 					case INT:
@@ -301,21 +320,27 @@ class ScriptCompiler {
 		}
 		buff.put(Bytecodes.CLEAR_STACK);
 		stackVars.clear();
-		stackVars.putAll(paramVars);
+		stackVars = snapshot;
 	}
 
 	/*
 	 * Expects the given char position to be the opening delimiter for the conditional.
 	 */
 	private int parseConditional(String src, int pos) throws ScriptCompilationException {
-		if(!String.valueOf(src.charAt(pos)).equals(Keyword.ARG_BEGIN.sym))
+		if(!String.valueOf(src.charAt(pos)).equals(Keyword.PARAM_BEGIN.sym))
 			throw(new ScriptCompilationException("illegal conditional delimeter: " + src.charAt(pos), src, pos));
-		int argEnd = findArgEnd(src.toCharArray(), pos);
 		buff.put(Bytecodes.IF);
+		
+		// write the whole IF statement compilation into a new buffer so we can record the total length
+		// the statement takes up in bytecode
+		ByteBuffer curr = buff;
+		this.buff = ByteBuffer.allocate(INIT_BUFFER_ALLOC);
+		
 		boolean cont = true;
 		int endPos = 0;
 
 		while(cont) {
+			int argEnd = findArgEnd(src.toCharArray(), pos);
 			String bool = src.substring(pos + 1, argEnd).trim();
 			parseBoolean(bool, src, pos + 1);
 			pos = argEnd + 1;
@@ -340,6 +365,8 @@ class ScriptCompiler {
 			this.buff.flip();
 			prev.put(buff);
 			this.buff = prev;
+			
+			buff.put(Bytecodes.BREAK);
 
 			char[] chars = src.toCharArray();
 			StringBuilder sb = new StringBuilder();
@@ -352,9 +379,9 @@ class ScriptCompiler {
 					if(sb.toString().equals(Keyword.ELSE.sym)) {
 						int stBlock = src.indexOf(Keyword.BLOCK_BEGIN.sym, i);
 						int nend = src.indexOf(Keyword.END.sym, i);
-						int argBegin = src.indexOf(Keyword.ARG_BEGIN.sym, i);
+						int argBegin = src.indexOf(Keyword.PARAM_BEGIN.sym, i);
 						if(argBegin < 0 || !src.substring(i, argBegin).trim().equals(Keyword.IF.sym)) {
-							if(stBlock < end && stBlock > 0) {
+							if(stBlock < nend && stBlock > 0) {
 								endPos = findBlockEnd(chars, stBlock);
 							} else {
 								endPos = nend + 1;
@@ -372,11 +399,13 @@ class ScriptCompiler {
 							this.buff.flip();
 							prev.put(buff);
 							this.buff = prev;
+							
+							buff.put(Bytecodes.BREAK);
 						} else {
-							String expif = src.substring(i, src.indexOf(Keyword.ARG_BEGIN.sym, i)).trim();
+							String expif = src.substring(i, src.indexOf(Keyword.PARAM_BEGIN.sym, i)).trim();
 							if(!expif.equals(Keyword.IF.sym))
 								throw(new ScriptCompilationException("illegal conditional delimeter: " + src.charAt(i), src, pos));
-							pos = src.indexOf(Keyword.ARG_BEGIN.sym, i);
+							pos = src.indexOf(Keyword.PARAM_BEGIN.sym, i);
 							buff.put(Bytecodes.ELSE_IF);
 							cont = true;
 						}
@@ -386,11 +415,19 @@ class ScriptCompiler {
 					sb.append(c);
 			}
 		}
+		
+		int len = buff.position();
+		curr.putInt(len);  // this is the main buffer
+		buff.flip();  // prepare temp buffer for reading
+		curr.put(buff);
+		this.buff = curr; // re-assign primary pointer to the main buffer object
+		
+		buff.put(Bytecodes.END_CMD);
 		return endPos + 1;
 	}
 
 	private int parseForLoop(String src, int pos) throws ScriptCompilationException {
-		if(!String.valueOf(src.charAt(pos)).equals(Keyword.ARG_BEGIN.sym))
+		if(!String.valueOf(src.charAt(pos)).equals(Keyword.PARAM_BEGIN.sym))
 			throw(new ScriptCompilationException("illegal for loop delimiter: " + src.charAt(pos), src, pos));
 		int argEnd = findArgEnd(src.toCharArray(), pos);
 		String argstr = src.substring(pos + 1, argEnd);
@@ -442,7 +479,7 @@ class ScriptCompiler {
 				case DECREM:
 					if(code)
 						buff.put(Bytecodes.DECREM);
-					parseExpression(sb.toString(), src, npos + forpts[1].length(), Flags.TYPE_FLOAT);
+					parseEvaluation(sb.toString(), src, npos + forpts[1].length(), Flags.TYPE_FLOAT);
 					break;
 				case ADD_INCREM:
 					buff.put(Bytecodes.ADD_INC);
@@ -451,9 +488,9 @@ class ScriptCompiler {
 					if(code)
 						buff.put(Bytecodes.MINUS_INC);
 					npos = npos + forpts[1].length() + 1;
-					parseExpression(sb.toString(), src, npos, Flags.TYPE_FLOAT);
+					parseEvaluation(sb.toString(), src, npos, Flags.TYPE_FLOAT);
 					System.out.println(varop.substring(varop.indexOf(nx) + 2));
-					parseExpression(varop.substring(varop.indexOf(nx) + 2), src, npos + sb.length() + 3, Flags.TYPE_FLOAT);
+					parseEvaluation(varop.substring(varop.indexOf(nx) + 2), src, npos + sb.length() + 3, Flags.TYPE_FLOAT);
 				}
 			} else
 				sb.append(c);
@@ -515,10 +552,10 @@ class ScriptCompiler {
 
 		switch(varType) { // split up type parsing
 		case Flags.TYPE_INT:
-			parseExpression(str, src, st, Flags.RETURN_INT);
+			parseEvaluation(str, src, st, Flags.RETURN_INT);
 			break;
 		case Flags.TYPE_FLOAT:
-			parseExpression(str, src, st, Flags.RETURN_FLOAT);
+			parseEvaluation(str, src, st, Flags.RETURN_FLOAT);
 			break;
 		case Flags.TYPE_STRING:
 			parseString(str, src, st);
@@ -539,7 +576,7 @@ class ScriptCompiler {
 		switch(type) {
 		case INT:
 		case FLOAT:
-			parseExpression(arg, src, pos, typeflag);
+			parseEvaluation(arg, src, pos, typeflag);
 			break;
 		case STRING:
 			parseString(arg, src, pos);
@@ -557,12 +594,12 @@ class ScriptCompiler {
 		buff.put(Bytecodes.END_CMD);
 		return endPos;
 	}
-	
+
 	private static final char REF = '&', ESCAPE = '\\';
 
 	private void parseString(String str, String src, int pos) throws ScriptCompilationException {
-		if(str.contains(Keyword.STR_MARK.sym)) {
-			if(!str.startsWith(Keyword.STR_MARK.sym) || !str.endsWith(Keyword.STR_MARK.sym))
+		if(str.startsWith(Keyword.STR_MARK.sym)) {
+			if(!str.endsWith(Keyword.STR_MARK.sym))
 				throw(new ScriptCompilationException("mismatched string expression", src, pos));
 
 			buff.put(Bytecodes.READ_STR); // read string command
@@ -581,7 +618,7 @@ class ScriptCompiler {
 					putVarRef(var, buff, src, pos); // standard ref-var command
 					s.delete(last, last + sbuff.length() + 1);
 					i -= sbuff.length();
-					buff.putInt(i - 1); // position to insert the referenced variable value
+					buff.putInt(i); // position to insert the referenced variable value
 					clear(sbuff);
 					invar = false;
 				} else if(invar) {
@@ -601,42 +638,64 @@ class ScriptCompiler {
 			buff.putInt(sbytes.length); // number of bytes to read for string
 			for(byte b:sbytes)
 				buff.put(b);
+			buff.put(Bytecodes.END_CMD); // end READ_STR
 		} else {
-			if(str.contains(Keyword.ARG_BEGIN.sym) && str.contains(Keyword.ARG_END.sym)) {
+			if(str.contains(Keyword.PARAM_BEGIN.sym) && str.contains(Keyword.PARAM_END.sym)) {
 				int argPos = 0;
-				String funcName = str.substring(0, (argPos=str.indexOf(Keyword.ARG_BEGIN.sym)));
-				Function f = functions.get(funcName);
+				String funcName = str.substring(0, (argPos=str.indexOf(Keyword.PARAM_BEGIN.sym)));
+				Function[] f = functions.getAll(funcName);
 				if(f == null)
 					throw(new ScriptCompilationException("unrecongized function: " + funcName, src, pos));
 				parseFunctionInvocation(f, src, pos + argPos + 1);
-			} else
-				putVarRef(str, buff, src, pos);
+			} else {
+				Variable ref = stackVars.get(str);
+				if(ref == null)
+					throw(new ScriptCompilationException("unrecognized variable: " + str, src, pos));
+				if(ref.varType == Flags.TYPE_STRING)
+					putVarRef(str, buff, src, pos);
+				else
+					throw(new ScriptCompilationException("cannot use a non-string variable as string expression", src, pos));
+			}
 		}
-		buff.put(Bytecodes.END_CMD); // end READ_STR
 	}
 
-	private void parseExpression(String str, String src, int pos, int returnFlag) throws ScriptCompilationException {
+	private void parseEvaluation(String str, String src, int pos, int returnFlag) throws ScriptCompilationException {
 		buff.put(Bytecodes.EVAL);
 		str = str.replaceAll("\\s+", "");
 		StringBuilder nstr = new StringBuilder(str);
 		StringBuilder sb = new StringBuilder();
+		
+		TreeMap<Integer, Boolean> marks = new TreeMap<Integer, Boolean>();
 		char[] chars = str.toCharArray();
 		for(int i=0;i<chars.length;i++) {
 			String s = String.valueOf(chars[i]);
 			if(Keyword.isOperator(s) || isBooleanOperator(s))
 				clear(sb);
-			else if(s.equals(Keyword.ARG_BEGIN.sym) && sb.length() > 0) {
-				nstr.insert(i - sb.length(), "{");
-				nstr.insert(nstr.indexOf(Keyword.ARG_END.sym, i) + 1, "}");
+			else if(s.equals(Keyword.PARAM_BEGIN.sym) && sb.length() > 0) {
+				marks.put(i - sb.length(), true);
+				marks.put(findParamEnd(str, i) + 1, false);
+				clear(sb);
+				//nstr.insert(i - sb.length(), "{");
+				//nstr.insert(findParamEnd(nstr.toString(), i + 1) + 1, "}");
 			} else
 				sb.append(s);
 		}
+		
+		Integer[] keys = marks.keySet().toArray(new Integer[marks.size()]);
+		keys = Utils.flipArray(keys);
+		for(int i:keys) {
+			if(marks.get(i))
+				nstr.insert(i, Keyword.BLOCK_BEGIN.sym);
+			else
+				nstr.insert(i, Keyword.BLOCK_END.sym);
+		}
+		
 		str = nstr.toString();
 		String exp = parser.shuntingYard(str);
 		String[] pts = exp.split(MathParser.SEP);
 		boolean hasbool = false;
 		for(int i = 0; i < pts.length; i++) {
-			String s = pts[i].trim();
+			String s = pts[i];
 			Keyword keyw = Keyword.getFromSymbol(s); // for use later
 			if(Keyword.isOperator(s) || isBooleanOperator(s)) {
 				if(isBooleanOperator(s)) {
@@ -669,23 +728,41 @@ class ScriptCompiler {
 				case POW:
 					buff.put(Bytecodes.POW);
 					break;
+				case BITOR:
+					buff.put(Bytecodes.BITOR);
+					break;
+				case BITAND:
+					buff.put(Bytecodes.BITAND);
+					break;
+				case BITXOR:
+					buff.put(Bytecodes.BITXOR);
+					break;
+				case MODULO:
+					buff.put(Bytecodes.MODULO);
+					break;
 				case EQUALS:
 					buff.put(Bytecodes.EQUALS);
+					hasbool=true;
 					break;
 				case NOT_EQUALS:
 					buff.put(Bytecodes.NOT_EQUALS);
+					hasbool=true;
 					break;
 				case GREATER:
 					buff.put(Bytecodes.GREATER);
+					hasbool=true;
 					break;
 				case LESSER:
 					buff.put(Bytecodes.LESSER);
+					hasbool=true;
 					break;
 				case OR:
 					buff.put(Bytecodes.OR);
+					hasbool=true;
 					break;
 				case AND:
 					buff.put(Bytecodes.AND);
+					hasbool=true;
 					break;
 				default:
 					throw(new ScriptCompilationException("unrecognized mathematical operator: " + s, src, pos));
@@ -694,14 +771,14 @@ class ScriptCompiler {
 				if(s.contains(".")) {
 					if(returnFlag == Flags.RETURN_INT)
 						throw(new ScriptCompilationException("type int cannot be assigned to floating point value", src, pos));
-					float f;
+					double d;
 					try {
-						f = Float.parseFloat(s);
+						d = Double.parseDouble(s);
 					} catch (NumberFormatException e) {
 						throw(new ScriptCompilationException("number formatting error: " + s, src, pos));
 					}
 					buff.put(Bytecodes.READ_FLOAT);
-					buff.putFloat(f);
+					buff.putDouble(d);
 				} else {
 					int a;
 					try {
@@ -726,16 +803,18 @@ class ScriptCompiler {
 				}
 			} else if(s.startsWith(strval(MathParser.BRACE_OPEN)) && s.endsWith(strval(MathParser.BRACE_CLOSE))) {
 				String func = s.substring(1, s.length() - 1);
-				int argStart = func.indexOf(Keyword.ARG_BEGIN.sym);
+				int argStart = func.indexOf(Keyword.PARAM_BEGIN.sym);
 				String fname = func.substring(0, argStart);
-				Function f = functions.get(fname);
-				if(f.getReturnType().equals(Keyword.BOOL))
-					hasbool = true;
-				parseFunctionInvocation(f, src, pos + i + argStart + 1);
+				Function[] f = functions.getAll(fname);
+				if(f == null || f.length == 0)
+					throw(new ScriptCompilationException("function '"+fname+"' is undefined", src, pos));
+				parseFunctionInvocation(f, func, argStart);
 			} else {
 				Variable v = stackVars.get(s);
 				if(v != null && v.varType != Flags.TYPE_INT && v.varType != Flags.TYPE_FLOAT && v.varType != returnFlag)
 					throw(new ScriptCompilationException("variable type does not match expression: " + s, src, pos));
+				if(v != null && returnFlag == Flags.TYPE_INT && v.varType == Flags.TYPE_FLOAT)
+					throw(new ScriptCompilationException("float variable does not match expected integer expression: " + s, src, pos));
 				if(v != null && v.varType == Flags.TYPE_BOOL)
 					hasbool = true;
 				putVarRef(s, buff, src, pos);
@@ -759,7 +838,7 @@ class ScriptCompiler {
 		str = str.replaceAll(TMP_CHK, String.valueOf(MathRef.EQUALS));
 		str = str.replaceAll(Keyword.OR.getEscapedSym(), String.valueOf(MathRef.OR_BOOL));
 		str = str.replaceAll(Keyword.AND.sym, String.valueOf(MathRef.AND_BOOL));
-		parseExpression(str, src, pos, Flags.TYPE_BOOL);
+		parseEvaluation(str, src, pos, Flags.TYPE_BOOL);
 	}
 
 	private boolean isBooleanOperator(String s) {
@@ -773,53 +852,65 @@ class ScriptCompiler {
 			return false;
 	}
 
-	private int parseFunctionInvocation(Function f, String src, int pos) throws ScriptCompilationException {
-		if(f.isJavaFunction())
-			buff.put(Bytecodes.INVOKE_JAVA_FUNC);
-		else
-			buff.put(Bytecodes.INVOKE_FUNC);
-		buff.putLong(f.getID());  // INVOKE CMD -> followed by long type ID -> arguments
-		if(!String.valueOf(src.charAt(pos)).equals(Keyword.ARG_BEGIN.sym))
+	// INVOKE cmd -> long type id -> arguments
+	private int parseFunctionInvocation(Function[] matching, String src, int pos) throws ScriptCompilationException {
+		if(!String.valueOf(src.charAt(pos)).equals(Keyword.PARAM_BEGIN.sym))
 			throw(new ScriptCompilationException("function invocation - expected argument delimeter: " + src.charAt(pos), src, pos));
-		String s = src.substring(pos + 1, src.indexOf(Keyword.ARG_END.sym, pos)).trim();
-		String[] params = s.split(",");
+		String s = src.substring(pos + 1, findParamEnd(src, pos)).trim();
+		String[] params = s.split(Keyword.SEPARATOR.sym);
 		if(params[0].isEmpty())
 			params = new String[0];
-		Function[] matching = functions.getAll(f.getName());
-		for(int i=0;i<matching.length;i++) {
-			Keyword[] ptypes = f.getParamTypes();
-			f = matching[i];
 
-			boolean validCount = true;
-			if(params.length != f.getParamCount())
-				validCount = false;
-			if(!validCount && i == matching.length - 1)
-				throw(new ScriptCompilationException("arguments do not match parameters for function " + f, src, pos));
-			else if(!validCount)
-				continue;
+		Function f = null;
 
-			for(int ii=0;ii<ptypes.length;ii++) {
-				String pt = params[ii];
-				try {
-					if(ptypes[ii] == Keyword.BOOL)
-						parseBoolean(pt, src, pos);
-					else if(ptypes[ii] == Keyword.INT)
-						parseExpression(pt, src, pos, Flags.TYPE_INT);
-					else if(ptypes[ii] == Keyword.FLOAT)
-						parseExpression(pt, src, pos, Flags.TYPE_FLOAT);
-					else if(ptypes[ii] == Keyword.STRING)
-						parseString(pt, src, pos);
-				} catch(ScriptCompilationException e) {
-					if(i == matching.length - 1) {
-						System.err.println("error in parsing arguments expected for function " + f + ":");
-						throw(e);
+		funcLoop:
+			for(int i=0;i<matching.length;i++) {
+				f = matching[i];
+				Keyword[] ptypes = f.getParamTypes();
+
+				boolean validCount = true;
+				if(params.length != f.getParamCount())
+					validCount = false;
+				if(!validCount && i == matching.length - 1)
+					throw(new ScriptCompilationException("arguments do not match parameters for function " + f, src, pos));
+				else if(!validCount)
+					continue;
+
+				ByteBuffer temp = ByteBuffer.allocate(INIT_BUFFER_ALLOC);
+				ByteBuffer curr = buff;
+				buff = temp;
+				for(int ii=0;ii<ptypes.length;ii++) {
+					String pt = params[ii].trim();
+					try {
+						if(ptypes[ii] == Keyword.BOOL)
+							parseBoolean(pt, src, pos);
+						else if(ptypes[ii] == Keyword.INT)
+							parseEvaluation(pt, src, pos, Flags.TYPE_INT);
+						else if(ptypes[ii] == Keyword.FLOAT)
+							parseEvaluation(pt, src, pos, Flags.TYPE_FLOAT);
+						else if(ptypes[ii] == Keyword.STRING)
+							parseString(pt, src, pos);
+					} catch(ScriptCompilationException e) {
+						if(i == matching.length - 1) {
+							System.err.println("error in parsing arguments expected for function " + f + ":");
+							throw(e);
+						}
+						buff = curr;
+						continue funcLoop;
 					}
-					break;
 				}
+				if(f.isJavaFunction())
+					curr.put(Bytecodes.INVOKE_JAVA_FUNC);
+				else
+					curr.put(Bytecodes.INVOKE_FUNC);
+				curr.putLong(f.getID());
+				temp.flip();
+				curr.put(temp);
+				buff = curr;
+				break;
 			}
-		}
 		buff.put(Bytecodes.END_CMD);
-		return src.indexOf(Keyword.ARG_END.sym, pos) + 1;
+		return findParamEnd(src, pos) + 1;
 	}
 
 	private Variable putVarRef(String s, ByteBuffer buff, String src, int pos) throws ScriptCompilationException {
@@ -894,7 +985,25 @@ class ScriptCompiler {
 	private String strval(char c) {
 		return String.valueOf(c);
 	}
-
+	
+	private int findParamEnd(String src, int pos) throws ScriptCompilationException {
+		if(!strval(src.charAt(pos)).equals(Keyword.PARAM_BEGIN.sym))
+			throw(new ScriptCompilationException("invalid starting position for end param: found="+src.charAt(pos), src, pos));
+		int i, init=0, end=0;
+		for(i=pos; i < src.length(); i++) {
+			String s = strval(src.charAt(i));
+			if(s.equals(Keyword.PARAM_BEGIN.sym))
+				init++;
+			else if(s.equals(Keyword.PARAM_END.sym)) {
+				end++;
+				if(init == end)
+					return i;
+			}
+		}
+		
+		return -1;
+	}
+	
 	static volatile int globalId = Integer.MIN_VALUE;
 
 	private class Variable {

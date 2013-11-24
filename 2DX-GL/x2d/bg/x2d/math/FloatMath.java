@@ -12,6 +12,8 @@
 
 package bg.x2d.math;
 
+import java.math.*;
+
 /**
  * Provides static methods to perform various float operations either not provided by the
  * java.lang.Math class or implemented differently. This class does NOT replace the Math class and
@@ -57,6 +59,19 @@ public class FloatMath {
 			x *= (power > 0) ? arg0 : 1 / arg0;
 		}
 		return x;
+	}
+	
+	/**
+	 * Returns the given float value rounded to n decimal places.
+	 * <br/>
+	 * Note: the current precision setting of the FloatMath class does NOT affect the result
+	 * of this method.
+	 * @param arg0 the float value to round
+	 * @param n the scale (number of places) to which the float should be rounded
+	 * @return
+	 */
+	public static float round(float arg0, int n) {
+		return BigDecimal.valueOf(arg0).setScale(n, BigDecimal.ROUND_HALF_UP).floatValue();
 	}
 
 	/**

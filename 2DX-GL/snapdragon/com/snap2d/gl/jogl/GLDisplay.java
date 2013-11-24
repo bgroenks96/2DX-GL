@@ -18,6 +18,8 @@ import java.awt.event.*;
 import javax.media.opengl.*;
 import javax.media.opengl.awt.*;
 
+import bg.x2d.utils.*;
+
 import com.snap2d.gl.Display.Type;
 
 /**
@@ -26,7 +28,7 @@ import com.snap2d.gl.Display.Type;
  */
 public class GLDisplay {
 	
-	static final Dimension SCREEN = Toolkit.getDefaultToolkit().getScreenSize();
+	static final Dimension SCREEN = Utils.getScreenSize();
 	
 	int wt, ht;
 	Type type;

@@ -13,9 +13,9 @@ abstract class MathRef {
 	private static HashMap<Character, Assoc> amap = new HashMap<Character, Assoc>();
 	private static HashMap<Character, MathOp> opMap = new HashMap<Character, MathOp>();
 
-	public static final char AND_BOOL = '@', OR_BOOL = '~', EQUALS = '=', NOT_EQUALS = '\u00AC';
+	public static final char AND_BOOL = '@', OR_BOOL = '$', EQUALS = '=', NOT_EQUALS = '\u00AC';
 	public static final char[] OPERATORS = new char[] { '+', '-', '*', '/',
-		'|', '&', '#', '%', '^', EQUALS, '>', '<', AND_BOOL, OR_BOOL, NOT_EQUALS};
+		'|', '&', '~', '%', '^', EQUALS, '>', '<', NOT_EQUALS, AND_BOOL, OR_BOOL};
 	public static final char[] NUM_CHARS = new char[] { 'E' };
 	protected static final char MULTIPLY = OPERATORS[2];
 
@@ -83,17 +83,20 @@ abstract class MathRef {
 				}
 			case 12:
 				if(mathOp == null) {
-					mathOp = new AndOp();
-				}
-			case 13:
-				if(mathOp == null) {
-					mathOp =  new OrOp();
-				}
-			case 14:
-				if(mathOp == null) {
 					mathOp = new NotEqualsOp();
 				}
 				p = 0;
+				assc = Assoc.UNDEF;
+				break;
+			case 13:
+				if(mathOp == null) {
+					mathOp = new AndOp();
+				}
+			case 14:
+				if(mathOp == null) {
+					mathOp =  new OrOp();
+				}
+				p = -1;
 				assc = Assoc.UNDEF;
 				break;
 			}
@@ -150,8 +153,8 @@ abstract class MathRef {
 		return rightAssoc ? o2p < o1p : o2p <= o1p;
 	}
 
-	public static float doOperator(char op, float a, float b) {
-		float ans;
+	public static double doOperator(char op, double a, double b) {
+		double ans;
 		MathOp mathOp = opMap.get(op);
 		if(mathOp == null)
 			return 0.0f;
@@ -162,6 +165,43 @@ abstract class MathRef {
 
 	public static MathOp getOperatorOp(char op) {
 		return opMap.get(op);
+	}
+	
+	public static char matchBytecode(byte b) {
+		switch(b) {
+		case Bytecodes.ADD:
+			return OPERATORS[0];
+		case Bytecodes.SUBTRACT:
+			return OPERATORS[1];
+		case Bytecodes.MULTIPLY:
+			return OPERATORS[2];
+		case Bytecodes.DIVIDE:
+			return OPERATORS[3];
+		case Bytecodes.BITOR:
+			return OPERATORS[4];
+		case Bytecodes.BITAND:
+			return OPERATORS[5];
+		case Bytecodes.BITXOR:
+			return OPERATORS[6];
+		case Bytecodes.MODULO:
+			return OPERATORS[7];
+		case Bytecodes.POW:
+			return OPERATORS[8];
+		case Bytecodes.EQUALS:
+			return OPERATORS[9];
+		case Bytecodes.GREATER:
+			return OPERATORS[10];
+		case Bytecodes.LESSER:
+			return OPERATORS[11];
+		case Bytecodes.NOT_EQUALS:
+			return OPERATORS[12];
+		case Bytecodes.AND:
+			return OPERATORS[13];
+		case Bytecodes.OR:
+			return OPERATORS[14];
+		default:
+			return 0;
+		}
 	}
 
 	public static boolean isNumChar(char c) {
@@ -292,7 +332,7 @@ abstract class MathRef {
 	
 	protected interface MathOp {
 
-		public float eval(float... args);
+		public double eval(double... args);
 
 		public int argCount();
 	}
@@ -301,7 +341,7 @@ abstract class MathRef {
 
 	private static class AdditionOp implements MathOp {
 		@Override
-		public float eval(float... args) {
+		public double eval(double... args) {
 			return args[0] + args[1];
 		}
 
@@ -313,7 +353,7 @@ abstract class MathRef {
 
 	public static class SubtractionOp implements MathOp {
 		@Override
-		public float eval(float... args) {
+		public double eval(double... args) {
 			return args[0] - args[1];
 		}
 
@@ -325,7 +365,7 @@ abstract class MathRef {
 
 	public static class MultiplicationOp implements MathOp {
 		@Override
-		public float eval(float... args) {
+		public double eval(double... args) {
 			return args[0] * args[1];
 		}
 
@@ -337,7 +377,7 @@ abstract class MathRef {
 
 	public static class DivisionOp implements MathOp {
 		@Override
-		public float eval(float... args) {
+		public double eval(double... args) {
 			return args[0] / args[1];
 		}
 
@@ -349,7 +389,7 @@ abstract class MathRef {
 
 	public static class BitorOp implements MathOp {
 		@Override
-		public float eval(float... args) {
+		public double eval(double... args) {
 			return (int) args[0] | (int) args[1];
 		}
 
@@ -361,7 +401,7 @@ abstract class MathRef {
 
 	public static class BitandOp implements MathOp {
 		@Override
-		public float eval(float... args) {
+		public double eval(double... args) {
 			return (int) args[0] & (int) args[1];
 		}
 
@@ -373,7 +413,7 @@ abstract class MathRef {
 
 	public static class BitxorOp implements MathOp {
 		@Override
-		public float eval(float... args) {
+		public double eval(double... args) {
 			return (int) args[0] ^ (int) args[1];
 		}
 
@@ -385,7 +425,7 @@ abstract class MathRef {
 
 	public static class RemainderOp implements MathOp {
 		@Override
-		public float eval(float... args) {
+		public double eval(double... args) {
 			return args[0] % args[1];
 		}
 
@@ -397,7 +437,7 @@ abstract class MathRef {
 
 	public static class PowerOp implements MathOp {
 		@Override
-		public float eval(float... args) {
+		public double eval(double... args) {
 			return (float) gme.pwr(args[0], args[1]);
 		}
 
@@ -409,7 +449,7 @@ abstract class MathRef {
 
 	public static class EqualityOp implements MathOp {
 		@Override
-		public float eval(float... args) {
+		public double eval(double... args) {
 			return (args[0] == args[1]) ? 1:0;
 		}
 
@@ -421,7 +461,7 @@ abstract class MathRef {
 	
 	public static class GreaterOp implements MathOp {
 		@Override
-		public float eval(float... args) {
+		public double eval(double... args) {
 			return (args[0] > args[1]) ? 1:0;
 		}
 		
@@ -433,7 +473,7 @@ abstract class MathRef {
 	
 	public static class LesserOp implements MathOp {
 		@Override
-		public float eval(float... args) {
+		public double eval(double... args) {
 			return (args[0] < args[1]) ? 1:0;
 		}
 		
@@ -449,7 +489,7 @@ abstract class MathRef {
 		 *
 		 */
 		@Override
-		public float eval(float... args) {
+		public double eval(double... args) {
 			return (args[0] != 0 && args[1] != 0) ? 1:0;
 		}
 
@@ -468,7 +508,7 @@ abstract class MathRef {
 		 *
 		 */
 		@Override
-		public float eval(float... args) {
+		public double eval(double... args) {
 			return (args[0] != 0|| args[1] != 0) ? 1:0;
 		}
 		
@@ -483,7 +523,7 @@ abstract class MathRef {
 	
 	public static class NotEqualsOp implements MathOp {
 		@Override
-		public float eval(float... args) {
+		public double eval(double... args) {
 			return (args[0] != args[1]) ? 1:0;
 		}
 		
@@ -496,7 +536,7 @@ abstract class MathRef {
 	public static class NotOp implements MathOp {
 		
 		@Override
-		public float eval(float... args) {
+		public double eval(double... args) {
 			if(args[0] == 0)
 				return 1;
 			else

@@ -15,8 +15,11 @@ package com.snap2d.script;
 import static com.snap2d.script.Bytecodes.*;
 
 import java.lang.reflect.*;
+import java.math.*;
 import java.nio.*;
 import java.util.*;
+
+import com.snap2d.script.lib.*;
 
 /**
  * Class responsible for interpreting and executing script function bytecode.
@@ -27,13 +30,24 @@ class ScriptEngine {
 
 	HashMap<Long, Function> funcMap = new HashMap<Long, Function>();
 	HashMap<Function, Object> javaObjs = new HashMap<Function, Object>();
+	VarStore vars = new VarStore();
 
-	private final boolean useDouble;
+	/**
+	 * Creates a new ScriptEngine with the given compiled Functions
+	 * @param functions the array of Functions returned and fully compiled by ScriptCompiler
+	 * @param useDouble true if VarStore should use double precision values for storage, false
+	 *             if floating point should be used instead.
+	 * @throws ScriptInvocationException if VarStore functions cannot be attached to the local object
+	 */
+	ScriptEngine(Function[] functions, boolean useDouble) throws ScriptInvocationException {
+		vars.setUseDouble(useDouble);
+		List<Method> varFuncs = Arrays.asList(VarStore.class.getMethods());
 
-	ScriptEngine(Function[] functions, boolean useDouble) {
-		this.useDouble = useDouble;
 		for(Function f:functions) {
 			funcMap.put(f.getID(), f);
+
+			if(varFuncs.contains(f.getJavaMethod())) // attach VarStore object to linked methods
+				attachObjectToFunction(f.getID(), vars);
 		}
 	}
 
@@ -81,13 +95,14 @@ class ScriptEngine {
 	Object ret;
 	ByteBuffer buff;
 	Function curr;
-	LinkedList<VarStack> stacks = new LinkedList<VarStack>();
+	LinkedList<VarStack> stacks;
+	MathParser math = new MathParser();
 
 	private void putVar(int id, int type, Object value) {
 		Variable prev = fetchVar(id);
-		if(prev != null)
-			findStack(prev).put(id, new Variable(id, type, value));
-		else
+		if(prev != null) {
+			prev.value = value;
+		} else
 			stacks.peekFirst().put(id, new Variable(id, type, value));
 	}
 
@@ -111,7 +126,8 @@ class ScriptEngine {
 	private Object invokeFunction(Function f, Object... args) throws ScriptInvocationException {
 		buff = f.bytecode;
 		curr = f;
-		stacks.clear();
+		ret = null;
+		stacks = new LinkedList<VarStack>();
 		stacks.add(new VarStack());
 
 		byte init = buff.get();
@@ -119,7 +135,7 @@ class ScriptEngine {
 		case INIT_PARAMS:
 			for(int i=0;i<f.getParamCount();i++) {
 				if(buff.get() != Bytecodes.PARAM_VAR)
-					throw(new ScriptInvocationException("found unexpected bytecode instruction: 0x" + Integer.toHexString(init), f));
+					throw(new ScriptInvocationException("found unexpected bytecode instruction: " + Integer.toHexString(init), f));
 				int id = buff.getInt();
 				putVar(id, Keyword.typeKeyToFlag(f.getParamTypes()[i]) /* Get flag value for type */, args[i]);
 			}
@@ -127,10 +143,15 @@ class ScriptEngine {
 			execMain(buff.position());
 			break;
 		default:
-			throw(new ScriptInvocationException("found unexpected bytecode instruction: 0x" + Integer.toHexString(init), f));
+			throw(new ScriptInvocationException("found unexpected bytecode instruction: " + Integer.toHexString(init), f));
 		}
 
-		return (f.getReturnType().equals(Keyword.VOID)) ? null:ret;
+		buff.rewind();
+
+		if(f.getReturnType() == Keyword.INT)
+			ret = ((Double)ret).intValue();
+
+		return (f.getReturnType() == Keyword.VOID) ? null:ret;
 	}
 
 	private void execMain(int st) throws ScriptInvocationException {
@@ -172,63 +193,134 @@ class ScriptEngine {
 					putVar(id, Flags.TYPE_STRING, ret);
 					break;
 				}
-				System.exit(0);
+
+				if((next=buff.get()) != Bytecodes.END_CMD)
+					throw(new ScriptInvocationException("expected END_CMD for STORE_VAR: found="+Integer.toHexString(next), curr));
+
 				break;
 			case IF:
+				execConditional();
 				break;
 			case FOR_VAR:
 				break;
+			case RETURN:
+				this.ret = execExpression();
+				return;
+			case BREAK:
+				return;
 			default:
-				throw(new ScriptInvocationException("found unexpected bytecode instruction: 0x" + Integer.toHexString(next), curr));
+				throw(new ScriptInvocationException("found unexpected bytecode instruction: " + Integer.toHexString(next), curr));
 			}
 		}
 	}
 
 	private Object execExpression() throws ScriptInvocationException {
-		byte next = 0;
-		while(next != Bytecodes.END_CMD) {
-			next = buff.get();
-			switch(next) {
-			case EVAL:
-				return execEvaluation();
-			case READ_STR:
-				break;
-			case REF_VAR:
-				break;
-			case INVOKE_JAVA_FUNC:
-				return execJavaCall();
-			case INVOKE_FUNC:
-				return execFuncCall();
-			}
+		byte next = buff.get();
+		Object ret = null;
+		switch(next) {
+		case EVAL:
+			ret = execEvaluation();
+			break;
+		case READ_STR:
+			ret = execStringLiteral();
+			break;
+		case REF_VAR:
+			Variable var = execRefVar();
+			ret = var.value;
+			break;
+		case INVOKE_JAVA_FUNC:
+			ret = execJavaCall();
+			break;
+		case INVOKE_FUNC:
+			ret = execFuncCall();
+			break;
 		}
-		return null;
+
+		return ret;
 	}
-	
+
+	/*
+	 * Returns Double.NaN if calculation fails.  This should, however, be irrelevant since
+	 * a ScriptInvocationException will be thrown.
+	 */
 	private double execEvaluation() throws ScriptInvocationException {
-		byte next = 0;
-		Vector<Double> operands = new Vector<Double>();
-		while(next != Bytecodes.END_CMD) {
-			next = buff.get();
+		byte next = -1;
+		StringBuilder sb = new StringBuilder();
+		while((next=buff.get()) != Bytecodes.END_CMD) {
 			switch(next) {
 			case READ_OP:
-				if(operands.size() == 0)
-					throw(new ScriptInvocationException("too few operands", curr));
+				byte op = buff.get();
+				char opchar = MathRef.matchBytecode(op);
+				sb.append(opchar);
 				break;
 			case READ_FLOAT:
-				operands.add((double) buff.getFloat());
+				sb.append(BigDecimal.valueOf(buff.getDouble()).toPlainString());
 				break;
 			case READ_INT:
-				operands.add((double) buff.getInt());
+				sb.append(buff.getInt());
 				break;
 			case TRUE:
+				sb.append(1.0);
 				break;
 			case FALSE:
+				sb.append(0.0);
 				break;
 			case REF_VAR:
+				Variable var = execRefVar();
+				if(var.type == Flags.TYPE_STRING)
+					throw(new ScriptInvocationException("found type 'string' in mathematical expression", curr));
+				double val = checkNumberObject(var.value);
+				String strval = BigDecimal.valueOf(val).toPlainString();
+				sb.append(strval);
+				break;
+			case INVOKE_FUNC:
+				Object ret = execFuncCall();
+				val = checkNumberObject(ret);
+				sb.append(BigDecimal.valueOf(val).toPlainString());
+				break;
+			case INVOKE_JAVA_FUNC:
+				ret = execJavaCall();
+				val = checkNumberObject(ret);
+				sb.append(BigDecimal.valueOf(val).toPlainString());
 				break;
 			}
+			sb.append(MathParser.SEP);
 		}
-		return 0.0;
+		sb.deleteCharAt(sb.length() - 1);
+		double result = Double.NaN;
+		try {
+			result = math.calculate(sb.toString());
+		} catch (MathParseException e) {
+			ScriptInvocationException scriptError = new ScriptInvocationException("error parsing math command", curr);
+			scriptError.initCause(e);
+			throw(scriptError);
+		}
+		return result;
+	}
+
+	private String execStringLiteral() throws ScriptInvocationException {
+		byte next = buff.get();
+		HashMap<Integer, Variable> inVars = new HashMap<Integer, Variable>();
+		while(next == Bytecodes.STR_VAR) {
+			if(buff.get() != Bytecodes.REF_VAR)
+				throw(new ScriptInvocationException("expected REF_VAR after STR_VAR: found=" + Integer.toHexString(next), curr));
+			Variable var = execRefVar();
+			int pos = buff.getInt();
+			inVars.put(pos, var);
+			next = buff.get();
+		}
+
+		if(next != Bytecodes.STR_START)
+			throw(new ScriptInvocationException("found unexpected bytecode instruction in READ_STR: 0x" + Integer.toHexString(next), curr));
+		int len = buff.getInt();
+		byte[] bytes = new byte[len];
+		buff.get(bytes);
+		if((next=buff.get()) != Bytecodes.END_CMD)
+			throw(new ScriptInvocationException("expected END_CMD for READ_STR: found="+Integer.toHexString(next), curr));
+		StringBuilder s = new StringBuilder(new String(bytes));
+		for(int i:inVars.keySet())
+			s.insert(i, inVars.get(i).value);
+		return s.toString();
 	}
 
 	private Object execJavaCall() throws ScriptInvocationException {
@@ -236,15 +328,109 @@ class ScriptEngine {
 		Function f = funcMap.get(fid);
 		if(!f.isJavaFunction())
 			throw(new ScriptInvocationException("invalid command for non-Java function", curr));
-		Object[] args = new Object[f.getParamCount()];
-		for(int i=0;i<f.getParamCount();i++) {
-			args[i] = execExpression();
-		}
+
+		Object[] args = readArgs(f);
+
+		byte next;
+		if((next=buff.get()) != Bytecodes.END_CMD)
+			throw(new ScriptInvocationException("expected END_CMD for INVOKE_JAVA_FUNC: found="+Integer.toHexString(next), curr));
+
 		return invokeJavaFunction(f, javaObjs.get(f), args);
 	}
 
-	private Object execFuncCall() {
-		return null;
+	private Object execFuncCall() throws ScriptInvocationException {
+		long fid = buff.getLong();
+		Function f = funcMap.get(fid);
+		if(f.isJavaFunction())
+			throw(new ScriptInvocationException("invalid command for Java based function", curr));
+
+		Object[] args = readArgs(f);
+
+		byte next;
+		if((next=buff.get()) != Bytecodes.END_CMD)
+			throw(new ScriptInvocationException("expected END_CMD for INVOKE_FUNC: found="+Integer.toHexString(next), curr));
+
+		Object ret = this.ret;
+		ByteBuffer buff = this.buff;
+		Function curr = this.curr;
+		LinkedList<VarStack> stacks = this.stacks;
+		Object robj = invokeFunction(f, args);
+		this.ret = ret;
+		this.buff = buff;
+		this.curr = curr;
+		this.stacks = stacks;
+		return robj;
+	}
+
+	private Object[] readArgs(Function f) throws ScriptInvocationException {
+		Object[] args = new Object[f.getParamCount()];
+		for(int i=0;i < f.getParamCount();i++) {
+			args[i] = execExpression();
+
+			Keyword type = f.getParamTypes()[i];
+			if(type == Keyword.INT)
+				args[i] = ((Double)args[i]).intValue();
+			else if(type == Keyword.BOOL)
+				args[i] = ((Double)args[i] == 0) ? false:true;
+		}
+		return args;
+	}
+
+	private void execConditional() throws ScriptInvocationException {
+		int iflen = buff.getInt();
+		int init = buff.position();
+
+		byte next = buff.get();
+		if(next != EVAL)
+			throw(new ScriptInvocationException("found unexpected bytecode instruction in IF cond: 0x" + Integer.toHexString(next), curr));
+		while(true) {
+			boolean cond = (execEvaluation() != 0) ? true:false;
+			next = buff.get();
+			if(next != END_COND)
+				throw(new ScriptInvocationException("found unexpected bytecode instruction in IF cond: 0x" + Integer.toHexString(next), curr));
+			int blockLen = buff.getInt();
+			if(cond) {
+				execMain(buff.position());
+				break;
+			} else {
+				buff.position(buff.position() + blockLen + 1);
+				next = buff.get();
+				if(next == ELSE_IF)
+					continue;
+				else if(next == ELSE) {
+					blockLen = buff.getInt();
+					execMain(buff.position());
+					break;
+				} else if(next == END_CMD)
+					return;
+			}
+		}
+
+		if(buff.position() < init + iflen)
+			buff.position(init + iflen);
+
+		if((next=buff.get()) != END_CMD)
+			throw(new ScriptInvocationException("expected END_CMD for IF: found=" + Integer.toHexString(next), curr));
+	}
+
+	private Variable execRefVar() throws ScriptInvocationException {
+		int varid = buff.getInt();
+		Variable var = fetchVar(varid);
+		if(var == null)
+			throw(new ScriptInvocationException("failed to locate var_id="+varid, curr));
+		return var;
+	}
+
+	private double checkNumberObject(Object o) throws ScriptInvocationException {
+		double val;
+		if(o instanceof Double)
+			val = (Double) o;
+		else if(o instanceof Integer)
+			val = ((Integer) o).doubleValue();
+		else
+			throw(new ScriptInvocationException("function return type does not match expression", curr));
+		return val;
+
 	}
 
 	private class VarStack {
@@ -272,23 +458,18 @@ class ScriptEngine {
 		Variable(int id, int type, Object value) {
 			this.id = id;
 			this.type = type;
-			this.value = value;
-		}
 
-		int castInt() {
-			return (Integer) value;
-		}
-
-		double castFloat() {
-			return (Double) value;
-		}
-
-		String castString() {
-			return (String) value;
-		}
-
-		boolean castBool() {
-			return (Boolean) value;
+			// for int variables, we have to make sure the value is stored as a true Integer,
+			// not Double (which the engine returns as an evaluation result regardless).
+			switch(type) {
+			case Flags.TYPE_INT:
+				this.value = ((Double)value).intValue();
+				break;
+			case Flags.TYPE_FLOAT:
+			case Flags.TYPE_BOOL:
+			case Flags.TYPE_STRING:
+				this.value = value;
+			}
 		}
 	}
 }

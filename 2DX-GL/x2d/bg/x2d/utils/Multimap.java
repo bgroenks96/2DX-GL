@@ -28,14 +28,10 @@ public class Multimap<K, V> extends AbstractMap<K, V> {
 		if(key == null || value == null)
 			throw(new IllegalArgumentException("null values not accepted"));
 		V prev = null;
-		int ind = -1;
 		V[] varr = ktv.get(key);
 		if(varr != null) {
-			if((ind=findValueIndex(value, varr)) >= 0) {
-				prev = varr[ind];
-				varr[ind] = value;
-			} else {
-				
+			if(findValueIndex(value, varr) < 0) {
+				varr = append(varr, value);
 			}
 		} else {
 			varr = (V[]) Array.newInstance(value.getClass(), 1);

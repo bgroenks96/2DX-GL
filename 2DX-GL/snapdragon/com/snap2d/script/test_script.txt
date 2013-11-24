@@ -1,7 +1,8 @@
-void HelloWorld(string msg, int count) {
-    string s = "hello" + "hello";
+int Pythag(float a, float b) {
+    float r = sqrt(a^2+b^2);
+    return round(r);
 }
 
-void CheckCondition(bool b) {
-    int i = 2 + 2;
+void HelloWorld(string msg) {
+    println("Hello world! &msg");
 }

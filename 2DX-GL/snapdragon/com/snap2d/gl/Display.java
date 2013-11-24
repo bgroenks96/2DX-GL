@@ -16,6 +16,8 @@ import java.awt.*;
 
 import javax.swing.*;
 
+import bg.x2d.utils.*;
+
 /**
  * Represents the underlying frame used to display rendered content on screen. Display creates a
  * JFrame used to display a RenderControl's BufferStrategy. This is essentially the entry point for
@@ -182,7 +184,7 @@ public class Display {
 	 * @return the local monitor's screen dimensions.
 	 */
 	public Dimension getScreenSize() {
-		return Toolkit.getDefaultToolkit().getScreenSize();
+		return Utils.getScreenSize();
 	}
 
 	/**

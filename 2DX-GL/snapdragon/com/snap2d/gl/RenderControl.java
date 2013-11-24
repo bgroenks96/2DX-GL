@@ -809,9 +809,9 @@ public class RenderControl {
 	private void printInitReport() {
 		if(!Boolean.getBoolean(Property.SNAP2D_PRINT_J2D_CONFIG.getProperty()))
 			return;
-		Logger.println("initialized Java2D graphics pipeline");
+		SnapLogger.println("initialized Java2D graphics pipeline");
 		for(Property p:config.configMap.keySet()) {
-			Logger.println(p.getProperty()+"="+config.configMap.get(p));
+			SnapLogger.println(p.getProperty()+"="+config.configMap.get(p));
 		}
 	}
 }

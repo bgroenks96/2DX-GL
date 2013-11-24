@@ -1,5 +1,5 @@
 /*
- *  Copyright © 2011-2013 Brian Groenke
+ *  Copyright ï¿½ 2011-2013 Brian Groenke
  *  All rights reserved.
  * 
  *  This file is part of the 2DX Graphics Library.
@@ -61,6 +61,21 @@ public class ScriptMath {
 	}
 	
 	@ScriptLink
+	public static double csc(double arg) {
+		return 1 / Math.sin(arg);
+	}
+	
+	@ScriptLink
+	public static double sec(double arg) {
+		return 1 / Math.cos(arg);
+	}
+	
+	@ScriptLink
+	public static double cot(double arg) {
+		return 1 / Math.tan(arg);
+	}
+	
+	@ScriptLink
 	/**
 	 * @param arg0 integer to be shifted
 	 * @param arg1 number of binary places to be shifted
@@ -88,5 +103,15 @@ public class ScriptMath {
 	@ScriptLink
 	public static double max(double arg0, double arg1) {
 		return Math.max(arg0, arg1);
+	}
+	
+	@ScriptLink
+	public static int cast(double arg0) {
+		return (int) arg0;
+	}
+	
+	@ScriptLink
+	public static int round(double arg0) {
+		return (int) Math.round(arg0);
 	}
 }

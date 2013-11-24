@@ -5,6 +5,7 @@ ant_makefile.xml
 .project
 .externalToolBuilders/
 .settings/
+physxtest/
 buildtracker.jar
 build_id.log
 SnapdragonTestLauncher.java

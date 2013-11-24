@@ -17,6 +17,7 @@ import java.util.*;
 
 import bg.x2d.utils.*;
 
+import com.snap2d.*;
 import com.snap2d.script.lib.*;
 
 /**
@@ -42,6 +43,7 @@ public class ScriptProgram {
 		if(linkLibs) {
 			link(ScriptMath.class);
 			link(VarStore.class);
+			link(ScriptUtils.class);
 		}
 	}
 
@@ -62,6 +64,7 @@ public class ScriptProgram {
 	}
 
 	public boolean compile() {
+		SnapLogger.println("SnapScript initializing compilation");
 		ScriptCompiler compiler = new ScriptCompiler();
 		boolean chk = false;
 		try {
@@ -70,7 +73,7 @@ public class ScriptProgram {
 				srcs[i] = scripts.get(i).getSource();
 			}
 			funcs = compiler.precompile(srcs);
-			System.out.println(funcs);
+			SnapLogger.println("Linking Java functions");
 			// register methods from linked classes
 			for(Class<?> c:classes) {
 				Method[] methods = c.getDeclaredMethods();
@@ -90,11 +93,13 @@ public class ScriptProgram {
 				}
 			}
 
+			SnapLogger.println("Compiling...");
 			chk = compiler.compile(funcs);
 			if(!chk) {  // if the compilation failed, clear the function map reference so the runtime cannot be initialized
 				funcs.clear();
 				funcs = null;
 			}
+			SnapLogger.println("Done");
 		} catch (ScriptCompilationException e) {
 			e.printStackTrace();
 		} catch (NoSuchMethodException e) {
@@ -108,11 +113,13 @@ public class ScriptProgram {
 	 * Initializes the script engine runtime after successful compilation.
 	 * @param useDoubleStore if true, the script engine will store 'float' data types as Java doubles, otherwise they will be stored
 	 * 		as Java floats
+	 * @throws ScriptInvocationException if the ScriptEngine encounters an initialization error
 	 */
-	public void initRuntime(boolean useDoubleStore) {
+	public void initRuntime(boolean useDoubleStore) throws ScriptInvocationException {
 		if(funcs == null)
 			throw(new IllegalStateException("cannot initialize runtime before compilation"));
 		engine = new ScriptEngine(funcs.values().toArray(new Function[funcs.size()]), useDoubleStore);
+		SnapLogger.println("SnapScript runtime successfully initialized!\n");
 	}
 
 	public Function findFunction(String name, Class<?>... params) {
@@ -136,10 +143,10 @@ public class ScriptProgram {
 		return null;
 	}
 
-	public void invoke(Function f, Object...args) throws ScriptInvocationException {
+	public Object invoke(Function f, Object...args) throws ScriptInvocationException {
 		if(engine == null)
 			throw(new IllegalStateException("script engine not initialized"));
-		engine.invoke(f.getID(), args);
+		return engine.invoke(f.getID(), args);
 	}
 
 	private Keyword getKeyword(Class<?> param) {
@@ -161,10 +168,10 @@ public class ScriptProgram {
 		ScriptProgram prog = new ScriptProgram(true, new ScriptSource(Utils.readText(
 				ClassLoader.getSystemResource("com/snap2d/script/test_script.txt"))));
 		prog.compile();
-		prog.initRuntime(true);
-		Function f = prog.findFunction("CheckCondition", Boolean.class);
 		try {
-			prog.invoke(f, true);
+			prog.initRuntime(true);
+			Function f = prog.findFunction("Pythag", Float.class, Float.class);
+			prog.invoke(f, 3, 4);
 		} catch (ScriptInvocationException e) {
 			e.printStackTrace();
 		}
