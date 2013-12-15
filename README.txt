@@ -21,7 +21,7 @@ NOTE: These JARs are typically stable, but may not have all features fully imple
 Read the commit notes for detailed update information.
 
 2DX-GL
-Project dev status: Alpha
+Project dev status: Beta
 To-do (next commit):
 -Physics engine cleanup/bug fixes if necessary
 
