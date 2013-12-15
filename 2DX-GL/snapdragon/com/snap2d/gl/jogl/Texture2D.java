@@ -29,6 +29,8 @@ public class Texture2D {
 	Texture tex;
 
 	public Texture2D(Texture tex) {
+		if(tex == null)
+			throw(new GLException("texture cannot be null"));
 		this.tex = tex;
 	}
 	

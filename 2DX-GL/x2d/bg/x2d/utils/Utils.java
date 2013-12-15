@@ -17,6 +17,8 @@ import java.io.*;
 import java.net.*;
 import java.util.*;
 
+import com.snap2d.*;
+
 /**
  * Provides static general utility methods.
  * 
@@ -28,6 +30,12 @@ public class Utils {
 	public static final File TEMP_DIR = new File(
 			System.getProperty("java.io.tmpdir") + File.separator
 			+ ".com_snap2d_tmp");
+
+	public static volatile boolean 
+	/**
+	 * If true, the Snapdragon2D temp-dir won't be deleted on program exit.
+	 */
+	keepTempDir = false;
 
 	static {
 		boolean chk = false;
@@ -51,8 +59,12 @@ public class Utils {
 
 				@Override
 				public void run() {
+					SnapLogger.log("Received exit signal");
 					try {
-						removeDirectory(TEMP_DIR, true);
+						if(!keepTempDir)
+							removeDirectory(TEMP_DIR, true);
+						else
+							SnapLogger.log("keepTempDir=true - skipping temp-dir removal");
 					} catch (FileNotFoundException e) {
 						System.err
 						.println("Snapdragon2D: failed to remove temp-dir");
@@ -151,6 +163,30 @@ public class Utils {
 		return outFile;
 	}
 
+	/**
+	 * Write raw text to a log file in temporary storage.
+	 * @param f
+	 * @param text
+	 * @param append
+	 * @param newLine
+	 * @return true if successful, false on error
+	 */
+	public static boolean writeToLogFile(File f, String text, boolean append, boolean newLine) {
+		try {
+			FileWriter fw = new FileWriter(f, append);
+			PrintWriter pw = new PrintWriter(fw);
+			if(newLine)
+				pw.println(text);
+			else
+				pw.print(text);
+			pw.close();
+		} catch (IOException e) {
+			return false;
+		}
+
+		return true;
+	}
+
 	public static String readText(URL url) {
 		String text = null;
 		try {
@@ -243,7 +279,7 @@ public class Utils {
 		oos.close();
 		return bos.size();
 	}
-	
+
 	/**
 	 * Copies the contents of the given array into an array of the specified size.
 	 * @param array the array to be copied ("resized")
@@ -263,9 +299,9 @@ public class Utils {
 				narr[i] = null;
 		}
 		return narr;
-		*/
+		 */
 	}
-	
+
 	/**
 	 * Reverses the array so that all the values currently set from front to
 	 * back are reset to being back to front.
@@ -285,7 +321,7 @@ public class Utils {
 		}
 		return array;
 	}
-	
+
 	public static boolean urlExists(URL url) {
 		try {
 			url.openStream();
@@ -294,11 +330,11 @@ public class Utils {
 			return false;
 		}
 	}
-	
+
 	public static Dimension getScreenSize() {
 		return Toolkit.getDefaultToolkit().getScreenSize();
 	}
-	
+
 	public static int getScreenResolution() {
 		return Toolkit.getDefaultToolkit().getScreenResolution();
 	}

@@ -31,6 +31,8 @@ public class ScriptProgram {
 	Multimap<String, Function> funcs;
 	ScriptEngine engine;
 
+	ScriptCompilationException lastErr;
+
 	/**
 	 * Create a new ScriptProgram with the given sources.  The program is not compiled or executable
 	 * until the <code>compile</code> method is called.
@@ -66,7 +68,7 @@ public class ScriptProgram {
 	public boolean compile() {
 		SnapLogger.println("SnapScript initializing compilation");
 		ScriptCompiler compiler = new ScriptCompiler();
-		boolean chk = false;
+		boolean chk;
 		try {
 			String[] srcs = new String[scripts.size()];
 			for(int i = 0; i < scripts.size(); i++) {
@@ -94,21 +96,26 @@ public class ScriptProgram {
 			}
 
 			SnapLogger.println("Compiling...");
-			chk = compiler.compile(funcs);
-			if(!chk) {  // if the compilation failed, clear the function map reference so the runtime cannot be initialized
-				funcs.clear();
-				funcs = null;
-			}
+			compiler.compile(funcs);
 			SnapLogger.println("Done");
+			chk = true;
 		} catch (ScriptCompilationException e) {
 			e.printStackTrace();
+			lastErr = e;
+			funcs = null;
+			chk = false;
 		} catch (NoSuchMethodException e) {
 			e.printStackTrace();
+			chk = false;
 		}
-		
+
 		return chk;
 	}
-	
+
+	public ScriptCompilationException getLastCompileError() {
+		return lastErr;
+	}
+
 	/**
 	 * Initializes the script engine runtime after successful compilation.
 	 * @param useDoubleStore if true, the script engine will store 'float' data types as Java doubles, otherwise they will be stored
@@ -137,7 +144,7 @@ public class ScriptProgram {
 					if(!ks[i].equals(pkw))
 						continue funcLoop;
 				}
-				
+
 				return f;
 			}
 		return null;
@@ -167,13 +174,14 @@ public class ScriptProgram {
 	public static void main(String[] args) {
 		ScriptProgram prog = new ScriptProgram(true, new ScriptSource(Utils.readText(
 				ClassLoader.getSystemResource("com/snap2d/script/test_script.txt"))));
-		prog.compile();
-		try {
-			prog.initRuntime(true);
-			Function f = prog.findFunction("Pythag", Float.class, Float.class);
-			prog.invoke(f, 3, 4);
-		} catch (ScriptInvocationException e) {
-			e.printStackTrace();
+		if(prog.compile()) {
+			try {
+				prog.initRuntime(true);
+				Function f = prog.findFunction("Pythag", Float.class, Float.class);
+				prog.invoke(f, 3, 4);
+			} catch (ScriptInvocationException e) {
+				e.printStackTrace();
+			}
 		}
 	}
 }

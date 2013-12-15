@@ -161,8 +161,8 @@ class MathParser {
 					peek = stack.peekFirst();
 				}
 				stack.push(c);
-			} else if (isNumber(c) || Character.isLetter(c) || isBrace(c)) {
-				if (isNumber(last) || Character.isLetter(last) || output.length() == 0) {
+			} else if (isNumber(c) || isTypedChar(c) || isBrace(c)) {
+				if (isNumber(last) || isTypedChar(last) || output.length() == 0) {
 					output.append(c);
 				} else {
 					output.append(SEP + c);
@@ -242,6 +242,13 @@ class MathParser {
 		} else {
 			return false;
 		}
+	}
+	
+	/*
+	 * Checks for letters and any other variable name valid characters
+	 */
+	public boolean isTypedChar(char c) {
+		return Character.isLetter(c) || c == '_';
 	}
 
 	public boolean isDelimiter(char c) {

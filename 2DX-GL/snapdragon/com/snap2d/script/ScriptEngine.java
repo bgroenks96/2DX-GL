@@ -31,6 +31,8 @@ class ScriptEngine {
 	HashMap<Long, Function> funcMap = new HashMap<Long, Function>();
 	HashMap<Function, Object> javaObjs = new HashMap<Function, Object>();
 	VarStore vars = new VarStore();
+	
+	boolean useDouble;
 
 	/**
 	 * Creates a new ScriptEngine with the given compiled Functions
@@ -41,6 +43,7 @@ class ScriptEngine {
 	 */
 	ScriptEngine(Function[] functions, boolean useDouble) throws ScriptInvocationException {
 		vars.setUseDouble(useDouble);
+		this.useDouble = useDouble;
 		List<Method> varFuncs = Arrays.asList(VarStore.class.getMethods());
 
 		for(Function f:functions) {
@@ -68,22 +71,6 @@ class ScriptEngine {
 			return invokeFunction(f, args);
 	}
 
-	private Object invokeJavaFunction(Function f, Object javaObj, Object... args) throws ScriptInvocationException {
-		if(!f.isJavaFunction())
-			throw(new ScriptInvocationException("cannot invoke Java execution on a script function", f));
-		Method m = f.getJavaMethod();
-		try {
-			return m.invoke(javaObj, args);
-		} catch (IllegalArgumentException e) {
-			e.printStackTrace();
-		} catch (IllegalAccessException e) {
-			e.printStackTrace();
-		} catch (InvocationTargetException e) {
-			e.printStackTrace();
-		}
-		return null;
-	}
-
 	// >>>>>> SCRIPT EXECUTION ENGINE >>>>>> //
 
 	/*
@@ -97,6 +84,8 @@ class ScriptEngine {
 	Function curr;
 	LinkedList<VarStack> stacks;
 	MathParser math = new MathParser();
+	
+	private boolean inLoop = false;
 
 	private void putVar(int id, int type, Object value) {
 		Variable prev = fetchVar(id);
@@ -122,7 +111,29 @@ class ScriptEngine {
 		}
 		return null;
 	}
+	
+	private Object invokeJavaFunction(Function f, Object javaObj, Object... args) throws ScriptInvocationException {
+		if(!f.isJavaFunction())
+			throw(new ScriptInvocationException("cannot invoke Java execution on a script function", f));
+		Method m = f.getJavaMethod();
+		try {
+			Object ret = m.invoke(javaObj, args);
+			ret = checkFuncReturnValue(ret, f.getReturnType());
+			return ret;
+		} catch (IllegalArgumentException e) {
+			e.printStackTrace();
+		} catch (IllegalAccessException e) {
+			e.printStackTrace();
+		} catch (InvocationTargetException e) {
+			e.printStackTrace();
+		}
+		return null;
+	}
 
+	/*
+	 * this method is exempt from the 'exec<Operation>' name convention despite its evaluation of bytecode because
+	 * it's a sibling method of invokeJavaFunction.  Both simply serve to provide the final means of executing the called function code.
+	 */
 	private Object invokeFunction(Function f, Object... args) throws ScriptInvocationException {
 		buff = f.bytecode;
 		curr = f;
@@ -147,14 +158,37 @@ class ScriptEngine {
 		}
 
 		buff.rewind();
+		
+		ret = checkFuncReturnValue(ret, f.getReturnType());
 
 		if(f.getReturnType() == Keyword.INT)
 			ret = ((Double)ret).intValue();
 
 		return (f.getReturnType() == Keyword.VOID) ? null:ret;
 	}
+	
+	/*
+	 * if the return value is null for a non-void function (script or Java based), imply a return value
+	 */
+	private Object checkFuncReturnValue(Object ret, Keyword expectedType) {
+		if(ret == null && expectedType != Keyword.VOID) {
+			switch(expectedType) {
+			case INT:
+			case FLOAT:
+				ret = new Double(0.0f);
+				break;
+			case STRING:
+				ret = "";
+				break;
+			case BOOL:
+				ret = false;
+			}
+		}
+		
+		return ret;
+	}
 
-	private void execMain(int st) throws ScriptInvocationException {
+	private int execMain(int st) throws ScriptInvocationException {
 		buff.position(st);
 		while(buff.position() < buff.capacity()) {
 			byte next = buff.get();
@@ -172,46 +206,57 @@ class ScriptEngine {
 				execJavaCall();
 				break;
 			case STORE_VAR:
-				next = buff.get();
-				int id = buff.getInt();
-				Object ret = execExpression();
-				switch(next) {
-				case REALLOC:
-					Variable curr = fetchVar(id);
-					putVar(id, curr.type, ret);
-					break;
-				case ALLOC_INT:
-					putVar(id, Flags.TYPE_INT, ret);
-					break;
-				case ALLOC_FLOAT:
-					putVar(id, Flags.TYPE_FLOAT, ret);
-					break;
-				case ALLOC_BOOL:
-					putVar(id, Flags.TYPE_BOOL, ret);
-					break;
-				case ALLOC_STRING:
-					putVar(id, Flags.TYPE_STRING, ret);
-					break;
-				}
-
-				if((next=buff.get()) != Bytecodes.END_CMD)
-					throw(new ScriptInvocationException("expected END_CMD for STORE_VAR: found="+Integer.toHexString(next), curr));
-
+				execStoreVar();
 				break;
 			case IF:
 				execConditional();
 				break;
 			case FOR_VAR:
+				execForLoop();
 				break;
 			case RETURN:
 				this.ret = execExpression();
-				return;
+			case CONTINUE:
+				if(!inLoop && next == CONTINUE)
+					throw(new ScriptInvocationException("found continue instruction outside of loop execution", curr));
+				return Flags.RETURN;
 			case BREAK:
-				return;
+				if(!inLoop)
+					throw(new ScriptInvocationException("found break instruction outside of loop execution", curr));
+				return Flags.BREAK;
 			default:
 				throw(new ScriptInvocationException("found unexpected bytecode instruction: " + Integer.toHexString(next), curr));
 			}
 		}
+		
+		return Flags.RETURN;
+	}
+	
+	private void execStoreVar() throws ScriptInvocationException {
+		byte next = buff.get();
+		int id = buff.getInt();
+		Object ret = execExpression();
+		switch(next) {
+		case REALLOC:
+			Variable curr = fetchVar(id);
+			putVar(id, curr.type, ret);
+			break;
+		case ALLOC_INT:
+			putVar(id, Flags.TYPE_INT, ret);
+			break;
+		case ALLOC_FLOAT:
+			putVar(id, Flags.TYPE_FLOAT, ret);
+			break;
+		case ALLOC_BOOL:
+			putVar(id, Flags.TYPE_BOOL, ret);
+			break;
+		case ALLOC_STRING:
+			putVar(id, Flags.TYPE_STRING, ret);
+			break;
+		}
+
+		if((next=buff.get()) != END_CMD)
+			throw(new ScriptInvocationException("expected END_CMD for STORE_VAR: found="+Integer.toHexString(next), curr));
 	}
 
 	private Object execExpression() throws ScriptInvocationException {
@@ -413,6 +458,98 @@ class ScriptEngine {
 			throw(new ScriptInvocationException("expected END_CMD for IF: found=" + Integer.toHexString(next), curr));
 	}
 
+	private void execForLoop() throws ScriptInvocationException {
+		// for loop variable declaration
+		byte next = buff.get();
+		if(next != STORE_VAR)
+			throw(new ScriptInvocationException("expected loop variable evaluation: found="+Integer.toHexString(next), curr));
+		execStoreVar();
+		// for loop condition evaluation
+		next = buff.get();
+		if(next != FOR_COND)
+			throw(new ScriptInvocationException("expected loop condition evaluation: found="+Integer.toHexString(next), curr));
+		int cst = buff.position();
+		boolean chk = ((Double) execExpression() != 0) ? true:false;  // we need to parse first to find the command's proper endpoint
+		if(!chk)
+			return;
+		int cen = buff.position();
+		ByteBuffer cond = ByteBuffer.allocate(cen - cst); // allocate a separate ByteBuffer for just the condition checking instructions
+		buff.position(cst);  // reset the main buffer to the start of the condition evaluation so we can re-read the insruction set
+		while(buff.position() < cen)
+			cond.put(buff.get());
+		cond.flip();
+		// for loop iteration command
+		next = buff.get();
+		if(next != FOR_OP)
+			throw(new ScriptInvocationException("expected loop iteration instruction: found="+Integer.toHexString(next), curr));
+		next = buff.get();
+		if(next != REF_VAR)
+			throw(new ScriptInvocationException("expected loop variable reference instruction: found="+Integer.toHexString(next), curr));
+		Variable opvar = execRefVar();
+		if(opvar.type != Flags.TYPE_FLOAT && opvar.type != Flags.TYPE_INT)
+			throw(new ScriptInvocationException("illegal variable type in loop reference", curr));
+		next = buff.get();
+		double mod = 1;
+		int modOp = ADD_MOD;
+		switch(next) {
+		case DECREM:
+			mod = -1;
+		case INCREM:
+			break;
+		case MINUS_MOD:
+			mod = -1;
+		case ADD_MOD:
+			mod = mod * (Double) execExpression(); // if MINUS_DEC, the result of the evaluation will be negated
+			break;
+		case MULT_MOD:
+			mod = (Double) execExpression();
+			modOp = MULT_MOD;
+			break;
+		case DIV_MOD:
+			mod = (Double) execExpression();
+			modOp = DIV_MOD;
+		}
+		
+		next = buff.get();
+		if(next != FOR_START)
+			throw(new ScriptInvocationException("expected loop body declaration: found="+Integer.toHexString(next), curr));
+		int st = buff.position();
+		while(checkLoopCondition(cond)) {
+			inLoop = true;
+			int stat = execMain(st);
+			if(stat == Flags.BREAK)
+				break;
+			
+			double val = ((Number) opvar.value).doubleValue();
+			if(modOp == ADD_MOD)
+				val += mod;
+			else if(modOp == MULT_MOD)
+				val *= mod;
+			else if(modOp == DIV_MOD)
+				val /= mod;
+			opvar.value = val;
+		}
+		inLoop = false;
+		
+		next = buff.get();
+		if(next != END_CMD)
+			throw(new ScriptInvocationException("expected END_CMD in loop evaluation: found="+Integer.toHexString(next), curr));
+	}
+	
+	/*
+	 * Checks the loop condition using the buffer containing the boolean expression evaluation instructions.
+	 * When evaluation completes, the condition buffer is reset for the next call (ByteBuffer.rewind).
+	 */
+	private boolean checkLoopCondition(ByteBuffer condBuff) throws ScriptInvocationException {
+		boolean cont;
+		ByteBuffer sto = this.buff;
+		this.buff = condBuff;
+		cont = ((Double) execExpression() != 0) ? true:false;
+		this.buff = sto;
+		condBuff.rewind(); // reset condition bytecode buffer
+		return cont;
+	}
+	
 	private Variable execRefVar() throws ScriptInvocationException {
 		int varid = buff.getInt();
 		Variable var = fetchVar(varid);
@@ -427,6 +564,8 @@ class ScriptEngine {
 			val = (Double) o;
 		else if(o instanceof Integer)
 			val = ((Integer) o).doubleValue();
+		else if(o instanceof Boolean)
+			val = ((Boolean)o) ? 1:0;
 		else
 			throw(new ScriptInvocationException("function return type does not match expression", curr));
 		return val;
@@ -463,13 +602,28 @@ class ScriptEngine {
 			// not Double (which the engine returns as an evaluation result regardless).
 			switch(type) {
 			case Flags.TYPE_INT:
-				this.value = ((Double)value).intValue();
+				if(value instanceof Double)
+					this.value = ((Double)value).intValue();
+				else
+					this.value = value;
 				break;
+			// for float variables, we have to check whether or not to store them as a Java Float or Double.
 			case Flags.TYPE_FLOAT:
+				if(!useDouble) {
+					this.value = ((Double)value).floatValue();
+					break;
+				}
 			case Flags.TYPE_BOOL:
 			case Flags.TYPE_STRING:
 				this.value = value;
 			}
 		}
+	}
+	
+	private static <T> T castVariable(Variable var, Function context, Class<T> type) {
+		if(Keyword.isValidDataType(type))
+			return type.cast(var.value);
+		else
+			return null;
 	}
 }

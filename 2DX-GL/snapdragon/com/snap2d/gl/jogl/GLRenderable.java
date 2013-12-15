@@ -12,7 +12,6 @@
 
 package com.snap2d.gl.jogl;
 
-import java.awt.*;
 
 /**
  * @author Brian Groenke
@@ -40,11 +39,6 @@ public interface GLRenderable {
 	/**
 	 * Called when the OpenGL context invoking the GLRenderable has been resized, allowing the
 	 * GLRenderable object to perform necessary scaling.
-	 * 
-	 * @param oldSize
-	 *            the <b>original</b> size of the context (may be null if not yet available).
-	 * @param newSize
-	 *            the new size of the grahpics context. This should never be null.
 	 */
-	public void onResize(Dimension oldSize, Dimension newSize);
+	public void onResize(GLHandle handle, int wt, int ht);
 }

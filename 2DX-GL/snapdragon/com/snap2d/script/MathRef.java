@@ -13,10 +13,10 @@ abstract class MathRef {
 	private static HashMap<Character, Assoc> amap = new HashMap<Character, Assoc>();
 	private static HashMap<Character, MathOp> opMap = new HashMap<Character, MathOp>();
 
-	public static final char AND_BOOL = '@', OR_BOOL = '$', EQUALS = '=', NOT_EQUALS = '\u00AC';
-	public static final char[] OPERATORS = new char[] { '+', '-', '*', '/',
-		'|', '&', '~', '%', '^', EQUALS, '>', '<', NOT_EQUALS, AND_BOOL, OR_BOOL};
-	public static final char[] NUM_CHARS = new char[] { 'E' };
+	public static final char AND_BOOL = '@', OR_BOOL = '$', EQUALS = '=', NOT_EQUALS = '\u00AC', LESS_EQUALS = '\u00AB', GREAT_EQUALS = '\u00BB';
+	protected static final char[] OPERATORS = new char[] { '+', '-', '*', '/',
+		'|', '&', '~', '%', '^', EQUALS, '>', '<', NOT_EQUALS, LESS_EQUALS, GREAT_EQUALS, AND_BOOL, OR_BOOL};
+	protected static final char[] NUM_CHARS = new char[] { 'E' };
 	protected static final char MULTIPLY = OPERATORS[2];
 
 	public static int floatNum = 6;
@@ -85,14 +85,22 @@ abstract class MathRef {
 				if(mathOp == null) {
 					mathOp = new NotEqualsOp();
 				}
+			case 13:
+				if(mathOp == null) {
+					mathOp = new LessEqualsOp();
+				}
+			case 14:
+				if(mathOp == null) {
+					mathOp = new GreatEqualsOp();
+				}
 				p = 0;
 				assc = Assoc.UNDEF;
 				break;
-			case 13:
+			case 15:
 				if(mathOp == null) {
 					mathOp = new AndOp();
 				}
-			case 14:
+			case 16:
 				if(mathOp == null) {
 					mathOp =  new OrOp();
 				}
@@ -195,10 +203,14 @@ abstract class MathRef {
 			return OPERATORS[11];
 		case Bytecodes.NOT_EQUALS:
 			return OPERATORS[12];
-		case Bytecodes.AND:
+		case Bytecodes.LESS_EQUALS:
 			return OPERATORS[13];
-		case Bytecodes.OR:
+		case Bytecodes.GREAT_EQUALS:
 			return OPERATORS[14];
+		case Bytecodes.AND:
+			return OPERATORS[15];
+		case Bytecodes.OR:
+			return OPERATORS[16];
 		default:
 			return 0;
 		}
@@ -547,5 +559,45 @@ abstract class MathRef {
 		public int argCount() {
 			return 1;
 		}
+	}
+	
+	public static class LessEqualsOp implements MathOp {
+
+		/**
+		 *
+		 */
+		@Override
+		public double eval(double... args) {
+			return (args[0] <= args[1]) ? 1:0;
+		}
+
+		/**
+		 *
+		 */
+		@Override
+		public int argCount() {
+			return 2;
+		}
+		
+	}
+	
+	public static class GreatEqualsOp implements MathOp {
+		
+		/**
+		 *
+		 */
+		@Override
+		public double eval(double... args) {
+			return (args[0] >= args[1]) ? 1:0;
+		}
+		
+		/**
+		 *
+		 */
+		@Override
+		public int argCount() {
+			return 2;
+		}
+		
 	}
 }

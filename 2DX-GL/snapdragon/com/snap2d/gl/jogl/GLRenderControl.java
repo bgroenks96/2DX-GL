@@ -37,7 +37,7 @@ public class GLRenderControl implements GLEventListener {
 			delQueue = new Vector<GLRenderable>();
 	protected List<QueuedGLRenderable> addQueue = new Vector<QueuedGLRenderable>();
 	protected GLCanvas canvas;
-	protected GLHandle handle = new GLHandle();
+	protected GLHandle handle;
 	protected GLRenderLoop loop = new GLRenderLoop();
 	protected volatile boolean updateConfig = true, vsync;
 	protected volatile float gamma = 1.0f;
@@ -74,8 +74,6 @@ public class GLRenderControl implements GLEventListener {
 		for(GLRenderable r : renderables) {
 			r.render(handle, loop.interpolation);
 		}
-		
-		//renderTest(gl);
 	}
 
 	/**
@@ -92,6 +90,7 @@ public class GLRenderControl implements GLEventListener {
 	@Override
 	public void init(GLAutoDrawable arg0) {
 		canvas.setIgnoreRepaint(true);
+		handle = new GLHandle();
 		ThreadManager.submitJob(loop);
 		printInitReport();
 	}
@@ -104,10 +103,13 @@ public class GLRenderControl implements GLEventListener {
 			int height) {
 		wt = width;
 		ht = height;
-
-		GL2 gl = arg0.getGL().getGL2();
 		
-
+		GL3bc gl = arg0.getGL().getGL3bc();
+		handle.gl = gl;
+		
+		for(GLRenderable r : renderables) {
+			r.onResize(handle, width, height);
+		}
 	}
 
 	private void updateConfig(GL3bc gl) {
@@ -287,7 +289,6 @@ public class GLRenderControl implements GLEventListener {
 
 						while (now - lastUpdateTime > timeBetweenUpdates
 								&& updateCount < maxUpdates && !noUpdate) {
-
 							for (GLRenderable r : renderables) {
 								r.update((long) now, (long) lastUpdateTime);
 							}
@@ -382,28 +383,4 @@ public class GLRenderControl implements GLEventListener {
 			SnapLogger.println(jglp.getProperty() + "=" + jglp.getValue());
 		}
 	}
-	
-	void renderTest(GL2 gl) {
-		gl.glOrtho(-500, 500, -500, 500, 0, 1);
-		gl.glMatrixMode(GL2.GL_MODELVIEW);
-		gl.glLoadIdentity();
-		gl.glBegin(GL2.GL_POLYGON);
-		gl.glColor3f(0, 0, 1.0f);
-		gl.glVertex2f(-400f, 200f);
-		gl.glVertex2f(-400f, 0);
-		gl.glVertex2f(-200f, 0);
-		gl.glVertex2f(-200f, 200f);
-		gl.glEnd();
-		/*
-		gl.glBegin(GL.GL_TRIANGLES);
-		gl.glColor3f(1, 0, 0);
-		gl.glVertex2f(-1, -1);
-		gl.glColor3f(0, 1, 0);
-		gl.glVertex2f(0, 1);
-		gl.glColor3f(0, 0, 1);
-		gl.glVertex2f(1, -1);
-		gl.glEnd();
-		*/
-	}
-
 }

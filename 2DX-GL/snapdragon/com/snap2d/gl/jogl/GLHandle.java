@@ -30,13 +30,15 @@ public class GLHandle {
 		//
 	}
 	
-	public void setViewport(double x, double y, int viewWidth, int viewHeight, float ppu) {
+	public void setViewport(double x, double y, double width, double height, float ppu) {
 		vx = x;
 		vy = y;
-		vwt = viewWidth / ppu;
-		vht = viewHeight / ppu;
+		vwt = width / ppu;
+		vht = height / ppu;
 		this.ppu = ppu;
-		gl.glOrtho(x, y, x + vwt, y + vht, 0, 1);
+		gl.glMatrixMode(GL2.GL_PROJECTION);
+		gl.glLoadIdentity();
+		gl.glOrtho(x, x + vwt, y + vht, y, 0, 1);
 		gl.glMatrixMode(GL2.GL_MODELVIEW);
 		gl.glLoadIdentity();
 	}
@@ -46,6 +48,7 @@ public class GLHandle {
 			gl.glEnable(GL.GL_TEXTURE_2D);
 		else
 			gl.glDisable(GL.GL_TEXTURE_2D);
+		texEnabled = enabled;
 	}
 
 	public void bindTexture(Texture2D tex) {
@@ -56,13 +59,6 @@ public class GLHandle {
 
 		tex.bind(gl);
 		texBound = true;
-	}
-
-	public void disableTexturing() {
-		if(texEnabled) {
-			gl.glDisable(GL.GL_TEXTURE_2D);
-			texEnabled = false;
-		}
 	}
 
 	public void setColor3f(float r, float g, float b) {
@@ -100,20 +96,41 @@ public class GLHandle {
 		gl.glPopMatrix();
 	}
 
-	public void drawRect(int x, int y, int wt, int ht) {
+	public void drawRect2f(float x, float y, float wt, float ht) {
+		if(texBound && texEnabled)
+			setColor3f(1,1,1);
+		gl.glBegin(GL2.GL_POLYGON);
+		if(texBound && texEnabled)
+			gl.glTexCoord2f(0.0f, 1.0f);
+		gl.glVertex2f(x, y);
+		if(texBound && texEnabled)
+			gl.glTexCoord2f(0.0f, 0.0f);
+		gl.glVertex2f(x, y + ht);
+		if(texBound && texEnabled)
+			gl.glTexCoord2f(1.0f, 0.0f);
+		gl.glVertex2f(x + wt, y + ht);
+		if(texBound && texEnabled)
+			gl.glTexCoord2f(1.0f, 1.0f);
+		gl.glVertex2f(x + wt, y);
+		gl.glEnd();
+	}
+	
+	public void drawRect2d(double x, double y, double wt, double ht) {
+		if(texBound)
+			setColor3f(1,1,1);
 		gl.glBegin(GL2.GL_POLYGON);
 		if(texBound)
-			gl.glTexCoord2f(-1.0f, -1.0f);
-		gl.glVertex2f(x, y);
+			gl.glTexCoord2f(0.0f, 1.0f);
+		gl.glVertex2d(x, y);
 		if(texBound)
-			gl.glTexCoord2f(-1.0f, 1.0f);
-		gl.glVertex2f(x, y + ht);
+			gl.glTexCoord2f(0.0f, 0.0f);
+		gl.glVertex2d(x, y + ht);
+		if(texBound)
+			gl.glTexCoord2f(1.0f, 0.0f);
+		gl.glVertex2d(x + wt, y + ht);
 		if(texBound)
 			gl.glTexCoord2f(1.0f, 1.0f);
-		gl.glVertex2f(x + wt, y + ht);
-		if(texBound)
-			gl.glTexCoord2f(1.0f, -1.0f);
-		gl.glVertex2f(x + wt, y);
+		gl.glVertex2d(x + wt, y);
 		gl.glEnd();
 	}
 

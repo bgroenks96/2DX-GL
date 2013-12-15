@@ -14,13 +14,17 @@ package com.snap2d.gl.jogl;
 
 import java.awt.*;
 import java.awt.event.*;
+import java.io.*;
+import java.net.*;
 
 import javax.media.opengl.*;
 import javax.media.opengl.awt.*;
 
 import bg.x2d.utils.*;
 
+import com.snap2d.*;
 import com.snap2d.gl.Display.Type;
+import com.snap2d.world.*;
 
 /**
  * @author Brian Groenke
@@ -78,6 +82,20 @@ public class GLDisplay {
 					.getLocalGraphicsEnvironment().getDefaultScreenDevice();
 			if (d.isFullScreenSupported() && type.isNativeFullscreen()) {
 				frame.enableInputMethods(false);
+				frame.setUndecorated(true);
+				frame.setResizable(false);
+				frame.addFocusListener(new FocusListener() {
+
+					@Override
+					public void focusGained(FocusEvent arg0) {
+						frame.setAlwaysOnTop(true);
+					}
+
+					@Override
+					public void focusLost(FocusEvent arg0) {
+						frame.setAlwaysOnTop(false);
+					}
+				});
 				d.setFullScreenWindow(frame);
 			} else {
 				frame.setVisible(true);
@@ -85,6 +103,7 @@ public class GLDisplay {
 		} else {
 			frame.setVisible(true);
 		}
+		frame.requestFocus();
 		wt = frame.getWidth();
 		ht = frame.getHeight();
 	}
@@ -132,39 +151,93 @@ public class GLDisplay {
 	}
 	
 	public static void main(String[] args) {
-		GLDisplay gldisp = new GLDisplay(800, 600, Type.WINDOWED, new JOGLConfig());
+		GLDisplay gldisp = new GLDisplay(1600, 900, Type.WINDOWED, new JOGLConfig());
 		gldisp.setExitOnClose(true);
 		gldisp.show();
 		GLRenderControl rc = gldisp.getRenderControl();
+		rc.addRenderable(new TestObj(), GLRenderControl.POSITION_LAST);
+		rc.addRenderable(new TestBack(), 0);
 		rc.setRenderActive(true);
 	}
 	
 	static class TestObj implements GLRenderable {
+		
+		World2D world;
+		Texture2D tex;
+		int vwt, vht;
+		Rect2D bounds = new Rect2D(1, 1, 300, 200);
+		Rect2D b2 = new Rect2D(100, 100, 300, 200);
 
-		/**
-		 *
-		 */
 		@Override
 		public void render(GLHandle handle, float interpolation) {
+			if(tex == null) {
+				try {
+					tex = ImageLoader.loadTexture(new URL("file:/media/WIN7/Users/Brian/Pictures/fnrr_flag.png"), ImageLoader.PNG, false);
+				} catch (MalformedURLException e) {
+					e.printStackTrace();
+				} catch (IOException e) {
+					e.printStackTrace();
+				}
+			}
 			
+			bounds.setLocation(bounds.getX() + 0.5, bounds.getY() + 0.5);
+			//b2.setLocation(b2.getX() + 1, b2.getY() - 1);
+
+			handle.setTextureEnabled(true);
+			handle.bindTexture(tex);
+			Rectangle r = world.convertWorldRect(bounds);
+			handle.drawRect2f(r.x, r.y, r.width, r.height);
+			Rectangle r2 = world.convertWorldRect(b2);
+			handle.drawRect2f(r2.x, r2.y, r2.width, r2.height);
+			handle.setTextureEnabled(false);
+			Rect2D coll = world.checkCollision(bounds, b2);
+			if(coll == null)
+				return;
+			Rectangle r3 = world.convertWorldRect(coll);
+			handle.setColor3f(0, 0, 1f);
+			handle.drawRect2f(r3.x, r3.y, r3.width, r3.height);
 		}
 
-		/**
-		 *
-		 */
 		@Override
 		public void update(long nanoTimeNow, long nanosSinceLastUpdate) {
 			
 		}
 
-		/**
-		 *
-		 */
+
+		float ppu = 3f;
 		@Override
-		public void onResize(Dimension oldSize, Dimension newSize) {
+		public void onResize(GLHandle handle, int wt, int ht) {
+			vwt = wt; vht = ht;
+			if(world == null) {
+				world = new World2D(0, 500, vwt, vht, ppu);
+			} else {
+				world.setViewSize(vwt, vht, ppu);
+			}
+		}
+		
+	}
+	
+	static class TestBack implements GLRenderable {
+		
+		int wt, ht;
+		
+		@Override
+		public void render(GLHandle handle, float interpolation) {
+			handle.setViewport(0, 0, wt, ht, 1);
+			handle.setColor3f(0.5f, 0.5f, 0.5f);
+			handle.drawRect2f(0, 0, wt, ht);
+		}
+		
+		@Override
+		public void update(long nanoTimeNow, long nanosSinceLastUpdate) {
 			
 		}
 		
+		@Override
+		public void onResize(GLHandle handle, int wt, int ht) {
+			this.wt = wt;
+			this.ht = ht;
+		}
 	}
 
 }

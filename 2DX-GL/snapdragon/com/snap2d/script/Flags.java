@@ -52,6 +52,9 @@ final class Flags {
 	public static final int TYPE_INT = 0xFC00000, TYPE_FLOAT = 0xFC00001, TYPE_STRING = 0xFC00002, 
 			TYPE_BOOL = 0xFC00003;
 	
+	// engine main execution completion status signals
+	public static final int RETURN = 0xFD000000, BREAK = 0xFD000001;
+	
 	/*
 	 * Pre-compiler signals
 	 */

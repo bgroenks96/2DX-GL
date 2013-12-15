@@ -29,9 +29,11 @@ enum Keyword {
 	LESSER("<", Flags.OP, Flags.ARG_NUM, 2, Flags.RETURN_BOOL), STR_MARK("\"", Flags.DELIMITER), OR("||", Flags.OP, Flags.ARG_BOOL, 2, Flags.RETURN_BOOL),
 	AND("&&", Flags.OP, Flags.ARG_BOOL, 2, Flags.RETURN_BOOL), BITOR("|", Flags.OP, Flags.ARG_INT, 2, Flags.RETURN_INT), BITAND("&", Flags.OP, Flags.ARG_INT, 2, Flags.RETURN_INT),
 	TRUE("true", Flags.STATEMENT), FALSE("false", Flags.STATEMENT), RETURN("return", Flags.STATEMENT, Flags.ARG_DEF, 1), INCREM("++", Flags.OP, Flags.ARG_NUM, 1, Flags.RETURN_MATCH_ARG),
-	ADD_INCREM("+=", Flags.OP, Flags.ARG_NUM, 1, Flags.RETURN_MATCH_ARG), DECREM("--", Flags.OP, Flags.ARG_NUM, 1, Flags.RETURN_MATCH_ARG), 
-	MINUS_DECREM("-=", Flags.OP, Flags.ARG_NUM, 1, Flags.RETURN_MATCH_ARG), REM_LINE("//", Flags.STATEMENT), REM_START("/*", Flags.STATEMENT), REM_END("*/", Flags.STATEMENT),
-	CAST_INT("#", Flags.OP, Flags.ARG_FLOAT, 1, Flags.RETURN_INT), BITXOR("~", Flags.OP, Flags.ARG_INT, 2, Flags.RETURN_INT), MODULO("%", Flags.OP, Flags.ARG_INT, 2, Flags.RETURN_INT);
+	ADD_MOD("+=", Flags.OP, Flags.ARG_NUM, 2, Flags.RETURN_MATCH_ARG), DECREM("--", Flags.OP, Flags.ARG_NUM, 1, Flags.RETURN_MATCH_ARG), 
+	MINUS_MOD("-=", Flags.OP, Flags.ARG_NUM, 2, Flags.RETURN_MATCH_ARG), MULT_MOD("*=", Flags.OP, Flags.ARG_NUM, 1, Flags.RETURN_MATCH_ARG), 
+	DIV_MOD("/=", Flags.OP, Flags.ARG_NUM, 2, Flags.RETURN_MATCH_ARG), REM_LINE("//", Flags.STATEMENT), REM_START("/*", Flags.STATEMENT), REM_END("*/", Flags.STATEMENT),
+	CAST_INT("#", Flags.OP, Flags.ARG_FLOAT, 1, Flags.RETURN_INT), BITXOR("~", Flags.OP, Flags.ARG_INT, 2, Flags.RETURN_INT), MODULO("%", Flags.OP, Flags.ARG_INT, 2, Flags.RETURN_INT),
+	GREAT_EQUALS(">=", Flags.OP, Flags.ARG_NUM, 2, Flags.RETURN_BOOL), LESS_EQUALS("<=", Flags.OP, Flags.ARG_NUM, 2, Flags.RETURN_BOOL);
 
 	private static final int TYPE_POS = 0, ARG_TYPE_POS = 1, ARG_COUNT_POS = 2, RETURN_POS = 3;
 
@@ -124,5 +126,12 @@ enum Keyword {
 		default:
 			return -1;
 		}
+	}
+	
+	public static boolean isValidDataType(Class<?> type) {
+		if(type == Integer.class || type == Float.class || type == Boolean.class || type == String.class)
+			return true;
+		else
+			return false;
 	}
 }

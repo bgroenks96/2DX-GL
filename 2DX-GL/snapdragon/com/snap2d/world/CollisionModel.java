@@ -1,5 +1,5 @@
 /*
- *  Copyright © 2011-2013 Brian Groenke
+ *  Copyright ï¿½ 2011-2013 Brian Groenke
  *  All rights reserved.
  * 
  *  This file is part of the 2DX Graphics Library.
@@ -100,13 +100,6 @@ public class CollisionModel {
 	private class LineSeg {
 		
 		float x1, y1, x2, y2;
-		
-		LineSeg(float x1, float y1, float x2, float y2) {
-			this.x1 = x1;
-			this.y1 = y1;
-			this.x2 = x2;
-			this.y2 = y2;
-		}
 		
 		/**
 		 * @param p1 first point - all values casted to float
