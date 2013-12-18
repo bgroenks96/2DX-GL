@@ -1,5 +1,5 @@
 /*
- *  Copyright © 2011-2013 Brian Groenke
+ *  Copyright © 2012-2013 Madeira Historical Society (developed by Brian Groenke)
  *  All rights reserved.
  * 
  *  This file is part of the 2DX Graphics Library.
@@ -76,13 +76,11 @@ public class GLHandle {
 	}
 
 	public void setTranslation(float x, float y) {
-		this.tx = x;
-		this.ty = y;
+		this.tx = x; this.ty = y;
 	}
 
 	public void setScale(float sx, float sy) {
-		this.sx = sx;
-		this.sy = sy;
+		this.sx = sx; this.sy = sy;
 	}
 
 	public void pushTransform() {
@@ -94,6 +92,12 @@ public class GLHandle {
 
 	public void popTransform() {
 		gl.glPopMatrix();
+	}
+	
+	public void clearTransform() {
+		this.theta = 0;
+		this.sx = 0; this.sy = 0;
+		this.tx = 0; this.ty = 0;
 	}
 
 	public void drawRect2f(float x, float y, float wt, float ht) {

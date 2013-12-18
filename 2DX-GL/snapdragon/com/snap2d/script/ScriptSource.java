@@ -1,5 +1,5 @@
 /*
- *  Copyright � 2011-2013 Brian Groenke
+ *  Copyright © 2012-2013 Madeira Historical Society (developed by Brian Groenke)
  *  All rights reserved.
  * 
  *  This file is part of the 2DX Graphics Library.
@@ -12,6 +12,9 @@
 
 package com.snap2d.script;
 
+import java.io.*;
+import java.net.*;
+
 /**
  * @author Brian Groenke
  *
@@ -19,6 +22,17 @@ package com.snap2d.script;
 public class ScriptSource {
 
 	private String src;
+	
+	public ScriptSource(URL url) throws IOException {
+		InputStream in = url.openStream();
+		BufferedReader br = new BufferedReader(new InputStreamReader(in));
+		StringBuilder src = new StringBuilder();
+		String next = null;
+		while((next=br.readLine()) != null)
+			src.append(next + "\n");
+		br.close();
+		this.src = src.toString();
+	}
 	
 	public ScriptSource(String src) {
 		this.src = src;

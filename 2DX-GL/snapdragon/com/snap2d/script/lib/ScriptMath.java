@@ -1,5 +1,5 @@
 /*
- *  Copyright � 2011-2013 Brian Groenke
+ *  Copyright © 2012-2013 Madeira Historical Society (developed by Brian Groenke)
  *  All rights reserved.
  * 
  *  This file is part of the 2DX Graphics Library.
@@ -11,6 +11,8 @@
  */
 
 package com.snap2d.script.lib;
+
+import java.util.*;
 
 import com.snap2d.script.*;
 
@@ -113,5 +115,27 @@ public class ScriptMath {
 	@ScriptLink
 	public static int round(double arg0) {
 		return (int) Math.round(arg0);
+	}
+	
+	@ScriptLink
+	public static double rand() {
+		return Math.random();
+	}
+	
+	@ScriptLink
+	/**
+	 * @param +/- bound for the randomly generated integer
+	 * @return pseudo-random integer between -limit and limit
+	 */
+	public static int randInt(int limit) {
+		return ((int) (Math.random() * limit)) * (((int) Math.round(Math.random() * 1) == 0) ? 1:-1);
+	}
+	
+	@ScriptLink
+	/**
+	 * @return pseudo-random integer between Integer.MIN_VALUE and Integer.MAX_VALUE
+	 */
+	public static int randInt() {
+		return randInt(Integer.MAX_VALUE);
 	}
 }

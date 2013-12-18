@@ -1,5 +1,5 @@
 /*
- *  Copyright � 2011-2013 Brian Groenke
+ *  Copyright © 2012-2013 Madeira Historical Society (developed by Brian Groenke)
  *  All rights reserved.
  * 
  *  This file is part of the 2DX Graphics Library.

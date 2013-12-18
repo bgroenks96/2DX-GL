@@ -1,5 +1,5 @@
 /*
- *  Copyright � 2011-2013 Brian Groenke
+ *  Copyright © 2012-2013 Madeira Historical Society (developed by Brian Groenke)
  *  All rights reserved.
  * 
  *  This file is part of the 2DX Graphics Library.
@@ -73,7 +73,7 @@ public class Function implements Comparable<Function> {
 			else if(isBool(c))
 				paramTypes[i] = Keyword.BOOL;
 			else
-				throw(new IllegalArgumentException(c.getName() + " is not a supported script data type"));
+				throw(new IllegalArgumentException("unsupported data type: " + c.getName()));
 			paramNames[i] = "arg"+i;
 		}
 		Class<?> c = method.getReturnType();
