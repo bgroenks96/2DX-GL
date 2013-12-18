@@ -20,8 +20,8 @@ NOTE: These JARs are typically stable, but may not have all features fully imple
 
 Read the commit notes for detailed update information.
 
-2DX-GL
-Project dev status: Beta
+2DX-GL 1st Edition (v.1.0)
+Project dev status: Pre-release
 To-do (next commit):
 -Physics engine cleanup/bug fixes if necessary
 
