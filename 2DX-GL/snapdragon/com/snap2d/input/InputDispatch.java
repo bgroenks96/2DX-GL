@@ -32,6 +32,8 @@ public class InputDispatch {
 	private KeyboardFocusManager manager;
 	private List<KeyEventClient> keyClients;
 	private List<MouseEventClient> mouseClients;
+	
+	private ThreadManager exec = new ThreadManager();
 
 	private static final long MOUSE_INPUT_MASK = AWTEvent.MOUSE_EVENT_MASK
 			+ AWTEvent.MOUSE_MOTION_EVENT_MASK
@@ -47,7 +49,7 @@ public class InputDispatch {
 		manager.addKeyEventDispatcher(new KeyDispatcher());
 		Toolkit.getDefaultToolkit().addAWTEventListener(new MouseDispatcher(),
 				MOUSE_INPUT_MASK);
-		ThreadManager.newDaemon(new CheckManager());
+		exec.newDaemon(new CheckManager());
 	}
 
 	public synchronized void registerKeyClient(KeyEventClient client) {

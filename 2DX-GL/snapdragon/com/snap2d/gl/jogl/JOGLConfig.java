@@ -14,16 +14,23 @@ package com.snap2d.gl.jogl;
 
 import java.util.*;
 
+import javax.media.opengl.*;
+
 /**
  * @author Brian Groenke
  *
  */
 public class JOGLConfig {
 	HashMap<Property, String> configMap = new HashMap<Property, String>();
+	HashMap<RenderOp, Object> renderOps = new HashMap<RenderOp, Object>();
 
 	public JOGLConfig() {
 		for (Property p : Property.values()) {
 			configMap.put(p, p.defValue);
+		}
+		
+		for(RenderOp op : RenderOp.values()) {
+			renderOps.put(op, op.defValue);
 		}
 	}
 
@@ -49,11 +56,21 @@ public class JOGLConfig {
 		}
 		configMap.put(property, value);
 	}
+	
+	public void setRenderingOption(RenderOp op, Object value) {
+		if(value == null)
+			return;
+		renderOps.put(op, value);
+	}
+	
+	public Object getValue(RenderOp op) {
+		return renderOps.get(op);
+	}
 
 	/**
 	 * Package-only method to apply set properties.
 	 */
-	void apply() {
+	void applyProperties() {
 		for (Property f : Property.values()) {
 			f.applyProperty(configMap);
 		}
@@ -63,7 +80,9 @@ public class JOGLConfig {
 	 * Properties used by Java2D (configurable at start or by System.setProperty). Note that not all
 	 * properties may be supported on every platform. See
 	 * http://docs.oracle.com/javase/1.5.0/docs/guide/2d/flags.html for more info.
-	 * 
+	 * <br/><br/>
+	 * Take note that most of these properties may only be applied upon the initial creation of the active
+	 * GLDisplay.
 	 * @author Brian Groenke
 	 * 
 	 */
@@ -121,6 +140,48 @@ public class JOGLConfig {
 		
 		public String getValue() {
 			return defValue;
+		}
+	}
+	
+	public static final Object TEX_FILTER_NEAREST = GL.GL_NEAREST, TEX_FILTER_LINEAR = GL.GL_LINEAR,
+			AA_MULTISAMPLE = GL2.GL_MULTISAMPLE, AA_DISABLE = 0, MSAA_NV_HINT_QUALITY = GL.GL_NICEST, MSAA_NV_HINT_SPEED = GL.GL_FASTEST;
+	
+	/**
+	 * Rendering options checked by the Snapdragon JOGL rendering engine.  Changes to these settings will be applied in the next render cycle.
+	 * @author Brian Groenke
+	 */
+	public enum RenderOp {
+		
+		/**
+		 * Setting for texture filtering quality:<br/>
+		 * TEX_FILTER_NEAREST = nearest neighbor interpolation - best performance<br/>
+		 * TEX_FILTER_LINEAR = linear interpolation - best quality<br/>
+		 * Default value = TEX_FILTER_LINEAR
+		 */
+		TEXTURE_FILTERING("GL_TEXTURE_FILTERING", TEX_FILTER_LINEAR), 
+		
+		/**
+		 * Setting for anti-aliasing mode:<br/>
+		 * AA_MULTISAMPLE = enable MSAA as configured by the driver<br/>
+		 * AA_DISABLE = no anti-aliasing<br/>
+		 * Default value = AA_DISABLE
+		 */
+		ANTI_ALIASING_MODE("GL_ANTIALIAS", AA_DISABLE), 
+		
+		/**
+		 * Setting for NVIDIA drivers only:<br/>
+		 * MSAA_NV_HINT_QUALITY = 4xMSAA Best anti-aliasing quality<br/>
+		 * MSAA_NV_HINT_SPEED = 2xMSAA Best anti-aliasing performance<br/>
+		 * Default value = MSAA_NV_HINT_SPEED
+		 */
+		MSAA_FILTER_HINT_NV("GL_MSAA_QUALITY", MSAA_NV_HINT_SPEED);
+		
+		private String name;
+		private Object defValue;
+		
+		RenderOp(String name, Object value) {
+			this.name = name;
+			this.defValue = value;
 		}
 	}
 }

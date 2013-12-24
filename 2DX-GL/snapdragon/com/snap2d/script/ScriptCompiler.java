@@ -659,14 +659,14 @@ class ScriptCompiler {
 			for(int i = 0; i < s.length(); i++) {
 				char c = s.charAt(i);
 				if((Character.isWhitespace(c) || i == s.length() - 1) && invar) {
-					if(i == s.length() - 1)
+					if(i == s.length() - 1 && !Character.isWhitespace(c))
 						sbuff.append(c);
 
 					String var = sbuff.toString();
 					buff.put(Bytecodes.STR_VAR); // init mid-string variable reference
 					putVarRef(var, buff, src, pos); // standard ref-var command
 					s.delete(last, last + sbuff.length() + 1);
-					i -= sbuff.length();
+					i -= (i - sbuff.length() == s.length() && !Character.isWhitespace(c)) ? sbuff.length(): sbuff.length() + 1;
 					buff.putInt(i); // position to insert the referenced variable value
 					clear(sbuff);
 					invar = false;

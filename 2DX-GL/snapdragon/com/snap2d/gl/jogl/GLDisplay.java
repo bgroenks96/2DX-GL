@@ -51,14 +51,16 @@ public class GLDisplay {
 	}
 	
 	private void initDisplay(int width, int height, Type type, JOGLConfig config) {
-		config.apply();
+		config.applyProperties();
 		this.wt = width;
 		this.ht = height;
 		this.type = type;
 		GLProfile glp = GLProfile.get(GLProfile.GL2);
 		GLCapabilities glc = new GLCapabilities(glp);
+		glc.setDoubleBuffered(true);
 		canvas = new GLCanvas(glc);
 		rc = new GLRenderControl(canvas);
+		
 		frame = new Frame();
 		switch(type) {
 		case WINDOWED:
@@ -68,6 +70,7 @@ public class GLDisplay {
 			if(!type.isNativeFullscreen())
 				frame.setSize(SCREEN);
 		}
+		
 		frame.add(canvas);
 		frame.setIgnoreRepaint(false);
 	}
@@ -154,10 +157,27 @@ public class GLDisplay {
 		GLDisplay gldisp = new GLDisplay(1600, 900, Type.WINDOWED, new JOGLConfig());
 		gldisp.setExitOnClose(true);
 		gldisp.show();
-		GLRenderControl rc = gldisp.getRenderControl();
+		final GLRenderControl rc = gldisp.getRenderControl();
 		rc.addRenderable(new TestObj(), GLRenderControl.POSITION_LAST);
 		rc.addRenderable(new TestBack(), 0);
 		rc.setRenderActive(true);
+		
+		new ThreadManager().submitJob(new Runnable() {
+
+			@Override
+			public void run() {
+				for(int i=0;i<10;i++) {
+					rc.setVSync(!rc.isVSyncEnabled());
+					System.out.println("Updated config");
+					try {
+						Thread.sleep(1000);
+					} catch (InterruptedException e) {
+						e.printStackTrace();
+					}
+				}
+			}
+			
+		});
 	}
 	
 	static class TestObj implements GLRenderable {
@@ -204,7 +224,7 @@ public class GLDisplay {
 		}
 
 
-		float ppu = 3f;
+		float ppu = 1f;
 		@Override
 		public void onResize(GLHandle handle, int wt, int ht) {
 			vwt = wt; vht = ht;

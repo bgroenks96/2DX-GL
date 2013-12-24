@@ -36,9 +36,11 @@ public class GLRenderControl implements GLEventListener {
 	protected List<GLRenderable> rtasks = new ArrayList<GLRenderable>(),
 			delQueue = new Vector<GLRenderable>();
 	protected List<QueuedGLRenderable> addQueue = new Vector<QueuedGLRenderable>();
+	protected GLCapabilities config;
 	protected GLCanvas canvas;
 	protected GLHandle handle;
 	protected GLRenderLoop loop = new GLRenderLoop();
+	protected ThreadManager exec = new ThreadManager();
 	protected volatile boolean updateConfig = true, vsync;
 	protected volatile float gamma = 1.0f;
 
@@ -91,7 +93,7 @@ public class GLRenderControl implements GLEventListener {
 	public void init(GLAutoDrawable arg0) {
 		canvas.setIgnoreRepaint(true);
 		handle = new GLHandle();
-		ThreadManager.submitJob(loop);
+		exec.submitJob(loop);
 		printInitReport();
 	}
 
@@ -168,6 +170,10 @@ public class GLRenderControl implements GLEventListener {
 	public float getGamma() {
 		return gamma;
 	}
+	
+	public GLCanvas getCanvas() {
+		return canvas;
+	}
 
 	public void dispose() {
 
@@ -206,7 +212,7 @@ public class GLRenderControl implements GLEventListener {
 		public void run() {
 			Thread.currentThread().setName("snap2d-render_loop");
 
-			ThreadManager.newDaemon(new Runnable() {
+			exec.newDaemon(new Runnable() {
 
 				@Override
 				public void run() {
@@ -226,7 +232,7 @@ public class GLRenderControl implements GLEventListener {
 				}
 			});
 
-			ThreadManager.newDaemon(new Runnable() {
+			exec.newDaemon(new Runnable() {
 
 				@Override
 				public void run() {

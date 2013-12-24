@@ -363,8 +363,13 @@ class ScriptEngine {
 		if((next=buff.get()) != Bytecodes.END_CMD)
 			throw(new ScriptInvocationException("expected END_CMD for READ_STR: found="+Integer.toHexString(next), curr));
 		StringBuilder s = new StringBuilder(new String(bytes));
-		for(int i:inVars.keySet())
-			s.insert(i, inVars.get(i).value);
+		
+		int offs = 0;
+		for(int i:inVars.keySet()) {
+			String val = inVars.get(i).value.toString();
+			s.insert(i + offs, val);
+			offs += val.length();
+		}
 		return s.toString();
 	}
 

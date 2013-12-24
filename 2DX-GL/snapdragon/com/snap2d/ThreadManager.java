@@ -22,43 +22,51 @@ import java.util.concurrent.*;
  */
 public final class ThreadManager {
 
-	private static int n = 6;
-	private static DaemonThreadFactory dtf = new DaemonThreadFactory();
-	private static ExecutorService threadPool = Executors.newFixedThreadPool(n);
-	private static ExecutorService daemons = Executors.newCachedThreadPool(dtf);
+	private int n = 6;
+	private DaemonThreadFactory dtf = new DaemonThreadFactory();
+	private ExecutorService threadPool = Executors.newFixedThreadPool(n);
+	private ExecutorService daemons = Executors.newCachedThreadPool(dtf);
 
-	// Prevent instantiation
-	private ThreadManager() {
-	}
 
-	public static synchronized Future<?> submitJob(Runnable r) {
+	public synchronized Future<?> submitJob(Runnable r) {
 		return threadPool.submit(r);
 	}
 
-	public static void newDaemon(Runnable r) {
+	public void newDaemon(Runnable r) {
 		daemons.execute(r);
 	}
 
-	public static <T> Future<T> newDaemonTask(Callable<T> task) {
+	public <T> Future<T> newDaemonTask(Callable<T> task) {
 		return daemons.submit(task);
 	}
 
-	public static void shutdown() {
+	public void shutdown() {
 		if (!threadPool.isShutdown() && !threadPool.isTerminated()) {
 			threadPool.shutdown();
 		}
 	}
 
-	public static void forceShutdown() {
+	public void forceShutdown() {
 		if (!threadPool.isTerminated()) {
 			threadPool.shutdownNow();
 		}
 	}
 
-	public static void reboot() {
-		System.gc();
+	/**
+	 * Recreates a new thread pool after the current one has been shutdown.  Uses the current
+	 * number of threads (or cached pool if n < 1) in the newly created pool.  If the current thread
+	 * pool has not been shutdown, {@link #forceShutdown()} is called.
+	 */
+	public void reboot() {
+		if(!threadPool.isShutdown())
+			forceShutdown();
 		threadPool = null;
-		threadPool = Executors.newCachedThreadPool();
+		System.runFinalization();
+		System.gc();
+		if(n < 1)
+		    threadPool = Executors.newCachedThreadPool();
+		else
+			threadPool = Executors.newFixedThreadPool(n);
 	}
 
 	/**
@@ -72,7 +80,7 @@ public final class ThreadManager {
 	 *            The number of threads in the new thread pool. If n < 1, a cached thread pool will
 	 *            be created.
 	 */
-	public static void setThreadCount(int nthreads) {
+	public void setThreadCount(int nthreads) {
 		threadPool.shutdown();
 
 		if (nthreads < 1) {
@@ -90,7 +98,7 @@ public final class ThreadManager {
 	 * 
 	 * @return
 	 */
-	public static int getThreadCount() {
+	public int getThreadCount() {
 		return n;
 	}
 }

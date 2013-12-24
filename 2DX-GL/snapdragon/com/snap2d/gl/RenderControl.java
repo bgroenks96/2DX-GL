@@ -65,6 +65,7 @@ public class RenderControl {
 			delQueue = new Vector<Renderable>();
 	protected List<QueuedRenderable> addQueue = new Vector<QueuedRenderable>();
 	protected RenderLoop loop;
+	protected ThreadManager exec = new ThreadManager();
 	protected AutoResize autoResize;
 	protected Future<?> taskCallback;
 	protected Dimension initSize;
@@ -114,7 +115,7 @@ public class RenderControl {
 	}
 
 	public void startRenderLoop() {
-		taskCallback = ThreadManager.submitJob(loop);
+		taskCallback = exec.submitJob(loop);
 	}
 
 	public void stopRenderLoop() {
@@ -568,7 +569,7 @@ public class RenderControl {
 		public void run() {
 			Thread.currentThread().setName("snap2d-render_loop");
 
-			ThreadManager.newDaemon(new Runnable() {
+			exec.newDaemon(new Runnable() {
 
 				@Override
 				public void run() {
@@ -588,7 +589,7 @@ public class RenderControl {
 				}
 			});
 
-			ThreadManager.newDaemon(new Runnable() {
+			exec.newDaemon(new Runnable() {
 
 				@Override
 				public void run() {

@@ -19,11 +19,14 @@ import javax.media.opengl.*;
  *
  */
 public class GLHandle {
+	
+	private static final float[] RECT_TEX_COORDS = new float[] {0, 1, 0, 0, 1, 0, 1, 1};
 
 	protected GL3bc gl;
 
 	double vx, vy, vwt, vht;
 	float ppu;
+	float[] texCoords = RECT_TEX_COORDS;
 	boolean texEnabled, texBound;
 
 	protected GLHandle() {
@@ -69,7 +72,7 @@ public class GLHandle {
 		gl.glColor4f(r, g, b, a);
 	}
 
-	float theta, tx, ty, sx, sy;
+	float theta, tx, ty, sx = 1, sy = 1;
 
 	public void setRotation(float theta) {
 		this.theta = theta;
@@ -83,6 +86,10 @@ public class GLHandle {
 		this.sx = sx; this.sy = sy;
 	}
 
+	/**
+	 * Pushes the current transformations to the GL rendering pipeline via <code>glPushMatrix</code>.
+	 * Rendering operations done after calling this method will be transformed until calling {@link #popTransform()}
+	 */
 	public void pushTransform() {
 		gl.glPushMatrix();
 		gl.glTranslatef(tx, ty, 0);
@@ -90,50 +97,74 @@ public class GLHandle {
 		gl.glScalef(sx, sy, 1);
 	}
 
+	/**
+	 * Pops the transformation from the pipeline.
+	 */
 	public void popTransform() {
 		gl.glPopMatrix();
 	}
 	
+	/**
+	 * Resets all currently stored transformation values to the default configuration (untransformed).
+	 */
 	public void clearTransform() {
 		this.theta = 0;
-		this.sx = 0; this.sy = 0;
+		this.sx = 1; this.sy = 1;
 		this.tx = 0; this.ty = 0;
+	}
+	
+	/**
+	 * Sets the coordinates for <code>glTexCoord2f</code> when drawing texture-enabled geometry.
+	 * Coordinates should be supplied in the glob or array as alternating x,y values - e.g:
+	 * x0, y0, x1, y1, etc...
+	 * <br/><br/>
+	 * The default texture coordinate configuration before this method is called is a regular quad texture:
+	 * 0, 1, 0, 0, 1, 0, 1, 1 (top-left, bottom-left, top-right, bottom-right)
+	 * @param coords the alternating x and y texture coordinates
+	 */
+	public void setTexCoords(int... coords) {
+		
 	}
 
 	public void drawRect2f(float x, float y, float wt, float ht) {
 		if(texBound && texEnabled)
 			setColor3f(1,1,1);
-		gl.glBegin(GL2.GL_POLYGON);
+		int tcoord = 0;
+		gl.glBegin(GL2.GL_QUADS);
 		if(texBound && texEnabled)
-			gl.glTexCoord2f(0.0f, 1.0f);
+			gl.glTexCoord2f(texCoords[tcoord++], texCoords[tcoord++]);
 		gl.glVertex2f(x, y);
 		if(texBound && texEnabled)
-			gl.glTexCoord2f(0.0f, 0.0f);
+			gl.glTexCoord2f(texCoords[tcoord++], texCoords[tcoord++]);
 		gl.glVertex2f(x, y + ht);
 		if(texBound && texEnabled)
-			gl.glTexCoord2f(1.0f, 0.0f);
+			gl.glTexCoord2f(texCoords[tcoord++], texCoords[tcoord++]);
 		gl.glVertex2f(x + wt, y + ht);
 		if(texBound && texEnabled)
-			gl.glTexCoord2f(1.0f, 1.0f);
+			gl.glTexCoord2f(texCoords[tcoord++], texCoords[tcoord++]);
 		gl.glVertex2f(x + wt, y);
 		gl.glEnd();
 	}
 	
 	public void drawRect2d(double x, double y, double wt, double ht) {
-		if(texBound)
+		if(texBound) {
 			setColor3f(1,1,1);
-		gl.glBegin(GL2.GL_POLYGON);
+			if(texCoords.length < 8) // 4 corners * 2 coordinates per corner
+				throw(new GLException("too few tex coords: " + texCoords.length + " < 8"));
+		}
+		int tcoord = 0;
+		gl.glBegin(GL2.GL_QUADS);
 		if(texBound)
-			gl.glTexCoord2f(0.0f, 1.0f);
+			gl.glTexCoord2f(texCoords[tcoord++], texCoords[tcoord++]);
 		gl.glVertex2d(x, y);
 		if(texBound)
-			gl.glTexCoord2f(0.0f, 0.0f);
+			gl.glTexCoord2f(texCoords[tcoord++], texCoords[tcoord++]);
 		gl.glVertex2d(x, y + ht);
 		if(texBound)
-			gl.glTexCoord2f(1.0f, 0.0f);
+			gl.glTexCoord2f(texCoords[tcoord++], texCoords[tcoord++]);
 		gl.glVertex2d(x + wt, y + ht);
 		if(texBound)
-			gl.glTexCoord2f(1.0f, 1.0f);
+			gl.glTexCoord2f(texCoords[tcoord++], texCoords[tcoord++]);
 		gl.glVertex2d(x + wt, y);
 		gl.glEnd();
 	}
