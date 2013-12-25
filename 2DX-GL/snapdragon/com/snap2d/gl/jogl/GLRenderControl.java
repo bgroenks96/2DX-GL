@@ -1,5 +1,5 @@
 /*
- *  Copyright © 2012-2013 Brian Groenke
+ *  Copyright ï¿½ 2012-2013 Brian Groenke
  *  All rights reserved.
  * 
  *  This file is part of the 2DX Graphics Library.
@@ -21,6 +21,7 @@ import javax.media.opengl.awt.*;
 import bg.x2d.*;
 
 import com.snap2d.*;
+import com.snap2d.gl.*;
 import com.snap2d.gl.jogl.JOGLConfig.Property;
 
 /**
@@ -34,19 +35,21 @@ public class GLRenderControl implements GLEventListener {
 	int wt, ht;
 
 	protected List<GLRenderable> rtasks = new ArrayList<GLRenderable>(),
-			delQueue = new Vector<GLRenderable>();
+			delQueue = new Vector<GLRenderable>(), initQueue = new Vector<GLRenderable>();
 	protected List<QueuedGLRenderable> addQueue = new Vector<QueuedGLRenderable>();
-	protected GLCapabilities config;
+	protected JOGLConfig config;
 	protected GLCanvas canvas;
 	protected GLHandle handle;
 	protected GLRenderLoop loop = new GLRenderLoop();
 	protected ThreadManager exec = new ThreadManager();
-	protected volatile boolean updateConfig = true, vsync;
+	protected volatile boolean updateVSync = true, vsync;
 	protected volatile float gamma = 1.0f;
 
 	private Semaphore loopChk = new Semaphore(1, true);
+	private CountDownLatch awaitShutdown;
 
-	GLRenderControl(GLCanvas canvas) {
+	GLRenderControl(GLCanvas canvas, JOGLConfig config) {
+		this.config = config;
 		canvas.addGLEventListener(this);
 		canvas.setAutoSwapBufferMode(true);	
 		this.canvas = canvas;
@@ -55,7 +58,11 @@ public class GLRenderControl implements GLEventListener {
 	public void setRenderActive(boolean active) {
 		loop.active = active;
 	}
-	
+
+	public boolean isRenderActive() {
+		return loop.active;
+	}
+
 	private volatile GLRenderable[] renderables = new GLRenderable[0]; // independent of task list
 
 	/**
@@ -64,15 +71,22 @@ public class GLRenderControl implements GLEventListener {
 	@Override
 	public void display(GLAutoDrawable arg0) {
 		GL3bc gl = arg0.getGL().getGL3bc();
-		if(updateConfig) {
-			updateConfig(gl);
-			updateConfig = false;
+
+		if(updateVSync) {
+			updateVSync(gl);
+			updateVSync = false;
 		}
-		
+
 		handle.gl = gl;
 		
+		if(initQueue.size() > 0) {
+			for(GLRenderable glr : initQueue)
+				glr.init(handle);
+			initQueue.clear();
+		}
+
 		gl.glClear(GL.GL_COLOR_BUFFER_BIT);
-		
+
 		for(GLRenderable r : renderables) {
 			r.render(handle, loop.interpolation);
 		}
@@ -93,7 +107,6 @@ public class GLRenderControl implements GLEventListener {
 	public void init(GLAutoDrawable arg0) {
 		canvas.setIgnoreRepaint(true);
 		handle = new GLHandle();
-		exec.submitJob(loop);
 		printInitReport();
 	}
 
@@ -105,22 +118,46 @@ public class GLRenderControl implements GLEventListener {
 			int height) {
 		wt = width;
 		ht = height;
-		
+
 		GL3bc gl = arg0.getGL().getGL3bc();
 		handle.gl = gl;
-		
+
 		for(GLRenderable r : renderables) {
 			r.onResize(handle, width, height);
 		}
 	}
 
-	private void updateConfig(GL3bc gl) {
+	public void startRenderLoop() {
+		if(loop.running)
+			try {
+				stopRenderLoop();
+			} catch (InterruptedException e) {
+				e.printStackTrace();
+			}
+
+		loop = new GLRenderLoop();
+		awaitShutdown = new CountDownLatch(1);
+		exec.submitJob(loop);
+	}
+
+	public void stopRenderLoop() throws InterruptedException {
+		if(!loop.running)
+			return;
+		loop.running = false;
+		awaitShutdown.await();
+	}
+
+	public boolean isLoopRunning() {
+		return loop.running;
+	}
+
+	private void updateVSync(GL3bc gl) {
 		if(vsync)
 			gl.setSwapInterval(1);
 		else
 			gl.setSwapInterval(0);
 	}
-	
+
 	/**
 	 * Registers the GLRenderable object with this GLRenderControl to be rendered on screen. The
 	 * render(GLHandle,float) method will be called to draw to the OpenGL canvas.
@@ -152,31 +189,58 @@ public class GLRenderControl implements GLEventListener {
 	public synchronized void removeRenderable(GLRenderable r) {
 		delQueue.add(r);
 	}
-	
+
 	public void setVSync(boolean enabled) {
 		vsync = enabled;
-		updateConfig = true;
+		updateVSync = true;
 	}
-	
+
 	public boolean isVSyncEnabled() {
 		return vsync;
 	}
-	
+
 	public void setGamma(float gamma) {
 		this.gamma = gamma;
-		updateConfig = true;
+		updateVSync = true;
 	}
-	
+
 	public float getGamma() {
 		return gamma;
 	}
-	
+
 	public GLCanvas getCanvas() {
 		return canvas;
 	}
 
-	public void dispose() {
+	public void copyRenderablesTo(GLRenderControl rc) {
+		rc.addQueue.addAll(addQueue);
+		rc.delQueue.addAll(delQueue);
+		for(GLRenderable glr : rtasks) {
+			QueuedGLRenderable queued = new QueuedGLRenderable();
+			queued.r = glr;
+			queued.pos = rtasks.indexOf(glr);
+			rc.addQueue.add(queued);
+		}
+	}
 
+	/**
+	 * Disposes of this GLRenderControl and all of its internally held resources.  Subsequent
+	 * calls to the disposed object's methods will result in errors.  This method blocks for a
+	 * maximum of five seconds or until the GLRenderLoop successfully completes its shutdown
+	 * operations.
+	 */
+	public void dispose() {
+		loop.active = false;
+		loop.running = false;
+		canvas.destroy();
+		canvas = null;
+		rtasks.clear();
+		delQueue.clear();
+		try {
+			awaitShutdown.await();
+		} catch (InterruptedException e) {
+			SnapLogger.println("GLRenderControl.dispose: interrupted before shutdown completion");
+		}
 	}
 
 	/**
@@ -273,11 +337,13 @@ public class GLRenderControl implements GLEventListener {
 
 						for (QueuedGLRenderable qr : addQueue) {
 							rtasks.add(qr.pos, qr.r);
+							initQueue.add(qr.r);
 						}
+						
 						addQueue.clear();
 
 						renderables = rtasks.toArray(new GLRenderable[rtasks
-						                                            .size()]);
+						                                              .size()]);
 					}
 
 					if (delQueue.size() > 0) {
@@ -340,11 +406,36 @@ public class GLRenderControl implements GLEventListener {
 						// the constant can be lowered to reduce latency when re-focusing.
 						Thread.sleep(SLEEP_WHILE_INACTIVE);
 					}
-				} catch (Exception e) {
-					System.err.println("Snapdragon2D: error in rendering loop");
-					e.printStackTrace();
+				} catch (InterruptedException e) {
+					SnapLogger.println("snap2d-render_loop interrupted");
+				} catch (Throwable e) {
+					System.err.println("Snapdragon2D: error in rendering loop: " + e.toString() + "\nTerminating loop execution...");
+					CrashReportWindow crashDisp = new CrashReportWindow();
+					crashDisp.dumpToLog("Unhandled error detected in rendering loop - aborting execution", e);
+					crashDisp.setVisible(true);
+					running = false;
 				}
 			}
+			exec.newDaemon(new Runnable() {
+
+				@Override
+				public void run() {
+					SnapLogger.println("Shutting down rendering thread pool...");
+					exec.shutdown();
+					boolean success = false;
+					try {
+						success = exec.awaitTermination(5000);
+					} catch (InterruptedException e) {
+						e.printStackTrace();
+					} finally {
+						if(success)
+							SnapLogger.println("All threads terminated successfully");
+						else
+							SnapLogger.println("Warning: not all threads terminated successfully");
+						awaitShutdown.countDown();
+					}
+				}
+			});
 		}
 
 		protected void setTargetFPS(int fps) {
@@ -374,7 +465,7 @@ public class GLRenderControl implements GLEventListener {
 		GLRenderable r;
 		int pos;
 	}
-	
+
 	private void printInitReport() {
 		if(!Boolean.getBoolean(Property.SNAP2D_PRINT_GL_CONFIG.getProperty()))
 			return;
@@ -386,7 +477,7 @@ public class GLRenderControl implements GLEventListener {
 		if(glsl)
 			SnapLogger.print("GLSL-version: " + ctxt.getGLSLVersionString());
 		for(JOGLConfig.Property jglp : Property.values()) {
-			SnapLogger.println(jglp.getProperty() + "=" + jglp.getValue());
+			SnapLogger.println(jglp.getProperty() + "=" + config.get(jglp));
 		}
 	}
 }

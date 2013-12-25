@@ -1,5 +1,5 @@
 /*
- *  Copyright © 2012-2013 Brian Groenke
+ *  Copyright ï¿½ 2012-2013 Brian Groenke
  *  All rights reserved.
  * 
  *  This file is part of the 2DX Graphics Library.
@@ -15,9 +15,9 @@ package com.snap2d.script;
 import java.nio.*;
 import java.util.*;
 
-import com.snap2d.*;
-
 import bg.x2d.utils.*;
+
+import com.snap2d.*;
 
 /**
  * Parses and compiles script source code to bytecode form.
@@ -644,7 +644,7 @@ class ScriptCompiler {
 		return endPos;
 	}
 
-	private static final char REF = '&', ESCAPE = '\\';
+	private static final char REF = '|', ESCAPE = '\\';
 
 	private void parseString(String str, String src, int pos) throws ScriptCompilationException {
 		if(str.startsWith(Keyword.STR_MARK.sym)) {
@@ -653,33 +653,20 @@ class ScriptCompiler {
 
 			buff.put(Bytecodes.READ_STR); // read string command
 			StringBuilder s = new StringBuilder(str.substring(1, str.length() - 1));
-			StringBuilder sbuff = new StringBuilder();
-			boolean invar = false;
-			int last = 0;
 			for(int i = 0; i < s.length(); i++) {
 				char c = s.charAt(i);
-				if((Character.isWhitespace(c) || i == s.length() - 1) && invar) {
-					if(i == s.length() - 1 && !Character.isWhitespace(c))
-						sbuff.append(c);
-
-					String var = sbuff.toString();
-					buff.put(Bytecodes.STR_VAR); // init mid-string variable reference
-					putVarRef(var, buff, src, pos); // standard ref-var command
-					s.delete(last, last + sbuff.length() + 1);
-					i -= (i - sbuff.length() == s.length() && !Character.isWhitespace(c)) ? sbuff.length(): sbuff.length() + 1;
-					buff.putInt(i); // position to insert the referenced variable value
-					clear(sbuff);
-					invar = false;
-				} else if(invar) {
-					sbuff.append(c);
-				}
-
-				if(c == REF && s.charAt(i - 1) == ESCAPE) {
+				if(c == REF && i != 0 && s.charAt(i - 1) == ESCAPE) {
 					s.deleteCharAt(i - 1);
 					i--;
 				} else if(c == REF) {
-					invar = true;
-					last = i;
+					int closeInd = s.indexOf(strval(REF), i + 1);
+					if(closeInd < 0)
+						throw(new ScriptCompilationException("mismatched variable reference in string literal", src, pos));
+					String var = s.substring(i + 1, closeInd);
+					buff.put(Bytecodes.STR_VAR);
+					putVarRef(var, buff, src, pos);
+					s.delete(i, closeInd + 1);
+					buff.putInt(i);
 				}
 			}
 			buff.put(Bytecodes.STR_START); // actual string start read

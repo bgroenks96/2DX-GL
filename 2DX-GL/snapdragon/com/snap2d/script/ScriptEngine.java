@@ -1,5 +1,5 @@
 /*
- *  Copyright © 2012-2013 Brian Groenke
+ *  Copyright ï¿½ 2012-2013 Brian Groenke
  *  All rights reserved.
  * 
  *  This file is part of the 2DX Graphics Library.
@@ -365,8 +365,16 @@ class ScriptEngine {
 		StringBuilder s = new StringBuilder(new String(bytes));
 		
 		int offs = 0;
+		String orig = s.toString();
 		for(int i:inVars.keySet()) {
 			String val = inVars.get(i).value.toString();
+			
+			// if the preceding character is whitespace, subtract 1 off the insert position
+			// (something weird with how 'insert' handles whitespace)
+			if(i != 0 && i != orig.length()) {
+				if(Character.isWhitespace(orig.charAt(i)) && Character.isWhitespace(orig.charAt(i - 1)))
+					i--;
+			}
 			s.insert(i + offs, val);
 			offs += val.length();
 		}

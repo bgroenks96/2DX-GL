@@ -27,11 +27,13 @@ import com.jogamp.opengl.util.texture.*;
 public class Texture2D {
 	
 	Texture tex;
+	TextureCoords coords;
 
 	public Texture2D(Texture tex) {
 		if(tex == null)
 			throw(new GLException("texture cannot be null"));
 		this.tex = tex;
+		coords = tex.getImageTexCoords();
 	}
 	
 	void bind(GL gl) {
@@ -68,6 +70,26 @@ public class Texture2D {
 	
 	public int getTarget() {
 		return tex.getTarget();
+	}
+	
+	public boolean isVerticallyFlipped() {
+		return tex.getMustFlipVertically();
+	}
+	
+	public float getBottomCoord() {
+		return coords.bottom();
+	}
+	
+	public float getLeftCoord() {
+		return coords.left();
+	}
+	
+	public float getRightCoord() {
+		return coords.right();
+	}
+	
+	public float getTopCoord() {
+		return coords.top();
 	}
 	
 	void setTexParameterf(GL gl, int param, float val) {

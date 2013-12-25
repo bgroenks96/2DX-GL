@@ -1,5 +1,5 @@
 /*
- *  Copyright © 2012-2013 Brian Groenke
+ *  Copyright ï¿½ 2012-2013 Brian Groenke
  *  All rights reserved.
  * 
  *  This file is part of the 2DX Graphics Library.
@@ -18,6 +18,14 @@ package com.snap2d.gl.jogl;
  *
  */
 public interface GLRenderable {
+	
+	/**
+	 * Called during initialization and/or recreation of the current rendering environment.
+	 * This method will always be called at least once for every GLRenderable registered with an active
+	 * GLRenderControl.
+	 * @param handle
+	 */
+	public void init(GLHandle handle);
 	
 	/**
 	 * Called on each frame by the rendering engine.  The receiving GLRenderable can use the

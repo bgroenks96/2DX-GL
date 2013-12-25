@@ -1,5 +1,5 @@
 /*
- *  Copyright © 2012-2013 Brian Groenke
+ *  Copyright ï¿½ 2012-2013 Brian Groenke
  *  All rights reserved.
  * 
  *  This file is part of the 2DX Graphics Library.
@@ -25,6 +25,7 @@ import bg.x2d.ImageUtils.ScaleQuality;
 import bg.x2d.utils.*;
 
 import com.jogamp.opengl.util.texture.*;
+import com.jogamp.opengl.util.texture.awt.*;
 import com.snap2d.gl.jogl.*;
 
 /**
@@ -123,10 +124,30 @@ public class ImageLoader {
 		return ImageUtils.scaleImage(img, newSize, img.getType(), quality);
 	}
 
+	/**
+	 * Loads a Texture directly from the given URL
+	 * @param url
+	 * @param fileType
+	 * @param mipmap
+	 * @return
+	 * @throws IOException
+	 */
 	public static Texture2D loadTexture(URL url, String fileType, boolean mipmap) throws IOException {
 		Texture tex = null;
 		try {
 			tex = TextureIO.newTexture(url, mipmap, fileType);
+			System.out.println(tex.getImageTexCoords() + " " + tex.getMustFlipVertically());
+		} catch(GLException gl) {
+			System.err.println("[Snap2D] OpenGL error in loading texture:");
+			gl.printStackTrace();
+		}
+		return new Texture2D(tex);
+	}
+	
+	public static Texture2D loadTexture(BufferedImage bimg, boolean mipmap) {
+		Texture tex = null;
+		try {
+			tex = AWTTextureIO.newTexture(GLProfile.get(GLProfile.GL2), bimg, mipmap);
 		} catch(GLException gl) {
 			System.err.println("[Snap2D] OpenGL error in loading texture:");
 			gl.printStackTrace();

@@ -164,7 +164,7 @@ public class Utils {
 	}
 
 	/**
-	 * Write raw text to a log file in temporary storage.
+	 * Write raw text to a log file.
 	 * @param f
 	 * @param text
 	 * @param append

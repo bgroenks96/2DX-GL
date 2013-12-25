@@ -1,5 +1,5 @@
 /*
- *  Copyright © 2012-2013 Brian Groenke
+ *  Copyright ï¿½ 2012-2013 Brian Groenke
  *  All rights reserved.
  * 
  *  This file is part of the 2DX Graphics Library.
@@ -50,6 +50,15 @@ public final class ThreadManager {
 		if (!threadPool.isTerminated()) {
 			threadPool.shutdownNow();
 		}
+	}
+	
+	/**
+	 * Blocks the current thread until this ThreadManager's thread pool has fully shutdown.
+	 * @param timeout time in milliseconds to timeout
+	 * @throws InterruptedException 
+	 */
+	public boolean awaitTermination(long timeout) throws InterruptedException {
+		return threadPool.awaitTermination(timeout, TimeUnit.MILLISECONDS);
 	}
 
 	/**

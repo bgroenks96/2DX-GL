@@ -1,5 +1,5 @@
 /*
- *  Copyright © 2012-2013 Brian Groenke
+ *  Copyright ï¿½ 2012-2013 Brian Groenke
  *  All rights reserved.
  * 
  *  This file is part of the 2DX Graphics Library.
@@ -14,23 +14,16 @@ package com.snap2d.gl.jogl;
 
 import java.util.*;
 
-import javax.media.opengl.*;
-
 /**
  * @author Brian Groenke
  *
  */
 public class JOGLConfig {
 	HashMap<Property, String> configMap = new HashMap<Property, String>();
-	HashMap<RenderOp, Object> renderOps = new HashMap<RenderOp, Object>();
 
 	public JOGLConfig() {
 		for (Property p : Property.values()) {
 			configMap.put(p, p.defValue);
-		}
-		
-		for(RenderOp op : RenderOp.values()) {
-			renderOps.put(op, op.defValue);
 		}
 	}
 
@@ -57,14 +50,8 @@ public class JOGLConfig {
 		configMap.put(property, value);
 	}
 	
-	public void setRenderingOption(RenderOp op, Object value) {
-		if(value == null)
-			return;
-		renderOps.put(op, value);
-	}
-	
-	public Object getValue(RenderOp op) {
-		return renderOps.get(op);
+	public String get(Property property) {
+		return configMap.get(property);
 	}
 
 	/**
@@ -118,7 +105,16 @@ public class JOGLConfig {
 		 * If true, initialization and modifications to the OpenGL rendering engine
 		 * configuration will be printed to stdout.
 		 */
-		SNAP2D_PRINT_GL_CONFIG("com.snap2d.gl.jogl.printconfig", "true");
+		SNAP2D_PRINT_GL_CONFIG("com.snap2d.gl.jogl.printconfig", "true"),
+		
+		/**
+		 * Integer (default=4)
+		 * <br/><br/>
+		 * If value > 0, GLDisplay will create a rendering environment with multisampled
+		 * anti-aliasing (MSAA) enabled, using the value as the number of samples.  Typically, MSAA
+		 * samples are 2x, 4x, or 8x (given value should be 2, 4, 8, respectively).
+		 */
+		SNAP2D_RENDER_MSAA("com.snap2d.gl.jogl.msaa", "4");
 
 		private String property, defValue;
 
@@ -140,48 +136,6 @@ public class JOGLConfig {
 		
 		public String getValue() {
 			return defValue;
-		}
-	}
-	
-	public static final Object TEX_FILTER_NEAREST = GL.GL_NEAREST, TEX_FILTER_LINEAR = GL.GL_LINEAR,
-			AA_MULTISAMPLE = GL2.GL_MULTISAMPLE, AA_DISABLE = 0, MSAA_NV_HINT_QUALITY = GL.GL_NICEST, MSAA_NV_HINT_SPEED = GL.GL_FASTEST;
-	
-	/**
-	 * Rendering options checked by the Snapdragon JOGL rendering engine.  Changes to these settings will be applied in the next render cycle.
-	 * @author Brian Groenke
-	 */
-	public enum RenderOp {
-		
-		/**
-		 * Setting for texture filtering quality:<br/>
-		 * TEX_FILTER_NEAREST = nearest neighbor interpolation - best performance<br/>
-		 * TEX_FILTER_LINEAR = linear interpolation - best quality<br/>
-		 * Default value = TEX_FILTER_LINEAR
-		 */
-		TEXTURE_FILTERING("GL_TEXTURE_FILTERING", TEX_FILTER_LINEAR), 
-		
-		/**
-		 * Setting for anti-aliasing mode:<br/>
-		 * AA_MULTISAMPLE = enable MSAA as configured by the driver<br/>
-		 * AA_DISABLE = no anti-aliasing<br/>
-		 * Default value = AA_DISABLE
-		 */
-		ANTI_ALIASING_MODE("GL_ANTIALIAS", AA_DISABLE), 
-		
-		/**
-		 * Setting for NVIDIA drivers only:<br/>
-		 * MSAA_NV_HINT_QUALITY = 4xMSAA Best anti-aliasing quality<br/>
-		 * MSAA_NV_HINT_SPEED = 2xMSAA Best anti-aliasing performance<br/>
-		 * Default value = MSAA_NV_HINT_SPEED
-		 */
-		MSAA_FILTER_HINT_NV("GL_MSAA_QUALITY", MSAA_NV_HINT_SPEED);
-		
-		private String name;
-		private Object defValue;
-		
-		RenderOp(String name, Object value) {
-			this.name = name;
-			this.defValue = value;
 		}
 	}
 }

@@ -16,6 +16,7 @@
 package bg.x2d;
 
 import java.io.*;
+import java.lang.management.*;
 import java.lang.reflect.*;
 import java.net.*;
 import java.util.*;
@@ -185,6 +186,32 @@ public abstract class Local {
 	 *             if 2DX does not support native libraries on the current platform
 	 */
 	public static native int getProcessId() throws UnsatisfiedLinkError;
+	
+	/**
+	 * @return the total amount of memory the JVM has allocated in bytes
+	 */
+	public static long getJVMAllocatedMemory() {
+		MemoryUsage heap = getHeapMemoryUsage();
+		MemoryUsage nonHeap = getNonHeapMemoryUsage();
+		return heap.getCommitted() + nonHeap.getCommitted();
+	}
+	
+	/**
+	 * @return the total amount of memory the JVM has actually used in bytes
+	 */
+	public static long getJVMUsedMemory() {
+		MemoryUsage heap = getHeapMemoryUsage();
+		MemoryUsage nonHeap = getNonHeapMemoryUsage();
+		return heap.getUsed() + nonHeap.getUsed();
+	}
+	
+	public static MemoryUsage getHeapMemoryUsage() {
+		return ManagementFactory.getMemoryMXBean().getHeapMemoryUsage();
+	}
+	
+	public static MemoryUsage getNonHeapMemoryUsage() {
+		return ManagementFactory.getMemoryMXBean().getNonHeapMemoryUsage();
+	}
 
 	/**
 	 * 
