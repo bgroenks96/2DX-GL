@@ -1,14 +1,12 @@
-﻿The 2DX Project - Open Source Java 2D Graphics Library
+##The 2DX Project - Open Source Java 2D Graphics Library
 
-2DX-GL (Advanced 2-dimensional Graphics Library)
-    Extends the Java2D (AWT/Swing) API by adding more high-level functionality for rendering 2D geometry, UIs,
-    effects, animations and physics.  Also aims to provide utility methods for geometric math and general functionality.
+**2DX-GL (Advanced 2-dimensional Graphics Library)**
+    Extends the Java2D (AWT/Swing) API by adding more high-level functionality for rendering 2D geometry, UIs, effects, animations and physics.  Also aims to provide utility methods for geometric math and general functionality.
 
-Snapdragon2D
-   A 2D Java game engine built on 2DX-GL.  Snapdragon2D utilizes and extends the 2DX-GL API by re-applying its
-   functionality and providing its own infrastructure for game development.  Snapdragon2D aims to squeeze the best quality and performance through manipulation of the Java standard libraries.
-   **N.B.** Has absolutely no connection to or affiliation with the Qualcomm Snapdragon(tm) mobile processor family.
-   
+**Snapdragon2D**
+   A 2D Java game engine built on 2DX-GL.  Snapdragon2D utilizes and extends the 2DX-GL API by re-applying its functionality and providing its own infrastructure for game development.  Snapdragon2D aims to squeeze the best quality and performance through manipulation of the Java standard libraries.
+**N.B.** Has absolutely no connection to or affiliation with the Qualcomm Snapdragon(tm) mobile processor family.
+
 Notable features:
 -Fast, efficient, high level rendering engines (separate Java2D and OpenGL frameworks)
 -99% cross-platform with expandable native library system
@@ -39,13 +37,13 @@ NOTE: These JARs are typically stable, but may not have all features fully imple
 
 Read the commit notes for detailed update information.
 
-2DX-GL 1st Edition (v.1.0)
+###2DX-GL 1st Edition (v.1.0)
 Project dev status: Pre-release
 To-do (next commit):
 -Utility additions
 -Physics engine cleanup/bug fixes if necessary
 
-Snapdragon2D
+###Snapdragon2D
 Project dev status: Alpha
 To-do (in development):
 -OpenGL rendering engine (via JOGL 2.0 libraries)
