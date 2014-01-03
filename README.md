@@ -1,4 +1,7 @@
-﻿##The 2DX Project - Open Source Java 2D Graphics Library
+﻿##The 2DX Project
+﻿
+###_Open Source Java 2D Graphics Library_
+
 
 
 **2DX-GL (Advanced 2-dimensional Graphics Library)**
