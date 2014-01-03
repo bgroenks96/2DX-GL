@@ -1,5 +1,5 @@
 /*
- *  Copyright © 2012-2013 Brian Groenke
+ *  Copyright © 2012-2014 Brian Groenke
  *  All rights reserved.
  * 
  *  This file is part of the 2DX Graphics Library.
@@ -27,7 +27,15 @@ import bg.x2d.physics.*;
  */
 public interface GamePhysics extends PhysicsNode {
 
+	/**
+	 * @param node the other GamePhysics node to collide with
+	 * @return the resultant velocity vector of this node after collision
+	 */
 	public Vector2f collideWith2f(GamePhysics node);
 
 	public Vector2d collideWith2d(GamePhysics node);
+	
+	public void attachToPoint(float dx, float dy);
+	
+	public void attachToPoint(double dx, double dy);
 }

@@ -1,5 +1,5 @@
 /*
- *  Copyright © 2012-2013 Brian Groenke
+ *  Copyright © 2012-2014 Brian Groenke
  *  All rights reserved.
  * 
  *  This file is part of the 2DX Graphics Library.
@@ -59,7 +59,7 @@ public class WorldGame {
 		rc = disp.getRenderControl(2);
 		rc.addRenderable(new StaticBackground(), 0);
 
-		world = new ScrollWorld(-disp.getSize().width / 2, disp.getSize().height, disp.getSize().width,
+		world = new ScrollWorld(-disp.getSize().width / 2, disp.getSize().height / 2, disp.getSize().width,
 				disp.getSize().height, 2);
 		generateRandomEntities();
 		rc.addRenderable(new WorldUpdater(), RenderControl.POSITION_LAST);

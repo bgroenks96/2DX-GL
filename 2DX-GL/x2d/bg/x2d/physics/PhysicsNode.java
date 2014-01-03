@@ -1,5 +1,5 @@
 /*
- *  Copyright © 2012-2013 Brian Groenke
+ *  Copyright © 2012-2014 Brian Groenke
  *  All rights reserved.
  * 
  *  This file is part of the 2DX Graphics Library.
@@ -27,6 +27,8 @@ public interface PhysicsNode {
 	public void setVelocity(Vector2d vec);
 
 	public void setMass(double kg);
+	
+	public double getMass();
 
 	public Vector2f collide(float velFactor, float surfaceAngle, Collision type);
 

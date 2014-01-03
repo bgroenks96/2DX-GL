@@ -1,5 +1,5 @@
 /*
- *  Copyright © 2012-2013 Brian Groenke
+ *  Copyright © 2012-2014 Brian Groenke
  *  All rights reserved.
  * 
  *  This file is part of the 2DX Graphics Library.
@@ -74,10 +74,6 @@ public class GeoUtils {
 		double xp = nt / terms;
 		double yp = m1 * xp + yint1;
 		return new PointLD(xp, yp);
-	}
-	
-	public static void main(String[] args) {
-		System.out.println(lineIntersection(0, 0, 10, 0, 2, 4, 6, -10));
 	}
 
 	/**

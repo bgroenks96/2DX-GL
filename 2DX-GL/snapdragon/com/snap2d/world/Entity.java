@@ -1,5 +1,5 @@
 /*
- *  Copyright © 2012-2013 Brian Groenke
+ *  Copyright © 2012-2014 Brian Groenke
  *  All rights reserved.
  * 
  *  This file is part of the 2DX Graphics Library.
@@ -29,7 +29,7 @@ import com.snap2d.physics.*;
  * @author Brian Groenke
  * 
  */
-public abstract class Entity implements Renderable, Serializable {
+public abstract class Entity implements Serializable {
 
 	/**
 	 * 
@@ -248,5 +248,38 @@ public abstract class Entity implements Renderable, Serializable {
 			this.e = e;
 			this.collisionBox = collisionBox;
 		}
+	}
+	
+	public static abstract class DrawableEntity extends Entity implements Renderable {
+
+		/**
+		 * 
+		 */
+		private static final long serialVersionUID = 1L;
+
+		/**
+		 * @param worldLoc
+		 * @param world
+		 */
+		public DrawableEntity(Point2D worldLoc, World2D world) {
+			super(worldLoc, world);
+		}
+	}
+	
+	public static abstract class GLDrawableEntity extends Entity implements Renderable {
+
+		/**
+		 * 
+		 */
+		private static final long serialVersionUID = 1L;
+
+		/**
+		 * @param worldLoc
+		 * @param world
+		 */
+		public GLDrawableEntity(Point2D worldLoc, World2D world) {
+			super(worldLoc, world);
+		}
+		
 	}
 }

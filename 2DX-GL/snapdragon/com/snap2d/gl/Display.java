@@ -1,5 +1,5 @@
 /*
- *  Copyright © 2012-2013 Brian Groenke
+ *  Copyright © 2012-2014 Brian Groenke
  *  All rights reserved.
  * 
  *  This file is part of the 2DX Graphics Library.
@@ -113,7 +113,7 @@ public class Display {
 		frame.setLocation(x, y);
 	}
 
-	public Component getAsComponent() {
+	public JFrame getJFrame() {
 		return frame;
 	}
 

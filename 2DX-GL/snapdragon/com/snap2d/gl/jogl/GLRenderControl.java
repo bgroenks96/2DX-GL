@@ -1,5 +1,5 @@
 /*
- *  Copyright ï¿½ 2012-2013 Brian Groenke
+ *  Copyright © 2012-2014 Brian Groenke
  *  All rights reserved.
  * 
  *  This file is part of the 2DX Graphics Library.
@@ -64,13 +64,13 @@ public class GLRenderControl implements GLEventListener {
 	}
 
 	private volatile GLRenderable[] renderables = new GLRenderable[0]; // independent of task list
-
+	
 	/**
 	 *
 	 */
 	@Override
 	public void display(GLAutoDrawable arg0) {
-		GL3bc gl = arg0.getGL().getGL3bc();
+		GL2 gl = arg0.getGL().getGL2();
 
 		if(updateVSync) {
 			updateVSync(gl);
@@ -79,11 +79,7 @@ public class GLRenderControl implements GLEventListener {
 
 		handle.gl = gl;
 		
-		if(initQueue.size() > 0) {
-			for(GLRenderable glr : initQueue)
-				glr.init(handle);
-			initQueue.clear();
-		}
+		checkAddQueue();
 
 		gl.glClear(GL.GL_COLOR_BUFFER_BIT);
 
@@ -97,7 +93,9 @@ public class GLRenderControl implements GLEventListener {
 	 */
 	@Override
 	public void dispose(GLAutoDrawable arg0) {
-		arg0.destroy();
+		for(GLRenderable glr : renderables)
+			glr.dispose(handle);
+		handle.onDestroy();
 	}
 
 	/**
@@ -107,7 +105,24 @@ public class GLRenderControl implements GLEventListener {
 	public void init(GLAutoDrawable arg0) {
 		canvas.setIgnoreRepaint(true);
 		handle = new GLHandle();
+		handle.gl = arg0.getGL().getGL2();
+		checkAddQueue();
 		printInitReport();
+	}
+	
+	private void checkAddQueue() {
+		if (addQueue.size() > 0) {
+
+			for (QueuedGLRenderable qr : addQueue) {
+				rtasks.add(qr.pos, qr.r);
+				qr.r.init(handle);;
+			}
+			
+			addQueue.clear();
+
+			renderables = rtasks.toArray(new GLRenderable[rtasks
+			                                              .size()]);
+		}
 	}
 
 	/**
@@ -119,7 +134,7 @@ public class GLRenderControl implements GLEventListener {
 		wt = width;
 		ht = height;
 
-		GL3bc gl = arg0.getGL().getGL3bc();
+		GL2 gl = arg0.getGL().getGL2();
 		handle.gl = gl;
 
 		for(GLRenderable r : renderables) {
@@ -143,7 +158,9 @@ public class GLRenderControl implements GLEventListener {
 	public void stopRenderLoop() throws InterruptedException {
 		if(!loop.running)
 			return;
+		loopChk.acquire();
 		loop.running = false;
+		loopChk.release();
 		awaitShutdown.await();
 	}
 
@@ -151,7 +168,7 @@ public class GLRenderControl implements GLEventListener {
 		return loop.running;
 	}
 
-	private void updateVSync(GL3bc gl) {
+	private void updateVSync(GL2 gl) {
 		if(vsync)
 			gl.setSwapInterval(1);
 		else
@@ -207,6 +224,56 @@ public class GLRenderControl implements GLEventListener {
 	public float getGamma() {
 		return gamma;
 	}
+	
+	/**
+	 * Gets the last recorded number of frames rendered per second.
+	 * 
+	 * @return
+	 */
+	public int getCurrentFPS() {
+		return loop.fps;
+	}
+
+	/**
+	 * Gets the last recorded number of updates (ticks) per second.
+	 * 
+	 * @return
+	 */
+	public int getCurrentTPS() {
+		return loop.tps;
+	}
+
+	/**
+	 * Sets the frame rate that the rendering algorithm will target when interpolating.
+	 * 
+	 * @param fps
+	 *            frames per second
+	 */
+	public void setTargetFPS(int fps) {
+		loop.setTargetFPS(fps);
+	}
+
+	/**
+	 * Sets the frequency per second at which the Renderable.update method is called.
+	 * 
+	 * @param tps
+	 *            ticks per second
+	 */
+	public void setTargetTPS(int tps) {
+		loop.setTargetTPS(tps);
+	}
+
+	/**
+	 * Sets the max number of times updates can be issued before a render must occur. If animations
+	 * are "chugging" or skipping, it may help to set this value to a very low value (1-2). Higher
+	 * values will prevent the game updates from freezing.
+	 * 
+	 * @param maxUpdates
+	 *            max number of updates to be sent before rendering.
+	 */
+	public void setMaxUpdates(int maxUpdates) {
+		loop.setMaxUpdates(maxUpdates);
+	}
 
 	public GLCanvas getCanvas() {
 		return canvas;
@@ -230,17 +297,14 @@ public class GLRenderControl implements GLEventListener {
 	 * operations.
 	 */
 	public void dispose() {
-		loop.active = false;
-		loop.running = false;
-		canvas.destroy();
-		canvas = null;
-		rtasks.clear();
-		delQueue.clear();
 		try {
-			awaitShutdown.await();
-		} catch (InterruptedException e) {
+			stopRenderLoop();
+		} catch (InterruptedException e1) {
 			SnapLogger.println("GLRenderControl.dispose: interrupted before shutdown completion");
 		}
+		canvas.destroy();
+		rtasks.clear();
+		delQueue.clear();
 	}
 
 	/**
@@ -275,6 +339,7 @@ public class GLRenderControl implements GLEventListener {
 		@Override
 		public void run() {
 			Thread.currentThread().setName("snap2d-render_loop");
+			SnapLogger.println("GLRenderLoop: initializing...");
 
 			exec.newDaemon(new Runnable() {
 
@@ -303,13 +368,13 @@ public class GLRenderControl implements GLEventListener {
 					Thread.currentThread().setName("snap2d-fps_out_thread");
 					while (running) {
 						try {
-							Thread.sleep(800);
+							Thread.sleep(850);
 							if (!Boolean
 									.getBoolean(Property.SNAP2D_PRINT_RENDER_STAT.getProperty())) {
 								continue;
 							}
 							while (!printFrames) {
-								;
+								//
 							}
 							System.out.print("[Snap2D] ");
 							System.out.println(fps + " fps " + tps + " ticks");
@@ -333,24 +398,14 @@ public class GLRenderControl implements GLEventListener {
 			while (running) {
 				try {
 
-					if (addQueue.size() > 0) {
-
-						for (QueuedGLRenderable qr : addQueue) {
-							rtasks.add(qr.pos, qr.r);
-							initQueue.add(qr.r);
-						}
-						
-						addQueue.clear();
-
-						renderables = rtasks.toArray(new GLRenderable[rtasks
-						                                              .size()]);
-					}
-
 					if (delQueue.size() > 0) {
 						for (GLRenderable r : delQueue) {
 							rtasks.remove(r);
 						}
 						delQueue.clear();
+						
+						renderables = rtasks.toArray(new GLRenderable[rtasks
+						                                              .size()]);
 					}
 
 
@@ -382,7 +437,7 @@ public class GLRenderControl implements GLEventListener {
 						lastRenderTime = now;
 						frameCount++;
 
-						int thisSecond = (int) (lastUpdateTime / 1000000000);
+						int thisSecond = (int) (now / 1000000000);
 						if (thisSecond > lastSecondTime) {
 							fps = frameCount;
 							tps = ticks;
@@ -395,13 +450,14 @@ public class GLRenderControl implements GLEventListener {
 
 					loopChk.release();
 					while (now - lastRenderTime < targetTimeBetweenRenders
-							&& now - lastUpdateTime < timeBetweenUpdates) {
+							&& (now - lastUpdateTime < timeBetweenUpdates || noUpdate)) {
 						Thread.yield();
 						now = System.nanoTime();
 					}
 					loopChk.acquire();
 
 					if (!active) {
+						System.out.println("hi");
 						// preserve CPU if loop is currently is currently inactive.
 						// the constant can be lowered to reduce latency when re-focusing.
 						Thread.sleep(SLEEP_WHILE_INACTIVE);
@@ -420,7 +476,7 @@ public class GLRenderControl implements GLEventListener {
 
 				@Override
 				public void run() {
-					SnapLogger.println("Shutting down rendering thread pool...");
+					SnapLogger.println("GLRenderLoop: Shutting down rendering thread pool...");
 					exec.shutdown();
 					boolean success = false;
 					try {
@@ -429,9 +485,9 @@ public class GLRenderControl implements GLEventListener {
 						e.printStackTrace();
 					} finally {
 						if(success)
-							SnapLogger.println("All threads terminated successfully");
+							SnapLogger.println("GLRenderLoop: All threads terminated successfully");
 						else
-							SnapLogger.println("Warning: not all threads terminated successfully");
+							SnapLogger.println("GLRenderLoop: Warning - not all threads terminated successfully");
 						awaitShutdown.countDown();
 					}
 				}

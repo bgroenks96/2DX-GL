@@ -1,5 +1,5 @@
 /*
- *  Copyright © 2012-2013 Brian Groenke
+ *  Copyright © 2012-2014 Brian Groenke
  *  All rights reserved.
  * 
  *  This file is part of the 2DX Graphics Library.
@@ -22,7 +22,7 @@ import java.util.*;
  */
 public class Function implements Comparable<Function> {
 
-	private static volatile long idTick = 0x400;
+	private static volatile long idTick = 0x860;
 
 	ByteBuffer bytecode;
 

@@ -1,5 +1,5 @@
 /*
- *  Copyright © 2012-2013 Brian Groenke
+ *  Copyright © 2012-2014 Brian Groenke
  *  All rights reserved.
  * 
  *  This file is part of the 2DX Graphics Library.
@@ -28,7 +28,11 @@ public class StandardPhysics implements PhysicsNode {
 	protected Vector2f vecf;
 	protected Vector2d vecd;
 
-	double mass;
+	protected double mass;
+	/**
+	 * configurable only by subclasses to toggle gravity - gravity will always be applied within a StandardPhysics object
+	 */
+	protected boolean applyGravity = true;
 
 	/**
 	 * 
@@ -76,10 +80,16 @@ public class StandardPhysics implements PhysicsNode {
 	public void setMass(double kg) {
 		mass = kg;
 	}
+	
+	@Override
+	public double getMass() {
+		return mass;
+	}
 
 	@Override
 	public Vector2f applyForces(float time, Force... f) {
-		g.applyTo(time, (float) mass, null, vecf);
+		if(applyGravity)
+			g.applyTo(time, (float) mass, null, vecf);
 
 		Vector2f vecSum = new Vector2f(g.getVec2f());
 		for (Force force : f) {
@@ -91,7 +101,8 @@ public class StandardPhysics implements PhysicsNode {
 
 	@Override
 	public Vector2d applyForces(double time, Force... f) {
-		g.applyTo(time, mass, null, vecd);
+		if(applyGravity)
+			g.applyTo(time, mass, null, vecd);
 
 		Vector2d vecSum = new Vector2d(g.getVec2d());
 		for (Force force : f) {

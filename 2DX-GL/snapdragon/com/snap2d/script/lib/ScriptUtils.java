@@ -1,5 +1,5 @@
 /*
- *  Copyright © 2012-2013 Brian Groenke
+ *  Copyright © 2012-2014 Brian Groenke
  *  All rights reserved.
  * 
  *  This file is part of the 2DX Graphics Library.
@@ -58,5 +58,20 @@ public class ScriptUtils {
 	@ScriptLink
 	public static void println(boolean b) {
 		System.out.println(b);;
+	}
+	
+	@ScriptLink
+	public static int strToInt(String str) {
+		return Integer.parseInt(str);
+	}
+	
+	@ScriptLink
+	public static double strToFloat(String str) {
+		return Double.parseDouble(str);
+	}
+	
+	@ScriptLink
+	public static void sysExit(int exitStatus) {
+		System.exit(exitStatus);
 	}
 }

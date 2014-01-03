@@ -1,5 +1,5 @@
 /*
- *  Copyright © 2012-2013 Brian Groenke
+ *  Copyright © 2012-2014 Brian Groenke
  *  All rights reserved.
  * 
  *  This file is part of the 2DX Graphics Library.
@@ -158,6 +158,10 @@ public class RenderControl {
 	 */
 	public void setDisableUpdates(boolean noUpdate) {
 		loop.noUpdate = noUpdate;
+	}
+	
+	public boolean areUpdatesDisabled() {
+		return loop.noUpdate;
 	}
 
 	/**
@@ -341,13 +345,41 @@ public class RenderControl {
 	public synchronized void removeRenderable(Renderable r) {
 		delQueue.add(r);
 	}
+	
+	public synchronized boolean isRegistered(Renderable r) {
+		return rtasks.contains(r);
+	}
+	
+	public synchronized int getIndexInQueue(Renderable r) {
+		try {
+			loopChk.acquire();
+			int ind = rtasks.indexOf(r);
+			loopChk.release();
+			return ind;
+		} catch (InterruptedException e) {
+			e.printStackTrace();
+		}
+		return -1;
+	}
+	
+	public synchronized Renderable[] getRenderQueue() {
+		Renderable[] queueArr = new Renderable[getQueueSize()];
+		try {
+			loopChk.acquire();
+			rtasks.toArray(queueArr);
+			loopChk.release();
+		} catch (InterruptedException e) {
+			e.printStackTrace();
+		}
+		return queueArr;
+	}
 
 	/**
 	 * Fetches List.size() for the rendering queue.
 	 * 
 	 * @return
 	 */
-	public int getRenderQueueSize() {
+	public int getQueueSize() {
 		return rtasks.size();
 	}
 
@@ -643,6 +675,9 @@ public class RenderControl {
 							rtasks.remove(r);
 						}
 						delQueue.clear();
+						
+						renderables = rtasks.toArray(new Renderable[rtasks
+						                                            .size()]);
 					}
 
 					if (scheduledResize) {
@@ -694,7 +729,7 @@ public class RenderControl {
 						lastRenderTime = now;
 						frameCount++;
 
-						int thisSecond = (int) (lastUpdateTime / 1000000000);
+						int thisSecond = (int) (now / 1000000000);
 						if (thisSecond > lastSecondTime) {
 							fps = frameCount;
 							tps = ticks;
@@ -704,10 +739,16 @@ public class RenderControl {
 							lastSecondTime = thisSecond;
 						}
 					}
+					
+					if(!active) {
+						fps = 0;
+						tps = 0;
+						printFrames = true;
+					}
 
 					loopChk.release();
 					while (now - lastRenderTime < targetTimeBetweenRenders
-							&& now - lastUpdateTime < timeBetweenUpdates) {
+							&& (now - lastUpdateTime < timeBetweenUpdates || noUpdate)) {
 						Thread.yield();
 						now = System.nanoTime();
 					}
@@ -719,8 +760,11 @@ public class RenderControl {
 						Thread.sleep(SLEEP_WHILE_INACTIVE);
 					}
 				} catch (Exception e) {
-					System.err.println("Snapdragon2D: error in rendering loop");
-					e.printStackTrace();
+					System.err.println("Snapdragon2D: error in rendering loop: " + e.toString() + "\nTerminating loop execution...");
+					CrashReportWindow crashDisp = new CrashReportWindow();
+					crashDisp.dumpToLog("Unhandled error detected in rendering loop - aborting execution", e);
+					crashDisp.setVisible(true);
+					running = false;
 				}
 			}
 		}
@@ -812,7 +856,7 @@ public class RenderControl {
 			return;
 		SnapLogger.println("initialized Java2D graphics pipeline");
 		for(Property p:config.configMap.keySet()) {
-			SnapLogger.println(p.getProperty()+"="+config.configMap.get(p));
+			SnapLogger.println(p.getProperty()+"="+config.get(p));
 		}
 	}
 }

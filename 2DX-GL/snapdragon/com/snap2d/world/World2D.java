@@ -1,5 +1,5 @@
 /*
- *  Copyright © 2012-2013 Brian Groenke
+ *  Copyright © 2012-2014 Brian Groenke
  *  All rights reserved.
  * 
  *  This file is part of the 2DX Graphics Library.
@@ -262,6 +262,7 @@ public class World2D {
 
 	/**
 	 * Checks if the given Rect2D is fully contained within this World2D's viewport.
+	 * Algorithm is inclusive of values along the viewport's edge bounds.
 	 * 
 	 * @param rect
 	 *            the bounding box in world coordinates to check.
@@ -272,10 +273,10 @@ public class World2D {
 		double vy = getY();
 		double vwt = getWorldWidth();
 		double vht = getWorldHeight();
-		boolean inYBounds = rect.getY() > vy
-				&& rect.getY() + rect.getHeight() < vy + vht;
-		boolean inXBounds = rect.getX() > vx
-				&& rect.getX() + rect.getWidth() < vx + vwt;
+		boolean inYBounds = rect.getY() >= vy
+				&& rect.getY() + rect.getHeight() <= vy + vht;
+		boolean inXBounds = rect.getX() >= vx
+				&& rect.getX() + rect.getWidth() <= vx + vwt;
 		return inYBounds && inXBounds;
 	}
 

@@ -1,5 +1,5 @@
 /*
- *  Copyright © 2012-2013 Brian Groenke
+ *  Copyright © 2012-2014 Brian Groenke
  *  All rights reserved.
  * 
  *  This file is part of the 2DX Graphics Library.
@@ -17,6 +17,7 @@ import java.util.*;
 import java.util.List;
 
 import com.snap2d.gl.*;
+import com.snap2d.world.Entity.DrawableEntity;
 import com.snap2d.world.Entity.EntityCollision;
 import com.snap2d.world.event.*;
 
@@ -35,14 +36,14 @@ import com.snap2d.world.event.*;
  */
 public class EntityManager implements Renderable {
 
-	ArrayList<Entity> entities = new ArrayList<Entity>();
+	ArrayList<DrawableEntity> entities = new ArrayList<DrawableEntity>();
 	HashMap<Entity, List<EntityListener>> listeners = new HashMap<Entity, List<EntityListener>>();
 
 	/**
 	 * @param e
 	 * @return true if the Entity was not already registered.
 	 */
-	public boolean register(Entity e) {
+	public boolean register(DrawableEntity e) {
 		boolean added = entities.add(e);
 		if (added) {
 			fireAddEvent(e);
@@ -50,12 +51,12 @@ public class EntityManager implements Renderable {
 		return added;
 	}
 
-	public void register(Entity e, EntityListener listener) {
+	public void register(DrawableEntity e, EntityListener listener) {
 		addEntityListener(listener, e);
 		register(e);
 	}
 
-	public void unregister(Entity e) {
+	public void unregister(DrawableEntity e) {
 		if (entities.remove(e)) {
 			fireRemoveEvent(e);
 		}
@@ -114,7 +115,7 @@ public class EntityManager implements Renderable {
 	 */
 	@Override
 	public void render(Graphics2D g, float interpolation) {
-		for (Entity e : entities) {
+		for (DrawableEntity e : entities) {
 			e.render(g, interpolation);
 		}
 	}
@@ -135,7 +136,7 @@ public class EntityManager implements Renderable {
 	@Override
 	public void update(long nanoTimeNow, long nanosSinceLastUpdate) {
 		chkCache.addAll(entities);
-		for (Entity e : entities) {
+		for (DrawableEntity e : entities) {
 			e.update(nanoTimeNow, nanosSinceLastUpdate);
 			chkCache.remove(e);
 			for (Entity opp : chkCache) {
@@ -158,7 +159,7 @@ public class EntityManager implements Renderable {
 	 */
 	@Override
 	public void onResize(Dimension oldSize, Dimension newSize) {
-		for (Entity e : entities) {
+		for (DrawableEntity e : entities) {
 			e.onResize(oldSize, newSize);
 		}
 	}

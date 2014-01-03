@@ -1,5 +1,5 @@
 /*
- *  Copyright © 2012-2013 Brian Groenke
+ *  Copyright © 2012-2014 Brian Groenke
  *  All rights reserved.
  * 
  *  This file is part of the 2DX Graphics Library.
@@ -43,7 +43,7 @@ final class LoadSoundLibraries {
 					.getResourceAsStream(JAR_PATHS[i]);
 			try {
 				File f = Utils.writeToTempStorage(in, TEMP_JAR_NAME + i
-						+ ".jar");
+						+ ".jar", false);
 				f.deleteOnExit();
 				urls[i] = Utils.getFileURL(f);
 			} catch (IOException e) {

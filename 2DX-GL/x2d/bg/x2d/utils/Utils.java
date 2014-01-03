@@ -1,5 +1,5 @@
 /*
- *  Copyright © 2012-2013 Brian Groenke
+ *  Copyright © 2012-2014 Brian Groenke
  *  All rights reserved.
  * 
  *  This file is part of the 2DX Graphics Library.
@@ -144,13 +144,17 @@ public class Utils {
 	 * 
 	 * @param in
 	 * @param fileName
+	 * @param useSystem if true, the temp file will go in the standard jav.io.tmpdir instead of the Snap2D
+	 * common temp-dir, so it will not be removed by the shutdown hook.  It will remain in temp storage until
+	 * either the system or user deletes it.
 	 * @throws IOException
 	 * @return a File object representing the newly created temp-file.
 	 */
-	public static File writeToTempStorage(InputStream in, String fileName)
+	public static File writeToTempStorage(InputStream in, String fileName, boolean useSystem)
 			throws IOException {
 		BufferedInputStream buffIn = new BufferedInputStream(in);
-		File outFile = new File(TEMP_DIR + File.separator + fileName);
+		String tmpdir = (useSystem) ? System.getProperty("java.io.tmpdir"):TEMP_DIR.getPath();
+		File outFile = new File(tmpdir + File.separator + fileName);
 		BufferedOutputStream buffOut = new BufferedOutputStream(
 				new FileOutputStream(outFile));
 		byte[] buff = new byte[8124];
@@ -160,6 +164,31 @@ public class Utils {
 		}
 		buffOut.close();
 		buffIn.close();
+		return outFile;
+	}
+
+	/**
+	 * Writes the given String to temporary storage under the given file name.
+	 * @param text
+	 * @param fileName
+	 * @param useSystem if true, the temp file will go in the standard jav.io.tmpdir instead of the Snap2D
+	 * common temp-dir, so it will not be removed by the shutdown hook.  It will remain in temp storage until
+	 * either the system or user deletes it.
+	 * @return a File object representing the newly created temp-file.
+	 * @throws IOException
+	 */
+	public static File writeToTempStorage(String text, String fileName, boolean useSystem)
+			throws IOException {
+		String tmpdir = (useSystem) ? System.getProperty("java.io.tmpdir"):TEMP_DIR.getPath();
+		File outFile = new File(tmpdir + File.separator + fileName);
+		PrintWriter pw = new PrintWriter(outFile);
+		Scanner sc = new Scanner((text.endsWith("\n") ? text:text+"\n"));
+		while(sc.hasNextLine()) {
+			pw.println(sc.nextLine());
+		}
+		pw.flush();
+		pw.close();
+		sc.close();
 		return outFile;
 	}
 
@@ -187,19 +216,15 @@ public class Utils {
 		return true;
 	}
 
-	public static String readText(URL url) {
+	public static String readText(URL url) throws IOException {
 		String text = null;
-		try {
-			BufferedReader br = new BufferedReader(new InputStreamReader(url.openStream()));
-			StringBuilder sb = new StringBuilder();
-			String next;
-			while((next=br.readLine()) != null) 
-				sb.append(next + System.getProperty("line.separator"));
-			br.close();
-			text = sb.toString();
-		} catch(IOException e) {
-			e.printStackTrace();
-		}
+		BufferedReader br = new BufferedReader(new InputStreamReader(url.openStream()));
+		StringBuilder sb = new StringBuilder();
+		String next;
+		while((next=br.readLine()) != null) 
+			sb.append(next + System.getProperty("line.separator"));
+		br.close();
+		text = sb.toString();
 		return text;
 	}
 
@@ -239,7 +264,7 @@ public class Utils {
 		return deleted;
 	}
 
-	public static <T> T[] arrayDelete(T[] arr, T[] dest, T... dels) {
+	public static <T> T[] arraySeekDelete(T[] arr, T[] dest, T... dels) {
 		if (arr == null || dest == null
 				|| dest.length != arr.length - dels.length) {
 			throw (new IllegalArgumentException(
@@ -259,6 +284,42 @@ public class Utils {
 		}
 
 		return dest;
+	}
+
+	/**
+	 * Deletes the object at the specified index of 'src' array by storing
+	 * its contents in 'dest' minus the index of deletion.
+	 * @param src
+	 * @param dest array to store new results in; the length MUST be src.length - 1
+	 * @param ind
+	 * @return the dest array
+	 */
+	public static <T> T[] arrayDelete(T[] src, T[] dest, int ind) {
+		if(dest.length != src.length - 1)
+			throw(new IllegalArgumentException("destination array length must equal source array length - 1"));
+		int offs = 0;
+		for(int i=0; i < src.length; i++) {
+			if(i == ind) {
+				offs = 1;
+				continue;
+			}
+			dest[i - offs] = src[i];
+		}
+		return dest;
+	}
+
+	public static int[] arrayDelete(int[] arr, int ind) {
+		int[] narr = new int[arr.length - 1];
+		int offs = 0;
+		for(int i=0; i < arr.length; i++) {
+			if(i == ind) {
+				offs = 1;
+				continue;
+			}
+
+			narr[i - offs] = arr[i];
+		}
+		return narr;
 	}
 
 	public static int interpolate(int n, int lastN, float interpolation) {
@@ -286,7 +347,6 @@ public class Utils {
 	 * @param newSize the new size
 	 * @return
 	 */
-	@SuppressWarnings("unchecked")
 	public static <T> T[] resizeArray(T[] array, int newSize) {
 		return Arrays.copyOf(array, newSize);
 		/*
@@ -300,6 +360,12 @@ public class Utils {
 		}
 		return narr;
 		 */
+	}
+
+	public static <T> T[] appendArray(T[] array, T newElem) {
+		T[] narr = resizeArray(array, array.length + 1);
+		narr[narr.length - 1] = newElem;
+		return narr;
 	}
 
 	/**

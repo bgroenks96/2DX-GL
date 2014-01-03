@@ -1,6 +1,6 @@
 bin/
 .settings/
-ant_makefile.xml
+*.xml
 .classpath
 .project
 .externalToolBuilders/

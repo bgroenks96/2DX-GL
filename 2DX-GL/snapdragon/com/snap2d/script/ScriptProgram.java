@@ -1,5 +1,5 @@
 /*
- *  Copyright © 2012-2013 Brian Groenke
+ *  Copyright © 2012-2014 Brian Groenke
  *  All rights reserved.
  * 
  *  This file is part of the 2DX Graphics Library.
@@ -12,6 +12,7 @@
 
 package com.snap2d.script;
 
+import java.io.*;
 import java.lang.reflect.*;
 import java.util.*;
 
@@ -32,6 +33,8 @@ public class ScriptProgram {
 	ScriptEngine engine;
 
 	ScriptCompilationException lastErr;
+	
+	Function[] scriptFuncs = new Function[0];
 
 	/**
 	 * Create a new ScriptProgram with the given sources.  The program is not compiled or executable
@@ -75,6 +78,8 @@ public class ScriptProgram {
 				srcs[i] = scripts.get(i).getSource();
 			}
 			funcs = compiler.precompile(srcs);
+			scriptFuncs = new Function[funcs.size()];
+			funcs.values().toArray(scriptFuncs);
 			SnapLogger.println("Linking Java functions");
 			// register methods from linked classes
 			for(Class<?> c:classes) {
@@ -149,6 +154,10 @@ public class ScriptProgram {
 			}
 		return null;
 	}
+	
+	public Function[] getScriptFunctions() {
+		return Arrays.copyOf(scriptFuncs, scriptFuncs.length);
+	}
 
 	public Object invoke(Function f, Object...args) throws ScriptInvocationException {
 		if(engine == null)
@@ -171,7 +180,7 @@ public class ScriptProgram {
 			return null;
 	}
 
-	public static void main(String[] args) {
+	public static void main(String[] args) throws IOException {
 		ScriptProgram prog = new ScriptProgram(true, new ScriptSource(Utils.readText(
 				ClassLoader.getSystemResource("com/snap2d/script/test_script.txt"))));
 		if(prog.compile()) {

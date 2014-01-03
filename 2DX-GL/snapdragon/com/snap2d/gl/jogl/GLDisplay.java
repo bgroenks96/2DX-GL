@@ -1,5 +1,5 @@
 /*
- *  Copyright ï¿½ 2012-2013 Brian Groenke
+ *  Copyright © 2012-2014 Brian Groenke
  *  All rights reserved.
  * 
  *  This file is part of the 2DX Graphics Library.
@@ -15,10 +15,14 @@ package com.snap2d.gl.jogl;
 import java.awt.*;
 import java.awt.event.*;
 import java.awt.image.*;
+import java.io.*;
+import java.lang.reflect.*;
 import java.net.*;
+import java.util.*;
 
 import javax.media.opengl.*;
 import javax.media.opengl.awt.*;
+import javax.swing.*;
 
 import bg.x2d.*;
 import bg.x2d.utils.*;
@@ -27,6 +31,7 @@ import com.snap2d.*;
 import com.snap2d.gl.Display.Type;
 import com.snap2d.gl.*;
 import com.snap2d.gl.jogl.GLHandle.AlphaFunc;
+import com.snap2d.gl.jogl.GLHandle.BufferUsage;
 import com.snap2d.gl.jogl.GLHandle.GLFeature;
 import com.snap2d.gl.jogl.JOGLConfig.Property;
 import com.snap2d.world.*;
@@ -132,26 +137,30 @@ public class GLDisplay {
 		return rc;
 	}
 
+	boolean hidden = false;
+
 	public void show() {
 		if (type == Type.FULLSCREEN) {
 			GraphicsDevice d = GraphicsEnvironment
 					.getLocalGraphicsEnvironment().getDefaultScreenDevice();
 			if (d.isFullScreenSupported() && type.isNativeFullscreen()) {
-				frame.enableInputMethods(false);
-				frame.setUndecorated(true);
-				frame.setResizable(false);
-				frame.addFocusListener(new FocusListener() {
+				if(!hidden) { // initialize
+					frame.enableInputMethods(false);
+					frame.setUndecorated(true);
+					frame.setResizable(false);
+					frame.addFocusListener(new FocusListener() {
 
-					@Override
-					public void focusGained(FocusEvent arg0) {
-						frame.setAlwaysOnTop(true);
-					}
+						@Override
+						public void focusGained(FocusEvent arg0) {
+							frame.setAlwaysOnTop(true);
+						}
 
-					@Override
-					public void focusLost(FocusEvent arg0) {
-						frame.setAlwaysOnTop(false);
-					}
-				});
+						@Override
+						public void focusLost(FocusEvent arg0) {
+							frame.setAlwaysOnTop(false);
+						}
+					});
+				}
 				d.setFullScreenWindow(frame);
 			} else {
 				frame.setVisible(true);
@@ -170,6 +179,7 @@ public class GLDisplay {
 				.getDefaultScreenDevice();
 		d.setFullScreenWindow(null);
 		frame.setVisible(false);
+		hidden = true;
 	}
 
 	/**
@@ -178,12 +188,27 @@ public class GLDisplay {
 	 * returns.
 	 */
 	public void dispose() {
-		hide();
-		canvas.removeGLEventListener(rc);
-		rc.dispose();
-		frame.dispose();
-		rc = null;
-		canvas = null;
+		rc.dispose(); // should block until GLContext (AWT) and render-loop threads finish
+		Runnable dispose = new Runnable() { // return windowing operations to AWT thread
+			@Override
+			public void run() {
+				hide();
+				frame.remove(canvas);
+				frame.dispose();
+				rc = null;
+				canvas = null;
+			}
+		};
+		if(SwingUtilities.isEventDispatchThread())
+			dispose.run();
+		else
+			try {
+				SwingUtilities.invokeAndWait(dispose);
+			} catch (InvocationTargetException e) {
+				e.printStackTrace();
+			} catch (InterruptedException e) {
+				e.printStackTrace();
+			}
 	}
 
 	public void setExitOnClose(boolean exitOnWindowClosed) {
@@ -207,8 +232,19 @@ public class GLDisplay {
 		 */
 		@Override
 		public void windowClosing(WindowEvent arg0) {
-			dispose();
-			System.exit(0);
+			Thread disposerThread = new Thread(new Disposer());
+			disposerThread.setPriority(Thread.MAX_PRIORITY);
+			disposerThread.setName("snap2d-disposer_thread");
+			disposerThread.start();
+		}
+		
+		private class Disposer implements Runnable {
+
+			@Override
+			public void run() {
+				dispose();
+				System.exit(0);
+			}
 		}
 
 	}
@@ -220,24 +256,33 @@ public class GLDisplay {
 		gldisp.setExitOnClose(true);
 		gldisp.show();
 		final GLRenderControl rc = gldisp.getRenderControl();
-		rc.addRenderable(new TestObj(), GLRenderControl.POSITION_LAST);
+		rc.addRenderable(new TestObj(gldisp.wt, gldisp.ht), GLRenderControl.POSITION_LAST);
 		rc.addRenderable(new TestBack(), 0);
 		rc.startRenderLoop();
+		//rc.setTargetFPS(8000);
 	}
+	
+	static GLProgram prog;
+	static GLShader vert, frag;
+	static Random rand = new Random();
 
 	static class TestObj implements GLRenderable {
 
 		World2D world;
 		Texture2D tex;
 		int vwt, vht;
-		Rect2D bounds = new Rect2D(-300, -300, 200, 200);
-		Rect2D b2 = new Rect2D(-225, -150, 200, 200);
+		Rect2D bounds = new Rect2D(-500, -500, 100, 100);
 
+		int buffId, buff2;
+
+		public TestObj(int vwt, int vht) {
+
+		}
+
+		final int N = 350;
+		float tx,ty;
 		@Override
 		public void render(GLHandle handle, float interpolation) {
-
-			bounds.setLocation(bounds.getX() + 0.5, bounds.getY() + 0.5);
-			//b2.setLocation(b2.getX() + 1, b2.getY() - 1);
 
 			handle.setTextureEnabled(true);
 			handle.setTexCoords(tex);
@@ -245,13 +290,25 @@ public class GLDisplay {
 			handle.setEnabled(GLFeature.BLENDING, true);
 			handle.setBlendFunc(AlphaFunc.SRC_OVER);
 			handle.bindTexture(tex);
-
+			
+			
 			Rectangle r = world.convertWorldRect(bounds);
-			handle.drawRect2f(r.x, r.y, r.width, r.height);
-			Rectangle r2 = world.convertWorldRect(b2);
-			handle.drawRect2f(r2.x, r2.y, r2.width, r2.height);
-
+			for(int i=1 ; i <= N ; i++) {
+				handle.putQuad2f(buffId, rand.nextInt(1200), rand.nextInt(700), r.width, r.height);
+			}
+			
+			handle.draw2f(buffId);
+			
+			
 			handle.setTextureEnabled(false);
+			
+			handle.putQuad2f(buff2, tx, ty, 200, 200);
+			handle.putQuad2f(buff2, 250 + tx++, 250 + ty++, 200, 200);
+			handle.putQuad2f(buff2, 500 + tx++, 500 + ty++, 200, 200);
+			handle.setColor3f(0, 1, 0);
+			handle.draw2f(buff2);
+			handle.resetBuff(buff2);
+			
 			handle.setEnabled(GLFeature.BLENDING, false);
 
 			/*
@@ -266,7 +323,7 @@ public class GLDisplay {
 
 		@Override
 		public void update(long nanoTimeNow, long nanosSinceLastUpdate) {
-
+			//bounds.setLocation(bounds.getX() + 1, bounds.getY() + 1);
 		}
 
 
@@ -274,11 +331,8 @@ public class GLDisplay {
 		@Override
 		public void onResize(GLHandle handle, int wt, int ht) {
 			vwt = wt; vht = ht;
-			if(world == null) {
-				world = GLUtils.createGLWorldSystem(-800, -450, vwt, vht, ppu);
-			} else {
-				world.setViewSize(vwt, vht, ppu);
-			}
+			world = GLUtils.createGLWorldSystem(-800, -450, vwt, vht, ppu);
+			world.setViewSize(vwt, vht, ppu);
 		}
 
 		/**
@@ -290,23 +344,39 @@ public class GLDisplay {
 				BufferedImage bimg = ImageLoader.load(new URL("file:/media/WIN7/Users/Brian/Pictures/test_alpha.png"));
 				bimg = ImageUtils.convertBufferedImage(bimg, BufferedImage.TYPE_INT_ARGB_PRE);
 				tex = ImageLoader.loadTexture(bimg, true);
-
 				//tex = ImageLoader.loadTexture(new URL("file:/media/WIN7/Users/Brian/Pictures/fnrr_flag.png"), ImageLoader.PNG, true);
 			} catch (MalformedURLException e) {
 				e.printStackTrace();
 			}
+
+			buffId = handle.createQuadBuff2f(BufferUsage.STREAM_DRAW, N, true);
+			buff2 = handle.createQuadBuff2f(BufferUsage.STREAM_DRAW, 10, false);
+			/*
+			for(int i=1 ; i <= N ; i++) {
+				handle.putQuad2f(buffId, rand.nextInt(1000), rand.nextInt(700), 100, 100);
+			}
+			*/
+		}
+
+		/**
+		 *
+		 */
+		@Override
+		public void dispose(GLHandle handle) {
+			
 		}
 
 	}
 
 	static class TestBack implements GLRenderable {
 
-		int wt, ht;
+		int wt, ht, buffId;
 
 		@Override
 		public void render(GLHandle handle, float interpolation) {
-			handle.setColor3f(0.5f, 0.5f, 0.6f);
-			handle.drawRect2f(0, 0, wt, ht);
+			handle.setColor4f(0.5f, 0.5f, 0.6f, 1.0f);
+			handle.draw2f(buffId);
+			//handle.drawRect2f(0, 0, wt, ht);
 		}
 
 		@Override
@@ -318,6 +388,8 @@ public class GLDisplay {
 		public void onResize(GLHandle handle, int wt, int ht) {
 			this.wt = wt;
 			this.ht = ht;
+			handle.setViewport(0, 0, wt, ht, 1);
+			handle.putQuad2f(buffId, 0, 0, wt, ht);
 		}
 
 		/**
@@ -325,7 +397,38 @@ public class GLDisplay {
 		 */
 		@Override
 		public void init(GLHandle handle) {
-			handle.setViewport(0, 0, wt, ht, 1);
+			buffId = handle.createQuadBuff2f(BufferUsage.STATIC_DRAW, 1, false);
+			prog = new GLProgram(handle);
+			try {
+				try {
+				vert = GLShader.loadDefaultShader(handle, "standard.vert", GLShader.TYPE_VERTEX);
+				frag = GLShader.loadDefaultShader(handle, "gamma.frag", GLShader.TYPE_FRAGMENT);
+				} catch (GLShaderException e) {
+					System.err.println("error compiling shader");
+					System.err.println(e.getExtendedMessage());
+					System.exit(1);
+				}
+				
+				prog.attachShader(vert);
+				prog.attachShader(frag);
+				if(!prog.link()) {
+					prog.printLinkLog();
+				}
+			} catch (GLShaderException e) {
+				e.printStackTrace();
+			} catch (IOException e) {
+				e.printStackTrace();
+			}
+		}
+
+		/**
+		 *
+		 */
+		@Override
+		public void dispose(GLHandle handle) {
+			if(prog.getHandle() != handle)
+				prog.setHandle(handle);
+			prog.dispose();
 		}
 	}
 

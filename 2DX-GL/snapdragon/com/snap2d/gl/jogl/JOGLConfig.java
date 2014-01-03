@@ -1,5 +1,5 @@
 /*
- *  Copyright ï¿½ 2012-2013 Brian Groenke
+ *  Copyright © 2012-2014 Brian Groenke
  *  All rights reserved.
  * 
  *  This file is part of the 2DX Graphics Library.
@@ -15,6 +15,8 @@ package com.snap2d.gl.jogl;
 import java.util.*;
 
 /**
+ * Java OpenGL Graphics Library Config - specifies configuration options for the Snapdragon2D
+ * OpenGL rendering engine (powered by JOGL 2.0).
  * @author Brian Groenke
  *
  */

@@ -1,5 +1,5 @@
 /*
- *  Copyright © 2011-2013 Brian Groenke
+ *  Copyright © 2012-2014 Brian Groenke
  *  All rights reserved.
  * 
  *  This file is part of the 2DX Graphics Library.
@@ -13,8 +13,12 @@
 // Standard vertex shader - simply applies transform and assigns gl_FrontColor
 // to the value of gl_Color for use in frag shader as well as gl_TexCoord.
 
+uniform int tex_bound;
+varying vec4 color;
+
 void main() {
     gl_Position = gl_ModelViewProjectionMatrix * gl_Vertex;
-    gl_FrontColor = gl_Color;
-    gl_TexCoord[0] = gl_MultiTexCoord0;
+    color = gl_Color;
+    if(tex_bound != 0)
+        gl_TexCoord[0] = gl_MultiTexCoord0;
 }

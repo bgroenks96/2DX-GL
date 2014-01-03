@@ -1,5 +1,5 @@
 /*
- *  Copyright © 2012-2013 Brian Groenke
+ *  Copyright © 2012-2014 Brian Groenke
  *  All rights reserved.
  * 
  *  This file is part of the 2DX Graphics Library.
@@ -12,6 +12,7 @@
 
 package com.snap2d.gl.jogl;
 
+import java.nio.*;
 import java.util.*;
 
 import javax.media.opengl.*;
@@ -28,7 +29,7 @@ public class GLProgram {
 	
 	public GLProgram(GLHandle handle) {
 		this.handle = handle;
-		GL3bc gl = handle.gl;
+		GL2 gl = handle.gl;
 		progId = gl.glCreateProgram();
 	}
 	
@@ -51,9 +52,28 @@ public class GLProgram {
 		handle.gl.glDetachShader(progId, sobj);
 	}
 	
-	public void link() {
+	public boolean link() {
 		handle.gl.glLinkProgram(progId);
 		handle.gl.glValidateProgram(progId);
+		IntBuffer intBuff = IntBuffer.allocate(1);
+		handle.gl.glGetProgramiv(progId, GL2.GL_LINK_STATUS, intBuff);
+		return intBuff.get(0) == GL.GL_TRUE;
+	}
+	
+	public void printLinkLog() {
+		IntBuffer intBuff = IntBuffer.allocate(1);
+        handle.gl.glGetProgramiv(progId, GL2.GL_INFO_LOG_LENGTH, intBuff);
+        int size = intBuff.get(0);
+        if (size > 0) {
+            System.err.println("GLProgram link error: " + "[log len="+size+"] ");
+            ByteBuffer byteBuffer = ByteBuffer.allocate(size);
+            handle.gl.glGetProgramInfoLog(progId, size, intBuff, byteBuffer);
+            for (byte b : byteBuffer.array()) {
+                System.err.print((char) b);
+            }
+        } else {
+            System.err.println("Info log is unavailable");
+        }
 	}
 	
 	public void enable() {

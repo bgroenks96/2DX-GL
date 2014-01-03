@@ -1,5 +1,5 @@
 /*
- *  Copyright ï¿½ 2012-2013 Brian Groenke
+ *  Copyright © 2012-2014 Brian Groenke
  *  All rights reserved.
  * 
  *  This file is part of the 2DX Graphics Library.
@@ -534,6 +534,9 @@ class ScriptCompiler {
 					npos = npos + forpts[1].length() + 1;
 					//System.out.println(varop.substring(varop.indexOf(nx) + 2));
 					parseEvaluation(varop.substring(varop.indexOf(nx) + 2), src, npos + sb.length() + 3, Flags.TYPE_FLOAT);
+					break;
+				default:
+					throw(new ScriptCompilationException("found unexpected symbol as for operator: " + nx, src, pos));
 				}
 			} else
 				sb.append(c);
@@ -720,9 +723,9 @@ class ScriptCompiler {
 		Integer[] keys = marks.keySet().toArray(new Integer[marks.size()]);
 		keys = Utils.flipArray(keys);
 		for(int i:keys) {
-			if(marks.get(i))
+			if(marks.get(i) && !strval(nstr.charAt(i)).equals(Keyword.BLOCK_BEGIN.sym))
 				nstr.insert(i, Keyword.BLOCK_BEGIN.sym);
-			else
+			else if (!marks.get(i) && !strval(nstr.charAt((i==nstr.length()) ? i-1:i)).equals(Keyword.BLOCK_END.sym))
 				nstr.insert(i, Keyword.BLOCK_END.sym);
 		}
 
@@ -1078,7 +1081,7 @@ class ScriptCompiler {
 	}
 	
 	private void printWarning(Function context, String msg) {
-		SnapLogger.printErr("WARNING - function '"+context.getName()+"': " + msg, true);
+		SnapLogger.println("WARNING - function '"+context.getName()+"': " + msg, true);
 	}
 
 	static volatile int globalId = Integer.MIN_VALUE;

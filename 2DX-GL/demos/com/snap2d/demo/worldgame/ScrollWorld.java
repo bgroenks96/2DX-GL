@@ -1,5 +1,5 @@
 /*
- *  Copyright © 2012-2013 Brian Groenke
+ *  Copyright © 2012-2014 Brian Groenke
  *  All rights reserved.
  * 
  *  This file is part of the 2DX Graphics Library.
@@ -17,6 +17,7 @@ import java.util.*;
 
 import com.snap2d.gl.*;
 import com.snap2d.world.*;
+import com.snap2d.world.Entity.DrawableEntity;
 
 /**
  * @author Brian Groenke
@@ -24,7 +25,7 @@ import com.snap2d.world.*;
  */
 public class ScrollWorld extends World2D implements GameWorld, Renderable {
 
-	HashSet<Entity> entities = new HashSet<Entity>();
+	HashSet<DrawableEntity> entities = new HashSet<DrawableEntity>();
 	EntityManager manager = new EntityManager();
 
 	/**
@@ -53,7 +54,7 @@ public class ScrollWorld extends World2D implements GameWorld, Renderable {
 	@Override
 	public void update(long nanoTimeNow, long nanosSinceLastUpdate) {
 		manager.update(nanoTimeNow, nanosSinceLastUpdate);
-		for (Entity e : entities) {
+		for (DrawableEntity e : entities) {
 			if (!viewIntersects(e.getWorldBounds())) {
 				if (manager.contains(e)) {
 					manager.unregister(e);
@@ -69,7 +70,7 @@ public class ScrollWorld extends World2D implements GameWorld, Renderable {
 	 */
 	@Override
 	public void onResize(Dimension oldSize, Dimension newSize) {
-		for (Entity e : entities) {
+		for (DrawableEntity e : entities) {
 			e.onResize(oldSize, newSize);
 		}
 	}
@@ -78,7 +79,7 @@ public class ScrollWorld extends World2D implements GameWorld, Renderable {
 	 *
 	 */
 	@Override
-	public boolean addEntity(Entity e) {
+	public boolean addEntity(DrawableEntity e) {
 		return entities.add(e);
 	}
 
@@ -86,7 +87,7 @@ public class ScrollWorld extends World2D implements GameWorld, Renderable {
 	 *
 	 */
 	@Override
-	public boolean removeEntity(Entity e) {
+	public boolean removeEntity(DrawableEntity e) {
 		return entities.remove(e);
 	}
 
@@ -94,7 +95,7 @@ public class ScrollWorld extends World2D implements GameWorld, Renderable {
 	 *
 	 */
 	@Override
-	public boolean hasEntity(Entity e) {
+	public boolean hasEntity(DrawableEntity e) {
 		return entities.contains(e);
 	}
 
@@ -102,7 +103,7 @@ public class ScrollWorld extends World2D implements GameWorld, Renderable {
 	 *
 	 */
 	@Override
-	public boolean isInView(Entity e) {
+	public boolean isInView(DrawableEntity e) {
 		return manager.contains(e);
 	}
 
@@ -111,8 +112,8 @@ public class ScrollWorld extends World2D implements GameWorld, Renderable {
 	 */
 	@Override
 	public void setViewport(double x, double y, int width, int height) {
-		super.setLocation(x, y);
 		super.setViewSize(width, height, getPixelsPerUnit());
+		super.setLocation(x, y);
 	}
 
 	/**
@@ -127,16 +128,16 @@ public class ScrollWorld extends World2D implements GameWorld, Renderable {
 	 *
 	 */
 	@Override
-	public Entity[] getEntities() {
-		return entities.toArray(new Entity[entities.size()]);
+	public DrawableEntity[] getEntities() {
+		return entities.toArray(new DrawableEntity[entities.size()]);
 	}
 
 	/**
 	 *
 	 */
 	@Override
-	public Entity entityAt(double x, double y) {
-		for (Entity e : entities) {
+	public DrawableEntity entityAt(double x, double y) {
+		for (DrawableEntity e : entities) {
 			if (e.getCompatibleBounds().contains(x, y)) {
 				return e;
 			}

@@ -1,5 +1,5 @@
 /*
- *  Copyright © 2012-2013 Brian Groenke
+ *  Copyright © 2012-2014 Brian Groenke
  *  All rights reserved.
  * 
  *  This file is part of the 2DX Graphics Library.
@@ -37,10 +37,10 @@ public interface Renderable {
 	 * Called on each tick of the game loop. This method is where logic and position updates should
 	 * take place.
 	 * 
-	 * @param nanoTimeNow
-	 * @param nanosSinceLastUpdate
+	 * @param nanoTimeNow the fixed nano time at the start of the update cycle
+	 * @param lastUpdate  the fixed nano time of the last update cycle
 	 */
-	public void update(long nanoTimeNow, long nanosSinceLastUpdate);
+	public void update(long nanoTimeNow, long lastUpdate);
 
 	/**
 	 * Called when the Graphics context invoking the Renderable has been resized, allowing the

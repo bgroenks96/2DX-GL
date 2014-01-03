@@ -312,7 +312,7 @@ public abstract class Local {
 				throw (new UnsatisfiedLinkError(
 						"failed to locate native library"));
 			}
-			File tmp = Utils.writeToTempStorage(url.openStream(), name);
+			File tmp = Utils.writeToTempStorage(url.openStream(), name, false);
 			System.load(tmp.getPath());
 			tmp.deleteOnExit();
 			return true;

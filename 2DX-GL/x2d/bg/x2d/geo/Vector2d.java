@@ -1,5 +1,5 @@
 /*
- *  Copyright © 2012-2013 Brian Groenke
+ *  Copyright © 2012-2014 Brian Groenke
  *  All rights reserved.
  * 
  *  This file is part of the 2DX Graphics Library.
@@ -90,6 +90,10 @@ public class Vector2d {
 		bd = BigDecimal.valueOf(y).setScale(precision, RoundingMode.HALF_UP);
 		y = bd.doubleValue();
 		init();
+	}
+	
+	public Vector2f toFloatVec() {
+		return new Vector2f((float)x, (float)y);
 	}
 
 	public double degs() {
@@ -257,6 +261,7 @@ public class Vector2d {
 	}
 	
 	public Vector2d clamp(double min, double max) {
+		double mag = getMagnitude();
 		if(mag < min)
 			setFromPolar(min, angle);
 		if(mag > max)
@@ -266,6 +271,7 @@ public class Vector2d {
 	
 	public Vector2d clampNew(double min, double max) {
 		Vector2d copy = new Vector2d(this);
+		double mag = getMagnitude();
 		if(mag < min)
 			copy.setFromPolar(min, angle);
 		if(mag > max)
@@ -277,9 +283,14 @@ public class Vector2d {
 		return new Point2D.Double(p.x + (x * multiplier), p.y
 				+ (y * multiplier));
 	}
+	
+	public void applyTo(PointLD p, double multiplier) {
+		p.setLocation(p.dx + x * multiplier, p.y + y * multiplier);
+	}
 
 	@Override
 	public String toString() {
+		checkPrecision();
 		return "mag=" + mag + " theta=" + Math.toDegrees(angle) + " [" + x
 				+ ", " + y + "]";
 	}

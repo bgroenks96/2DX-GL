@@ -1,5 +1,5 @@
 /*
- *  Copyright ï¿½ 2012-2013 Brian Groenke
+ *  Copyright © 2012-2014 Brian Groenke
  *  All rights reserved.
  * 
  *  This file is part of the 2DX Graphics Library.
@@ -26,6 +26,14 @@ public interface GLRenderable {
 	 * @param handle
 	 */
 	public void init(GLHandle handle);
+	
+	/**
+	 * Called when the current GL rendering context is being destroyed.  GLRenderable implementations should
+	 * release any resources held both in and out of the OpenGL system.
+	 * @param handle
+	 * @return
+	 */
+	public void dispose(GLHandle handle);
 	
 	/**
 	 * Called on each frame by the rendering engine.  The receiving GLRenderable can use the

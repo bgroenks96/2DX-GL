@@ -1,5 +1,5 @@
 /*
- *  Copyright © 2012-2013 Brian Groenke
+ *  Copyright © 2012-2014 Brian Groenke
  *  All rights reserved.
  * 
  *  This file is part of the 2DX Graphics Library.
@@ -17,12 +17,13 @@ import java.awt.geom.*;
 
 import com.snap2d.physics.*;
 import com.snap2d.world.*;
+import com.snap2d.world.Entity.DrawableEntity;
 
 /**
  * @author Brian Groenke
  * 
  */
-public class GenericEntity extends Entity {
+public class GenericEntity extends DrawableEntity {
 
 	/**
 	 * 

@@ -1,5 +1,5 @@
 /*
- *  Copyright © 2012-2013 Brian Groenke
+ *  Copyright © 2012-2014 Brian Groenke
  *  All rights reserved.
  * 
  *  This file is part of the 2DX Graphics Library.
@@ -42,23 +42,24 @@ public class GLShader {
 		StringBuilder sb = new StringBuilder();
 		String line = null;
 		while((line=br.readLine()) != null)
-			sb.append(line);
+			sb.append(line + "\n");
 		in.close();
 		compile(sb.toString(), type);
 	}
 
 	private void compile(String source, int type) throws GLShaderException {
-		GL3bc gl = handle.gl;
+		GL2 gl = handle.gl;
 		sobj = gl.glCreateShader(type);
 		gl.glShaderSource(sobj, 1, new String[] { source }, (int[]) null, 0);
 		gl.glCompileShader(sobj);
 
 		//Check compile status.
 		int[] compiled = new int[1];
-		gl.glGetShaderiv(sobj, GL3.GL_COMPILE_STATUS, compiled,0);
-		if(compiled[0] == 0) {
+		gl.glGetShaderiv(sobj, GL2.GL_COMPILE_STATUS, compiled,0);
+		
+		if(compiled[0] == GL.GL_FALSE) {
 			int[] logLength = new int[1];
-			gl.glGetShaderiv(sobj, GL3.GL_INFO_LOG_LENGTH, logLength, 0);
+			gl.glGetShaderiv(sobj, GL2.GL_INFO_LOG_LENGTH, logLength, 0);
 
 			byte[] log = new byte[logLength[0]];
 			gl.glGetShaderInfoLog(sobj, logLength[0], (int[])null, 0, log, 0);

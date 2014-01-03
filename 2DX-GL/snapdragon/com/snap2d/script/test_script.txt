@@ -1,6 +1,4 @@
-int Pythag(float a, b) {
-    float r = sqrt(a^2+b^2);
-    int apb = a+b;
-    println("|a|=a |b|=b |r|=c");
-    return round(r);
+float Pythag(float a, b) {
+    float r = sqrt(sqrt(sqrt(a^2+b^2)));
+    return r;
 }
