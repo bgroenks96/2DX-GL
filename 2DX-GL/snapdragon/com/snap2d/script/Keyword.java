@@ -128,6 +128,21 @@ enum Keyword {
 		}
 	}
 	
+	public static Keyword flagToTypeKey(int flag) {
+		switch(flag) {
+		case Flags.TYPE_INT:
+			return INT;
+		case Flags.TYPE_FLOAT:
+			return FLOAT;
+		case Flags.TYPE_BOOL:
+			return BOOL;
+		case Flags.TYPE_STRING:
+			return STRING;
+		default:
+			return null;
+		}
+	}
+	
 	public static boolean isValidDataType(Class<?> type) {
 		if(type == Integer.class || type == Float.class || type == Boolean.class || type == String.class)
 			return true;

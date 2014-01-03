@@ -90,7 +90,7 @@ class ScriptEngine {
 	private void putVar(int id, int type, Object value) {
 		Variable prev = fetchVar(id);
 		if(prev != null) {
-			prev.value = value;
+			prev.setValue(value); // setValue runs type verification
 		} else
 			stacks.peekFirst().put(id, new Variable(id, type, value));
 	}
@@ -182,6 +182,8 @@ class ScriptEngine {
 				break;
 			case BOOL:
 				ret = false;
+			default:
+				break;
 			}
 		}
 		
@@ -540,7 +542,7 @@ class ScriptEngine {
 				val *= mod;
 			else if(modOp == DIV_MOD)
 				val /= mod;
-			opvar.value = val;
+			opvar.setValue(val);
 		}
 		inLoop = false;
 		
@@ -611,6 +613,15 @@ class ScriptEngine {
 			this.id = id;
 			this.type = type;
 
+			setValue(value);
+		}
+		
+		/*
+		 * This method should be called each time a Variable's value is reset to ensure
+		 * proper type handling.  DO NOT (in most cases) directly assign the 'value' field
+		 * to the new Object.
+		 */
+		void setValue(Object value) {
 			// for int variables, we have to make sure the value is stored as a true Integer,
 			// not Double (which the engine returns as an evaluation result regardless).
 			switch(type) {
