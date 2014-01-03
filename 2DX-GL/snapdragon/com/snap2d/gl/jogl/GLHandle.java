@@ -504,12 +504,6 @@ public class GLHandle {
 		}
 	}
 
-	/**
-	 * Fetches the GL pipeline represented by this GLHandle.
-	 * <b>JOGL must be in your build path to use the classes directly.</b>
-	 * @return the JOGL GL control class
-	 */
-
 	// -------- OpenGL Feature Control --------- //
 
 	public void setEnabled(GLFeature feature, boolean enable) {
