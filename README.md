@@ -13,16 +13,27 @@ A 2D Java game engine built on 2DX-GL.  Snapdragon2D utilizes and extends the 2D
 Notable features:
 
 -Fast, efficient, high level rendering engines (separate Java2D and OpenGL frameworks)
+
 -99% cross-platform with expandable native library system
+
 -2D World management and conversion framework
+
 -2D timed animation framework (Java2D based)
+
 -OpenGL shader support (JOGL)
+
 -Built in image/texture management
+
 -SnapScript language for fast, portable game scripting
+
 -Physics framework (2DX + Snap2D expansion)
+
 -Built in sound library via Paul Lamb's SoundSystem API
+
 -Rendered user interface framework (independent of Swing/AWT)
+
 -Math/geometry libraries
+
 -Numerous provided general utilities
 
 Planned features:
@@ -42,7 +53,7 @@ NOTE: These JARs are typically stable, but may not have all features fully imple
 
 Read the commit notes for detailed update information.
 
-###2DX-GL 1st Edition (v.1.0)
+**2DX-GL 1st Edition (v.1.0)**
 
 Project dev status: Pre-release
 
@@ -51,7 +62,7 @@ To-do (next commit):
 -Utility additions
 -Physics engine cleanup/bug fixes if necessary
 
-###Snapdragon2D
+**Snapdragon2D**
 
 Project dev status: Alpha
 
@@ -63,7 +74,7 @@ To-do (in development):
 
 Follow @The2DXProject on Twitter for real-time updates on development of the project!
 
-###Additional credits:
+**Additional credits:**
 
 Snapdragon2D Sound API utilizes SoundSystem for Java by Paul Lamb [www.paulscode.com]
 	
