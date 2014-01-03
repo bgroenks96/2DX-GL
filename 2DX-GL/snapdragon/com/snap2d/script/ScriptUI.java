@@ -173,7 +173,7 @@ public class ScriptUI extends JFrame {
 		 */
 		private static final long serialVersionUID = -473771619157816946L;
 
-		JComboBox<String> chooseFunc;
+		JComboBox chooseFunc;
 		JTextField argField;
 
 		@SuppressWarnings("serial")
@@ -189,7 +189,7 @@ public class ScriptUI extends JFrame {
 				}
 				funcStrs[i] = funcs[i].getName() + " ("+sb.toString()+")";
 			}
-			chooseFunc = new JComboBox<String>(funcStrs);
+			chooseFunc = new JComboBox(funcStrs);
 			chooseFunc.setPreferredSize(new Dimension(150, chooseFunc.getPreferredSize().height));
 			argField = new JTextField(15);
 			if(lastArgs != null && lastItem != null) {
