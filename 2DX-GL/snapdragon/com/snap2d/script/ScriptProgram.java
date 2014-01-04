@@ -14,6 +14,7 @@ package com.snap2d.script;
 
 import java.io.*;
 import java.lang.reflect.*;
+import java.nio.*;
 import java.util.*;
 
 import bg.x2d.utils.*;
@@ -43,7 +44,7 @@ public class ScriptProgram {
 	 * @param linkLibs whether or not the standard SnapScript libraries should be automatically linked (usually should be true)
 	 * @param scriptSources the sources to compile
 	 */
-	public ScriptProgram(boolean linkLibs, ScriptSource...scriptSources) {
+	public ScriptProgram(boolean linkLibs, ScriptSource...scriptSources) {	
 		for(ScriptSource s:scriptSources)
 			scripts.add(s);
 		if(linkLibs) {
@@ -195,7 +196,7 @@ public class ScriptProgram {
 		if(prog.compile()) {
 			try {
 				prog.initRuntime(true);
-				Function f = prog.findFunction("Pythag", Float.class, Float.class);
+				Function f = prog.findFunction("Func");
 				prog.invoke(f, 3, 4);
 			} catch (ScriptInvocationException e) {
 				e.printStackTrace();

@@ -24,11 +24,22 @@ class MathParser {
 
 	public static final String SEP = ":";
 	
+	private static final String[] CONSTANT_NAMES = new String[] {"pi", "e"};
+	private static final double[] CONSTANT_VALS = new double[] {Math.PI, Math.E};
+	private static final HashMap<String, Double> constMap = new HashMap<String, Double>();
+	
 	public int roundTo = 6;
+	
+	static {
+		for(int i=0; i < CONSTANT_NAMES.length; i++) {
+			constMap.put(CONSTANT_NAMES[i], CONSTANT_VALS[i]);
+		}
+	}
 
 	protected double parse(String input) throws MathParseException {
 		StringBuilder sb = new StringBuilder(input);
 		sb.replace(0, sb.length(), sb.toString().replaceAll("\\s", ""));
+		sb.replace(0, sb.length(), findConstants(sb.toString()));
 		sb.replace(0, sb.length(), findNegatives(sb.toString()));
 		sb.replace(0, sb.length(), checkDelimiters(sb.toString()));
 		if (mismatch) {
@@ -39,6 +50,13 @@ class MathParser {
 		String rpn = shuntingYard(sb.toString());
 		double result = calculate(rpn);
 		return result;
+	}
+	
+	protected String findConstants(String input) {
+		for(String s : constMap.keySet()) {
+			input = input.replaceAll(s, String.valueOf(constMap.get(s)));
+		}
+		return input;
 	}
 
 	protected String findNegatives(String input) {

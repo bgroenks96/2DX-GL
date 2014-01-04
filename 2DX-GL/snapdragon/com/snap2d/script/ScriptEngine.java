@@ -21,6 +21,7 @@ import java.util.*;
 
 import bg.x2d.utils.*;
 
+import com.snap2d.*;
 import com.snap2d.script.lib.*;
 
 /**
@@ -54,7 +55,7 @@ class ScriptEngine {
 			if(varFuncs.contains(f.getJavaMethod())) // attach VarStore object to linked methods
 				attachObjectToFunction(f.getID(), vars);
 		}
-		
+
 		initConstantVars(constInits);
 	}
 
@@ -69,10 +70,12 @@ class ScriptEngine {
 
 	public Object invoke(long id, Object... args) throws ScriptInvocationException {
 		Function f = funcMap.get(id);
+		Object ret = null;
 		if(f.isJavaFunction())
-			return invokeJavaFunction(f, javaObjs.get(f), args);
+			ret = invokeJavaFunction(f, javaObjs.get(f), args);
 		else
-			return invokeFunction(f, args);
+			ret = invokeFunction(f, args);
+		return ret;
 	}
 
 	// >>>>>> SCRIPT EXECUTION ENGINE >>>>>> //
@@ -83,12 +86,16 @@ class ScriptEngine {
 	 * i.e. "execExampleTask"
 	 */
 
+	private static final int RELEASE_GC = 100000;
+
 	Object ret;
 	ByteBuffer buff;
 	Function curr;
 	LinkedList<VarStack> stacks;
 	VarStack consts;
-	MathParser math = new MathParser();
+
+	int varGC = 0; // used to track released Variable objects
+	int mathGC = 0; // used to track released MathParser objects
 
 	private boolean inLoop = false;
 
@@ -185,12 +192,13 @@ class ScriptEngine {
 			throw(new ScriptInvocationException("found unexpected bytecode instruction: " + Integer.toHexString(init), f));
 		}
 
+		for(VarStack stack : stacks)
+			stack.clear();
+		stacks.clear();
+
 		buff.rewind();
 
 		ret = checkFuncReturnValue(ret, f.getReturnType());
-
-		if(f.getReturnType() == Keyword.INT)
-			ret = ((Double)ret).intValue();
 
 		return (f.getReturnType() == Keyword.VOID) ? null:ret;
 	}
@@ -227,7 +235,16 @@ class ScriptEngine {
 				stacks.push(new VarStack());
 				break;
 			case CLEAR_STACK:
-				stacks.pop();
+				stacks.pop().clear();
+				if(varGC > RELEASE_GC || mathGC > RELEASE_GC) {
+					SnapLogger.log("SnapScript: GC requested [varGC="+varGC+" mathGC="+mathGC+"]");
+					System.runFinalization();
+					System.gc();
+					if(varGC > RELEASE_GC)
+						varGC = 0;
+					else if(mathGC > RELEASE_GC)
+						mathGC = 0;
+				}
 				break;
 			case INVOKE_FUNC:
 				execFuncCall();
@@ -249,6 +266,10 @@ class ScriptEngine {
 				break;
 			case RETURN:
 				this.ret = execExpression();
+				if(curr.getReturnType() == Keyword.INT && !Function.isInt(ret.getClass()))
+					ret = ((Double)ret).intValue();
+				else if(curr.getReturnType() == Keyword.BOOL && !Function.isBool(ret.getClass()))
+					ret = (((Double)ret).byteValue() == 1) ? true:false;
 			case CONTINUE:
 				if(!inLoop && next == CONTINUE)
 					throw(new ScriptInvocationException("found continue instruction outside of loop execution", curr));
@@ -318,7 +339,7 @@ class ScriptEngine {
 			break;
 		case REF_VAR:
 			Variable var = execRefVar();
-			ret = var.value;
+			ret = var.getValue();
 			break;
 		case INVOKE_JAVA_FUNC:
 			ret = execJavaCall();
@@ -361,7 +382,7 @@ class ScriptEngine {
 				Variable var = execRefVar();
 				if(var.type == Flags.TYPE_STRING)
 					throw(new ScriptInvocationException("found type 'string' in mathematical expression", curr));
-				double val = checkNumberObject(var.value);
+				double val = checkNumberObject(var.getValue());
 				String strval = BigDecimal.valueOf(val).toPlainString();
 				sb.append(strval);
 				break;
@@ -385,7 +406,10 @@ class ScriptEngine {
 		sb.deleteCharAt(sb.length() - 1);
 		double result = Double.NaN;
 		try {
+			MathParser math = new MathParser();
 			result = math.calculate(sb.toString());
+			math = null;
+			mathGC++;
 		} catch (MathParseException e) {
 			ScriptInvocationException scriptError = new ScriptInvocationException("error parsing math command", curr);
 			scriptError.initCause(e);
@@ -418,7 +442,7 @@ class ScriptEngine {
 		int offs = 0;
 		for(int i:inVars.keySet()) {
 			for(Variable var : inVars.getAll(i)) {
-				String val = var.value.toString();
+				String val = var.getValue().toString();
 				s.insert(i + offs, val);
 				offs += val.length();
 			}
@@ -578,7 +602,7 @@ class ScriptEngine {
 			if(stat == Flags.BREAK)
 				break;
 
-			double val = ((Number) opvar.value).doubleValue();
+			double val = ((Number) opvar.getValue()).doubleValue();
 			if(modOp == ADD_MOD)
 				val += mod;
 			else if(modOp == MULT_MOD)
@@ -646,12 +670,18 @@ class ScriptEngine {
 		public void remove(int id) {
 			varmap.remove(id);
 		}
+
+		public void clear() {
+			varGC += varmap.size();
+			varmap.clear();
+		}
 	}
 
 	private class Variable {
 
 		final int id, type;
-		Object value;
+		boolean doubleStore;
+		ByteBuffer val;
 
 		Variable(int id, int type, Object value) {
 			this.id = id;
@@ -666,37 +696,84 @@ class ScriptEngine {
 		 * to the new Object.
 		 */
 		void setValue(Object value) {
+			// if useDouble has changed, float values must be re-allocated
+			if(val != null && type == Flags.TYPE_FLOAT && useDouble != this.doubleStore) {
+				val.clear();
+				val = null;
+			}
+
+			this.doubleStore = useDouble; // assign this variable's current use of double-store to the engine setting
+
 			// for int variables, we have to make sure the value is stored as a true Integer,
 			// not Double (which the engine returns as an evaluation result regardless).
 			switch(type) {
 			case Flags.TYPE_INT:
+				if(val == null)
+					val = ByteBuffer.allocateDirect((int)Utils.INT_SIZE);
 				if(value instanceof Double)
-					this.value = ((Double)value).intValue();
+					val.putInt(((Double)value).intValue());
 				else
-					this.value = value;
+					val.putInt((Integer)value);
 				break;
 				// for float variables, we have to check whether or not to store them as a Java Float or Double.
 			case Flags.TYPE_FLOAT:
-				if(!useDouble) {
-					this.value = ((Double)value).floatValue();
-				} else
-					this.value = value;
+				if(!doubleStore) {
+					if(val == null)
+						val = ByteBuffer.allocateDirect((int)Utils.FLOAT_SIZE);
+					val.putFloat(((Double)value).floatValue());
+				} else {
+					if(val == null)
+						val = ByteBuffer.allocateDirect((int)Utils.DOUBLE_SIZE);
+					val.putDouble((Double)value);
+				}
 				break;
 			case Flags.TYPE_BOOL:
+				if(val == null)
+					val = ByteBuffer.allocateDirect(1);
 				if(value instanceof Double) {
-					this.value = ((Double)value == 0) ? false:true;
-					break;
-				}
+					val.put(((Double)value).byteValue());
+				} else
+					val.put(((Boolean)value) ? (byte)1 : (byte)0);
+				break;
 			case Flags.TYPE_STRING:
-				this.value = value;
+				String sval = (String) value;
+				byte[] sbytes = sval.getBytes();
+				if(val == null || val.capacity() < sbytes.length)
+					val = ByteBuffer.allocateDirect(sbytes.length);
+				val.put(sbytes);
 			}
+			val.flip();
+		}
+
+		Object getValue() {
+			Object value = null;
+			switch(type) {
+			case Flags.TYPE_INT:
+				value = val.getInt();
+				break;
+			case Flags.TYPE_FLOAT:
+				if(!doubleStore)
+					value = val.getFloat();
+				else
+					value = val.getDouble();
+				break;
+			case Flags.TYPE_BOOL:
+				value = (val.get() == 1) ? true : false;
+				break;
+			case Flags.TYPE_STRING:
+				byte[] bytes = new byte[val.limit()];
+				val.get(bytes);
+				value = new String(bytes);
+			}
+			val.rewind();
+			return value;
 		}
 	}
 
 	@SuppressWarnings("unused")
 	private static <T> T castVariable(Variable var, Function context, Class<T> type) {
 		if(Keyword.isValidDataType(type))
-			return type.cast(var.value);
+			return type.cast(var.getValue());
 		else
 			return null;
 	}
