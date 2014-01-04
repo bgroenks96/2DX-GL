@@ -1,5 +1,5 @@
 /*
- *  Copyright © 2012-2014 Brian Groenke
+ *  Copyright Â© 2012-2014 Brian Groenke
  *  All rights reserved.
  * 
  *  This file is part of the 2DX Graphics Library.
@@ -29,7 +29,8 @@ final class Bytecodes {
 			RETURN = 0x26, END_COND = 0x27, ELSE_IF = 0x28, ELSE = 0x29, EQUALS = 0x2A, GREATER = 0x2B, LESSER = 0x2C, NOT_EQUALS = 0x2D,
 			PARAM_VAR = 0x2E, FOR_START = 0x30, INCREM = 0x31, DECREM = 0x32, ADD_MOD = 0x33, MINUS_MOD = 0x34,
 			NO_PARAMS = 0x35, INIT_PARAMS = 0x36, NEW_STACK = 0x37, CLEAR_STACK = 0x38, BITOR = 0x39, BITAND = 0x3A,
-			BITXOR = 0x3B, MODULO = 0x3C, MULT_MOD = 0x3D, DIV_MOD = 0x3E, BREAK = 0x3F, CONTINUE = 0x40, LESS_EQUALS = 0x41, GREAT_EQUALS = 0x42;
+			BITXOR = 0x3B, MODULO = 0x3C, MULT_MOD = 0x3D, DIV_MOD = 0x3E, BREAK = 0x3F, CONTINUE = 0x40, LESS_EQUALS = 0x41, GREAT_EQUALS = 0x42,
+			STORE_CONST = 0x43;
 	
 	@Deprecated  // unnecessary loop instruction
 	public static final byte FOR_SEP = 0x2F;

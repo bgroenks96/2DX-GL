@@ -1,5 +1,5 @@
 /*
- *  Copyright © 2012-2014 Brian Groenke
+ *  Copyright Â© 2012-2014 Brian Groenke
  *  All rights reserved.
  * 
  *  This file is part of the 2DX Graphics Library.
@@ -46,7 +46,7 @@ final class Flags {
 	// RETURN_NONE = returns void - operation does not return any value
 	// RETURN_MATCH_ARG = the operation will return a value of its argument(s) type
 	public static final int RETURN_BOOL = 0xFB00000, RETURN_INT = 0xFB00001, RETURN_FLOAT = 0xFB00002,
-			RETURN_NONE = 0xFB00003, RETURN_MATCH_ARG = 0xFB00004;
+			RETURN_NONE = 0xFB00003, RETURN_MATCH_ARG = 0xFB00004, RETURN_FLOAT_STRICT = 0xFB00005;
 	
 	// keyword type flags
 	public static final int TYPE_INT = 0xFC00000, TYPE_FLOAT = 0xFC00001, TYPE_STRING = 0xFC00002, 
@@ -59,5 +59,5 @@ final class Flags {
 	 * Pre-compiler signals
 	 */
 	public static final int W_FLUSH = 0xC000000, DELIM_FLUSH = 0xC000001, PC_RETURN = 0xC000002,
-			PC_FUNC = 0xC000003;
+			PC_FUNC = 0xC000003, PC_CONST = 0xC000004;
 }

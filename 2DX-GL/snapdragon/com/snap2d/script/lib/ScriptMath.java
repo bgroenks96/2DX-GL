@@ -1,5 +1,5 @@
 /*
- *  Copyright © 2012-2014 Brian Groenke
+ *  Copyright Â© 2012-2014 Brian Groenke
  *  All rights reserved.
  * 
  *  This file is part of the 2DX Graphics Library.
@@ -12,7 +12,7 @@
 
 package com.snap2d.script.lib;
 
-import java.util.*;
+import bg.x2d.gen.*;
 
 import com.snap2d.script.*;
 
@@ -93,6 +93,11 @@ public class ScriptMath {
 	}
 	
 	@ScriptLink
+	public static int bitXOR(int arg0, int arg1) {
+		return arg0 ^ arg1;
+	}
+	
+	@ScriptLink
 	public static double absv(double arg0) {
 		return Math.abs(arg0);
 	}
@@ -137,5 +142,11 @@ public class ScriptMath {
 	 */
 	public static int randInt() {
 		return randInt(Integer.MAX_VALUE);
+	}
+	
+	@ScriptLink
+	public static int randInt(int min, int max) {
+		NumberGenerator<Integer> gen = new NumberGenerator<Integer>(min, max);
+		return gen.generate().intValue();
 	}
 }

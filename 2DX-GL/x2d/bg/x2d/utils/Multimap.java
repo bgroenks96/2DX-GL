@@ -133,6 +133,11 @@ public class Multimap<K, V> extends AbstractMap<K, V> {
 	public int size() {
 		return values().size();
 	}
+	
+	@Override
+	public void clear() {
+		ktv.clear();
+	}
 
 	@Override
 	public synchronized String toString() {
