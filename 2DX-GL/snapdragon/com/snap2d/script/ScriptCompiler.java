@@ -432,7 +432,7 @@ class ScriptCompiler {
 
 		if(parseMainStack == 1 && func.getReturnType() != Keyword.VOID && !returnCall)
 			printWarning(func, "function declares non-void return type but does not explicitly return a value");
-
+		
 		buff.put(Bytecodes.CLEAR_STACK);
 		stackVars.clear();
 		stackVars = snapshot;

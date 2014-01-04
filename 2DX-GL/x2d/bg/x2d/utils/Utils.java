@@ -30,6 +30,12 @@ public class Utils {
 	public static final File TEMP_DIR = new File(
 			System.getProperty("java.io.tmpdir") + File.separator
 			+ ".com_snap2d_tmp");
+	
+	public static final long INT_SIZE = Integer.SIZE / Byte.SIZE,
+			LONG_SIZE = Long.SIZE / Byte.SIZE,
+			FLOAT_SIZE = Float.SIZE / Byte.SIZE,
+			DOUBLE_SIZE = Double.SIZE / Byte.SIZE,
+			SHORT_SIZE = Short.SIZE / Byte.SIZE;
 
 	public static volatile boolean 
 	/**

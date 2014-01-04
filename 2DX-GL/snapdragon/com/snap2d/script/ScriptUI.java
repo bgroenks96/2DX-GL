@@ -160,19 +160,26 @@ public class ScriptUI extends JFrame {
 			diag.setVisible(true);
 	}
 
-	private void invokeScriptFunction(Function f, Object...args) {
-		try {
-			output.setText(new SimpleDateFormat("dd MMM HH:mm:ss").format(Calendar.getInstance().getTime())
-					+"\n<Executing script function: invocation target -> fid="+f.getID()+">\n\n");
-			Object ret = prog.invoke(f, args);
-			this.lastRun = f;
-			this.lastRunArgs = args;
-			if(f.getReturnType() != Keyword.VOID)
-				System.out.print(ret.toString() + "\n");
-		} catch (ScriptInvocationException e1) {
-			System.out.println(e1.toString());
-			e1.printStackTrace();
-		}
+	private void invokeScriptFunction(final Function f, final Object...args) {
+		new Thread(new Runnable() {
+
+			@Override
+			public void run() {
+				try {
+					output.setText(new SimpleDateFormat("dd MMM HH:mm:ss").format(Calendar.getInstance().getTime())
+							+"\n<Executing script function: invocation target -> fid="+f.getID()+">\n\n");
+					Object ret = prog.invoke(f, args);
+					lastRun = f;
+					lastRunArgs = args;
+					if(f.getReturnType() != Keyword.VOID)
+						System.out.print(ret.toString() + "\n");
+				} catch (ScriptInvocationException e1) {
+					System.out.println(e1.toString());
+					e1.printStackTrace();
+				}
+			}
+			
+		}).start();
 	}
 
 	private class KeyEventListener extends KeyAdapter {

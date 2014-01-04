@@ -1,4 +1,4 @@
-float Pythag(float a, b) {
-    float r = sqrt(sqrt(sqrt(a^2+b^2)));
-    return r;
+float Func() {
+    float f = 1;
+    return f;
 }
