@@ -1,5 +1,5 @@
 /*
- *  Copyright © 2012-2014 Brian Groenke
+ *  Copyright Â© 2012-2014 Brian Groenke
  *  All rights reserved.
  * 
  *  This file is part of the 2DX Graphics Library.
@@ -47,6 +47,9 @@ public class ScriptUI extends JFrame {
 	ScriptProgram prog;
 	Function[] funcs = new Function[0];
 
+	Function lastRun;
+	Object[] lastRunArgs;
+
 	public ScriptUI() {
 		super("SnapScript Editor Interface");
 		input = new JTextArea();
@@ -60,6 +63,7 @@ public class ScriptUI extends JFrame {
 		output.setWrapStyleWord(true);
 		output.setFont(new Font("Courier", Font.PLAIN, 13));
 		rootPane = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT, new JScrollPane(input), new JScrollPane(output));
+		rootPane.setBorder(new EmptyBorder(0,5,0,5));
 		rootPane.setOneTouchExpandable(true);
 		rootPane.setDividerLocation(WIDTH / 2);
 		add(BorderLayout.CENTER, rootPane);
@@ -140,12 +144,15 @@ public class ScriptUI extends JFrame {
 				JOptionPane.showMessageDialog(parent, "Error initializing runtime: " + e.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
 			}
 		} else {
-			output.setText(output.getText() + prog.getLastCompileError().toString());
+			ScriptCompilationException e = prog.getLastCompileError();
+			String fname = (e.getFunction() != null) ? e.getFunction().getName() : "";
+			output.setText(output.getText() + "compilation error in function '" + fname + "'" + 
+					"\n" + prog.getLastCompileError().toString());
 		}
 	}
-	
+
 	RunDialog diag;
-	
+
 	private void runDialog() {
 		if(diag == null || !diag.isDisplayable())
 			diag = new RunDialog(parent, "Run Script");
@@ -153,17 +160,35 @@ public class ScriptUI extends JFrame {
 			diag.setVisible(true);
 	}
 
+	private void invokeScriptFunction(Function f, Object...args) {
+		try {
+			output.setText(new SimpleDateFormat("dd MMM HH:mm:ss").format(Calendar.getInstance().getTime())
+					+"\n<Executing script function: invocation target -> fid="+f.getID()+">\n\n");
+			Object ret = prog.invoke(f, args);
+			this.lastRun = f;
+			this.lastRunArgs = args;
+			if(f.getReturnType() != Keyword.VOID)
+				System.out.print(ret.toString() + "\n");
+		} catch (ScriptInvocationException e1) {
+			System.out.println(e1.toString());
+			e1.printStackTrace();
+		}
+	}
+
 	private class KeyEventListener extends KeyAdapter {
 
 		@Override
 		public void keyPressed(KeyEvent ke) {
-			if(ke.getKeyCode() == KeyEvent.VK_ENTER && ke.isShiftDown()) {
+			if(ke.getKeyCode() == KeyEvent.VK_ENTER && ke.isShiftDown())
 				runCompiler();
-			} else if(ke.getKeyCode() == KeyEvent.VK_ENTER && ke.isControlDown())
+			else if(ke.getKeyCode() == KeyEvent.VK_ENTER && ke.isControlDown())
 				runDialog();
+			else if(ke.getKeyCode() == KeyEvent.VK_R && ke.isControlDown())
+				if(lastRun != null)
+					invokeScriptFunction(lastRun, lastRunArgs);
 		}
 	}
-	
+
 	private String lastArgs, lastItem;
 
 	private class RunDialog extends JDialog {
@@ -211,8 +236,6 @@ public class ScriptUI extends JFrame {
 					lastItem = (String) chooseFunc.getSelectedItem();
 					lastArgs = argField.getText();
 					Function f = funcs[chooseFunc.getSelectedIndex()];
-					output.setText(new SimpleDateFormat("dd MMM HH:mm:ss").format(Calendar.getInstance().getTime())
-							+"\n<Executing script function: invocation target -> fid="+f.getID()+">\n\n");
 					dispose();
 					Keyword[] params = f.getParamTypes();
 					String[] argStrs = argField.getText().split(",");
@@ -247,14 +270,8 @@ public class ScriptUI extends JFrame {
 							return;
 						}
 					}
-					
-					try {
-						Object ret = prog.invoke(f, args);
-						if(f.getReturnType() != Keyword.VOID)
-							System.out.print(ret.toString() + "\n");
-					} catch (ScriptInvocationException e1) {
-						e1.printStackTrace();
-					}
+
+					invokeScriptFunction(f, args);
 				}
 			};
 			run.addActionListener(invoke);
@@ -265,7 +282,7 @@ public class ScriptUI extends JFrame {
 				public void actionPerformed(ActionEvent e) {
 					invoke.actionPerformed(e);
 				}
-				
+
 			});
 			btnPanel.add(run);
 			add(BorderLayout.CENTER, panel);
@@ -276,9 +293,9 @@ public class ScriptUI extends JFrame {
 			chooseFunc.requestFocus();
 		}
 	}
-	
+
 	private class OnWindowClose extends WindowAdapter {
-		
+
 		@Override
 		public void windowClosing(WindowEvent e) {
 			try {
@@ -289,7 +306,7 @@ public class ScriptUI extends JFrame {
 			System.exit(0);
 		}
 	}
-	
+
 	private void readTempFile() {
 		String text;
 		try {
@@ -318,17 +335,17 @@ public class ScriptUI extends JFrame {
 		public void print(String s) {
 			output.setText(output.getText() + s);
 		}
-		
+
 		@Override
 		public void println(int arg) {
 			println(String.valueOf(arg));
 		}
-		
+
 		@Override
 		public void print(int arg) {
 			print(String.valueOf(arg));
 		}
-		
+
 		@Override
 		public void println(double arg) {
 			println(String.valueOf(arg));

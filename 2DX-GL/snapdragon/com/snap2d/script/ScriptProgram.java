@@ -1,5 +1,5 @@
 /*
- *  Copyright © 2012-2014 Brian Groenke
+ *  Copyright Â© 2012-2014 Brian Groenke
  *  All rights reserved.
  * 
  *  This file is part of the 2DX Graphics Library.
@@ -30,6 +30,7 @@ public class ScriptProgram {
 	ArrayList<ScriptSource> scripts = new ArrayList<ScriptSource>();
 	ArrayList<Class<?>> classes = new ArrayList<Class<?>>();
 	Multimap<String, Function> funcs;
+	ConstantInitializer[] initConsts;
 	ScriptEngine engine;
 
 	ScriptCompilationException lastErr;
@@ -69,7 +70,8 @@ public class ScriptProgram {
 	}
 
 	public boolean compile() {
-		SnapLogger.println("SnapScript initializing compilation");
+		SnapLogger.println("Initializing SnapScript " + ScriptInfo.SCRIPT_VERSION.str + 
+				" [bcs."+ ScriptInfo.BYTECODE_SPEC.str+"]");
 		ScriptCompiler compiler = new ScriptCompiler();
 		boolean chk;
 		try {
@@ -77,10 +79,12 @@ public class ScriptProgram {
 			for(int i = 0; i < scripts.size(); i++) {
 				srcs[i] = scripts.get(i).getSource();
 			}
-			funcs = compiler.precompile(srcs);
+			ArrayList<ConstantInitializer> constList = new ArrayList<ConstantInitializer>();
+			SnapLogger.println("Running precompiler...");
+			funcs = compiler.precompile(constList, srcs);
 			scriptFuncs = new Function[funcs.size()];
 			funcs.values().toArray(scriptFuncs);
-			SnapLogger.println("Linking Java functions");
+			SnapLogger.println("Linking Java functions...");
 			// register methods from linked classes
 			for(Class<?> c:classes) {
 				Method[] methods = c.getDeclaredMethods();
@@ -100,8 +104,10 @@ public class ScriptProgram {
 				}
 			}
 
-			SnapLogger.println("Compiling...");
-			compiler.compile(funcs);
+			SnapLogger.println("Running compiler...");
+			compiler.compile(funcs, constList);
+			initConsts = new ConstantInitializer[constList.size()];
+			constList.toArray(initConsts);
 			SnapLogger.println("Done");
 			chk = true;
 		} catch (ScriptCompilationException e) {
@@ -109,8 +115,10 @@ public class ScriptProgram {
 			lastErr = e;
 			funcs = null;
 			chk = false;
-		} catch (NoSuchMethodException e) {
+		} catch (Throwable e) {
+			System.out.println("An internal compiler error occurred: " + e.toString());
 			e.printStackTrace();
+			funcs = null;
 			chk = false;
 		}
 
@@ -130,7 +138,8 @@ public class ScriptProgram {
 	public void initRuntime(boolean useDoubleStore) throws ScriptInvocationException {
 		if(funcs == null)
 			throw(new IllegalStateException("cannot initialize runtime before compilation"));
-		engine = new ScriptEngine(funcs.values().toArray(new Function[funcs.size()]), useDoubleStore);
+		
+		engine = new ScriptEngine(funcs.values().toArray(new Function[funcs.size()]), initConsts, useDoubleStore);
 		SnapLogger.println("SnapScript runtime successfully initialized!\n");
 	}
 
@@ -179,7 +188,7 @@ public class ScriptProgram {
 		else
 			return null;
 	}
-
+	
 	public static void main(String[] args) throws IOException {
 		ScriptProgram prog = new ScriptProgram(true, new ScriptSource(Utils.readText(
 				ClassLoader.getSystemResource("com/snap2d/script/test_script.txt"))));

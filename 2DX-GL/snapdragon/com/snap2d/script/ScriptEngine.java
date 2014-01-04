@@ -1,5 +1,5 @@
 /*
- *  Copyright © 2012-2014 Brian Groenke
+ *  Copyright Â© 2012-2014 Brian Groenke
  *  All rights reserved.
  * 
  *  This file is part of the 2DX Graphics Library.
@@ -19,6 +19,8 @@ import java.math.*;
 import java.nio.*;
 import java.util.*;
 
+import bg.x2d.utils.*;
+
 import com.snap2d.script.lib.*;
 
 /**
@@ -31,7 +33,7 @@ class ScriptEngine {
 	HashMap<Long, Function> funcMap = new HashMap<Long, Function>();
 	HashMap<Function, Object> javaObjs = new HashMap<Function, Object>();
 	VarStore vars = new VarStore();
-	
+
 	boolean useDouble;
 
 	/**
@@ -41,7 +43,7 @@ class ScriptEngine {
 	 *             if floating point should be used instead.
 	 * @throws ScriptInvocationException if VarStore functions cannot be attached to the local object
 	 */
-	ScriptEngine(Function[] functions, boolean useDouble) throws ScriptInvocationException {
+	ScriptEngine(Function[] functions, ConstantInitializer[] constInits, boolean useDouble) throws ScriptInvocationException {
 		vars.setUseDouble(useDouble);
 		this.useDouble = useDouble;
 		List<Method> varFuncs = Arrays.asList(VarStore.class.getMethods());
@@ -52,6 +54,8 @@ class ScriptEngine {
 			if(varFuncs.contains(f.getJavaMethod())) // attach VarStore object to linked methods
 				attachObjectToFunction(f.getID(), vars);
 		}
+		
+		initConstantVars(constInits);
 	}
 
 	public void attachObjectToFunction(long fid, Object obj) throws ScriptInvocationException {
@@ -83,8 +87,9 @@ class ScriptEngine {
 	ByteBuffer buff;
 	Function curr;
 	LinkedList<VarStack> stacks;
+	VarStack consts;
 	MathParser math = new MathParser();
-	
+
 	private boolean inLoop = false;
 
 	private void putVar(int id, int type, Object value) {
@@ -95,15 +100,27 @@ class ScriptEngine {
 			stacks.peekFirst().put(id, new Variable(id, type, value));
 	}
 
+	private void putConst(int id, int type, Object value) throws ScriptInvocationException {
+		Variable prev = consts.get(id);
+		if(prev != null) {
+			throw(new ScriptInvocationException("constant already exists in immutable storage: " + prev.id, curr));
+		} else
+			consts.put(id, new Variable(id, type, value));
+	}
+
 	private Variable fetchVar(int id) {
-		for(VarStack vs:stacks) {
-			Variable var = vs.get(id);
+		Variable var = consts.get(id); // check in constant store
+		if(var != null)
+			return var;
+		for(VarStack vs:stacks) { // then check standard var-stacks
+			var = vs.get(id);
 			if(var != null)
 				return var;
 		}
 		return null;
 	}
 
+	@SuppressWarnings("unused")
 	private VarStack findStack(Variable var) {
 		for(VarStack vs:stacks) {
 			if(vs.get(var.id) != null)
@@ -111,7 +128,16 @@ class ScriptEngine {
 		}
 		return null;
 	}
-	
+
+	private void initConstantVars(ConstantInitializer[] initArr) throws ScriptInvocationException {
+		consts = new VarStack();
+		for(ConstantInitializer cfunc : initArr) {
+			buff = cfunc.bytecode;
+			execMain(0);
+		}
+		buff = null;
+	}
+
 	private Object invokeJavaFunction(Function f, Object javaObj, Object... args) throws ScriptInvocationException {
 		if(!f.isJavaFunction())
 			throw(new ScriptInvocationException("cannot invoke Java execution on a script function", f));
@@ -125,7 +151,9 @@ class ScriptEngine {
 		} catch (IllegalAccessException e) {
 			e.printStackTrace();
 		} catch (InvocationTargetException e) {
-			e.printStackTrace();
+			String msg = (e.getCause() != null) ? e.getCause().toString() : e.toString();
+			ScriptInvocationException e1 = new ScriptInvocationException("error in Java function call: " + msg, curr);
+			throw(e1);
 		}
 		return null;
 	}
@@ -158,7 +186,7 @@ class ScriptEngine {
 		}
 
 		buff.rewind();
-		
+
 		ret = checkFuncReturnValue(ret, f.getReturnType());
 
 		if(f.getReturnType() == Keyword.INT)
@@ -166,7 +194,7 @@ class ScriptEngine {
 
 		return (f.getReturnType() == Keyword.VOID) ? null:ret;
 	}
-	
+
 	/*
 	 * if the return value is null for a non-void function (script or Java based), imply a return value
 	 */
@@ -186,7 +214,7 @@ class ScriptEngine {
 				break;
 			}
 		}
-		
+
 		return ret;
 	}
 
@@ -208,7 +236,10 @@ class ScriptEngine {
 				execJavaCall();
 				break;
 			case STORE_VAR:
-				execStoreVar();
+				execStoreVar(false);
+				break;
+			case STORE_CONST:
+				execStoreVar(true);
 				break;
 			case IF:
 				execConditional();
@@ -223,37 +254,51 @@ class ScriptEngine {
 					throw(new ScriptInvocationException("found continue instruction outside of loop execution", curr));
 				return Flags.RETURN;
 			case BREAK:
-				if(!inLoop)
-					throw(new ScriptInvocationException("found break instruction outside of loop execution", curr));
+				//if(!inLoop)
+				//	throw(new ScriptInvocationException("found break instruction outside of loop execution", curr));
 				return Flags.BREAK;
 			default:
 				throw(new ScriptInvocationException("found unexpected bytecode instruction: " + Integer.toHexString(next), curr));
 			}
 		}
-		
+
 		return Flags.RETURN;
 	}
-	
-	private void execStoreVar() throws ScriptInvocationException {
+
+	private void execStoreVar(boolean constant) throws ScriptInvocationException {
 		byte next = buff.get();
 		int id = buff.getInt();
 		Object ret = execExpression();
 		switch(next) {
 		case REALLOC:
-			Variable curr = fetchVar(id);
-			putVar(id, curr.type, ret);
+			Variable currVar = fetchVar(id);
+			if(constant || consts.get(id) != null)
+				throw(new ScriptInvocationException("cannot reallocate constant variable", curr));
+			putVar(id, currVar.type, ret);
 			break;
 		case ALLOC_INT:
-			putVar(id, Flags.TYPE_INT, ret);
+			if(constant)
+				putConst(id, Flags.TYPE_INT, ret);
+			else
+				putVar(id, Flags.TYPE_INT, ret);
 			break;
 		case ALLOC_FLOAT:
-			putVar(id, Flags.TYPE_FLOAT, ret);
+			if(constant)
+				putConst(id, Flags.TYPE_FLOAT, ret);
+			else
+				putVar(id, Flags.TYPE_FLOAT, ret);
 			break;
 		case ALLOC_BOOL:
-			putVar(id, Flags.TYPE_BOOL, ret);
+			if(constant)
+				putConst(id, Flags.TYPE_BOOL, ret);
+			else
+				putVar(id, Flags.TYPE_BOOL, ret);
 			break;
 		case ALLOC_STRING:
-			putVar(id, Flags.TYPE_STRING, ret);
+			if(constant)
+				putConst(id, Flags.TYPE_STRING, ret);
+			else
+				putVar(id, Flags.TYPE_STRING, ret);
 			break;
 		}
 
@@ -322,11 +367,15 @@ class ScriptEngine {
 				break;
 			case INVOKE_FUNC:
 				Object ret = execFuncCall();
+				if(ret == null)
+					ret = 0;
 				val = checkNumberObject(ret);
 				sb.append(BigDecimal.valueOf(val).toPlainString());
 				break;
 			case INVOKE_JAVA_FUNC:
 				ret = execJavaCall();
+				if(ret == null)
+					ret = 0;
 				val = checkNumberObject(ret);
 				sb.append(BigDecimal.valueOf(val).toPlainString());
 				break;
@@ -347,7 +396,7 @@ class ScriptEngine {
 
 	private String execStringLiteral() throws ScriptInvocationException {
 		byte next = buff.get();
-		HashMap<Integer, Variable> inVars = new HashMap<Integer, Variable>();
+		Multimap<Integer, Variable> inVars = new Multimap<Integer, Variable>();
 		while(next == Bytecodes.STR_VAR) {
 			if(buff.get() != Bytecodes.REF_VAR)
 				throw(new ScriptInvocationException("expected REF_VAR after STR_VAR: found=" + Integer.toHexString(next), curr));
@@ -365,20 +414,14 @@ class ScriptEngine {
 		if((next=buff.get()) != Bytecodes.END_CMD)
 			throw(new ScriptInvocationException("expected END_CMD for READ_STR: found="+Integer.toHexString(next), curr));
 		StringBuilder s = new StringBuilder(new String(bytes));
-		
+
 		int offs = 0;
-		String orig = s.toString();
 		for(int i:inVars.keySet()) {
-			String val = inVars.get(i).value.toString();
-			
-			// if the preceding character is whitespace, subtract 1 off the insert position
-			// (something weird with how 'insert' handles whitespace)
-			if(i != 0 && i != orig.length()) {
-				if(Character.isWhitespace(orig.charAt(i)) && Character.isWhitespace(orig.charAt(i - 1)))
-					i--;
+			for(Variable var : inVars.getAll(i)) {
+				String val = var.value.toString();
+				s.insert(i + offs, val);
+				offs += val.length();
 			}
-			s.insert(i + offs, val);
-			offs += val.length();
 		}
 		return s.toString();
 	}
@@ -478,7 +521,7 @@ class ScriptEngine {
 		byte next = buff.get();
 		if(next != STORE_VAR)
 			throw(new ScriptInvocationException("expected loop variable evaluation: found="+Integer.toHexString(next), curr));
-		execStoreVar();
+		execStoreVar(false);
 		// for loop condition evaluation
 		next = buff.get();
 		if(next != FOR_COND)
@@ -489,7 +532,7 @@ class ScriptEngine {
 			return;
 		int cen = buff.position();
 		ByteBuffer cond = ByteBuffer.allocate(cen - cst); // allocate a separate ByteBuffer for just the condition checking instructions
-		buff.position(cst);  // reset the main buffer to the start of the condition evaluation so we can re-read the insruction set
+		buff.position(cst);  // reset the main buffer to the start of the condition evaluation so we can re-read the instruction set
 		while(buff.position() < cen)
 			cond.put(buff.get());
 		cond.flip();
@@ -524,7 +567,7 @@ class ScriptEngine {
 			mod = (Double) execExpression();
 			modOp = DIV_MOD;
 		}
-		
+
 		next = buff.get();
 		if(next != FOR_START)
 			throw(new ScriptInvocationException("expected loop body declaration: found="+Integer.toHexString(next), curr));
@@ -534,7 +577,7 @@ class ScriptEngine {
 			int stat = execMain(st);
 			if(stat == Flags.BREAK)
 				break;
-			
+
 			double val = ((Number) opvar.value).doubleValue();
 			if(modOp == ADD_MOD)
 				val += mod;
@@ -545,12 +588,12 @@ class ScriptEngine {
 			opvar.setValue(val);
 		}
 		inLoop = false;
-		
+
 		next = buff.get();
 		if(next != END_CMD)
 			throw(new ScriptInvocationException("expected END_CMD in loop evaluation: found="+Integer.toHexString(next), curr));
 	}
-	
+
 	/*
 	 * Checks the loop condition using the buffer containing the boolean expression evaluation instructions.
 	 * When evaluation completes, the condition buffer is reset for the next call (ByteBuffer.rewind).
@@ -564,7 +607,7 @@ class ScriptEngine {
 		condBuff.rewind(); // reset condition bytecode buffer
 		return cont;
 	}
-	
+
 	private Variable execRefVar() throws ScriptInvocationException {
 		int varid = buff.getInt();
 		Variable var = fetchVar(varid);
@@ -599,6 +642,7 @@ class ScriptEngine {
 			return varmap.get(id);
 		}
 
+		@SuppressWarnings("unused")
 		public void remove(int id) {
 			varmap.remove(id);
 		}
@@ -615,7 +659,7 @@ class ScriptEngine {
 
 			setValue(value);
 		}
-		
+
 		/*
 		 * This method should be called each time a Variable's value is reset to ensure
 		 * proper type handling.  DO NOT (in most cases) directly assign the 'value' field
@@ -631,19 +675,25 @@ class ScriptEngine {
 				else
 					this.value = value;
 				break;
-			// for float variables, we have to check whether or not to store them as a Java Float or Double.
+				// for float variables, we have to check whether or not to store them as a Java Float or Double.
 			case Flags.TYPE_FLOAT:
 				if(!useDouble) {
 					this.value = ((Double)value).floatValue();
+				} else
+					this.value = value;
+				break;
+			case Flags.TYPE_BOOL:
+				if(value instanceof Double) {
+					this.value = ((Double)value == 0) ? false:true;
 					break;
 				}
-			case Flags.TYPE_BOOL:
 			case Flags.TYPE_STRING:
 				this.value = value;
 			}
 		}
 	}
-	
+
+	@SuppressWarnings("unused")
 	private static <T> T castVariable(Variable var, Function context, Class<T> type) {
 		if(Keyword.isValidDataType(type))
 			return type.cast(var.value);

@@ -1,5 +1,5 @@
 /*
- *  Copyright © 2012-2014 Brian Groenke
+ *  Copyright Â© 2012-2014 Brian Groenke
  *  All rights reserved.
  * 
  *  This file is part of the 2DX Graphics Library.
@@ -33,7 +33,8 @@ enum Keyword {
 	MINUS_MOD("-=", Flags.OP, Flags.ARG_NUM, 2, Flags.RETURN_MATCH_ARG), MULT_MOD("*=", Flags.OP, Flags.ARG_NUM, 1, Flags.RETURN_MATCH_ARG), 
 	DIV_MOD("/=", Flags.OP, Flags.ARG_NUM, 2, Flags.RETURN_MATCH_ARG), REM_LINE("//", Flags.STATEMENT), REM_START("/*", Flags.STATEMENT), REM_END("*/", Flags.STATEMENT),
 	CAST_INT("#", Flags.OP, Flags.ARG_FLOAT, 1, Flags.RETURN_INT), BITXOR("~", Flags.OP, Flags.ARG_INT, 2, Flags.RETURN_INT), MODULO("%", Flags.OP, Flags.ARG_INT, 2, Flags.RETURN_INT),
-	GREAT_EQUALS(">=", Flags.OP, Flags.ARG_NUM, 2, Flags.RETURN_BOOL), LESS_EQUALS("<=", Flags.OP, Flags.ARG_NUM, 2, Flags.RETURN_BOOL);
+	GREAT_EQUALS(">=", Flags.OP, Flags.ARG_NUM, 2, Flags.RETURN_BOOL), LESS_EQUALS("<=", Flags.OP, Flags.ARG_NUM, 2, Flags.RETURN_BOOL),
+	CONST("const", Flags.STATEMENT);
 
 	private static final int TYPE_POS = 0, ARG_TYPE_POS = 1, ARG_COUNT_POS = 2, RETURN_POS = 3;
 
@@ -90,6 +91,11 @@ enum Keyword {
 			return sym;
 	}
 
+	/**
+	 * Finds the corresponding Keyword for the given String symbol.
+	 * @param sym
+	 * @return the symbol's associated Keyword, or null if 'sym' isn't a valid Keyword symbol
+	 */
 	public static Keyword getFromSymbol(String sym) {
 		for(Keyword k:Keyword.values())
 			if(k.sym.equals(sym))

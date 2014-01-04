@@ -1,5 +1,5 @@
 /*
- *  Copyright © 2012-2014 Brian Groenke
+ *  Copyright Â© 2012-2014 Brian Groenke
  *  All rights reserved.
  * 
  *  This file is part of the 2DX Graphics Library.
@@ -22,7 +22,10 @@ import com.snap2d.script.*;
  */
 public class VarStore {
 	
+	private static final int INT = 0x10, FLOAT = 0x11, BOOL = 0x12, STRING = 0x13;
+	
 	private HashMap<String, Object> globals = new HashMap<String, Object>();
+	private HashMap<String, Array<?>> arrays = new HashMap<String, Array<?>>();
 	
 	boolean useDouble = false;
 	
@@ -73,5 +76,126 @@ public class VarStore {
 	@ScriptLink
 	public String getString(String name) {
 		return (String) globals.get(name);
+	}
+	
+	@ScriptLink
+	public void newIntArray(String name, int length) {
+		arrays.put(name, new IntArray(length));
+	}
+	
+	@ScriptLink
+	public void newFloatArray(String name, int length) {
+		arrays.put(name, new FloatArray(length));
+	}
+	
+	@ScriptLink
+	public void newBoolArray(String name, int length) {
+		arrays.put(name, new BoolArray(length));
+	}
+	
+	@ScriptLink
+	public void newStringArray(String name, int length) {
+		arrays.put(name, new StringArray(length));
+	}
+	
+	@ScriptLink
+	public void deleteArray(String name) {
+		arrays.remove(name);
+	}
+	
+	@ScriptLink
+	public int accessInt(String name, int pos) {
+		Array<?> arr = arrays.get(name);
+		if(arr == null)
+			throw(new NullPointerException("unable to locate array referenced by " + name));
+		return arr.intArray().array[pos];
+	}
+	
+	@ScriptLink
+	public float accessFloat(String name, int pos) {
+		Array<?> arr = arrays.get(name);
+		if(arr == null)
+			throw(new NullPointerException("unable to locate array referenced by " + name));
+		return arr.floatArray().array[pos];
+	}
+	
+	@ScriptLink
+	public boolean accessBool(String name, int pos) {
+		Array<?> arr = arrays.get(name);
+		if(arr == null)
+			throw(new NullPointerException("unable to locate array referenced by " + name));
+		return arr.boolArray().array[pos];
+	}
+	
+	@ScriptLink
+	public String accessStr(String name, int pos) {
+		Array<?> arr = arrays.get(name);
+		if(arr == null)
+			throw(new NullPointerException("unable to locate array referenced by " + name));
+		return arr.strArray().array[pos];
+	}
+	
+	private class IntArray extends Array<Integer> {
+		int[] array;
+		
+		IntArray(int length) {
+			super(INT);
+			array = new int[length];
+		}
+	}
+	
+	private class FloatArray extends Array<Float> {
+		float[] array;
+		
+		FloatArray(int length) {
+			super(FLOAT);
+			array = new float[length];
+		}
+	}
+	private class BoolArray extends Array<Boolean> {
+		boolean[] array;
+		
+		BoolArray(int length) {
+			super(BOOL);
+			array = new boolean[length];
+		}
+	}
+	private class StringArray extends Array<String> {
+		String[] array;
+		
+		StringArray(int length) {
+			super(STRING);
+			array = new String[length];
+		}
+	}
+	
+	@SuppressWarnings("unused")
+	private class Array<T> {
+		
+		private int type;
+		
+		Array(int type) {
+			this.type = type;
+		}
+		
+		IntArray intArray() {
+			return (IntArray) this;
+		}
+		
+		FloatArray floatArray() {
+			return (FloatArray) this;
+		}
+		
+		BoolArray boolArray() {
+			return (BoolArray) this;
+		}
+		
+		StringArray strArray() {
+			return (StringArray) this;
+		}
+		
+		int getType() {
+			return type;
+		}
 	}
 }
