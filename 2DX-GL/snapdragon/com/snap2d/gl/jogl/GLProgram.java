@@ -12,20 +12,26 @@
 
 package com.snap2d.gl.jogl;
 
+import java.lang.reflect.*;
 import java.nio.*;
 import java.util.*;
 
 import javax.media.opengl.*;
 
 /**
+ * Class representing a GLSL program object.
  * @author Brian Groenke
  *
  */
 public class GLProgram {
 	
+	static GLProgram DEFAULT_SHADER_PROG;
+	
 	private GLHandle handle;
 	private int progId;
 	private ArrayList<GLShader> shaders = new ArrayList<GLShader>();
+	
+	private boolean defaultProg;
 	
 	public GLProgram(GLHandle handle) {
 		this.handle = handle;
@@ -76,12 +82,21 @@ public class GLProgram {
         }
 	}
 	
+	/**
+	 * Enable the shader program for use in subsequent pipeline calls.
+	 */
 	public void enable() {
 		handle.gl.glUseProgram(progId);
 	}
 	
+	/**
+	 * Disable the shader program.  When the shader program is disabled, the
+	 * library default program will be automatically re-enabled.
+	 */
 	public void disable() {
 		handle.gl.glUseProgram(0);
+		if(!defaultProg)
+			DEFAULT_SHADER_PROG.enable();
 	}
 	
 	public void setHandle(GLHandle handle) {
@@ -96,28 +111,76 @@ public class GLProgram {
 		return progId;
 	}
 	
-	public void setUniform1i(String uniform, int val) {
-		handle.gl.glUniform1i(getUniformFieldLoc(uniform), val);
+	public boolean isDefaultShaderProgram() {
+		return defaultProg;
 	}
 	
-	public int getUniform1i(String uniform) {
-		int[] out = new int[1];
-		handle.gl.glUniform1iv(getUniformFieldLoc(uniform), 1, out, 0);
-		return out[0];
+	// hide from public API
+	void setDefaultShaderProgram(boolean def) {
+		defaultProg = def;
 	}
 	
-	public void setUniform1f(String uniform, float val) {
-		handle.gl.glUniform1f(getUniformFieldLoc(uniform), val);
+	public void setUniform(String uniform, int num, UniformType type, Object... values) {
+		int loc = uniloc(uniform);
+		String method = "glUniform"+num+type.suffix;
+		try {
+			Method m = GL2.class.getMethod(method, int.class, type.value);
+			switch(num) {
+			case 1:
+				m.invoke(handle.gl, loc, values[0]);
+				break;
+			case 2:
+				m.invoke(handle.gl, loc, values[0], values[1]);
+				break;
+			case 3:
+				m.invoke(handle.gl, loc, values[0], values[1], values[2]);
+				break;
+			case 4:
+				m.invoke(handle.gl, loc, values[0], values[1], values[2], values[3]);
+				break;
+			}
+		} catch (NoSuchMethodException e) {
+			System.err.println("failed to locate set uniform method: "+method);
+		} catch (SecurityException e) {
+			e.printStackTrace();
+		} catch (IllegalAccessException e) {
+			e.printStackTrace();
+		} catch (IllegalArgumentException e) {
+			e.printStackTrace();
+		} catch (InvocationTargetException e) {
+			e.printStackTrace();
+		}
 	}
 	
-	public float getUniform1f(String uniform) {
-		float[] out = new float[1];
-		handle.gl.glUniform1fv(getUniformFieldLoc(uniform), 1, out, 0);
-		return out[0];
+	public void setUniformv(String uniform, int num, UniformType type, int len, Buffer vals) {
+		int loc = uniloc(uniform);
+		String method = "glUniform"+num+type.suffix+"v";
+		try {
+			Method m = GL2.class.getMethod(method, int.class, int.class, type.buffer);
+			m.invoke(handle.gl, loc, len, vals);
+		} catch (NoSuchMethodException e) {
+			System.err.println("failed to locate set uniform method: "+method);
+		} catch (SecurityException e) {
+			e.printStackTrace();
+		} catch (IllegalAccessException e) {
+			e.printStackTrace();
+		} catch (IllegalArgumentException e) {
+			e.printStackTrace();
+		} catch (InvocationTargetException e) {
+			e.printStackTrace();
+		}
 	}
 	
-	private int getUniformFieldLoc(String uniform) {
+	public void setAttrib1f(String attrib, float val) {
+		handle.gl.glVertexAttrib1f(attloc(attrib), val);
+	}
+	
+	private int uniloc(String uniform) {
 		return handle.gl.glGetUniformLocation(progId, uniform);
+	}
+	
+	private int attloc(String attrib) {
+		return handle.gl.glGetAttribLocation(progId, attrib);
 	}
 	
 	/**
@@ -129,5 +192,21 @@ public class GLProgram {
 			gls.dispose();
 		}
 		handle.gl.glDeleteProgram(progId);
+	}
+	
+	public enum UniformType {
+		INT("i", int.class, int[].class, IntBuffer.class), 
+		FLOAT("f", float.class, float[].class, FloatBuffer.class), 
+		DOUBLE("d", double.class, double[].class, DoubleBuffer.class);
+		
+		String suffix;
+		Class<?> value, array, buffer;
+		
+		UniformType(String suffix, Class<?> value, Class<?> array, Class<?> buffer) {
+			this.suffix = suffix;
+			this.array = array;
+			this.buffer = buffer;
+			this.value = value;
+		}
 	}
 }

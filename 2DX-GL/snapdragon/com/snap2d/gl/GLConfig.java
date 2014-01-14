@@ -146,7 +146,7 @@ public class GLConfig {
 		/**
 		 * Boolean (default=true)
 		 * <br/><br/>
-		 * Sets whether or not FPS and TPS will be printed to stdout on each frame.
+		 * Sets whether or not FPS and TPS will be printed to stdout each second.
 		 */
 		SNAP2D_PRINT_RENDER_STAT("com.snap2d.gl.printframes", "true"),
 		

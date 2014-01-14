@@ -12,14 +12,13 @@
 
 package com.snap2d.script;
 
-import java.io.*;
-import java.lang.reflect.*;
-import java.nio.*;
+import java.io.IOException;
+import java.lang.reflect.Method;
 import java.util.*;
 
 import bg.x2d.utils.*;
 
-import com.snap2d.*;
+import com.snap2d.SnapLogger;
 import com.snap2d.script.lib.*;
 
 /**
@@ -51,6 +50,7 @@ public class ScriptProgram {
 			link(ScriptMath.class);
 			link(VarStore.class);
 			link(ScriptUtils.class);
+			link(ScriptTimer.class);
 		}
 	}
 
@@ -140,8 +140,12 @@ public class ScriptProgram {
 		if(funcs == null)
 			throw(new IllegalStateException("cannot initialize runtime before compilation"));
 		
-		engine = new ScriptEngine(funcs.values().toArray(new Function[funcs.size()]), initConsts, useDoubleStore);
+		engine = new ScriptEngine(this, funcs.values().toArray(new Function[funcs.size()]), initConsts, useDoubleStore);
 		SnapLogger.println("SnapScript runtime successfully initialized!\n");
+	}
+	
+	public void clearRuntime() {
+		
 	}
 
 	public Function findFunction(String name, Class<?>... params) {
@@ -165,14 +169,48 @@ public class ScriptProgram {
 		return null;
 	}
 	
+	public Function findFunction(String name) {
+		Function[] matches = funcs.getAll(name);
+		if(matches == null || matches.length == 0)
+			return null;
+		else
+			return matches[0];
+	}
+	
+	public Function[] findFunctions(String name) {
+		Function[] matches = funcs.getAll(name);
+		if(matches == null || matches.length == 0)
+			return null;
+		else
+			return matches;
+	}
+	
 	public Function[] getScriptFunctions() {
 		return Arrays.copyOf(scriptFuncs, scriptFuncs.length);
 	}
 
+	/**
+	 * Invokes the script function with the given arguments.
+	 * @param f
+	 * @param args
+	 * @return
+	 * @throws ScriptInvocationException
+	 */
 	public Object invoke(Function f, Object...args) throws ScriptInvocationException {
 		if(engine == null)
 			throw(new IllegalStateException("script engine not initialized"));
 		return engine.invoke(f.getID(), args);
+	}
+	
+	/**
+	 * Invokes the first matching script Function object with the given argument.
+	 * @param funcName
+	 * @param args
+	 * @return
+	 * @throws ScriptInvocationException
+	 */
+	public Object invoke(String funcName, Object...args) throws ScriptInvocationException {
+		return invoke(findFunction(funcName), args);
 	}
 
 	private Keyword getKeyword(Class<?> param) {

@@ -14,22 +14,29 @@ package com.snap2d.world;
 
 import java.awt.*;
 import java.awt.geom.*;
-import java.awt.image.*;
-import java.io.*;
+import java.awt.image.BufferedImage;
+import java.io.Serializable;
 
 import bg.x2d.geo.*;
 
-import com.snap2d.gl.*;
-import com.snap2d.physics.*;
+import com.snap2d.gl.Renderable;
+import com.snap2d.gl.jogl.*;
+import com.snap2d.physics.GamePhysics;
 
 /**
  * Represents an object in the 2-dimensional world space. Entity provides a base implementation for
- * all objects that exist in the world.
+ * all objects that exist in the world.<br/>
+ * <br/>
+ * Entity implements the rendering interfaces for both the Java2D and OpenGL renderers and overrides
+ * all their methods with blank implementations except for <code>update</code>.  All subclasses
+ * regardless of the target renderer must implement this method.  It is still highly recommended that
+ * subclasses override the methods defined by the appropriate rendering interface to avoid unexpected
+ * behavior due to lack of implementation.
  * 
  * @author Brian Groenke
  * 
  */
-public abstract class Entity implements Serializable {
+public abstract class Entity implements Renderable, GLRenderable, Serializable {
 
 	/**
 	 * 
@@ -55,7 +62,7 @@ public abstract class Entity implements Serializable {
 	 *            the World2D this Entity exists in; used for converting coordinates and determining
 	 *            world/screen position.
 	 */
-	public Entity(Point2D worldLoc, World2D world) {
+	protected Entity(Point2D worldLoc, World2D world) {
 		this.worldLoc = new PointLD(worldLoc.getX(), worldLoc.getY());
 		this.screenLoc = new Point(world.worldToScreen(worldLoc.getX(),
 				worldLoc.getY()));
@@ -239,6 +246,24 @@ public abstract class Entity implements Serializable {
 	 * @return the Entity's CollisionModel
 	 */
 	public abstract CollisionModel getCollisionModel();
+	
+	@Override
+	public void render(Graphics2D g, float interpolation) {}
+	
+	@Override
+	public void onResize(Dimension newSize, Dimension oldSize) {}
+	
+	@Override
+	public void init(GLHandle handle) {}
+	
+	@Override
+	public void render(GLHandle handle, float interpolation) {}
+	
+	@Override
+	public void resize(GLHandle handle, int wt, int ht) {}
+	
+	@Override
+	public void dispose(GLHandle handle) {}
 
 	public class EntityCollision {
 		Entity e;
@@ -248,38 +273,5 @@ public abstract class Entity implements Serializable {
 			this.e = e;
 			this.collisionBox = collisionBox;
 		}
-	}
-	
-	public static abstract class DrawableEntity extends Entity implements Renderable {
-
-		/**
-		 * 
-		 */
-		private static final long serialVersionUID = 1L;
-
-		/**
-		 * @param worldLoc
-		 * @param world
-		 */
-		public DrawableEntity(Point2D worldLoc, World2D world) {
-			super(worldLoc, world);
-		}
-	}
-	
-	public static abstract class GLDrawableEntity extends Entity implements Renderable {
-
-		/**
-		 * 
-		 */
-		private static final long serialVersionUID = 1L;
-
-		/**
-		 * @param worldLoc
-		 * @param world
-		 */
-		public GLDrawableEntity(Point2D worldLoc, World2D world) {
-			super(worldLoc, world);
-		}
-		
 	}
 }

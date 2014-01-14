@@ -13,21 +13,54 @@
 package com.snap2d.gl.jogl;
 
 import java.awt.*;
+import java.nio.*;
 
 import bg.x2d.geo.*;
 
+import com.jogamp.common.nio.*;
 import com.snap2d.world.*;
 
 /**
+ * Provides common utility methods for interfacing with OpenGL libraries.  Some members
+ * of this class simply act as forward-wrappers for JOGL/Gluegen utilities.
  * @author Brian Groenke
  *
  */
 public class GLUtils {
 	
+	public static final int SIZEOF_BYTE = Buffers.SIZEOF_BYTE, SIZEOF_INT = Buffers.SIZEOF_INT, 
+			SIZEOF_FLOAT = Buffers.SIZEOF_FLOAT, SIZEOF_DOUBLE = Buffers.SIZEOF_DOUBLE, 
+			SIZEOF_LONG = Buffers.SIZEOF_LONG, SIZEOF_CHAR = Buffers.SIZEOF_CHAR, 
+			SIZEOF_SHORT = Buffers.SIZEOF_SHORT;
+	
 	private GLUtils() {}
 	
 	public static final World2D createGLWorldSystem(double minx, double miny, int viewWt, int viewHt, float ppu) {
 		return new GLWorld2D(minx, miny, viewWt, viewHt, ppu);
+	}
+	
+	public static final ByteBuffer newDirectByteBuffer(byte...bytes) {
+		return Buffers.newDirectByteBuffer(bytes);
+	}
+	
+	public static final IntBuffer newDirectIntBuffer(int...ints) {
+		return Buffers.newDirectIntBuffer(ints);
+	}
+	
+	public static final FloatBuffer newDirectFloatBuffer(float...floats) {
+		return Buffers.newDirectFloatBuffer(floats);
+	}
+	
+	public static final DoubleBuffer newDirectDoubleBuffer(double...doubles) {
+		return Buffers.newDirectDoubleBuffer(doubles);
+	}
+	
+	public static final CharBuffer newDirectCharBuffer(char...chars) {
+		return Buffers.newDirectCharBuffer(chars);
+	}
+	
+	public static final ShortBuffer newDirectShortBuffer(short...shorts) {
+		return Buffers.newDirectShortBuffer(shorts);
 	}
 	
 	/**
@@ -36,7 +69,7 @@ public class GLUtils {
 	 * @author Brian Groenke
 	 *
 	 */
-	private static class GLWorld2D extends World2D {
+	public static final class GLWorld2D extends World2D {
 		
 		/*
 		 * Note that ALL uses of variable 'minY' are in this implementation actually the maximum Y but

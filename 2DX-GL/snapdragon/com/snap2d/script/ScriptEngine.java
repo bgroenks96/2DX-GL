@@ -34,6 +34,7 @@ class ScriptEngine {
 	HashMap<Long, Function> funcMap = new HashMap<Long, Function>();
 	HashMap<Function, Object> javaObjs = new HashMap<Function, Object>();
 	VarStore vars = new VarStore();
+	ScriptTimer timers;
 
 	boolean useDouble;
 
@@ -44,16 +45,20 @@ class ScriptEngine {
 	 *             if floating point should be used instead.
 	 * @throws ScriptInvocationException if VarStore functions cannot be attached to the local object
 	 */
-	ScriptEngine(Function[] functions, ConstantInitializer[] constInits, boolean useDouble) throws ScriptInvocationException {
+	ScriptEngine(ScriptProgram prog, Function[] functions, ConstantInitializer[] constInits, boolean useDouble) throws ScriptInvocationException {
 		vars.setUseDouble(useDouble);
 		this.useDouble = useDouble;
+		this.timers = new ScriptTimer(prog);
 		List<Method> varFuncs = Arrays.asList(VarStore.class.getMethods());
+		List<Method> timerFuncs = Arrays.asList(ScriptTimer.class.getMethods());
 
 		for(Function f:functions) {
 			funcMap.put(f.getID(), f);
 
 			if(varFuncs.contains(f.getJavaMethod())) // attach VarStore object to linked methods
 				attachObjectToFunction(f.getID(), vars);
+			if(timerFuncs.contains(f.getJavaMethod())) // attach ScriptTimer object to linked methods
+				attachObjectToFunction(f.getID(), timers);
 		}
 
 		initConstantVars(constInits);
@@ -76,6 +81,10 @@ class ScriptEngine {
 		else
 			ret = invokeFunction(f, args);
 		return ret;
+	}
+	
+	void dispose() {
+		
 	}
 
 	// >>>>>> SCRIPT EXECUTION ENGINE >>>>>> //

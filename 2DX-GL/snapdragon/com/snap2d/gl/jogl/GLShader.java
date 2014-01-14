@@ -13,7 +13,7 @@
 package com.snap2d.gl.jogl;
 
 import java.io.*;
-import java.net.*;
+import java.net.URL;
 
 import javax.media.opengl.*;
 
@@ -26,6 +26,9 @@ public class GLShader {
 	public static final String DEFAULT_SHADER_PATH = "snap2d_opengl/shaders/";
 
 	public static final int TYPE_VERTEX = GL2.GL_VERTEX_SHADER, TYPE_FRAGMENT = GL2.GL_FRAGMENT_SHADER;
+
+	static final String SHADER_LIB = "snap2d/glsl/", VERSION = "#version ", 
+			INCLUDE = "#extension GL_ARB_shading_language_include : require";
 
 	private GLHandle handle;
 	private int sobj;
@@ -49,14 +52,16 @@ public class GLShader {
 
 	private void compile(String source, int type) throws GLShaderException {
 		GL2 gl = handle.gl;
+		StringBuilder sourceBuff = new StringBuilder();
+		sourceBuff.append(source); // append source to string
 		sobj = gl.glCreateShader(type);
-		gl.glShaderSource(sobj, 1, new String[] { source }, (int[]) null, 0);
+		gl.glShaderSource(sobj, 1, new String[] { sourceBuff.toString() }, (int[]) null, 0);
 		gl.glCompileShader(sobj);
 
 		//Check compile status.
 		int[] compiled = new int[1];
 		gl.glGetShaderiv(sobj, GL2.GL_COMPILE_STATUS, compiled,0);
-		
+
 		if(compiled[0] == GL.GL_FALSE) {
 			int[] logLength = new int[1];
 			gl.glGetShaderiv(sobj, GL2.GL_INFO_LOG_LENGTH, logLength, 0);
@@ -77,6 +82,15 @@ public class GLShader {
 		handle.gl.glDeleteShader(sobj);
 	}
 
+	/**
+	 * Loads a Snapdragon2D shader from the library's default shader directory on the class-path.
+	 * @param handle
+	 * @param shaderFile
+	 * @param type
+	 * @return
+	 * @throws GLShaderException
+	 * @throws IOException
+	 */
 	public static GLShader loadDefaultShader(GLHandle handle, String shaderFile, int type) throws 
 	GLShaderException, IOException {
 		URL url = ClassLoader.getSystemResource(DEFAULT_SHADER_PATH + shaderFile);

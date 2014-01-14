@@ -12,46 +12,42 @@
 
 package com.snap2d.gl.jogl;
 
-import java.awt.*;
-import java.awt.event.*;
-import java.awt.image.*;
-import java.io.*;
-import java.lang.reflect.*;
-import java.net.*;
-import java.util.*;
-
+import javax.media.nativewindow.WindowClosingProtocol.WindowClosingMode;
 import javax.media.opengl.*;
-import javax.media.opengl.awt.*;
-import javax.swing.*;
 
-import bg.x2d.*;
-import bg.x2d.utils.*;
+import bg.x2d.utils.Utils;
 
-import com.snap2d.*;
+import com.jogamp.newt.*;
+import com.jogamp.newt.event.*;
+import com.jogamp.newt.opengl.GLWindow;
+import com.snap2d.SnapLogger;
 import com.snap2d.gl.Display.Type;
-import com.snap2d.gl.*;
-import com.snap2d.gl.jogl.GLHandle.AlphaFunc;
-import com.snap2d.gl.jogl.GLHandle.BufferUsage;
-import com.snap2d.gl.jogl.GLHandle.GLFeature;
 import com.snap2d.gl.jogl.JOGLConfig.Property;
-import com.snap2d.world.*;
+import com.snap2d.input.*;
 
 /**
+ * A class representing a native window onto which an OpenGL context can be rendered.
+ * GLDisplay is backed internally by the JOGL NEWT windowing system.
  * @author Brian Groenke
  *
  */
 public class GLDisplay {
 
-	static final Dimension SCREEN = Utils.getScreenSize();
+	static final int SCREEN_WIDTH = Utils.getScreenSize().width, SCREEN_HEIGHT = Utils.getScreenSize().height;
+
+	GLDisplay ref = this;
 
 	int wt, ht;
 	Type type;
-	GLCanvas canvas;
+	Display newtDisp;
+	Screen newtScreen;
+	GLWindow glWin;
 	GLRenderControl rc;
-	Frame frame;
+	
+	NEWTInputDispatcher inputDispatcher;
 
-	ExitOnClose ecl = new ExitOnClose();
-	boolean eclEnabled = false;
+	ProcessCloseRequest onClose;
+	boolean exitOnClose = false;
 
 	/**
 	 * Creates this GLDisplay with the given window dimensions and graphics configuration.
@@ -60,32 +56,32 @@ public class GLDisplay {
 	public GLDisplay(int width, int height, Type type, JOGLConfig config) {
 		initDisplay(width, height, type, config);
 	}
-
+	
 	private void initDisplay(int width, int height, Type type, JOGLConfig config) {
 		config.applyProperties();
 		this.wt = width;
 		this.ht = height;
 		this.type = type;
-		// make sure Java2D doesn't try to use the OpenGL pipeline
-		System.setProperty(GLConfig.Property.USE_OPENGL.getProperty(), "false");
+		GLProfile.initSingleton();
 		GLProfile glp = GLProfile.get(GLProfile.GL2);
 		GLCapabilities glc = new GLCapabilities(glp);
 		setCapabilities(glc);
-		canvas = new GLCanvas(glc);
-		rc = new GLRenderControl(canvas, config);
+		newtDisp = NewtFactory.createDisplay(null);
+		newtScreen = NewtFactory.createScreen(newtDisp, 0);
+		glWin = GLWindow.create(newtScreen, glc);
+		glWin.setDefaultCloseOperation(WindowClosingMode.DO_NOTHING_ON_CLOSE);
+		onClose = new ProcessCloseRequest();
+		glWin.addWindowListener(onClose);
+		rc = new GLRenderControl(glWin, config);
 
-		frame = new Frame();
 		switch(type) {
 		case WINDOWED:
-			frame.setSize(width, height);
+			glWin.setSize(width, height);
 			break;
 		case FULLSCREEN:
 			if(!type.isNativeFullscreen())
-				frame.setSize(SCREEN);
+				glWin.setSize(SCREEN_WIDTH, SCREEN_HEIGHT);
 		}
-
-		frame.add(canvas);
-		frame.setIgnoreRepaint(false);
 	}
 
 	private void setCapabilities(GLCapabilities glc) {
@@ -110,6 +106,11 @@ public class GLDisplay {
 		return msaa;
 	}
 
+	public void setTitle(String title) {
+		if(glWin != null)
+			glWin.setTitle(title);
+	}
+
 	public void updateConfig(JOGLConfig config) throws InterruptedException {
 		config.applyProperties();
 		GLProfile glp = GLProfile.get(GLProfile.GL2);
@@ -117,319 +118,213 @@ public class GLDisplay {
 		setCapabilities(glc);
 		boolean renderActive = rc.isRenderActive(), loopRunning = rc.isLoopRunning();
 		rc.stopRenderLoop();
-		GLCanvas old = this.canvas;
-		old.removeGLEventListener(rc);
-		canvas = new GLCanvas(glc);
-		GLRenderControl newRc = new GLRenderControl(canvas, config);
+		GLWindow old = glWin;
+		old.disposeGLEventListener(rc, true);
+		glWin = GLWindow.create(newtScreen, glc);
+		GLRenderControl newRc = new GLRenderControl(glWin, config);
 		rc.copyRenderablesTo(newRc);
 		rc.dispose();
 		rc = newRc;
-		frame.remove(old);
-		frame.add(canvas);
-		frame.validate();
 		if(loopRunning)
 			rc.startRenderLoop();
 		rc.setRenderActive(renderActive);
 		SnapLogger.println("updated GLDisplay config");
+	}
+	
+	/**
+	 * Initializes this GLDisplay's input system.
+	 * @param consumeEvents true if you want this GLDisplay to consume input events.
+	 */
+	public void initInputSystem(boolean consumeEvents) {
+		if(inputDispatcher != null)
+			return;
+		inputDispatcher = new NEWTInputDispatcher(consumeEvents);
+		addNewtKeyListener(inputDispatcher);
+		addNewtMouseListener(inputDispatcher);
+	}
+
+	/**
+	 * Add a GLKeyListener to this GLDisplay.  NEWT KeyEvent[s] will
+	 * be wrapped in a GLKeyEvent and dispatched to registered listeners.
+	 * You must call {@link #initInputSystem(boolean)} before calling
+	 * this method.
+	 * @param key
+	 */
+	public void addKeyListener(GLKeyListener key) {
+		if(inputDispatcher == null)
+			return;
+		inputDispatcher.registerKeyListener(key);
+	}
+
+	/**
+	 * Add a GLMouseListener to this GLDisplay.  NEWT MouseEvent[s] will
+	 * be wrapped in a GLMouseEvent and dispatched to registered listeners.
+	 * You must call {@link #initInputSystem(boolean)} before calling
+	 * this method.
+	 * @param mouse
+	 */
+	public void addMouseListener(GLMouseListener mouse) {
+		if(inputDispatcher == null)
+			return;
+		inputDispatcher.registerMouseListener(mouse);
+	}
+	
+	public void removeKeyListener(GLKeyListener listener) {
+		if(inputDispatcher == null)
+			return;
+		inputDispatcher.removeKeyListener(listener);
+	}
+	
+	public void removeMouseListener(GLMouseListener listener) {
+		if(inputDispatcher == null)
+			return;
+		inputDispatcher.removeMouseListener(listener);
+	}
+	
+	/**
+	 * Add a NEWT KeyEvent listener to this GLDisplay. You must have JOGL
+	 * on your build path to use these interfaces directly.
+	 * @param key
+	 */
+	public void addNewtKeyListener(KeyListener key) {
+		glWin.addKeyListener(key);
+	}
+	
+	/**
+	 * Add a NEWT MouseEvent listener to this GLDisplay. You must have JOGL
+	 * on your build path to use these interfaces directly.
+	 * @param mouse
+	 */
+	public void addNewtMouseListener(MouseListener mouse) {
+		glWin.addMouseListener(mouse);
+	}
+	
+	public void removeNewtKeyListener(KeyListener key) {
+		glWin.removeKeyListener(key);
+	}
+	
+	public void removeNewtMouseListener(MouseListener mouse) {
+		glWin.removeMouseListener(mouse);
+	}
+	
+	public void setConfineMouse(boolean confine) {
+		glWin.confinePointer(confine);
+	}
+	
+	public void setMousePos(int x, int y) {
+		glWin.warpPointer(x, y);
 	}
 
 	public GLRenderControl getRenderControl() {
 		return rc;
 	}
 
-	boolean hidden = false;
+	public int getWidth() {
+		return glWin.getWidth();
+	}
+
+	public int getHeight() {
+		return glWin.getHeight();
+	}
+	
+	public int getScreenX() {
+		return glWin.getX();
+	}
+	
+	public int getScreenY() {
+		return glWin.getY();
+	}
+	
+	public GLWindow getNewtWindow() {
+		return glWin;
+	}
 
 	public void show() {
+		if(glWin.isVisible())
+			return;
 		if (type == Type.FULLSCREEN) {
-			GraphicsDevice d = GraphicsEnvironment
-					.getLocalGraphicsEnvironment().getDefaultScreenDevice();
-			if (d.isFullScreenSupported() && type.isNativeFullscreen()) {
-				if(!hidden) { // initialize
-					frame.enableInputMethods(false);
-					frame.setUndecorated(true);
-					frame.setResizable(false);
-					frame.addFocusListener(new FocusListener() {
-
-						@Override
-						public void focusGained(FocusEvent arg0) {
-							frame.setAlwaysOnTop(true);
-						}
-
-						@Override
-						public void focusLost(FocusEvent arg0) {
-							frame.setAlwaysOnTop(false);
-						}
-					});
-				}
-				d.setFullScreenWindow(frame);
-			} else {
-				frame.setVisible(true);
+			if (type.isNativeFullscreen()) {
+				glWin.setFullscreen(true);
 			}
-		} else {
-			frame.setVisible(true);
 		}
-		frame.requestFocus();
-		wt = frame.getWidth();
-		ht = frame.getHeight();
+		glWin.setVisible(true);
+		wt = glWin.getWidth();
+		ht = glWin.getHeight();
 	}
 
 	public void hide() {
 		rc.setRenderActive(false);
-		GraphicsDevice d = GraphicsEnvironment.getLocalGraphicsEnvironment()
-				.getDefaultScreenDevice();
-		d.setFullScreenWindow(null);
-		frame.setVisible(false);
-		hidden = true;
+		glWin.setFullscreen(false);
+		glWin.setVisible(false);
 	}
+
 
 	/**
 	 * Disposes of this GLDisplay and all of its internally held resources, including
-	 * the current GLRenderControl.  This method will block until GLRenderControl.dispose
-	 * returns.
+	 * the current GLRenderControl.  This method will create a new disposer thread to
+	 * handle the cleanup process and return immediately.  Once the disposer has finished
+	 * releasing all resources held by the GL context, the optional GLDisposalCallback will
+	 * be notified vis GLDisposalCallback.onDispose.
 	 */
-	public void dispose() {
-		rc.dispose(); // should block until GLContext (AWT) and render-loop threads finish
-		Runnable dispose = new Runnable() { // return windowing operations to AWT thread
-			@Override
-			public void run() {
-				hide();
-				frame.remove(canvas);
-				frame.dispose();
-				rc = null;
-				canvas = null;
-			}
-		};
-		if(SwingUtilities.isEventDispatchThread())
-			dispose.run();
-		else
-			try {
-				SwingUtilities.invokeAndWait(dispose);
-			} catch (InvocationTargetException e) {
-				e.printStackTrace();
-			} catch (InterruptedException e) {
-				e.printStackTrace();
-			}
-	}
-
-	public void setExitOnClose(boolean exitOnWindowClosed) {
-		if(exitOnWindowClosed && !eclEnabled) {
-			frame.addWindowListener(ecl);
-			eclEnabled = true;
-		} else if(!exitOnWindowClosed && eclEnabled) {
-			frame.removeWindowListener(ecl);
-			eclEnabled = false;
-		}
-	}
-
-	public Frame getFrame() {
-		return frame;
-	}
-
-	private class ExitOnClose extends WindowAdapter {
-
-		/**
-		 *
-		 */
-		@Override
-		public void windowClosing(WindowEvent arg0) {
-			Thread disposerThread = new Thread(new Disposer());
-			disposerThread.setPriority(Thread.MAX_PRIORITY);
-			disposerThread.setName("snap2d-disposer_thread");
-			disposerThread.start();
-		}
-		
-		private class Disposer implements Runnable {
-
-			@Override
-			public void run() {
-				dispose();
-				System.exit(0);
-			}
-		}
-
-	}
-
-	public static void main(String[] args) {
-		JOGLConfig config = new JOGLConfig();
-		config.set(Property.SNAP2D_RENDER_MSAA, "16");
-		GLDisplay gldisp = new GLDisplay(1600, 900, Type.WINDOWED, config);
-		gldisp.setExitOnClose(true);
-		gldisp.show();
-		final GLRenderControl rc = gldisp.getRenderControl();
-		rc.addRenderable(new TestObj(gldisp.wt, gldisp.ht), GLRenderControl.POSITION_LAST);
-		rc.addRenderable(new TestBack(), 0);
-		rc.startRenderLoop();
-		//rc.setTargetFPS(8000);
+	public void dispose(GLDisposalCallback onDisposeCallback) {
+		Thread disposerThread = new Thread(new Disposer(onDisposeCallback));
+		disposerThread.setName("snap2d-disposer_thread");
+		disposerThread.start();
 	}
 	
-	static GLProgram prog;
-	static GLShader vert, frag;
-	static Random rand = new Random();
-
-	static class TestObj implements GLRenderable {
-
-		World2D world;
-		Texture2D tex;
-		int vwt, vht;
-		Rect2D bounds = new Rect2D(-500, -500, 100, 100);
-
-		int buffId, buff2;
-
-		public TestObj(int vwt, int vht) {
-
+	/**
+	 * Equivalent to GLDisplay.dispose(null)
+	 */
+	public void dispose() {
+		dispose(null);
+	}
+	
+	private class Disposer implements Runnable {
+		
+	    GLDisposalCallback callback;
+		
+		Disposer(GLDisposalCallback callback) {
+			this.callback = callback;
 		}
 
-		final int N = 350;
-		float tx,ty;
 		@Override
-		public void render(GLHandle handle, float interpolation) {
-
-			handle.setTextureEnabled(true);
-			handle.setTexCoords(tex);
-			handle.setTextureMinFilter(GLHandle.FILTER_LINEAR, GLHandle.FILTER_LINEAR);
-			handle.setEnabled(GLFeature.BLENDING, true);
-			handle.setBlendFunc(AlphaFunc.SRC_OVER);
-			handle.bindTexture(tex);
-			
-			
-			Rectangle r = world.convertWorldRect(bounds);
-			for(int i=1 ; i <= N ; i++) {
-				handle.putQuad2f(buffId, rand.nextInt(1200), rand.nextInt(700), r.width, r.height);
-			}
-			
-			handle.draw2f(buffId);
-			
-			
-			handle.setTextureEnabled(false);
-			
-			handle.putQuad2f(buff2, tx, ty, 200, 200);
-			handle.putQuad2f(buff2, 250 + tx++, 250 + ty++, 200, 200);
-			handle.putQuad2f(buff2, 500 + tx++, 500 + ty++, 200, 200);
-			handle.setColor3f(0, 1, 0);
-			handle.draw2f(buff2);
-			handle.resetBuff(buff2);
-			
-			handle.setEnabled(GLFeature.BLENDING, false);
-
-			/*
-			Rect2D coll = world.checkCollision(bounds, b2);
-			if(coll == null)
+		public void run() {
+			if(rc == null || glWin == null)
 				return;
-			Rectangle r3 = world.convertWorldRect(coll);
-			handle.setColor3f(0, 0, 1f);
-			handle.drawRect2f(r3.x, r3.y, r3.width, r3.height);
-			 */
+			rc.dispose(); // should block until render-loop threads finish
+			glWin.setVisible(false);
+			glWin.removeWindowListener(onClose);
+			glWin.destroy();
+			rc = null;
+			glWin = null;
+			newtDisp.getEDTUtil().waitUntilStopped();
+			if(callback != null)
+				callback.onDisposed();
+			if(exitOnClose)
+				System.exit(0);
 		}
-
-		@Override
-		public void update(long nanoTimeNow, long nanosSinceLastUpdate) {
-			//bounds.setLocation(bounds.getX() + 1, bounds.getY() + 1);
-		}
-
-
-		float ppu = 1f;
-		@Override
-		public void onResize(GLHandle handle, int wt, int ht) {
-			vwt = wt; vht = ht;
-			world = GLUtils.createGLWorldSystem(-800, -450, vwt, vht, ppu);
-			world.setViewSize(vwt, vht, ppu);
-		}
-
-		/**
-		 *
-		 */
-		@Override
-		public void init(GLHandle handle) {
-			try {
-				BufferedImage bimg = ImageLoader.load(new URL("file:/media/WIN7/Users/Brian/Pictures/test_alpha.png"));
-				bimg = ImageUtils.convertBufferedImage(bimg, BufferedImage.TYPE_INT_ARGB_PRE);
-				tex = ImageLoader.loadTexture(bimg, true);
-				//tex = ImageLoader.loadTexture(new URL("file:/media/WIN7/Users/Brian/Pictures/fnrr_flag.png"), ImageLoader.PNG, true);
-			} catch (MalformedURLException e) {
-				e.printStackTrace();
-			}
-
-			buffId = handle.createQuadBuff2f(BufferUsage.STREAM_DRAW, N, true);
-			buff2 = handle.createQuadBuff2f(BufferUsage.STREAM_DRAW, 10, false);
-			/*
-			for(int i=1 ; i <= N ; i++) {
-				handle.putQuad2f(buffId, rand.nextInt(1000), rand.nextInt(700), 100, 100);
-			}
-			*/
-		}
-
-		/**
-		 *
-		 */
-		@Override
-		public void dispose(GLHandle handle) {
-			
-		}
-
 	}
+	
 
-	static class TestBack implements GLRenderable {
-
-		int wt, ht, buffId;
-
-		@Override
-		public void render(GLHandle handle, float interpolation) {
-			handle.setColor4f(0.5f, 0.5f, 0.6f, 1.0f);
-			handle.draw2f(buffId);
-			//handle.drawRect2f(0, 0, wt, ht);
-		}
-
-		@Override
-		public void update(long nanoTimeNow, long nanosSinceLastUpdate) {
-
-		}
-
-		@Override
-		public void onResize(GLHandle handle, int wt, int ht) {
-			this.wt = wt;
-			this.ht = ht;
-			handle.setViewport(0, 0, wt, ht, 1);
-			handle.putQuad2f(buffId, 0, 0, wt, ht);
-		}
-
-		/**
-		 *
-		 */
-		@Override
-		public void init(GLHandle handle) {
-			buffId = handle.createQuadBuff2f(BufferUsage.STATIC_DRAW, 1, false);
-			prog = new GLProgram(handle);
-			try {
-				try {
-				vert = GLShader.loadDefaultShader(handle, "standard.vert", GLShader.TYPE_VERTEX);
-				frag = GLShader.loadDefaultShader(handle, "gamma.frag", GLShader.TYPE_FRAGMENT);
-				} catch (GLShaderException e) {
-					System.err.println("error compiling shader");
-					System.err.println(e.getExtendedMessage());
-					System.exit(1);
-				}
-				
-				prog.attachShader(vert);
-				prog.attachShader(frag);
-				if(!prog.link()) {
-					prog.printLinkLog();
-				}
-			} catch (GLShaderException e) {
-				e.printStackTrace();
-			} catch (IOException e) {
-				e.printStackTrace();
-			}
-		}
-
-		/**
-		 *
-		 */
-		@Override
-		public void dispose(GLHandle handle) {
-			if(prog.getHandle() != handle)
-				prog.setHandle(handle);
-			prog.dispose();
+	public void setExitOnClose(boolean exitOnWindowClosed) {
+		if(exitOnWindowClosed && !exitOnClose) {
+			exitOnClose = true;
+		} else if(!exitOnWindowClosed && exitOnClose) {
+			exitOnClose = false;
 		}
 	}
 
+	private class ProcessCloseRequest extends WindowAdapter {
+		/**
+		 *
+		 */
+		@Override
+		public void windowDestroyNotify(WindowEvent arg0) {
+			dispose();
+		}
+	}
+	
+	public interface GLDisposalCallback {
+		public void onDisposed();
+	}
 }

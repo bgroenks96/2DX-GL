@@ -1104,6 +1104,7 @@ class ScriptCompiler {
 				buff = curr;
 				break;
 			}
+		
 		buff.put(Bytecodes.END_CMD);
 		
 		for(int i=0; i < origArr.length; i++)
@@ -1116,14 +1117,17 @@ class ScriptCompiler {
 		ArrayList<String> splitPts = new ArrayList<String>();
 		StringBuilder sb = new StringBuilder();
 		int paramDelims = 0;
+		boolean instr = false;
 		for(int i=0; i < argStr.length(); i++) {
 			String s = strval(argStr.charAt(i));
 			if(s.equals(Keyword.PARAM_BEGIN.sym))
 				paramDelims++;
 			else if(s.equals(Keyword.PARAM_END.sym))
 				paramDelims--;
+			else if(s.equals(Keyword.STR_MARK.sym) && argStr.charAt(Math.max(0, i-1)) != '\\')
+				instr = !instr;
 
-			if(s.equals(ex) && paramDelims == 0) {
+			if(s.equals(ex) && paramDelims == 0 && !instr) {
 				splitPts.add(sb.toString());
 				clear(sb);
 			} else {

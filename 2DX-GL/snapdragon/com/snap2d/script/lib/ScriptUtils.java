@@ -74,4 +74,13 @@ public class ScriptUtils {
 	public static void sysExit(int exitStatus) {
 		System.exit(exitStatus);
 	}
+	
+	@ScriptLink
+	public static void sleep(int millis) {
+		try {
+			Thread.sleep(millis);
+		} catch (InterruptedException e) {
+			e.printStackTrace();
+		}
+	}
 }

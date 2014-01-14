@@ -21,7 +21,9 @@ import com.snap2d.*;
 
 /**
  * Receives input events directly from Java's Abstract Windowing Toolkit and dispatches them to
- * registered listeners.
+ * registered listeners.  This class will only work with AWT/Swing windows and components.
+ * Applications using the OpenGL rendering system must use the NEWT input interfaces also
+ * provided in this package.
  * 
  * @author Brian Groenke
  * 

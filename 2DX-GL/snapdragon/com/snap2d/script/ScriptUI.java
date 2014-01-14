@@ -15,13 +15,15 @@ package com.snap2d.script;
 import java.awt.*;
 import java.awt.event.*;
 import java.io.*;
-import java.text.*;
-import java.util.*;
+import java.text.SimpleDateFormat;
+import java.util.Calendar;
 
 import javax.swing.*;
-import javax.swing.border.*;
+import javax.swing.border.EmptyBorder;
 
-import bg.x2d.utils.*;
+import bg.x2d.utils.Utils;
+
+import com.snap2d.SnapLogger;
 
 /**
  * A graphical interface utility that allows for live script compilation/execution.
@@ -320,7 +322,7 @@ public class ScriptUI extends JFrame {
 			text = Utils.readText(Utils.getFileURL(new File(System.getProperty("java.io.tmpdir") + File.separator + TEMP_FILE)));
 			input.setText(text);
 		} catch (IOException e) {
-			e.printStackTrace();
+			SnapLogger.printErr("ScriptUI: no tmp file - initializing new input data...", true);
 		}
 	}
 
