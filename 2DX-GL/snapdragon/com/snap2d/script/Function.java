@@ -66,7 +66,7 @@ public class Function implements Comparable<Function> {
 			Class<?> c = params[i];
 			if(isString(c))
 				paramTypes[i] = Keyword.STRING;
-			else if(isInt(c))
+			else if(isInt(c) || c.equals(Long.class))
 				paramTypes[i] = Keyword.INT;
 			else if(isFloat(c))
 				paramTypes[i] = Keyword.FLOAT;
@@ -88,7 +88,7 @@ public class Function implements Comparable<Function> {
 		else if(isVoid(c))
 			returnType = Keyword.VOID;
 		else
-			throw(new IllegalArgumentException(c.getName() + " is not a supported script data type"));
+			throw(new IllegalArgumentException("unsupported script data type " + c.getName()));
 		javaFunc = true;
 		id = idTick++;
 	}

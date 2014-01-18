@@ -18,7 +18,7 @@ import javax.media.opengl.*;
  * @author Brian Groenke
  *
  */
-public class GLShaderException extends GLException {
+public class GLShaderException extends Exception {
 
 	/**
 	 * 

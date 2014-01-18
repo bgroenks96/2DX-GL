@@ -12,7 +12,6 @@
 
 package com.snap2d.world;
 
-import com.snap2d.world.Entity.DrawableEntity;
 
 /**
  * @author Brian Groenke
@@ -20,19 +19,19 @@ import com.snap2d.world.Entity.DrawableEntity;
  */
 public interface GameWorld {
 
-	public boolean addEntity(DrawableEntity e);
+	public boolean addEntity(Entity e);
 
-	public boolean removeEntity(DrawableEntity e);
+	public boolean removeEntity(Entity e);
 
-	public boolean hasEntity(DrawableEntity e);
+	public boolean hasEntity(Entity e);
 
-	public boolean isInView(DrawableEntity e);
+	public boolean isInView(Entity e);
 
-	public DrawableEntity entityAt(double x, double y);
+	public Entity entityAt(double x, double y);
 
 	public void setViewport(double x, double y, int width, int height);
 
 	public void moveViewport(double dx, double dy);
 
-	public DrawableEntity[] getEntities();
+	public Entity[] getEntities();
 }

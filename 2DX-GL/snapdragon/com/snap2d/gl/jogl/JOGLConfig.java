@@ -76,15 +76,6 @@ public class JOGLConfig {
 	 * 
 	 */
 	public enum Property {
-		/**
-		 * Boolean (default=true) * MS-Windows only *
-		 */
-		NO_DDRAW("sun.java2d.noddraw", "true"),
-		
-		/**
-		 * Boolean (default=true)
-		 */
-		NO_ERASE_BACKGROUND("sun.awt.noerasebackground", "true"),
 		
 		/**
 		 * Boolean (default=true) * MS-Windows only *
@@ -97,9 +88,9 @@ public class JOGLConfig {
 		/**
 		 * Boolean (default=true)
 		 * <br/><br/>
-		 * Sets whether or not FPS and TPS will be printed to stdout on each frame.
+		 * Sets whether or not FPS and TPS will be printed to stdout each second.
 		 */
-		SNAP2D_PRINT_RENDER_STAT("com.snap2d.gl.printframes", "true"),
+		SNAP2D_PRINT_GLRENDER_STAT("com.snap2d.gl.jogl.printframes", "true"),
 		
 		/**
 		 * Boolean (default=true)

@@ -14,14 +14,17 @@ package com.snap2d.gl.jogl;
 
 import static javax.media.opengl.GL2.*;
 
+import java.io.IOException;
 import java.nio.*;
-import java.util.*;
+import java.util.Arrays;
 
 import javax.media.opengl.*;
 
-import bg.x2d.utils.*;
+import bg.x2d.utils.Utils;
 
-import com.jogamp.common.nio.*;
+import com.jogamp.common.nio.Buffers;
+import com.snap2d.SnapLogger;
+import com.snap2d.gl.jogl.GLProgram.UniformType;
 
 /**
  * @author Brian Groenke
@@ -33,6 +36,8 @@ public class GLHandle {
 			INVERTED_RECT_TEX_COORDS = new float[] {0, 1, 0, 0, 1, 1, 1, 0};
 	public static final int FILTER_LINEAR = GL_LINEAR, FILTER_NEAREST = GL_NEAREST;
 
+	private static final String DEFAULT_VERTEX_SHADER = "default.vert", DEFAULT_FRAG_SHADER = "default.frag";
+
 	protected GL2 gl;
 
 	double vx, vy, vwt, vht;
@@ -42,11 +47,38 @@ public class GLHandle {
 
 	int magFilter = FILTER_LINEAR, minFilter = FILTER_LINEAR;;
 
-	protected GLHandle() {
-		//
+	protected GLHandle(GL2 gl) {
+		this.gl = gl;
+		try {
+			GLShader vert = GLShader.loadDefaultShader(this, DEFAULT_VERTEX_SHADER, GLShader.TYPE_VERTEX);
+			GLShader frag = GLShader.loadDefaultShader(this, DEFAULT_FRAG_SHADER, GLShader.TYPE_FRAGMENT);
+			GLProgram prog = new GLProgram(this);
+			prog.attachShader(vert);
+			prog.attachShader(frag);
+			if(!prog.link()) {
+				SnapLogger.printErr("error linking default shaders: ", true);
+				prog.printLinkLog();
+			}
+			GLProgram.DEFAULT_SHADER_PROG = prog;
+			prog.setDefaultShaderProgram(true);
+			prog.enable();
+			prog.setUniform("gamma", 1, UniformType.FLOAT, 1.0f);
+		} catch (GLShaderException e) {
+			SnapLogger.printErr("error loading default shaders:", true);
+			e.printStackTrace();
+		} catch (IOException e) {
+			SnapLogger.printErr("error loading default shaders:", true);
+			e.printStackTrace();
+		}
+	}
+
+	public GLContext getGLContext() {
+		return gl.getContext();
 	}
 
 	public void setViewport(double x, double y, double width, double height, float ppu) {
+		if(width <= 0 || height <= 0)
+			throw(new IllegalArgumentException("viewport dimensions must be > 0"));
 		vx = x;
 		vy = y;
 		vwt = width / ppu;
@@ -201,14 +233,37 @@ public class GLHandle {
 		}
 
 		BufferObject buffObj = buffInfo[findIndexOfID(buffId)];
-		int nverts = buffObj.nverts;
 		// draw all quads in vertex buffer
 		gl.glBindBuffer(GL_ARRAY_BUFFER, buffId);
+
+		if(gl.getContext().hasGLSL()) {
+
+			gl.glEnableVertexAttribArray(0);
+			gl.glVertexAttribPointer(0, 2, GL_FLOAT, false, 0, 0);
+			if(texBound && texEnabled) {
+				gl.glEnableVertexAttribArray(1);
+				gl.glVertexAttribPointer(1, 2, GL_FLOAT, false, 0, 2 * buffObj.nverts * Buffers.SIZEOF_FLOAT);
+			}
+
+			gl.glMultiDrawArrays(buffObj.drawFunc.getGLCommand(), buffObj.vertIndices, 0, buffObj.vertNum, 0, buffObj.objCount);
+
+			// disable arrays
+			gl.glBindBuffer(GL_ARRAY_BUFFER, 0);
+			if(texBound && texEnabled)
+				gl.glDisableVertexAttribArray(1);
+			gl.glDisableVertexAttribArray(0);
+			
+		} else
+			drawNoGLSL2f(buffObj);
+
+	}
+
+	private void drawNoGLSL2f(BufferObject buffObj) {
 		gl.glEnableClientState( GL_VERTEX_ARRAY);
 		if(texBound && texEnabled) {
 			gl.glEnableClientState(GL_TEXTURE_COORD_ARRAY);
 			gl.glVertexPointer(2, GL_FLOAT, 0, 0);
-			gl.glTexCoordPointer(2, GL_FLOAT, 0, 2 * nverts * Buffers.SIZEOF_FLOAT);
+			gl.glTexCoordPointer(2, GL_FLOAT, 0, 2 * buffObj.nverts * Buffers.SIZEOF_FLOAT);
 		} else {
 			gl.glVertexPointer(2, GL_FLOAT, 0, 0);
 		}
@@ -220,28 +275,50 @@ public class GLHandle {
 		gl.glDisableClientState(GL_VERTEX_ARRAY);
 		if(texBound && texEnabled)
 			gl.glDisableClientState(GL_TEXTURE_COORD_ARRAY);
-
 	}
 
-	public void draw2d(int buffId, GeomFunc drawFunc) {
+	public void draw2d(int buffId) {
 		if(texBound && texEnabled) {
 			setColor4f(1,1,1,1);
 		}
 
 		BufferObject buffObj = buffInfo[findIndexOfID(buffId)];
-		int nverts = buffObj.nverts;
 		// draw all quads in vertex buffer
 		gl.glBindBuffer(GL_ARRAY_BUFFER, buffId);
+
+		if(gl.getContext().hasGLSL()) {
+
+			gl.glEnableVertexAttribArray(0);
+			gl.glVertexAttribPointer(0, 2, GL_DOUBLE, false, 0, 0);
+			if(texBound && texEnabled) {
+				gl.glEnableVertexAttribArray(1);
+				gl.glVertexAttribPointer(1, 2, GL_DOUBLE, false, 0, 2 * buffObj.nverts * Buffers.SIZEOF_DOUBLE);
+			}
+
+			gl.glMultiDrawArrays(buffObj.drawFunc.getGLCommand(), buffObj.vertIndices, 0, buffObj.vertNum, 0, buffObj.objCount);
+
+			// disable arrays
+			gl.glBindBuffer(GL_ARRAY_BUFFER, 0);
+			if(texBound && texEnabled)
+				gl.glDisableVertexAttribArray(1);
+			gl.glDisableVertexAttribArray(0);
+			
+		} else
+			drawNoGLSL2d(buffObj);
+
+	}
+
+	private void drawNoGLSL2d(BufferObject buffObj) {
 		gl.glEnableClientState( GL_VERTEX_ARRAY);
 		if(texBound && texEnabled) {
 			gl.glEnableClientState(GL_TEXTURE_COORD_ARRAY);
 			gl.glVertexPointer(2, GL_DOUBLE, 0, 0);
-			gl.glTexCoordPointer(2, GL_DOUBLE, 0, 2 * nverts * Buffers.SIZEOF_DOUBLE);
+			gl.glTexCoordPointer(2, GL_DOUBLE, 0, 2 * buffObj.nverts * Buffers.SIZEOF_DOUBLE);
 		} else {
 			gl.glVertexPointer(2, GL_DOUBLE, 0, 0);
 		}
 
-		gl.glMultiDrawArrays(drawFunc.getGLCommand(), buffObj.vertIndices, 0, buffObj.vertNum, 0, buffObj.objCount);
+		gl.glMultiDrawArrays(buffObj.drawFunc.getGLCommand(), buffObj.vertIndices, 0, buffObj.vertNum, 0, buffObj.objCount);
 
 		// disable arrays
 		gl.glBindBuffer(GL_ARRAY_BUFFER, 0);
@@ -275,12 +352,30 @@ public class GLHandle {
 		int buffSize = buffObj.size;
 		if(buffObj.objCount >= buffObj.nobjs) // if we've reached the total number of objects, reset count
 			buffObj.objCount = 0;
-		
+
 		gl.glBindBuffer(GL_ARRAY_BUFFER, rectBuffId);
-		
-		if(buffObj.objCount == 0)
+
+		if(buffObj.objCount == 0) {
 			gl.glBufferData(GL_ARRAY_BUFFER, buffSize, null, buffObj.buffStore.usageHint);
+			buffObj.data.clear();
+		}
+
+		FloatBuffer floatBuff = (FloatBuffer) buffObj.data;
+		//if(buffObj.objCount != 0)
+		//	gl.glGetBufferSubData(GL_ARRAY_BUFFER, 0, buffSize / buffObj.nobjs * buffObj.objCount, floatBuff);
+		floatBuff.limit(floatBuff.capacity());
+		floatBuff.position(buffSize / Buffers.SIZEOF_FLOAT / buffObj.nobjs * buffObj.objCount);
+		floatBuff.put(x); floatBuff.put(y);
+		floatBuff.put(x); floatBuff.put(y + ht);
+		floatBuff.put(x + wt); floatBuff.put(y);
+		floatBuff.put(x + wt); floatBuff.put(y + ht);
+		if(buffObj.textured)
+			floatBuff.put(texCoords);
+		floatBuff.flip();
+		buffObj.objCount++; // increment object count
+		gl.glBufferSubData(GL_ARRAY_BUFFER, 0, buffSize / buffObj.nobjs * buffObj.objCount, floatBuff);
 		
+		/*
 		if(buffObj.buffStore == BufferUsage.STATIC_DRAW) { // for static draw, don't use buffer mapping
 			FloatBuffer floatBuff = Buffers.newDirectFloatBuffer(new float[buffSize]);
 			if(buffObj.objCount != 0)
@@ -296,7 +391,7 @@ public class GLHandle {
 			buffObj.objCount++; // increment object count
 			gl.glBufferSubData(GL_ARRAY_BUFFER, 0, buffSize / buffObj.nobjs * buffObj.objCount, floatBuff);
 		} else {
-			ByteBuffer buff = gl.glMapBuffer(GL_ARRAY_BUFFER, GL_READ_WRITE);
+			ByteBuffer buff = gl.glMapBuffer(GL_ARRAY_BUFFER, GL_WRITE_ONLY);
 			FloatBuffer floatBuff = buff.order(ByteOrder.nativeOrder()).asFloatBuffer();
 			floatBuff.position(buffSize / Buffers.SIZEOF_FLOAT / buffObj.nobjs * buffObj.objCount);
 			floatBuff.put(x); floatBuff.put(y);
@@ -308,6 +403,7 @@ public class GLHandle {
 			buffObj.objCount++; // increment object count
 			gl.glUnmapBuffer(GL_ARRAY_BUFFER);
 		}
+		*/
 
 	}
 
@@ -319,9 +415,9 @@ public class GLHandle {
 		int buffSize = buffObj.size;
 		if(buffObj.objCount >= buffObj.nobjs) // if we've reached the total number of objects, reset count
 			buffObj.objCount = 0;
-		
+
 		gl.glBindBuffer(GL_ARRAY_BUFFER, rectBuffId);
-		
+
 		if(buffObj.objCount == 0)
 			gl.glBufferData(GL_ARRAY_BUFFER, buffSize, null, buffObj.buffStore.usageHint); // discard existing buffer data store
 
@@ -432,6 +528,7 @@ public class GLHandle {
 
 		BufferObject buffObj = new BufferObject(buffIds[ind], nverts, nobjs, Buffers.SIZEOF_FLOAT, buffSize, 
 				textured, drawFunc, storeType);
+		buffObj.data = Buffers.newDirectFloatBuffer(new float[buffSize]);
 		buffInfo[buffInfo.length - 1] = buffObj;
 		return buffObj;
 	}
@@ -465,6 +562,7 @@ public class GLHandle {
 
 		BufferObject buffObj = new BufferObject(buffIds[ind], nverts, nobjs, Buffers.SIZEOF_DOUBLE, buffSize, 
 				textured, drawFunc, storeType);
+		buffObj.data = Buffers.newDirectDoubleBuffer(new double[buffSize / Buffers.SIZEOF_DOUBLE]);
 		buffInfo[buffInfo.length - 1] = buffObj;
 		return buffObj;
 	}
@@ -486,6 +584,8 @@ public class GLHandle {
 		boolean textured;
 		GeomFunc drawFunc;
 		BufferUsage buffStore;
+		
+		Buffer data;
 
 		// constructor sets values and pre-computes arrays that are needed for glMultiDrawArrays function
 		BufferObject(int id, int nverts, int nobjs, int typeSize, int size, boolean textured, 
@@ -569,6 +669,15 @@ public class GLHandle {
 			break;
 		case ALPHA_XOR:
 			gl.glBlendFunc(GL_ONE_MINUS_DST_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+			break;
+		case SRC_DST:
+			gl.glBlendFunc(GL_ONE, GL_ONE);
+			break;
+		case SRC_BLEND:
+			gl.glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+			break;
+		case DST_BLEND:
+			gl.glBlendFunc(GL_DST_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 		}
 	}
 
@@ -579,7 +688,8 @@ public class GLHandle {
 	 */
 	public enum AlphaFunc {
 		CLEAR, SRC, DST, SRC_OVER, DST_OVER, SRC_IN, DST_IN,
-		SRC_OUT, DST_OUT, SRC_ATOP, DST_ATOP, ALPHA_XOR;
+		SRC_OUT, DST_OUT, SRC_ATOP, DST_ATOP, ALPHA_XOR, SRC_DST, SRC_BLEND,
+		DST_BLEND;
 	}
 
 	/**
@@ -642,7 +752,7 @@ public class GLHandle {
 		return gl;
 	}
 
-	protected void onDestroy() {
+	protected void onDispose() {
 		if(buffIds != null) {
 			for(int i : buffIds)
 				destroyBuff(i);

@@ -38,9 +38,9 @@ public interface Renderable {
 	 * take place.
 	 * 
 	 * @param nanoTimeNow the fixed nano time at the start of the update cycle
-	 * @param lastUpdate  the fixed nano time of the last update cycle
+	 * @param nanoTimeLast  the fixed nano time of the last update cycle
 	 */
-	public void update(long nanoTimeNow, long lastUpdate);
+	public void update(long nanoTimeNow, long nanoTimeLast);
 
 	/**
 	 * Called when the Graphics context invoking the Renderable has been resized, allowing the

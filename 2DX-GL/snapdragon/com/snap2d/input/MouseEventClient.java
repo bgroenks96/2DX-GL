@@ -14,6 +14,11 @@ package com.snap2d.input;
 
 import java.awt.event.*;
 
+/**
+ * Mouse event client interface for InputDispatch
+ * @author Brian Groenke
+ *
+ */
 public interface MouseEventClient {
 
 	public void processMouseEvent(MouseEvent me);

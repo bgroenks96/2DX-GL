@@ -16,14 +16,14 @@ import java.awt.*;
 import java.util.*;
 import java.util.List;
 
-import com.snap2d.gl.*;
-import com.snap2d.world.Entity.DrawableEntity;
+import com.snap2d.gl.Renderable;
+import com.snap2d.gl.jogl.*;
 import com.snap2d.world.Entity.EntityCollision;
 import com.snap2d.world.event.*;
 
 /**
  * Provides a facility for managing registered Entity objects. Adding EntityManager as a Renderable
- * task will allow all render/update calls to be forwarded to Entities registered with
+ * or GLRenderable task to the renderer will forward all render/update calls to Entities registered with
  * EntityManager. EntityManager also checks for collisions between all registered Entities on each
  * update and fires a CollisionEvent when Entity collisions are detected. EntityListeners can also
  * be used to receive events for when a new Entity is registered or removed. <br/>
@@ -34,16 +34,16 @@ import com.snap2d.world.event.*;
  * @author Brian Groenke
  * 
  */
-public class EntityManager implements Renderable {
+public class EntityManager implements GLRenderable, Renderable {
 
-	ArrayList<DrawableEntity> entities = new ArrayList<DrawableEntity>();
+	ArrayList<Entity> entities = new ArrayList<Entity>();
 	HashMap<Entity, List<EntityListener>> listeners = new HashMap<Entity, List<EntityListener>>();
 
 	/**
 	 * @param e
 	 * @return true if the Entity was not already registered.
 	 */
-	public boolean register(DrawableEntity e) {
+	public boolean register(Entity e) {
 		boolean added = entities.add(e);
 		if (added) {
 			fireAddEvent(e);
@@ -51,12 +51,12 @@ public class EntityManager implements Renderable {
 		return added;
 	}
 
-	public void register(DrawableEntity e, EntityListener listener) {
+	public void register(Entity e, EntityListener listener) {
 		addEntityListener(listener, e);
 		register(e);
 	}
 
-	public void unregister(DrawableEntity e) {
+	public void unregister(Entity e) {
 		if (entities.remove(e)) {
 			fireRemoveEvent(e);
 		}
@@ -109,15 +109,31 @@ public class EntityManager implements Renderable {
 			}
 		}
 	}
+	
+	/**
+	 * Dispatches the JOGL renderer's initialization request to all registered
+	 * Entity objects.
+	 */
+	@Override
+	public void init(GLHandle handle) {
+		for(Entity e : entities)
+			e.init(handle);
+	}
 
 	/**
-	 * Dispatches the renderer's draw request to all registered Entity objects.
+	 * Dispatches the Java2D renderer's draw request to all registered Entity objects.
 	 */
 	@Override
 	public void render(Graphics2D g, float interpolation) {
-		for (DrawableEntity e : entities) {
+		for (Entity e : entities) {
 			e.render(g, interpolation);
 		}
+	}
+	
+	@Override
+	public void render(GLHandle handle, float interpolation) {
+		for(Entity e : entities)
+			e.render(handle, interpolation);
 	}
 
 	/*
@@ -136,7 +152,7 @@ public class EntityManager implements Renderable {
 	@Override
 	public void update(long nanoTimeNow, long nanosSinceLastUpdate) {
 		chkCache.addAll(entities);
-		for (DrawableEntity e : entities) {
+		for (Entity e : entities) {
 			e.update(nanoTimeNow, nanosSinceLastUpdate);
 			chkCache.remove(e);
 			for (Entity opp : chkCache) {
@@ -155,13 +171,31 @@ public class EntityManager implements Renderable {
 	}
 
 	/**
-	 * Dispatches the renderer's resize request to all registered Entity objects.
+	 * Dispatches the Java2D renderer's resize request to all registered Entity objects.
 	 */
 	@Override
 	public void onResize(Dimension oldSize, Dimension newSize) {
-		for (DrawableEntity e : entities) {
+		for (Entity e : entities) {
 			e.onResize(oldSize, newSize);
 		}
+	}
+	
+	/**
+	 * Dispatches the JOGL renderer's resize request to all registered Entity objects.
+	 */
+	@Override
+	public void resize(GLHandle handle, int wt, int ht) {
+		for(Entity e : entities)
+			e.resize(handle, wt, ht);
+	}
+	
+	/**
+	 * Dispatches the JOGL renderer's disposal request to all registered Entity objects.
+	 */
+	@Override
+	public void dispose(GLHandle handle) {
+		for(Entity e : entities)
+			e.dispose(handle);
 	}
 
 	protected void fireCollisionEvent(Entity e, EntityCollision... colls) {

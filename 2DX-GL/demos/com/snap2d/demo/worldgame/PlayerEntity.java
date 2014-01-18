@@ -13,19 +13,18 @@
 package com.snap2d.demo.worldgame;
 
 import java.awt.*;
-import java.awt.geom.*;
+import java.awt.geom.Point2D;
 
-import bg.x2d.geo.*;
+import bg.x2d.geo.Triangle2D;
 
-import com.snap2d.physics.*;
+import com.snap2d.physics.GamePhysics;
 import com.snap2d.world.*;
-import com.snap2d.world.Entity.DrawableEntity;
 
 /**
  * @author Brian Groenke
  * 
  */
-public class PlayerEntity extends DrawableEntity {
+public class PlayerEntity extends Entity {
 
 	/**
 	 * 

@@ -410,4 +410,22 @@ public class Utils {
 	public static int getScreenResolution() {
 		return Toolkit.getDefaultToolkit().getScreenResolution();
 	}
+	
+	public static boolean sleep(long millis) {
+		try {
+			Thread.sleep(millis);
+			return true;
+		} catch (InterruptedException e) {
+			return false;
+		}
+	}
+	
+	public static boolean sleep(long millis, int nanos) {
+		try {
+			Thread.sleep(millis, nanos);
+			return true;
+		} catch (InterruptedException e) {
+			return false;
+		}
+	}
 }

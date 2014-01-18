@@ -21,8 +21,8 @@ public interface GLRenderable {
 	
 	/**
 	 * Called during initialization and/or recreation of the current rendering environment.
-	 * This method will always be called at least once for every GLRenderable registered with an active
-	 * GLRenderControl.
+	 * This method will be called as soon as a GLRenderControl has added the GLRenderable to its
+	 * rendering queue.
 	 * @param handle
 	 */
 	public void init(GLHandle handle);
@@ -47,14 +47,19 @@ public interface GLRenderable {
 	 * Called on each tick of the game loop. This method is where logic and position updates should
 	 * take place.
 	 * 
-	 * @param nanoTimeNow
-	 * @param nanosSinceLastUpdate
+	 * @param nanoTimeNow the fixed nano time at the start of the update cycle
+	 * @param nanoTimeLast the fixed nano time of the last update
 	 */
-	public void update(long nanoTimeNow, long nanosSinceLastUpdate);
+	public void update(long nanoTimeNow, long nanoTimeLast);
 
 	/**
 	 * Called when the OpenGL context invoking the GLRenderable has been resized, allowing the
-	 * GLRenderable object to perform necessary scaling.
+	 * GLRenderable object to perform necessary scaling.  This method will be called after the
+	 * {@link #init(GLHandle)} method if and only if the GLRenderControl is being displayed in
+	 * a valid window upon the GLRenderable being added to a rendering queue.
+	 * @param the GLHandle to the GL context
+	 * @param wt the total width of the current rendering context in screen space
+	 * @param ht the total height of the current rendering context in screen space
 	 */
-	public void onResize(GLHandle handle, int wt, int ht);
+	public void resize(GLHandle handle, int wt, int ht);
 }
