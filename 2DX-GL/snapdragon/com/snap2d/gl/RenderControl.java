@@ -1,5 +1,5 @@
 /*
- *  Copyright © 2012-2014 Brian Groenke
+ *  Copyright (C) 2012-2014 Brian Groenke
  *  All rights reserved.
  * 
  *  This file is part of the 2DX Graphics Library.
@@ -23,7 +23,7 @@ import java.util.concurrent.*;
 import bg.x2d.*;
 
 import com.snap2d.*;
-import com.snap2d.gl.GLConfig.Property;
+import com.snap2d.gl.GraphicsConfig.Property;
 
 /**
  * Acts as a rendering handle to a Display. This class handles the core game update/render thread.
@@ -76,7 +76,7 @@ public class RenderControl {
 	protected Map<RenderingHints.Key, Object> renderOps;
 
 	private Semaphore loopChk = new Semaphore(1, true);
-	private GLConfig config;
+	private GraphicsConfig config;
 
 	/**
 	 * Creates a RenderControl object that can be used to render data to a Display. A Canvas object
@@ -87,7 +87,7 @@ public class RenderControl {
 	 * @param buffs
 	 *            the number of buffers the BufferStrategy should be created with.
 	 */
-	protected RenderControl(int buffs, GLConfig config) {
+	protected RenderControl(int buffs, GraphicsConfig config) {
 		this.config = config;
 		this.canvas = new Canvas();
 		this.buffs = buffs;

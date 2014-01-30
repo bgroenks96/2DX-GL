@@ -1,5 +1,5 @@
 /*
- *  Copyright © 2012-2014 Brian Groenke
+ *  Copyright (C) 2012-2014 Brian Groenke
  *  All rights reserved.
  * 
  *  This file is part of the 2DX Graphics Library.
@@ -26,7 +26,7 @@ import bg.x2d.utils.*;
 
 import com.jogamp.opengl.util.texture.*;
 import com.jogamp.opengl.util.texture.awt.*;
-import com.snap2d.gl.jogl.*;
+import com.snap2d.gl.opengl.*;
 
 /**
  * Provides static utility methods for loading and scaling image resources.

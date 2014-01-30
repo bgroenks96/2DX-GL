@@ -1,5 +1,5 @@
 /*
- *  Copyright © 2012-2014 Brian Groenke
+ *  Copyright (C) 2012-2014 Brian Groenke
  *  All rights reserved.
  * 
  *  This file is part of the 2DX Graphics Library.
@@ -56,7 +56,7 @@ public class PongGame {
 		// initialize Display; Type is an inner type of Display
 		// the Display size doesn't really matter since we are using full-screen mode
 		disp = new Display(800, 600, Type.FULLSCREEN,
-				GLConfig.getDefaultSystemConfig());
+				GraphicsConfig.getDefaultSystemConfig());
 		disp.setTitle("Snapdragon2D: Pong Demo");
 
 		// obtain a rendering handle from Display
@@ -86,7 +86,7 @@ public class PongGame {
 		// I have chosen for this simple game to manage their initial locations here....
 		// but this can easily be done within the Entity's constructor.
 		// add the ball first, because that's where we're assigning our listener
-		PointLD ballStart = world.screenToWorld(dispSize.width / 2,
+		PointUD ballStart = world.screenToWorld(dispSize.width / 2,
 				dispSize.height / 2);
 		ball = new Ball(ballStart, world, new ScoreListener());
 		em.register(ball, new BallCollisionListener());

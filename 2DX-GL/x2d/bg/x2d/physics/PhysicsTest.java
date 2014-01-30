@@ -117,7 +117,7 @@ public class PhysicsTest extends JApplet {
 			panel.detach(rect);
 		}
 		sp = new StandardPhysics(new Vector2f(0, 0), mass);
-		PointLD p = (rect != null) ? rect.worldLoc : new PointLD(0, 0);
+		PointUD p = (rect != null) ? rect.worldLoc : new PointUD(0, 0);
 		rect = new Entity(sp, p, panel.view, size);
 		panel.attach(rect);
 	}
@@ -285,14 +285,14 @@ public class PhysicsTest extends JApplet {
 
 	private class Entity {
 		PhysicsNode pnode;
-		PointLD worldLoc;
+		PointUD worldLoc;
 		Point screenLoc;
 		WorldView view;
 
 		int size;
 		boolean ignorePhysicsUpdates;
 
-		Entity(PhysicsNode node, PointLD worldLoc, WorldView viewport, int size) {
+		Entity(PhysicsNode node, PointUD worldLoc, WorldView viewport, int size) {
 			this.pnode = node;
 			this.view = viewport;
 			this.size = size;
@@ -355,10 +355,10 @@ public class PhysicsTest extends JApplet {
 					- (y - y1)));
 		}
 
-		public PointLD screenToWorld(Point p) {
+		public PointUD screenToWorld(Point p) {
 			float x = (float) p.getX();
 			float y = (float) p.getY();
-			return new PointLD((x + x1), (y2 - y));
+			return new PointUD((x + x1), (y2 - y));
 		}
 
 		public boolean worldContains(Rectangle2D r) {

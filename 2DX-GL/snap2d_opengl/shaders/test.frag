@@ -12,63 +12,59 @@
  
  // Applies uniform gamma correction to rendered fragments
  
-#version 120
+#version 130
+#define MAX_LIGHTS 20
 
-vec3 gamma_func(vec3 rgb);
- 
-uniform sampler2D tex;
-uniform float gamma;
 uniform int tex_bound;
+
+uniform sampler2D tex;
 uniform int light_count;
-uniform vec2 lights[20];
-uniform vec3 light_colors[20];
-uniform float radius;
-uniform float intensity;
+uniform vec2 lights[MAX_LIGHTS];
+uniform vec3 light_colors[MAX_LIGHTS];
+uniform float radius[MAX_LIGHTS];
+uniform float intensity[MAX_LIGHTS];
 uniform float ambient;
 
-const float min_lum = 0.001;
+const vec3 ambient_color = vec3(1,1,1);
 
-/*
- *const vec2 lights[2] = vec2[2]( vec2(300,300), vec2(900, 600) );
- *const vec3 light_colors[2] = vec3[2]( vec3(1,1,1), vec3(0.9,0.6,0.2) );
- *const float radius = 100, intensity = 1, min_lum = 0.001, ambient = 0;
- */
+in vec4 color, tex_out;
+in float light_max_dist[MAX_LIGHTS];
 
-varying vec4 color;
+out vec4 gl_FragColor;
 
 void main() {
     vec4 rgba;
     if(tex_bound != 0) {
-        vec2 uv = gl_TexCoord[0].xy;
+        vec2 uv = tex_out.xy;
         vec4 tex_frag = texture2D(tex, uv);
         rgba = tex_frag;
     } else
         rgba = color;
         
-    float dist_max = radius * (sqrt(intensity/min_lum) - 1);
-    vec3 ambient_color = vec3(1,1,1);  // ambient color
     vec3 light_sum = ambient_color * ambient;
     
-    int i;
-    for(i=0; i < light_count; i++) {
+    for(int i=0; i < light_count; i++) {
+        float max_dist = light_max_dist[i];
+        float r = radius[i];
+        float v = intensity[i];
         float att = 0;
         vec2 coord = lights[i];
         vec2 diff = gl_FragCoord.xy - coord;
         float dist = length(diff);
-        if (dist < dist_max) {
-            float lum = intensity / pow(dist / radius + 1, 2);
-            att = (lum - min_lum) / (1 - min_lum);
+        if(dist < max_dist) {
+            att += v / pow(dist / r + 1, 2);
         }
         
-        light_sum += light_colors[i] * att;
+        light_sum += light_colors[i] * att * (1-ambient);
     }
     
-    gl_FragColor.rgb = rgba.rgb * clamp(light_sum, 0, 1);
+    gl_FragColor.rgb = rgba.rgb * light_sum;
     gl_FragColor.a = rgba.a;
 }
 
 
-
+/*
 vec3 gamma_func(vec3 rgb) {
     return pow(rgb, vec3(1.0/gamma));
 }
+*/

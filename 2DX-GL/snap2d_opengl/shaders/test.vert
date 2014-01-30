@@ -1,5 +1,5 @@
 /*
- *  Copyright © 2012-2014 Brian Groenke
+ *  Copyright (C) 2012-2014 Brian Groenke
  *  All rights reserved.
  * 
  *  This file is part of the 2DX Graphics Library.
@@ -10,18 +10,33 @@
  *  http://mozilla.org/MPL/2.0/.
  */
  
-#version 120 
+#define MAX_LIGHTS 20
 
 uniform int tex_bound;
 
-attribute vec2 vert_coord, tex_coord;
+uniform sampler2D tex;
+uniform int light_count;
+uniform vec2 lights[MAX_LIGHTS];
+uniform vec3 light_colors[MAX_LIGHTS];
+uniform float radius[MAX_LIGHTS];
+uniform float intensity[MAX_LIGHTS];
+uniform float ambient;
 
-varying vec4 color;
+const float min_lum = 0.001;
+
+in vec4 vert_color;
+in vec2 vert_coord, tex_coord;
+
+out vec4 color, tex_out;
+out float light_max_dist[MAX_LIGHTS];
 
 void main() {
-    vec4 pos = vec4(vert_coord.xy, 0, 1);
-    gl_Position = gl_ModelViewProjectionMatrix * pos;
-    color = gl_Color;
-    if(tex_bound != 0)
-        gl_TexCoord[0] = vec4(tex_coord.xy, 0, 1);
+    vec4 vert = vec4(vert_coord.xy, 0, 1);
+    transform(vert);
+    color = vert_color;
+    tex_out = vec4(tex_coord.xy, 0, 1);
+        
+    for(int i=0; i < light_count; i++) {
+        light_max_dist[i] = radius[i] * (sqrt(intensity[i]/min_lum) - 1);
+    }
 }

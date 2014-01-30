@@ -1,5 +1,5 @@
 /*
- *  Copyright © 2012-2014 Brian Groenke
+ *  Copyright (C) 2012-2014 Brian Groenke
  *  All rights reserved.
  * 
  *  This file is part of the 2DX Graphics Library.
@@ -29,8 +29,7 @@ public class GeoUtils {
 	@Deprecated
 	public static volatile boolean degrees;
 
-	private GeoUtils() {
-	}
+	private GeoUtils() {}
 	
 	/**
 	 * Computes the intersection point between two lines, if one exists.
@@ -44,7 +43,7 @@ public class GeoUtils {
 	 * @param y4 a second y point of the second line
 	 * @return the intersection point, or null if one doesn't exist.
 	 */
-	public static PointLD lineIntersection(double x1, double y1, double x2, double y2, double x3, double y3, double x4, double y4) {
+	public static PointUD lineIntersection(double x1, double y1, double x2, double y2, double x3, double y3, double x4, double y4) {
 		boolean m1u = (x2 - x1) == 0;
 		boolean m2u = (x4 - x3) == 0;
 		if(m1u && m2u)
@@ -53,12 +52,12 @@ public class GeoUtils {
 			double m = (y4 - y3) / (x4 - x3);
 			double spx = m * -x3;
 			double yint = spx + y3;
-			return new PointLD(x1, m * x1 + yint);
+			return new PointUD(x1, m * x1 + yint);
 		} else if(m2u) {
 			double m = (y2 - y1) / (x2 - x1);
 			double spx = m * -x1;
 			double yint = spx + y1;
-			return new PointLD(x3, m * x3 + yint);
+			return new PointUD(x3, m * x3 + yint);
 		}
 		
 		double m1 = (y2 - y1) / (x2 - x1);
@@ -73,7 +72,7 @@ public class GeoUtils {
 			return null;
 		double xp = nt / terms;
 		double yp = m1 * xp + yint1;
-		return new PointLD(xp, yp);
+		return new PointUD(xp, yp);
 	}
 
 	/**
@@ -85,14 +84,22 @@ public class GeoUtils {
 	 *            the second point of the line segment
 	 * @return the midpoint of the segment connecting p1 to p2
 	 */
-	public static PointLD getMdpt(PointLD p1, PointLD p2) {
+	public static PointUD getMdpt(PointUD p1, PointUD p2) {
 		double x1 = p1.getX();
 		double x2 = p2.getX();
 		double mdptx = (x1 + x2) / 2;
 		double y1 = p1.getY();
 		double y2 = p2.getY();
 		double mdpty = (y1 + y2) / 2;
-		return new PointLD(mdptx, mdpty);
+		return new PointUD(mdptx, mdpty);
+	}
+	
+	public static double pythag(double a, double b) {
+		return sqrt(pow(a,2) + pow(b, 2));
+	}
+	
+	public static double dist(PointUD p1, PointUD p2) {
+		return sqrt(pow(p2.ux - p1.ux,2) + pow(p2.uy - p1.uy, 2));
 	}
 
 	/**
@@ -145,6 +152,11 @@ public class GeoUtils {
 				origin.getY(), angle);
 		return new Point2D.Double(pts[0], pts[1]);
 	}
+	
+	public static PointUD rotatePoint(PointUD point, PointUD origin, double angle) {
+		double[] pts = rotatePoint(point.ux, point.uy, origin.ux, origin.uy, angle);
+		return new PointUD(pts[0], pts[1]);
+	}
 
 	/**
 	 * Algorithm that uses an algebraic rotation formula to transform a point from its current
@@ -169,9 +181,9 @@ public class GeoUtils {
 		}
 		double wx = x - x0;
 		double wy = y - y0;
-		/* xprime = x*cos(theta) - y*sin(toRadians(theta)) */
+		/* xprime = x*cos(theta) - y*sin(theta) */
 		double xresult = (wx * (Math.cos(angle))) - (wy * (Math.sin(angle)));
-		/* yprime = x*sin(theta) + y*cos(toRadians(theta)) */
+		/* yprime = x*sin(theta) + y*cos(theta) */
 		double yresult = (wx * (Math.sin(angle))) + (wy * (Math.cos(angle)));
 
 		double x2 = xresult + x0;
@@ -197,7 +209,7 @@ public class GeoUtils {
 	}
 
 	/**
-	 * Shorthand method for calling <code>terminal</code>
+	 * Shorthand method for calling <code>{@link #terminal(double, double)}</code>
 	 * 
 	 * @param x
 	 * @param y

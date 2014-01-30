@@ -1,5 +1,5 @@
 /*
- *  Copyright © 2012-2014 Brian Groenke
+ *  Copyright (C) 2012-2014 Brian Groenke
  *  All rights reserved.
  * 
  *  This file is part of the 2DX Graphics Library.
@@ -62,8 +62,8 @@ public class Ball extends Entity {
 		if (!shouldRender) {
 			return;
 		}
-		double wx = worldLoc.dx;
-		double wy = worldLoc.dy;
+		double wx = worldLoc.ux;
+		double wy = worldLoc.uy;
 		int x, y;
 		wy = interpolate(wy, ly, interpolation); // interpolate with the last position
 		wx = interpolate(wx, lx, interpolation);
@@ -83,11 +83,11 @@ public class Ball extends Entity {
 		ly = getWorldY();
 		applyVector(phys.getVelocity2f(), 1);
 		if (!world.viewContains(worldBounds)) {
-			if (worldLoc.dx + worldBounds.getWidth() < world.getX()
-					|| worldLoc.dx > world.getWorldWidth() + world.getX()) {
+			if (worldLoc.ux + worldBounds.getWidth() < world.getX()
+					|| worldLoc.ux > world.getWorldWidth() + world.getX()) {
 				listener.outOfBounds(this);
-			} else if (worldLoc.dy >= world.getY()
-					|| worldLoc.dy - worldBounds.getHeight() <= world.getY()
+			} else if (worldLoc.uy >= world.getY()
+					|| worldLoc.uy - worldBounds.getHeight() <= world.getY()
 							- world.getWorldHeight()) {
 				phys.collide(1, 0, PhysicsNode.Collision.X);
 			}
@@ -153,7 +153,7 @@ public class Ball extends Entity {
 		 */
 		@Override
 		public Vector2f getVelocity2f() {
-			return vecf;
+			return velf;
 		}
 
 		/**
@@ -161,7 +161,7 @@ public class Ball extends Entity {
 		 */
 		@Override
 		public Vector2d getVelocity2d() {
-			return vecd;
+			return veld;
 		}
 
 		/**
@@ -169,7 +169,7 @@ public class Ball extends Entity {
 		 */
 		@Override
 		public double getVelocity() {
-			return (vecd != null) ? vecd.getMagnitude() : vecf.getMagnitude();
+			return (veld != null) ? veld.getMagnitude() : velf.getMagnitude();
 		}
 
 		/**
@@ -177,8 +177,8 @@ public class Ball extends Entity {
 		 */
 		@Override
 		public void setVelocity(Vector2f vec) {
-			vecd = null;
-			vecf = vec;
+			veld = null;
+			velf = vec;
 		}
 
 		/**
@@ -186,8 +186,8 @@ public class Ball extends Entity {
 		 */
 		@Override
 		public void setVelocity(Vector2d vec) {
-			vecf = null;
-			vecd = vec;
+			velf = null;
+			veld = vec;
 		}
 
 		/**

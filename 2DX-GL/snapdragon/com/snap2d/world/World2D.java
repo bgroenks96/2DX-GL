@@ -1,5 +1,5 @@
 /*
- *  Copyright © 2012-2014 Brian Groenke
+ *  Copyright (C) 2012-2014 Brian Groenke
  *  All rights reserved.
  * 
  *  This file is part of the 2DX Graphics Library.
@@ -16,6 +16,7 @@ import java.awt.*;
 import java.awt.geom.*;
 
 import bg.x2d.geo.*;
+import bg.x2d.math.*;
 
 /**
  * Provides a method of interfacing between the screen and 2-dimensional world coordinate systems.
@@ -37,6 +38,8 @@ import bg.x2d.geo.*;
  * 
  */
 public class World2D {
+	
+	protected static final int PRECISION = 6;
 	
 	protected double viewX, viewY, maxX, minY, wt, ht;
 	protected float ppu;
@@ -165,17 +168,17 @@ public class World2D {
 	 *            y coordinate on screen
 	 * @return the corresponding point in world space
 	 */
-	public PointLD screenToWorld(int x, int y) {
+	public PointUD screenToWorld(int x, int y) {
 		double x1 = (x / ppu) + viewX;
 		double y1 = viewY - (y / ppu);
-		return new PointLD(x1, y1);
+		return new PointUD(x1, y1);
 	}
 	
-	public PointLD screenToWorld(int x, int y, int ht) {
+	public PointUD screenToWorld(int x, int y, int ht) {
 		double wht = ht / ppu;
 		double x1 = (x / ppu) + viewX;
 		double y1 = viewY - (y / ppu);
-		return new PointLD(x1, y1 - wht);
+		return new PointUD(x1, y1 - wht);
 	}
 
 	/**
@@ -187,16 +190,16 @@ public class World2D {
 	 *            y coordinate in the world
 	 * @return the corresponding point in screen space
 	 */
-	public Point worldToScreen(double x, double y) {
+	public PointUD worldToScreen(double x, double y) {
 		int x1 = (int) Math.round((x - viewX) * ppu);
 		int y1 = (int) Math.round(sht - (y - minY) * ppu);
-		return new Point(x1, y1);
+		return new PointUD(x1, y1);
 	}
 	
-	public Point worldToScreen(double x, double y, double worldHt) {
+	public PointUD worldToScreen(double x, double y, double worldHt) {
 		int x1 = (int) Math.round((x - viewX) * ppu);
 		int y1 = (int) Math.round(sht - (y + worldHt - minY)* ppu);
-		return new Point(x1, y1);
+		return new PointUD(x1, y1);
 	}
 
 	/**
@@ -223,10 +226,10 @@ public class World2D {
 	 * @return
 	 */
 	public Rect2D convertScreenRect(Rectangle r) {
-		PointLD wp = screenToWorld(r.x, r.y + r.height);
+		PointUD wp = screenToWorld(r.x, r.y + r.height);
 		double wt = r.width / ppu;
 		double ht = r.height / ppu;
-		return new Rect2D(wp.dx, wp.dy, wt, ht);
+		return new Rect2D(wp.ux, wp.uy, wt, ht);
 	}
 
 	/**
@@ -249,8 +252,8 @@ public class World2D {
 		double y2 = r2.getY();
 		double y2m = y2 + r2.getHeight(); ///
 
-		double xOverlap = Math.max(0, Math.min(x1m, x2m) - Math.max(x1, x2));
-		double yOverlap = Math.max(0, Math.min(y1m, y2m) - Math.max(y1, y2));
+		double xOverlap = DoubleMath.round(Math.max(0, Math.min(x1m, x2m) - Math.max(x1, x2)), PRECISION);
+		double yOverlap = DoubleMath.round(Math.max(0, Math.min(y1m, y2m) - Math.max(y1, y2)), PRECISION);
 
 		if (xOverlap == 0 || yOverlap == 0) {
 			return null;
