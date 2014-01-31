@@ -1,5 +1,5 @@
 /*
- *  Copyright © 2012-2014 Brian Groenke
+ *  Copyright (C) 2012-2014 Brian Groenke
  *  All rights reserved.
  * 
  *  This file is part of the 2DX Graphics Library.
@@ -29,6 +29,10 @@ public class Rect2D {
 		setRect(x,y,wt,ht);
 	}
 	
+	public Rect2D(PointUD p, double wt, double ht) {
+		this(p.ux, p.uy, wt, ht);
+	}
+	
 	public Rect2D checkCollision(Rect2D r2) {
 		double x1 = x;
 		double x1m = mx;
@@ -54,8 +58,8 @@ public class Rect2D {
 		return x1 > x && x1 < mx && y1 > y && y1 < my;
 	}
 	
-	public PointLD getLocation() {
-		return new PointLD(x, y);
+	public PointUD getLocation() {
+		return new PointUD(x, y);
 	}
 	
 	public double getX() {
@@ -82,6 +86,22 @@ public class Rect2D {
 		return ht;
 	}
 	
+	public float getFloatX() {
+		return (float) x;
+	}
+	
+	public float getFloatY() {
+		return (float) y;
+	}
+	
+	public float getFloatMaxX() {
+		return (float) mx;
+	}
+	
+	public float getFloatMaxY() {
+		return (float) my;
+	}
+	
 	public void setRect(double x, double y, double wt, double ht) {
 		this.x = x;
 		this.y = y;
@@ -97,5 +117,10 @@ public class Rect2D {
 	
 	public void setDimensions(double wt, double ht) {
 		setRect(x, y, wt, ht);
+	}
+	
+	@Override
+	public String toString() {
+		return "[" + x + " + " + wt + ", " + y + " + " + ht + "]";
 	}
 }

@@ -1,5 +1,5 @@
 /*
- *  Copyright © 2012-2014 Brian Groenke
+ *  Copyright (C) 2012-2014 Brian Groenke
  *  All rights reserved.
  * 
  *  This file is part of the 2DX Graphics Library.
@@ -31,12 +31,12 @@ public class PointGenerator implements Generator<Point> {
 	}
 
 	@Override
-	public PointLD generate() {
+	public PointUD generate() {
 		NumberGenerator<Double> gen = new NumberGenerator<Double>(x1, x2);
 		double x = gen.generate();
 		gen.setBounds(y1, y2);
 		double y = gen.generate();
-		return new PointLD(x, y);
+		return new PointUD(x, y);
 	}
 
 	public void setBounds(double x1, double y1, double x2, double y2) {

@@ -1,5 +1,5 @@
 /*
- *  Copyright © 2012-2014 Brian Groenke
+ *  Copyright (C) 2012-2014 Brian Groenke
  *  All rights reserved.
  * 
  *  This file is part of the 2DX Graphics Library.
@@ -17,8 +17,7 @@ import java.util.*;
 import java.util.List;
 
 import com.snap2d.gl.Renderable;
-import com.snap2d.gl.jogl.*;
-import com.snap2d.world.Entity.EntityCollision;
+import com.snap2d.gl.opengl.*;
 import com.snap2d.world.event.*;
 
 /**
@@ -90,9 +89,8 @@ public class EntityManager implements GLRenderable, Renderable {
 		for (Entity e : entities) {
 			List<EntityListener> reg = listeners.get(e);
 			if (reg != null) {
-				if (!reg.contains(listener)) {
+				if (!reg.contains(listener))
 					reg.add(listener);
-				}
 				listeners.put(e, reg);
 			} else {
 				List<EntityListener> els = new ArrayList<EntityListener>();
@@ -100,6 +98,10 @@ public class EntityManager implements GLRenderable, Renderable {
 				listeners.put(e, els);
 			}
 		}
+	}
+	
+	public void removeEntityListenersFor(Entity e) {
+		listeners.remove(e);
 	}
 
 	public void removeEntityListener(EntityListener listener) {
@@ -181,7 +183,7 @@ public class EntityManager implements GLRenderable, Renderable {
 	}
 	
 	/**
-	 * Dispatches the JOGL renderer's resize request to all registered Entity objects.
+	 * Dispatches the OpenGL renderer's resize request to all registered Entity objects.
 	 */
 	@Override
 	public void resize(GLHandle handle, int wt, int ht) {
@@ -190,7 +192,7 @@ public class EntityManager implements GLRenderable, Renderable {
 	}
 	
 	/**
-	 * Dispatches the JOGL renderer's disposal request to all registered Entity objects.
+	 * Dispatches the OpenGL renderer's disposal request to all registered Entity objects.
 	 */
 	@Override
 	public void dispose(GLHandle handle) {

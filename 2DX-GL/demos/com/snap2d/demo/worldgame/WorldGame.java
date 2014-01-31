@@ -1,5 +1,5 @@
 /*
- *  Copyright © 2012-2014 Brian Groenke
+ *  Copyright (C) 2012-2014 Brian Groenke
  *  All rights reserved.
  * 
  *  This file is part of the 2DX Graphics Library.
@@ -53,7 +53,7 @@ public class WorldGame {
 
 	public void init() {
 		disp = new Display(800, 600, Type.FULLSCREEN,
-				GLConfig.getDefaultSystemConfig());
+				GraphicsConfig.getDefaultSystemConfig());
 		disp.setTitle("Snapdragon2D: Game World Demo");
 
 		rc = disp.getRenderControl(2);
@@ -64,8 +64,8 @@ public class WorldGame {
 		generateRandomEntities();
 		rc.addRenderable(new WorldUpdater(), RenderControl.POSITION_LAST);
 		
-		PointLD center = world.screenToWorld(disp.getSize().width / 2, disp.getSize().height / 2);
-		player = new PlayerEntity(new PointLD(center.dx - PlayerEntity.SIZE / 2, center.dy - PlayerEntity.SIZE / 2), world);
+		PointUD center = world.screenToWorld(disp.getSize().width / 2, disp.getSize().height / 2);
+		player = new PlayerEntity(new PointUD(center.ux - PlayerEntity.SIZE / 2, center.uy - PlayerEntity.SIZE / 2), world);
 		world.addEntity(player);
 		world.getManager().addEntityListener(new PlayerCollisionListener(), player);
 
@@ -77,7 +77,7 @@ public class WorldGame {
 		PointGenerator rand = new PointGenerator(WORLD_MIN_X, WORLD_MAX_Y
 				- WORLD_HT, WORLD_MIN_X + WORLD_WT, WORLD_MAX_Y);
 		for (int i = 0; i < ENTITY_NUMBER; i++) {
-			PointLD pos = rand.generate();
+			PointUD pos = rand.generate();
 			GenericEntity ge = new GenericEntity(pos, world);
 			world.addEntity(ge);
 		}

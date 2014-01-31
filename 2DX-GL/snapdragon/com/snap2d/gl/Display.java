@@ -1,5 +1,5 @@
 /*
- *  Copyright © 2012-2014 Brian Groenke
+ *  Copyright (C) 2012-2014 Brian Groenke
  *  All rights reserved.
  * 
  *  This file is part of the 2DX Graphics Library.
@@ -32,7 +32,7 @@ public class Display {
 	private Type type;
 	private JFrame frame;
 	private RenderControl rc;
-	private GLConfig graphicsConfig;
+	private GraphicsConfig graphicsConfig;
 
 	/**
 	 * Creates the Display with default GLConfig.
@@ -42,11 +42,11 @@ public class Display {
 	 * @param type
 	 */
 	public Display(int width, int height, Type type) {
-		this(width, height, type, GLConfig.getDefaultSystemConfig());
+		this(width, height, type, GraphicsConfig.getDefaultSystemConfig());
 	}
 
 	/**
-	 * Creates the Display and initializes Java2D with the given GLConfig settings. If
+	 * Creates the Display and initializes Java2D with the given config settings. If
 	 * <code>config</code> is null, Java's default configuration will be used.
 	 * 
 	 * @param width
@@ -58,7 +58,7 @@ public class Display {
 	 * @param config
 	 *            the graphics configuration to use.
 	 */
-	public Display(int width, int height, Type type, GLConfig config) {
+	public Display(int width, int height, Type type, GraphicsConfig config) {
 		this.graphicsConfig = config;
 		this.wt = width;
 		this.ht = height;

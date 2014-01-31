@@ -1,5 +1,5 @@
 /*
- *  Copyright © 2012-2014 Brian Groenke
+ *  Copyright (C) 2012-2014 Brian Groenke
  *  All rights reserved.
  * 
  *  This file is part of the 2DX Graphics Library.
@@ -54,8 +54,8 @@ public class GenericEntity extends Entity {
 		if (!shouldRender) {
 			return;
 		}
-		double wx = worldLoc.dx;
-		double wy = worldLoc.dy;
+		double wx = worldLoc.ux;
+		double wy = worldLoc.uy;
 		Point p = world.worldToScreen(wx, wy);
 		int x, y;
 		x = p.x;

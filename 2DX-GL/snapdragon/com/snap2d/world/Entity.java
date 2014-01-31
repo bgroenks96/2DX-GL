@@ -1,5 +1,5 @@
 /*
- *  Copyright © 2012-2014 Brian Groenke
+ *  Copyright (C) 2012-2014 Brian Groenke
  *  All rights reserved.
  * 
  *  This file is part of the 2DX Graphics Library.
@@ -20,8 +20,9 @@ import java.io.Serializable;
 import bg.x2d.geo.*;
 
 import com.snap2d.gl.Renderable;
-import com.snap2d.gl.jogl.*;
+import com.snap2d.gl.opengl.*;
 import com.snap2d.physics.GamePhysics;
+import com.snap2d.world.event.EntityCollision;
 
 /**
  * Represents an object in the 2-dimensional world space. Entity provides a base implementation for
@@ -42,9 +43,11 @@ public abstract class Entity implements Renderable, GLRenderable, Serializable {
 	 * 
 	 */
 	private static final long serialVersionUID = -1592236500933136785L;
+	
+	protected Entity self = this;
 
 	protected Point screenLoc;
-	protected PointLD worldLoc;
+	protected PointUD worldLoc;
 	protected Rectangle screenBounds;
 	protected Rect2D worldBounds;
 	protected World2D world;
@@ -52,38 +55,57 @@ public abstract class Entity implements Renderable, GLRenderable, Serializable {
 	protected boolean shouldRender = true;
 
 	/**
-	 * Creates this Entity at the given world location in the context of the given World2D. The
-	 * screen bounds are calculated using the World2D, converting the world location to a screen
-	 * location and setting the size based on pixels-per-unit.
+	 * Creates this Entity at the given world location in the context of the given World2D.
+	 * The dimensions of the Entity are not required in this constructor to allow subclasses
+	 * to perform any necessary size calculations in their respective constructors.<br/>
+	 * <br/>
+	 * {@link #initBounds(int, int)} should be called at the end of the constructor to initialize
+	 * the world/screen bounds.  Otherwise, the default-initialized bounds will be used, assuming
+	 * a width/height of 1 world unit.
 	 * 
-	 * @param worldBounds
-	 *            the bounding box for the entity in world space
+	 * @param worldLoc
+	 *            the location of the Entity in world space.
 	 * @param world
 	 *            the World2D this Entity exists in; used for converting coordinates and determining
 	 *            world/screen position.
 	 */
 	protected Entity(Point2D worldLoc, World2D world) {
-		this.worldLoc = new PointLD(worldLoc.getX(), worldLoc.getY());
+		this.worldLoc = new PointUD(worldLoc.getX(), worldLoc.getY());
 		this.screenLoc = new Point(world.worldToScreen(worldLoc.getX(),
 				worldLoc.getY()));
 		this.world = world;
+		
+		this.worldBounds = new Rect2D(this.worldLoc, 1.0, 1.0);
+		this.screenBounds = world.convertWorldRect(worldBounds);
 	}
 
 	/**
 	 * Should be called as soon possible (usually in the constructor) by the Entity implementation
 	 * to initialize screen and world bounds. This method creates the screen bounds rectangle with
 	 * the current screen location and given dimensions, then creates the world bounds by converting
-	 * it to a world rectangle.
+	 * its dimensions to world dimensions.
 	 * 
 	 * @param swidth
 	 *            width of the Entity on screen
 	 * @param sheight
 	 *            height of the Entity on screen
 	 */
-	protected void initBounds(int swidth, int sheight) {
-		this.screenBounds = new Rectangle(screenLoc.x, screenLoc.y, swidth,
-				sheight);
-		this.worldBounds = world.convertScreenRect(screenBounds);
+	protected void initBounds(int screenWt, int screenHt) {
+		this.screenBounds = new Rectangle(screenLoc.x, screenLoc.y, screenWt,
+				screenHt);
+		Rect2D srtow = world.convertScreenRect(screenBounds);
+		worldBounds = new Rect2D(worldLoc.ux, worldLoc.uy, srtow.getWidth(), srtow.getHeight());
+	}
+	
+	/**
+	 * Initialize the Entity's bounds using the world dimensions instead of screen dimensions.
+	 * @see #initBounds(int, int)
+	 * @param worldWt
+	 * @param worldHt
+	 */
+	protected void initBounds(double worldWt, double worldHt) {
+		this.worldBounds = new Rect2D(worldLoc.ux, worldLoc.uy, worldWt, worldHt);
+		this.screenBounds = world.convertWorldRect(worldBounds);
 	}
 
 	protected double interpolate(double n, double lastN, float interpolation) {
@@ -91,11 +113,11 @@ public abstract class Entity implements Renderable, GLRenderable, Serializable {
 	}
 
 	public double getWorldX() {
-		return worldLoc.dx;
+		return worldLoc.ux;
 	}
 
 	public double getWorldY() {
-		return worldLoc.dy;
+		return worldLoc.uy;
 	}
 
 	public int getScreenX() {
@@ -135,12 +157,12 @@ public abstract class Entity implements Renderable, GLRenderable, Serializable {
 	}
 
 	public void applyVector(Vector2f vec, float mult) {
-		PointLD np = new PointLD(vec.applyTo(worldLoc.getFloatPoint(), mult));
+		PointUD np = new PointUD(vec.applyTo(worldLoc.getFloatPoint(), mult));
 		setWorldLoc(np.getX(), np.getY());
 	}
 
 	public void applyVector(Vector2d vec, double mult) {
-		PointLD np = new PointLD(vec.applyTo(worldLoc.getDoublePoint(), mult));
+		PointUD np = new PointUD(vec.applyTo(worldLoc.getDoublePoint(), mult));
 		setWorldLoc(np.getX(), np.getY());
 	}
 
@@ -203,7 +225,7 @@ public abstract class Entity implements Renderable, GLRenderable, Serializable {
 		}
 		CollisionModel cmodel = getCollisionModel();
 		if(cmodel.collidesWith(getWorldX(), getWorldY(), e.getWorldX(), e.getWorldY(), e.getCollisionModel())) {
-			return new EntityCollision(e, coll);
+			return new EntityCollisionImpl(e, coll);
 		} else {
 			return null;
 		}
@@ -224,12 +246,14 @@ public abstract class Entity implements Renderable, GLRenderable, Serializable {
 	}
 
 	/**
-	 * Set whether or not the Entity should be rendered on screen. The behavior of this method is
-	 * entirely up to the implementation.
+	 * Set whether or not the Entity should be rendered on screen.  The default
+	 * implementation will set the <code>shouldRender</code> variable of Entity.
 	 * 
 	 * @param render
 	 */
-	public abstract void setAllowRender(boolean render);
+	public void setAllowRender(boolean render) {
+		shouldRender = render;
+	}
 
 	/**
 	 * Obtain the GamePhysics node of the Entity, if one exists.
@@ -264,14 +288,29 @@ public abstract class Entity implements Renderable, GLRenderable, Serializable {
 	
 	@Override
 	public void dispose(GLHandle handle) {}
-
-	public class EntityCollision {
+	
+	public class EntityCollisionImpl implements EntityCollision {
 		Entity e;
 		Rect2D collisionBox;
 
-		EntityCollision(Entity e, Rect2D collisionBox) {
+		EntityCollisionImpl(Entity e, Rect2D collisionBox) {
 			this.e = e;
 			this.collisionBox = collisionBox;
+		}
+
+		@Override
+		public Entity getEntity() {
+			return self;
+		}
+
+		@Override
+		public Entity getCollidingEntity() {
+			return e;
+		}
+
+		@Override
+		public Rect2D getCollisionBounds() {
+			return collisionBox;
 		}
 	}
 }

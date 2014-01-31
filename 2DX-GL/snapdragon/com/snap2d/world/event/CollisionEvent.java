@@ -1,5 +1,5 @@
 /*
- *  Copyright © 2012-2014 Brian Groenke
+ *  Copyright (C) 2012-2014 Brian Groenke
  *  All rights reserved.
  * 
  *  This file is part of the 2DX Graphics Library.
@@ -13,7 +13,6 @@
 package com.snap2d.world.event;
 
 import com.snap2d.world.*;
-import com.snap2d.world.Entity.EntityCollision;
 
 public class CollisionEvent extends EntityEvent {
 

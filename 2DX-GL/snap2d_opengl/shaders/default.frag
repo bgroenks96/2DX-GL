@@ -9,8 +9,9 @@
  *  was not distributed with this file, You can obtain one at 
  *  http://mozilla.org/MPL/2.0/.
  */
+#version 130
  
- // Applies uniform gamma correction to rendered fragments
+// Applies uniform gamma correction to rendered fragments
  
 vec3 gamma_func(vec3 rgb);
  
@@ -18,11 +19,13 @@ uniform sampler2D tex;
 uniform float gamma;
 uniform int tex_bound;
 
-varying vec4 color;
+in vec4 color, tex_coord;
+
+out vec4 gl_FragColor;
 
 void main() {
     if(tex_bound != 0) {
-        vec2 uv = gl_TexCoord[0].xy;
+        vec2 uv = tex_coord.xy;
         vec4 tex_frag = texture2D(tex, uv);
         gl_FragColor.rgb = gamma_func(tex_frag.rgb);
         gl_FragColor.a = tex_frag.a;

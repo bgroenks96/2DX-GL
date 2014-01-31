@@ -1,5 +1,5 @@
 /*
- *  Copyright © 2012-2014 Brian Groenke
+ *  Copyright (C) 2012-2014 Brian Groenke
  *  All rights reserved.
  * 
  *  This file is part of the 2DX Graphics Library.
@@ -280,12 +280,21 @@ public class Vector2d {
 	}
 
 	public Point2D.Double applyTo(Point2D.Double p, double multiplier) {
-		return new Point2D.Double(p.x + (x * multiplier), p.y
-				+ (y * multiplier));
+		p.setLocation(p.x + (x * multiplier), p.y + (y * multiplier));
+		return p;
 	}
 	
-	public void applyTo(PointLD p, double multiplier) {
-		p.setLocation(p.dx + x * multiplier, p.y + y * multiplier);
+	public Point2D.Double applyToNew(Point2D.Double p, double multiplier) {
+		return new Point2D.Double(p.x + (x * multiplier), p.y + (y * multiplier));
+	}
+	
+	public PointUD applyTo(PointUD p, double multiplier) {
+		p.setLocation(p.ux + (x * multiplier), p.uy + (y * multiplier));
+		return p;
+	}
+	
+	public PointUD applyToNew(PointUD p, double multiplier) {
+		return new PointUD(p.ux + (x * multiplier), p.uy + (y * multiplier));
 	}
 
 	@Override

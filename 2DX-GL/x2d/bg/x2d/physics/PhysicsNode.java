@@ -1,5 +1,5 @@
 /*
- *  Copyright © 2012-2014 Brian Groenke
+ *  Copyright (C) 2012-2014 Brian Groenke
  *  All rights reserved.
  * 
  *  This file is part of the 2DX Graphics Library.
@@ -25,6 +25,10 @@ public interface PhysicsNode {
 	public void setVelocity(Vector2f vec);
 
 	public void setVelocity(Vector2d vec);
+	
+	public Vector2f getAcceleration2f();
+	
+	public Vector2d getAcceleration2d();
 
 	public void setMass(double kg);
 	

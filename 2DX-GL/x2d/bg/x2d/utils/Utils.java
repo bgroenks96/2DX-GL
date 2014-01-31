@@ -1,5 +1,5 @@
 /*
- *  Copyright © 2012-2014 Brian Groenke
+ *  Copyright (C) 2012-2014 Brian Groenke
  *  All rights reserved.
  * 
  *  This file is part of the 2DX Graphics Library.
@@ -81,8 +81,7 @@ public class Utils {
 		}
 	}
 
-	private Utils() {
-	};
+	private Utils() {}
 
 	/**
 	 * Closes the InputStream, catching the exception and returning false on failure. In the case
@@ -427,5 +426,14 @@ public class Utils {
 		} catch (InterruptedException e) {
 			return false;
 		}
+	}
+	
+	public static float nanoToMillis(long nanoTime) {
+	
+		return nanoTime / 1000000.0f;
+	}
+	
+	public static float nanoToSecs(long nanoTime) {
+		return nanoTime / 1000000000.0f;
 	}
 }

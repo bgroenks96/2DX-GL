@@ -1,5 +1,5 @@
 /*
- *  Copyright © 2012-2014 Brian Groenke
+ *  Copyright (C) 2012-2014 Brian Groenke
  *  All rights reserved.
  * 
  *  This file is part of the 2DX Graphics Library.
@@ -286,7 +286,21 @@ public class Vector2f {
 	}
 
 	public Point2D.Float applyTo(Point2D.Float p, float multiplier) {
+		p.setLocation(p.x + (x * multiplier), p.y + (y * multiplier));
+		return p;
+	}
+	
+	public Point2D.Float applyToNew(Point2D.Float p, float multiplier) {
 		return new Point2D.Float(p.x + (x * multiplier), p.y + (y * multiplier));
+	}
+	
+	public PointUD applyTo(PointUD p, float multiplier) {
+		p.setLocation(p.getFloatX() + (x * multiplier), p.getFloatY() + (y * multiplier));
+		return p;
+	}
+	
+	public PointUD applyToNew(PointUD p, float multiplier) {
+		return new PointUD(p.getFloatX() + (x * multiplier), p.getFloatY() + (y * multiplier));
 	}
 
 	@Override

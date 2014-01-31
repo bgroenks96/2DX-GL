@@ -1,5 +1,5 @@
 /*
- *  Copyright © 2012-2014 Brian Groenke
+ *  Copyright (C) 2012-2014 Brian Groenke
  *  All rights reserved.
  * 
  *  This file is part of the 2DX Graphics Library.
@@ -25,8 +25,8 @@ public class StandardPhysics implements PhysicsNode {
 
 	Gravity g = new Gravity();
 
-	protected Vector2f vecf;
-	protected Vector2d vecd;
+	protected Vector2f velf, accelf;
+	protected Vector2d veld, acceld;
 
 	protected double mass;
 	/**
@@ -41,39 +41,39 @@ public class StandardPhysics implements PhysicsNode {
 	 */
 	public StandardPhysics(Vector2f vec, double objMass) {
 		this.mass = objMass;
-		vecf = vec;
+		velf = vec;
 	}
 
 	public StandardPhysics(Vector2d vec, double objMass) {
 		this.mass = objMass;
-		vecd = vec;
+		veld = vec;
 	}
 
 	@Override
 	public Vector2f getVelocity2f() {
-		return vecf;
+		return velf;
 	}
 
 	@Override
 	public Vector2d getVelocity2d() {
-		return vecd;
+		return veld;
 	}
 
 	@Override
 	public double getVelocity() {
-		return (vecd != null) ? vecd.getMagnitude() : vecf.getMagnitude();
+		return (veld != null) ? veld.getMagnitude() : velf.getMagnitude();
 	}
 
 	@Override
 	public void setVelocity(Vector2f vec) {
-		vecd = null;
-		vecf = vec;
+		veld = null;
+		velf = vec;
 	}
 
 	@Override
 	public void setVelocity(Vector2d vec) {
-		vecf = null;
-		vecd = vec;
+		velf = null;
+		veld = vec;
 	}
 
 	@Override
@@ -89,27 +89,29 @@ public class StandardPhysics implements PhysicsNode {
 	@Override
 	public Vector2f applyForces(float time, Force... f) {
 		if(applyGravity)
-			g.applyTo(time, (float) mass, null, vecf);
+			g.applyTo(time, (float) mass, null, velf);
 
 		Vector2f vecSum = new Vector2f(g.getVec2f());
 		for (Force force : f) {
-			force.applyTo(time, (float) mass, vecSum, vecf);
+			force.applyTo(time, (float) mass, vecSum, velf);
 			vecSum.add(force.getVec2f());
 		}
-		return vecf;
+		accelf = vecSum.div((float) mass);
+		return velf;
 	}
 
 	@Override
 	public Vector2d applyForces(double time, Force... f) {
 		if(applyGravity)
-			g.applyTo(time, mass, null, vecd);
+			g.applyTo(time, mass, null, veld);
 
 		Vector2d vecSum = new Vector2d(g.getVec2d());
 		for (Force force : f) {
-			force.applyTo(time, mass, vecSum, vecd);
+			force.applyTo(time, mass, vecSum, veld);
 			vecSum.add(force.getVec2d());
 		}
-		return vecd;
+		acceld = vecSum.div(mass);
+		return veld;
 	}
 
 	@Override
@@ -126,18 +128,18 @@ public class StandardPhysics implements PhysicsNode {
 		// int q = GeoUtils.quadrant(vecf.x, vecf.y);
 
 		if (type == Collision.X) {
-			vecf.negateY().mult(velFactor);
+			velf.negateY().mult(velFactor);
 		} else if (type == Collision.XY) {
-			vecf.negate().mult(velFactor);
+			velf.negate().mult(velFactor);
 		} else {
-			vecf.negateX();
+			velf.negateX();
 			if (type == Collision.ANGLED) {
-				vecf.rotate(surfaceAngle - ((float) Math.PI / 2));
+				velf.rotate(surfaceAngle - ((float) Math.PI / 2));
 			}
-			vecf.mult(velFactor);
+			velf.mult(velFactor);
 		}
 
-		return vecf;
+		return velf;
 	}
 
 	@Override
@@ -146,18 +148,33 @@ public class StandardPhysics implements PhysicsNode {
 		// int q = GeoUtils.quadrant(vecd.x, vecd.y);
 
 		if (type == Collision.X) {
-			vecd.negateY().mult(velFactor);
+			veld.negateY().mult(velFactor);
 		} else if (type == Collision.XY) {
-			vecd.negate().mult(velFactor);
+			veld.negate().mult(velFactor);
 		} else {
-			vecd.negateX();
+			veld.negateX();
 			if (type == Collision.ANGLED) {
-				vecd.rotate(surfaceAngle - (Math.PI / 2));
+				veld.rotate(surfaceAngle - (Math.PI / 2));
 			}
-			vecd.mult(velFactor);
+			veld.mult(velFactor);
 		}
 
-		return vecd;
+		return veld;
 	}
 
+	/**
+	 *
+	 */
+	@Override
+	public Vector2f getAcceleration2f() {
+		return accelf;
+	}
+
+	/**
+	 *
+	 */
+	@Override
+	public Vector2d getAcceleration2d() {
+		return acceld;
+	}
 }
