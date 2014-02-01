@@ -46,8 +46,9 @@ Code in the primary source folders ('snapdragon' and 'x2d') is under development
 
 If you decide to use 2DX/Snap2D for actual application production, I would appreicate it if you let me know on GitHub or by any other means so that I know to be careful about making changes!
 
-The 'builds' folder in the project directory contains the latest development builds.
-NOTE: These JARs are typically stable, but may not have all features fully implemented or complete.
+The 'builds' folder in the project directory contains the latest development builds.  All JARs in this folder include both the base 2DX-GL and Snap2D libraries.
+
+_NOTE: These JARs are typically stable, but may not have all features fully implemented or complete._
 
 Read the commit notes for detailed update information.
 
