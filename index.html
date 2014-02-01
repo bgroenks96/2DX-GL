@@ -1,87 +1,131 @@
-<!DOCTYPE html>
+<!doctype html>
 <html>
-
   <head>
-    <meta charset='utf-8' />
-    <meta http-equiv="X-UA-Compatible" content="chrome=1" />
-    <meta name="description" content="2DX-GL : The 2DX Open Source Project - Advanced 2D graphics API for Java" />
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="chrome=1">
+    <title>2DX-GL by bgroenks96</title>
+    <link rel="stylesheet" href="stylesheets/styles.css">
+    <link rel="stylesheet" href="stylesheets/pygment_trac.css">
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.7.1/jquery.min.js"></script>
+    <script src="javascripts/respond.js"></script>
+    <!--[if lt IE 9]>
+      <script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+    <![endif]-->
+    <!--[if lt IE 8]>
+    <link rel="stylesheet" href="stylesheets/ie.css">
+    <![endif]-->
+    <meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no">
 
-    <link rel="stylesheet" type="text/css" media="screen" href="stylesheets/stylesheet.css">
-
-    <title>2DX-GL</title>
   </head>
-
   <body>
+      <div id="header">
+        <nav>
+          <li class="fork"><a href="https://github.com/bgroenks96/2DX-GL">View On GitHub</a></li>
+          <li class="downloads"><a href="https://github.com/bgroenks96/2DX-GL/zipball/master">ZIP</a></li>
+          <li class="downloads"><a href="https://github.com/bgroenks96/2DX-GL/tarball/master">TAR</a></li>
+          <li class="title">DOWNLOADS</li>
+        </nav>
+      </div><!-- end header -->
 
-    <!-- HEADER -->
-    <div id="header_wrap" class="outer">
-        <header class="inner">
-          <a id="forkme_banner" href="https://github.com/bgroenks96/2DX-GL">View on GitHub</a>
+    <div class="wrapper">
 
-          <h1 id="project_title">2DX-GL</h1>
-          <h2 id="project_tagline">The 2DX Open Source Project - Advanced 2D graphics API for Java</h2>
+      <section>
+        <div id="title">
+          <h1>2DX-GL</h1>
+          <p>The 2DX Open Source Project - Advanced 2D graphics API for Java</p>
+          <hr>
+          <span class="credits left">Project maintained by <a href="https://github.com/bgroenks96">bgroenks96</a></span>
+          <span class="credits right">Hosted on GitHub Pages &mdash; Theme by <a href="https://twitter.com/michigangraham">mattgraham</a></span>
+        </div>
 
-            <section id="downloads">
-              <a class="zip_download_link" href="https://github.com/bgroenks96/2DX-GL/zipball/master">Download this project as a .zip file</a>
-              <a class="tar_download_link" href="https://github.com/bgroenks96/2DX-GL/tarball/master">Download this project as a tar.gz file</a>
-            </section>
-        </header>
-    </div>
+        <h3>
+<a name="the-2dx-project---open-source-2d-java-graphics-library" class="anchor" href="#the-2dx-project---open-source-2d-java-graphics-library"><span class="octicon octicon-link"></span></a>The 2DX Project - <em>Open Source 2D Java Graphics Library</em>
+</h3>
 
-    <!-- MAIN CONTENT -->
-    <div id="main_content_wrap" class="outer">
-      <section id="main_content" class="inner">
-        <p><strong>The 2DX Project - Open Source Java 2D Graphics Library</strong></p>
-
-<p><a href="http://dl.dropbox.com/u/34206572/2DX-GL%201st%20Edition/2DX_snap2d_alpha_docs/index.html">Documentation</a></p>
+<p><a href="http://dl.dropbox.com/u/34206572/2DX-GL%201st%20Edition/2DX_snap2d_alpha_docs/index.html">JavaDoc</a></p>
 
 <p><strong>2DX-GL (Advanced 2-dimensional Graphics Library)</strong></p>
 
 <p>Extends the Java2D (AWT/Swing) API by adding more high-level functionality for rendering 2D geometry, UIs, effects, animations and physics.  Also aims to provide utility methods for geometric math and general functionality.</p>
 
-<p><strong>Snapdragon2D</strong></p>
+<p><strong>Snap2D</strong></p>
 
-<p>A 2D Java game engine built on 2DX-GL.  Snapdragon2D utilizes and extends the 2DX-GL API by re-applying its functionality and providing its own infrastructure for game development.  Snapdragon2D aims to squeeze the best quality and performance through manipulation of the Java standard libraries.</p>
+<p>A 2D Java game engine built on 2DX-GL.  Snap2D utilizes and extends the 2DX-GL API by re-applying its functionality and providing its own infrastructure for game development.  Snap2D aims to squeeze the best quality and performance through manipulation of the Java standard libraries.</p>
 
-<p><strong>N.B.</strong> Has absolutely no connection to or affiliation with the Qualcomm Snapdragon(tm) mobile processor family.</p>
+<p>Notable features:</p>
 
-<p><strong>Project Info</strong></p>
+<p>-Fast, efficient, high level rendering engines (separate Java2D and OpenGL frameworks)</p>
+
+<p>-99% cross-platform with expandable native library system</p>
+
+<p>-2D World management and conversion framework</p>
+
+<p>-2D timed animation framework (Java2D based)</p>
+
+<p>-OpenGL shader support (JOGL)</p>
+
+<p>-Built in image/texture management</p>
+
+<p>-SnapScript language for fast, portable game scripting</p>
+
+<p>-Physics framework (2DX + Snap2D expansion)</p>
+
+<p>-Built in sound library via Paul Lamb's SoundSystem API</p>
+
+<p>-Rendered user interface framework (independent of Swing/AWT)</p>
+
+<p>-Math/geometry libraries</p>
+
+<p>-Numerous provided general utilities</p>
+
+<p>Planned features:</p>
+
+<p>-2D lighting engine for JOGL renderer
+-Particle system
+-(?) Animation editor and bone system</p>
 
 <p>Official builds are in the 'release_jars' directory and source folders labeled build##.</p>
 
 <p>Code in the primary source folders ('snapdragon' and 'x2d') is under development and may or may not be complete/working.</p>
 
-<p>The 'builds' folder in the project directory contains the latest development builds.
-NOTE: These JARs are typically stable, but may not have all features fully implemented or complete.</p>
+<p>If you decide to use 2DX/Snap2D for actual application production, I would appreicate it if you let me know on GitHub or by any other means so that I know to be careful about making changes!</p>
+
+<p>The 'builds' folder in the project directory contains the latest development builds.  All JARs in this folder include both the base 2DX-GL and Snap2D libraries.</p>
+
+<p><em>NOTE: These JARs are typically stable, but may not have all features fully implemented or complete.</em></p>
 
 <p>Read the commit notes for detailed update information.</p>
 
-<p>2DX-GL
-Project dev status: Alpha
-To-do (next commit):
+<p><strong>2DX-GL 1st Edition (v.1.0)</strong></p>
+
+<p>Project dev status: API-Stable</p>
+
+<p>To-do (next commit):</p>
+
+<p>-Utility additions
 -Physics engine cleanup/bug fixes if necessary</p>
 
-<p>Snapdragon2D
-Project dev status: Alpha
-To-do (next commit):
--Lighting engine
--Entity mangement (?)
--Snapdragon2D physics package</p>
+<p><strong>Snap2D</strong></p>
 
-<p>Additional credits:
-    Snapdragon2D Sound API utilizes SoundSystem for Java by Paul Lamb [<a href="http://www.paulscode.com">www.paulscode.com</a>]</p>
+<p>Project dev status: API-Alpha</p>
+
+<p>To-do (in development):</p>
+
+<p>-OpenGL rendering engine (via JOGL 2.0 libraries)
+-Snap2D physics package (in development)
+-Rendered UI (both J2D and JOGL versions)</p>
+
+<p>Follow @The2DXProject on Twitter for real-time updates on development of the project!</p>
+
+<p><strong>Additional credits:</strong></p>
+
+<p>Snap2D Sound API utilizes SoundSystem for Java by Paul Lamb [<a href="http://www.paulscode.com">www.paulscode.com</a>]</p>
+
+<p>OpenGL renderer utilizes JOGL 2.0 by JogAmp <a href="special%20thanks%20to%20Julien%20Gouesse%20for%20his%20work%20and%20help%20with%20JOGL">www.jogamp.org</a></p>
       </section>
-    </div>
 
-    <!-- FOOTER  -->
-    <div id="footer_wrap" class="outer">
-      <footer class="inner">
-        <p class="copyright">2DX-GL maintained by <a href="https://github.com/bgroenks96">bgroenks96</a></p>
-        <p>Published with <a href="http://pages.github.com">GitHub Pages</a></p>
-      </footer>
     </div>
-
+    <!--[if !IE]><script>fixScale(document);</script><![endif]-->
     
-
   </body>
 </html>
