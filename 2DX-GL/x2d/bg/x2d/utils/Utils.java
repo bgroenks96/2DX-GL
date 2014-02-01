@@ -20,7 +20,7 @@ import java.util.*;
 import com.snap2d.*;
 
 /**
- * Provides static general utility methods.
+ * Static, miscellaneous utility methods.
  * 
  * @author Brian Groenke
  * @since 2DX 1.0 (1st Edition)
@@ -29,7 +29,7 @@ public class Utils {
 
 	public static final File TEMP_DIR = new File(
 			System.getProperty("java.io.tmpdir") + File.separator
-			+ ".com_snap2d_tmp");
+			+ ".com_x2d_tmp");
 	
 	public static final long INT_SIZE = Integer.SIZE / Byte.SIZE,
 			LONG_SIZE = Long.SIZE / Byte.SIZE,
@@ -37,11 +37,10 @@ public class Utils {
 			DOUBLE_SIZE = Double.SIZE / Byte.SIZE,
 			SHORT_SIZE = Short.SIZE / Byte.SIZE;
 
-	public static volatile boolean 
 	/**
-	 * If true, the Snapdragon2D temp-dir won't be deleted on program exit.
+	 * If true, the 2DX-GL temp-dir won't be deleted on program exit.
 	 */
-	keepTempDir = false;
+	public static volatile boolean keepTempDir = false;
 
 	static {
 		boolean chk = false;
@@ -59,7 +58,7 @@ public class Utils {
 			}
 		}
 		if (!chk) {
-			System.err.println("Snapdragon2D: error creating temp-dir");
+			System.err.println("WARNING: error creating temp-dir");
 		} else {
 			Runtime.getRuntime().addShutdownHook(new Thread(new Runnable() {
 
@@ -70,10 +69,9 @@ public class Utils {
 						if(!keepTempDir)
 							removeDirectory(TEMP_DIR, true);
 						else
-							SnapLogger.log("keepTempDir=true - skipping temp-dir removal");
+							System.out.println("keepTempDir=true - skipping temp-dir removal");
 					} catch (FileNotFoundException e) {
-						System.err
-						.println("Snapdragon2D: failed to remove temp-dir");
+						System.err.println("WARNING: failed to remove temp-dir");
 					}
 				}
 
@@ -322,6 +320,58 @@ public class Utils {
 				continue;
 			}
 
+			narr[i - offs] = arr[i];
+		}
+		return narr;
+	}
+	public static float[] arrayDelete(float[] arr, int ind) {
+		float[] narr = new float[arr.length - 1];
+		int offs = 0;
+		for(int i=0; i < arr.length; i++) {
+			if(i == ind) {
+				offs = 1;
+				continue;
+			}
+			
+			narr[i - offs] = arr[i];
+		}
+		return narr;
+	}
+	public static double[] arrayDelete(double[] arr, int ind) {
+		double[] narr = new double[arr.length - 1];
+		int offs = 0;
+		for(int i=0; i < arr.length; i++) {
+			if(i == ind) {
+				offs = 1;
+				continue;
+			}
+			
+			narr[i - offs] = arr[i];
+		}
+		return narr;
+	}
+	public static boolean[] arrayDelete(boolean[] arr, int ind) {
+		boolean[] narr = new boolean[arr.length - 1];
+		int offs = 0;
+		for(int i=0; i < arr.length; i++) {
+			if(i == ind) {
+				offs = 1;
+				continue;
+			}
+			
+			narr[i - offs] = arr[i];
+		}
+		return narr;
+	}
+	public static byte[] arrayDelete(byte[] arr, int ind) {
+		byte[] narr = new byte[arr.length - 1];
+		int offs = 0;
+		for(int i=0; i < arr.length; i++) {
+			if(i == ind) {
+				offs = 1;
+				continue;
+			}
+			
 			narr[i - offs] = arr[i];
 		}
 		return narr;

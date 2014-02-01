@@ -37,7 +37,7 @@ public class DrawStuff {
 			@Override
 			public void render(Graphics2D g, float interpolation) {
 				g.setColor(Color.BLACK);
-				g.drawString("Hello Snapdragon2D!", 50, 50);
+				g.drawString("Hello Snap2D!", 50, 50);
 				g.setColor(Color.RED);
 				g.fillOval(100, 100, 100, 100);
 

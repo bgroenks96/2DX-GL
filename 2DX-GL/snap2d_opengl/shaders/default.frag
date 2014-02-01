@@ -19,9 +19,7 @@ uniform sampler2D tex;
 uniform float gamma;
 uniform int tex_bound;
 
-in vec4 color, tex_coord;
-
-out vec4 gl_FragColor;
+varying vec4 color, tex_coord;
 
 void main() {
     if(tex_bound != 0) {

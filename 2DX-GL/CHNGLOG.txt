@@ -10,7 +10,7 @@ commit-build=
     -Added 'addToLibPath' method; uses reflections hack to modify system classloader path variable programmatically.
     -Added 'getNativeLibraryPlatform' method; returns current platform directory string for native libraries
     -Added native platform variable for Solaris
-Snapdragon2D:
+Snap2D:
   Sound2D.java-
     -Updated import for new CodecJSound package location
   GLDisplay-
