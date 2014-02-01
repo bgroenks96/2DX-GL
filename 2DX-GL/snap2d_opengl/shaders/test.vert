@@ -10,7 +10,7 @@
  *  http://mozilla.org/MPL/2.0/.
  */
  
-#define MAX_LIGHTS 20
+#define MAX_LIGHTS 30
 
 uniform int tex_bound;
 

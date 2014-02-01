@@ -1,4 +1,4 @@
-// transform.vert - Snapdragon2D GLSL Vertex Transformation Utility
+// transform.vert - Snap2D GLSL Vertex Transformation Utility
 /*
  *  Copyright (C) 2012-2014 Brian Groenke
  *  All rights reserved.

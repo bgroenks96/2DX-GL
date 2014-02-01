@@ -13,7 +13,7 @@
  // Applies uniform gamma correction to rendered fragments
  
 #version 130
-#define MAX_LIGHTS 20
+#define MAX_LIGHTS 30
 
 uniform int tex_bound;
 
@@ -24,8 +24,7 @@ uniform vec3 light_colors[MAX_LIGHTS];
 uniform float radius[MAX_LIGHTS];
 uniform float intensity[MAX_LIGHTS];
 uniform float ambient;
-
-const vec3 ambient_color = vec3(1,1,1);
+uniform vec3 ambient_color;
 
 in vec4 color, tex_out;
 in float light_max_dist[MAX_LIGHTS];
@@ -61,10 +60,3 @@ void main() {
     gl_FragColor.rgb = rgba.rgb * light_sum;
     gl_FragColor.a = rgba.a;
 }
-
-
-/*
-vec3 gamma_func(vec3 rgb) {
-    return pow(rgb, vec3(1.0/gamma));
-}
-*/

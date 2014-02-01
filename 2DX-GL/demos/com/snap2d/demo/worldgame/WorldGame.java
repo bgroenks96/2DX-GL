@@ -54,7 +54,7 @@ public class WorldGame {
 	public void init() {
 		disp = new Display(800, 600, Type.FULLSCREEN,
 				GraphicsConfig.getDefaultSystemConfig());
-		disp.setTitle("Snapdragon2D: Game World Demo");
+		disp.setTitle("Snap2D: Game World Demo");
 
 		rc = disp.getRenderControl(2);
 		rc.addRenderable(new StaticBackground(), 0);

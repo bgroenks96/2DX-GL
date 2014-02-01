@@ -11,7 +11,7 @@
  */
 
 /**
- * Demo for Snapdragon2D - implementation of Pong.
+ * Demo for Snap2D - implementation of Pong.
  */
 package com.snap2d.demo.pong;
 
@@ -57,7 +57,7 @@ public class PongGame {
 		// the Display size doesn't really matter since we are using full-screen mode
 		disp = new Display(800, 600, Type.FULLSCREEN,
 				GraphicsConfig.getDefaultSystemConfig());
-		disp.setTitle("Snapdragon2D: Pong Demo");
+		disp.setTitle("Snap2D: Pong Demo");
 
 		// obtain a rendering handle from Display
 		// we will be using a double buffered render control for this demo
