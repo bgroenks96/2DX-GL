@@ -1,5 +1,5 @@
 /*
- *  Copyright (C) 2012-2014 Brian Groenke
+ *  Copyright (C) 2011-2014 Brian Groenke
  *  All rights reserved.
  * 
  *  This file is part of the 2DX Graphics Library.
@@ -110,6 +110,11 @@ public class Vector2d {
 		checkPrecision();
 		return mag;
 	}
+	
+	public Vector2d setXY(double x, double y) {
+		this.x = x; this.y = y;
+		return this;
+	}
 
 	public Vector2d setFromPolar(double mag, double angle) {
 		if (mag < 0) {
@@ -184,7 +189,7 @@ public class Vector2d {
 	 */
 	public double dot(Vector2d arg) {
 		checkPrecision();
-		return (mag * arg.mag * cos(angleBetween(arg)));
+		return x * arg.x + y * arg.y;
 	}
 
 	public double det(Vector2d arg) {
@@ -204,7 +209,7 @@ public class Vector2d {
 	}
 
 	public double angleBetween(Vector2d vec) {
-		return abs(vec.angle - angle);
+		return Math.acos(dot(vec) / (mag * vec.mag));
 	}
 
 	public Vector2d interpolate(Vector2d vec, double alpha) {

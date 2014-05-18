@@ -1,5 +1,5 @@
 /*
- *  Copyright (C) 2012-2014 Brian Groenke
+ *  Copyright (C) 2011-2014 Brian Groenke
  *  All rights reserved.
  * 
  *  This file is part of the 2DX Graphics Library.
@@ -12,12 +12,13 @@
 
 package com.snap2d.world;
 
-import java.awt.Point;
-import java.util.ArrayList;
+import java.awt.*;
+import java.util.*;
 
 import bg.x2d.geo.*;
+import bg.x2d.math.*;
 
-import com.snap2d.editor.SpriteData;
+import com.snap2d.editor.*;
 
 
 /**
@@ -28,7 +29,7 @@ import com.snap2d.editor.SpriteData;
  */
 public class CollisionModel {
 
-	LineSeg[] poly;
+	PolySeg[] poly;
 	PointUD[] wpts;
 
 	/**
@@ -45,20 +46,20 @@ public class CollisionModel {
 		for(int i=0; i < pts.length; i++) {
 			wpts[i] = new PointUD(pts[i].x / ppu, (ht - pts[i].y) / ppu);
 		}
-		poly = new LineSeg[pts.length];
+		poly = new PolySeg[pts.length];
 		PointUD last = null;
-		ArrayList<LineSeg> lazyList = new ArrayList<LineSeg>();
+		ArrayList<PolySeg> lazyList = new ArrayList<PolySeg>();
 		for(PointUD p:wpts) {
 			if(last == null) {
 				last = p;
 				continue;
 			}
 
-			LineSeg seg = new LineSeg(last, p);
+			PolySeg seg = new PolySeg(last, p);
 			lazyList.add(seg);
 			last = p;
 		}
-		lazyList.add(new LineSeg(last, wpts[0]));
+		lazyList.add(new PolySeg(last, wpts[0]));
 		lazyList.toArray(poly);
 	}
 
@@ -69,24 +70,24 @@ public class CollisionModel {
 	/**
 	 * Tests to see if the given point lies within this CollisionModel
 	 * @param p the point to test
-	 * @param tx how much the point should be translated along the X axis relative to the origin -
-	 * for a point in a World2D, this would be {@link World2D.getX()}
-	 * @param ty how much the point should be translated along the Y axis relative to the origin -
-	 * for a point in a World2D, this would be {@link World2D.getY()}
+	 * @param modelLoc the location of this CollisionModel in world space; the given point will
+	 * be translated to the origin with respect to this point.  If null, no translation is applied.
 	 * @return true if this CollisionModel's polygon bounds contain the given PointUD, false otherwise
 	 */
-	public boolean contains(PointUD p, double tx, double ty) {
+	public boolean contains(PointUD p, PointUD modelLoc) {
+		double tx = (modelLoc != null) ? modelLoc.ux : 0, ty = (modelLoc != null) ? modelLoc.uy : 0;
 		PointUD basePoint = new PointUD(-1, -1);
-		PointUD testPoint = new PointUD(p);
+		PointUD testPoint = new PointUD(p.ux - tx, p.uy - ty);
 		int crossCount = 0;
-		for(LineSeg seg : poly) {
-			PointUD intrsec = GeoUtils.lineIntersection(basePoint.ux, basePoint.uy, 
-					testPoint.ux, testPoint.uy, seg.x1, seg.y1, seg.x2, seg.y2);
+		for(PolySeg seg : poly) {
+			PolySeg testSeg = new PolySeg(basePoint, testPoint);
+			PointUD intrsec = GeoUtils.lineIntersection(testSeg.x1, testSeg.y1, 
+					testSeg.x2, testSeg.y2, seg.x1, seg.y1, seg.x2, seg.y2);
 			if(intrsec == null)
 				continue;
 			float sx = (float) (intrsec.getX());
 			float sy = (float) (intrsec.getY());
-			if(seg.hasPoint(sx, sy))
+			if(seg.hasPoint(sx, sy) && testSeg.hasPoint(sx, sy))
 				crossCount++;
 		}
 		return crossCount % 2 != 0;
@@ -108,7 +109,8 @@ public class CollisionModel {
 	 * this could be a time ratio or just 1 for basic vector/point relationships
 	 * @param resolutionThreshold the maximum magnitude of distance that must be between the two
 	 * models for the collision to be considered resolved - for most 2D coordinate systems, 1 is
-	 * a good value to use, although it could be lower if 1 world unit < 1 screen unit.
+	 * a good value to use, although it could be lower if 1 world unit < 1 screen unit or simply
+	 * if more accuracy is desired relative to +-1 pixel.
 	 */
 	public void resolve(PointUD loc, PointUD cloc, CollisionModel coll, 
 			Vector2d vel, Vector2d cvel, double velFactor, double resolutionThreshold) {
@@ -135,6 +137,43 @@ public class CollisionModel {
 		}
 	}
 
+	// NON-ITERATIVE RESOLUTION METHOD
+	/*
+	public void resolve(PointUD loc, PointUD cloc, CollisionModel coll, 
+			Vector2d vel, Vector2d cvel, double velFactor) {
+		HashSet<PointUD> inpoly = new HashSet<PointUD>();
+		for(PointUD pt : wpts) {
+			pt = pt.translateNew(loc.ux - cloc.ux, loc.uy - cloc.uy);
+			if(coll.contains(pt, null))
+				inpoly.add(pt);
+		}
+
+		Vector2d nvel = vel.negateNew();
+		Vector2d ncvel = cvel.negateNew();
+
+		double overlap = loc.distance(cloc);
+		for(PointUD pt : inpoly) {
+			PointUD ipt = nvel.applyToNew(pt, velFactor);
+			for(PolySeg seg : coll.poly) {
+				PointUD intrsec = GeoUtils.lineIntersection(pt.ux, pt.uy, ipt.ux, ipt.uy, seg.x1, seg.y1, seg.x2, seg.y2);
+				if(intrsec == null || !seg.hasPoint(intrsec.getFloatX(), intrsec.getFloatY()))
+					continue;
+				double dist = pt.distance(intrsec);
+				overlap = Math.min(overlap, dist);
+			}
+		}
+		double vratio = vel.getMagnitude() / (vel.getMagnitude() + cvel.getMagnitude());
+		double ndist = vratio * overlap;
+		double ncdist = overlap - ndist;
+		if(vel.getMagnitude() > 0)
+			System.out.println(overlap + " " + ndist + " " + vel.getMagnitude());
+		if(vel.getMagnitude() > 0)
+			nvel.applyTo(loc, ndist / vel.getMagnitude() * velFactor);
+		if(cvel.getMagnitude() > 0)
+			ncvel.applyTo(cloc, ncdist / cvel.getMagnitude() * velFactor);
+	}
+	*/
+
 	private boolean testCollision(double x, double y, double cx, double cy, CollisionModel coll) {
 		double minx = Double.MAX_VALUE;
 		for(PointUD p:wpts) {
@@ -146,13 +185,13 @@ public class CollisionModel {
 			double px = p.getX() + cx;
 			double py = p.getY() + cy;
 			int crossCount = 0;
-			for(LineSeg seg:poly) {
+			for(PolySeg seg:poly) {
 				PointUD intrsec = GeoUtils.lineIntersection(lx, py, px, py, seg.x1 + x, seg.y1 + y, seg.x2 + x, seg.y2 + y);
 				if(intrsec == null)
 					continue;
 				float sx = (float) (intrsec.getX() - x);
 				float sy = (float) (intrsec.getY() - y);
-				if(seg.hasPoint(sx, sy) && sx < (px-x))
+				if(seg.hasPointInBounds(sx, sy) && sx < (px-x))
 					crossCount++;
 			}
 			if(crossCount % 2 != 0) // if the ray intersects an odd number of times, there is a collision
@@ -162,15 +201,15 @@ public class CollisionModel {
 		return false;
 	}
 
-	private class LineSeg {
+	/*
+	 * This class borrows code/concept from bg.x2d.geo.LineSeg, but internally uses
+	 * floats instead of doubles.
+	 */
+	private class PolySeg {
 
 		float x1, y1, x2, y2;
 
-		/**
-		 * @param p1 first point - all values casted to float
-		 * @param p2 second point - all values casted to float
-		 */
-		LineSeg(Point p1, Point p2) {
+		PolySeg(Point p1, Point p2) {
 			this.x1 = (float) p1.getX();
 			this.y1 = (float) p1.getY();
 			this.x2 = (float) p2.getX();
@@ -178,6 +217,12 @@ public class CollisionModel {
 		}
 
 		boolean hasPoint(float x, float y) {
+			boolean inBounds = hasPointInBounds(x, y);
+			boolean inLine = FloatMath.equals(y - y1, ((y2 - y1) / (x2 - x1)) * (x - x1), 5);
+			return inBounds && inLine;
+		}
+
+		boolean hasPointInBounds(float x, float y) {
 			return x <= Math.max(x1, x2) && x >= Math.min(x1, x2) &&
 					y <= Math.max(y1, y2) && y >= Math.min(y1, y2);
 		}

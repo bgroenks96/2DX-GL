@@ -1,5 +1,5 @@
 /*
- *  Copyright (C) 2012-2014 Brian Groenke
+ *  Copyright (C) 2011-2014 Brian Groenke
  *  All rights reserved.
  * 
  *  This file is part of the 2DX Graphics Library.
@@ -12,9 +12,11 @@
 
 package com.snap2d.script;
 
-import java.lang.reflect.*;
-import java.nio.*;
-import java.util.*;
+import java.lang.reflect.Method;
+import java.nio.ByteBuffer;
+import java.util.Arrays;
+
+import com.snap2d.script.VecMath.Vec;
 
 /**
  * @author Brian Groenke
@@ -72,6 +74,8 @@ public class Function implements Comparable<Function> {
 				paramTypes[i] = Keyword.FLOAT;
 			else if(isBool(c))
 				paramTypes[i] = Keyword.BOOL;
+			else if(isVector(c))
+				paramTypes[i] = Keyword.VEC2;
 			else
 				throw(new IllegalArgumentException("unsupported data type: " + c.getName()));
 			paramNames[i] = "arg"+i;
@@ -87,6 +91,8 @@ public class Function implements Comparable<Function> {
 			returnType = Keyword.BOOL;
 		else if(isVoid(c))
 			returnType = Keyword.VOID;
+		else if(isVector(c))
+			returnType = Keyword.VEC2;
 		else
 			throw(new IllegalArgumentException("unsupported script data type " + c.getName()));
 		javaFunc = true;
@@ -205,6 +211,13 @@ public class Function implements Comparable<Function> {
 	
 	static boolean isString(Class<?> c) {
 		if(c.equals(String.class))
+			return true;
+		else
+			return false;
+	}
+	
+	static boolean isVector(Class<?> c) {
+		if(c.equals(Vec.class))
 			return true;
 		else
 			return false;

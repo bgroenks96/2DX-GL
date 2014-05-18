@@ -1,5 +1,5 @@
 /*
- *  Copyright (C) 2012-2014 Brian Groenke
+ *  Copyright (C) 2011-2014 Brian Groenke
  *  All rights reserved.
  * 
  *  This file is part of the 2DX Graphics Library.
@@ -39,22 +39,22 @@ public class VarStore {
 	}
 	
 	@ScriptLink
-	public void storeInt(String name, int value) {
+	public void setInt(String name, int value) {
 		globals.put(name, value);
 	}
 	
 	@ScriptLink
-	public void storeFloat(String name, double value) {
+	public void setFloat(String name, double value) {
 		globals.put(name, (useDouble) ? value:(float)value);
 	}
 	
 	@ScriptLink
-	public void storeString(String name, String value) {
+	public void setString(String name, String value) {
 		globals.put(name, value);
 	}
 	
 	@ScriptLink
-	public void storeBool(String name, boolean value) {
+	public void setBool(String name, boolean value) {
 		globals.put(name, value);
 	}
 	
@@ -169,7 +169,6 @@ public class VarStore {
 		}
 	}
 	
-	@SuppressWarnings("unused")
 	private class Array<T> {
 		
 		private int type;

@@ -1,5 +1,5 @@
 /*
- *  Copyright (C) 2012-2014 Brian Groenke
+ *  Copyright (C) 2011-2014 Brian Groenke
  *  All rights reserved.
  * 
  *  This file is part of the 2DX Graphics Library.
@@ -24,6 +24,22 @@ public class ScriptSource {
 	private String src;
 	
 	public ScriptSource(URL url) throws IOException {
+		setSourceFrom(url);
+	}
+	
+	public ScriptSource(String src) {
+		setSourceFrom(src);
+	}
+	
+	public String getSource() {
+		return src;
+	}
+	
+	public void setSourceFrom(String src) {
+		this.src = src;
+	}
+	
+	public void setSourceFrom(URL url) throws IOException {
 		InputStream in = url.openStream();
 		BufferedReader br = new BufferedReader(new InputStreamReader(in));
 		StringBuilder src = new StringBuilder();
@@ -32,13 +48,5 @@ public class ScriptSource {
 			src.append(next + "\n");
 		br.close();
 		this.src = src.toString();
-	}
-	
-	public ScriptSource(String src) {
-		this.src = src;
-	}
-	
-	public String getSource() {
-		return src;
 	}
 }

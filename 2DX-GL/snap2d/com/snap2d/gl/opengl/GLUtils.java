@@ -1,5 +1,5 @@
 /*
- *  Copyright (C) 2012-2014 Brian Groenke
+ *  Copyright (C) 2011-2014 Brian Groenke
  *  All rights reserved.
  * 
  *  This file is part of the 2DX Graphics Library.
@@ -106,6 +106,11 @@ public class GLUtils {
 				System.out.print(", ");
 		}
 		System.out.println("]");
+	}
+	
+	public static final float[] readAvailable(FloatBuffer buff, float[] dest) {
+		buff.get(dest, 0, Math.min(dest.length, buff.limit() - buff.position()));
+		return dest;
 	}
 	
 	static FloatBuffer createOrthoMatrix(float left, float right, float bottom, float top, 

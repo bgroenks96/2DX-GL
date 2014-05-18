@@ -1,4 +1,0 @@
-float Func() {
-    float f = 1;
-    return f;
-}

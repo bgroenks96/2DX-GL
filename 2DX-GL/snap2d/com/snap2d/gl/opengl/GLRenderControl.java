@@ -1,5 +1,5 @@
 /*
- *  Copyright (C) 2012-2014 Brian Groenke
+ *  Copyright (C) 2011-2014 Brian Groenke
  *  All rights reserved.
  * 
  *  This file is part of the 2DX Graphics Library.
@@ -17,11 +17,13 @@ import java.util.concurrent.*;
 
 import javax.media.opengl.*;
 
-import bg.x2d.*;
+import bg.x2d.Local;
 
-import com.jogamp.newt.opengl.*;
+import com.jogamp.newt.opengl.GLWindow;
+import com.jogamp.opengl.*;
+import com.jogamp.opengl.FBObject.TextureAttachment;
 import com.snap2d.*;
-import com.snap2d.gl.*;
+import com.snap2d.gl.CrashReportWindow;
 import com.snap2d.gl.opengl.GLConfig.Property;
 
 /**
@@ -57,7 +59,7 @@ public class GLRenderControl implements GLEventListener {
 
 	private volatile GLRenderable[] renderables = new GLRenderable[0]; // independent of task list
 	
-	//private FBObject fbo;
+	private FBObject fbo;
 	
 	/**
 	 *
@@ -76,10 +78,34 @@ public class GLRenderControl implements GLEventListener {
 		for(GLRenderable r : renderables) {
 			r.render(handle, loop.interpolation);
 		}
+        
+		/* seriously.... fuck FBOs
+		gl.glMatrixMode(GL2.GL_PROJECTION);
+		gl.glLoadIdentity();
+		gl.glOrtho(0, wt, 0, ht, 0, 1);
+		gl.glMatrixMode(GL2.GL_MODELVIEW);
+		gl.glLoadIdentity();
+        gl.glColor3f(1,1,1);
+        final TextureAttachment tex0 = (TextureAttachment) fbo.getColorbuffer(0);
+        gl.glActiveTexture(GL2.GL_TEXTURE0);
+        gl.glEnable(GL2.GL_TEXTURE_2D);
+        fbo.use(gl, tex0);
+        gl.glBegin(GL2.GL_QUADS);
+        gl.glTexCoord2f(0, 0);
+        gl.glVertex2f(0, 0);
+        gl.glTexCoord2f(0, 1);
+        gl.glVertex2f(0, ht);
+        gl.glTexCoord2f(1, 1);
+        gl.glVertex2f(wt, ht);
+        gl.glTexCoord2f(1, 0);
+        gl.glVertex2f(wt, 0);
+        gl.glEnd();
+        fbo.unuse(gl);
+        */
 		
 		// FBO TESTING
 		/*
-        fbo.bind(gl);
+		GLProgram.getDefaultProgram().disable();
         
         gl.glDisable(GL.GL_DEPTH_TEST);
 		gl.glMatrixMode(GL2.GL_PROJECTION);
@@ -87,12 +113,23 @@ public class GLRenderControl implements GLEventListener {
 		gl.glOrtho(0, wt, 0, ht, 0, 1);
 		gl.glMatrixMode(GL2.GL_MODELVIEW);
 		gl.glLoadIdentity();
-        gl.glColor3f(1,0,0);
+		
+        fbo.bind(gl);
+		
+        gl.glColor3f(0, 1, 1);
         gl.glBegin(GL2.GL_QUADS);
         gl.glVertex2f(0, 0);
-        gl.glVertex2f(0, 100);
+        gl.glVertex2f(0, ht);
+        gl.glVertex2f(wt, ht);
+        gl.glVertex2f(wt, 0);
+        gl.glEnd();
+		
+        gl.glColor3f(1,0,0);
+        gl.glBegin(GL2.GL_QUADS);
         gl.glVertex2f(100, 100);
-        gl.glVertex2f(100, 0);
+        gl.glVertex2f(100, 150);
+        gl.glVertex2f(150, 150);
+        gl.glVertex2f(150, 100);
         gl.glEnd();
        
         fbo.syncSamplingSink(gl);
@@ -103,13 +140,18 @@ public class GLRenderControl implements GLEventListener {
         gl.glEnable(GL2.GL_TEXTURE_2D);
         fbo.use(gl, tex0);
         gl.glBegin(GL2.GL_QUADS);
-        gl.glVertex2f(0, 0);    gl.glTexCoord2f(0, 0);
-        gl.glVertex2f(0, ht); gl.glTexCoord2f(0, 1);
-        gl.glVertex2f(wt, ht); gl.glTexCoord2f(1, 1);
-        gl.glVertex2f(wt, 0); gl.glTexCoord2f(1, 0);
+        gl.glTexCoord2f(0, 0);
+        gl.glVertex2f(0, 0);
+        gl.glTexCoord2f(0, 1);
+        gl.glVertex2f(0, ht);
+        gl.glTexCoord2f(1, 1);
+        gl.glVertex2f(wt, ht);
+        gl.glTexCoord2f(1, 0);
+        gl.glVertex2f(wt, 0);
         gl.glEnd();
         fbo.unuse(gl); 
-		*/
+        */
+		
 	}
 
 	/**
@@ -119,7 +161,7 @@ public class GLRenderControl implements GLEventListener {
 	public void dispose(GLAutoDrawable arg0) {
 		for(GLRenderable glr : renderables)
 			glr.dispose(handle);
-		//fbo.destroy(arg0.getGL());
+		fbo.destroy(arg0.getGL());
 		handle.onDispose();
 	}
 
@@ -129,7 +171,7 @@ public class GLRenderControl implements GLEventListener {
 	@Override
 	public void init(GLAutoDrawable arg0) {
 		handle = new GLHandle(config);
-		//fbo = new FBObject();
+		fbo = new FBObject();
 		printInitReport();
 	}
 
@@ -154,13 +196,13 @@ public class GLRenderControl implements GLEventListener {
 	@Override
 	public void reshape(GLAutoDrawable arg0, int x, int y, int width,
 			int height) {
-		final GL gl = arg0.getGL();
+		final GL2 gl = arg0.getGL().getGL2();
 		wt = width;
 		ht = height;
 		
-		//fbo.reset(gl, wt, ht, glWin.getChosenGLCapabilities().getNumSamples(), true);
-	    //fbo.attachTexture2D(gl, 0, true);
-		//fbo.syncSamplingSink(gl);
+		fbo.reset(gl, wt, ht, glWin.getChosenGLCapabilities().getNumSamples(), true);
+	    fbo.attachTexture2D(gl, 0, true);
+		fbo.syncSamplingSink(gl);
 		
 		
 		checkAddQueue();
@@ -408,15 +450,16 @@ public class GLRenderControl implements GLEventListener {
 					while (running) {
 						try {
 							Thread.sleep(850);
-							if (!Boolean
-									.getBoolean(Property.SNAP2D_PRINT_GLRENDER_STAT.getProperty())) {
-								continue;
-							}
+							boolean print = Boolean
+									.getBoolean(Property.SNAP2D_PRINT_GLRENDER_STAT.getProperty());
 							while (!printFrames) {
-								//
+								;
 							}
-							System.out.print("[Snap2D] ");
-							System.out.println(fps + " fps " + tps + " ticks");
+							String printStr = fps + " fps " + tps + " ticks";
+						    if(print)
+						    	SnapLogger.println(printStr);
+						    else
+						    	SnapLogger.log(printStr);
 							printFrames = false;
 						} catch (InterruptedException e) {
 							e.printStackTrace();

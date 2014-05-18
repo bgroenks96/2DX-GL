@@ -1,5 +1,5 @@
 /*
- *  Copyright (C) 2012-2014 Brian Groenke
+ *  Copyright (C) 2011-2014 Brian Groenke
  *  All rights reserved.
  * 
  *  This file is part of the 2DX Graphics Library.
@@ -28,6 +28,9 @@ import bg.x2d.physics.*;
 public interface GamePhysics extends PhysicsNode {
 
 	/**
+	 * Collides this node with the given node.  This method will apply
+	 * the collision to the nodes' velocity vectors as well as return
+	 * the resultant vector for this node as convenience.
 	 * @param node the other GamePhysics node to collide with
 	 * @return the resultant velocity vector of this node after collision
 	 */

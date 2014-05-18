@@ -17,24 +17,33 @@
 uniform mat4 mOrtho;
 uniform vec2 vTranslate;
 uniform vec2 vScale;
-uniform float vRotate;
+uniform vec2 vPivot;
+uniform float fRotate;
 
 void transform(vec4 vertex) {
-    mat4 mTranslation = mat4( 1, 0, 0, vTranslate.x,
-                           0, 1, 0, vTranslate.y,
+    mat4 mTranslation = mat4( 1, 0, 0, 0,
+                              0, 1, 0, 0,
+                              0, 0, 1, 0,
+                              vTranslate.x, vTranslate.y, 0, 1);
+    float c = cos(fRotate);
+    float s = sin(fRotate);
+    mat4 mTransRot = mat4( 1, 0, 0, 0,
+                           0, 1, 0, 0,
                            0, 0, 1, 0,
-                           0, 0, 0, 1);
-    float c = cos(vRotate);
-    float s = sin(vRotate);
+                           vPivot.x, vPivot.y, 0, 1);
     mat4 mRotation = mat4( c, -s, 0, 0,
-                          s, c, 0, 0,
-                          0, 0, (1-c)+c, 0,
-                          0, 0, 0, 1 );
+                           s, c, 0, 0,
+                           0, 0, (1-c)+c, 0,
+                           0, 0, 0, 1 );
+    mat4 mNegateTransRot = mat4( 1, 0, 0, 0,
+                                 0, 1, 0, 0,
+                                 0, 0, 1, 0,
+                                 -vPivot.x, -vPivot.y, 0, 1);
     mat4 mScale = mat4( vScale.x, 0, 0, 0,
                        0, vScale.y, 0, 0,
                        0, 0, 1, 0,
                        0, 0, 0, 1 );
-    mat4 mvp = mOrtho * mTranslation * mRotation * mScale;
+    mat4 mvp = mOrtho * mTransRot * mRotation * mNegateTransRot * mTranslation * mScale;
     gl_Position = mvp * vertex;
 }
 

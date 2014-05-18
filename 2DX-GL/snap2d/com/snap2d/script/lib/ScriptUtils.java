@@ -1,5 +1,5 @@
 /*
- *  Copyright (C) 2012-2014 Brian Groenke
+ *  Copyright (C) 2011-2014 Brian Groenke
  *  All rights reserved.
  * 
  *  This file is part of the 2DX Graphics Library.
@@ -13,6 +13,7 @@
 package com.snap2d.script.lib;
 
 import com.snap2d.script.*;
+import com.snap2d.script.VecMath.Vec;
 
 /**
  * @author Brian Groenke
@@ -41,6 +42,11 @@ public class ScriptUtils {
 	}
 	
 	@ScriptLink
+	public static void print(Vec vec) {
+		System.out.print(vec);
+	}
+	
+	@ScriptLink
 	public static void println(String str) {
 		System.out.println(str);;
 	}
@@ -58,6 +64,11 @@ public class ScriptUtils {
 	@ScriptLink
 	public static void println(boolean b) {
 		System.out.println(b);;
+	}
+	
+	@ScriptLink
+	public static void println(Vec vec) {
+		System.out.println(vec.toString());
 	}
 	
 	@ScriptLink

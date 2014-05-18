@@ -1,5 +1,5 @@
 /*
- *  Copyright (C) 2012-2014 Brian Groenke
+ *  Copyright (C) 2011-2014 Brian Groenke
  *  All rights reserved.
  * 
  *  This file is part of the 2DX Graphics Library.
@@ -15,13 +15,16 @@ package com.snap2d.script;
 import static com.snap2d.script.Bytecodes.*;
 
 import java.lang.reflect.*;
-import java.math.*;
-import java.nio.*;
+import java.math.BigDecimal;
+import java.nio.ByteBuffer;
 import java.util.*;
 
+import bg.x2d.geo.Vector2d;
 import bg.x2d.utils.*;
 
-import com.snap2d.*;
+import com.snap2d.SnapLogger;
+import com.snap2d.script.VecMath.Operand;
+import com.snap2d.script.VecMath.Scalar;
 import com.snap2d.script.lib.*;
 
 /**
@@ -82,9 +85,12 @@ class ScriptEngine {
 			ret = invokeFunction(f, args);
 		return ret;
 	}
-	
-	void dispose() {
-		
+
+	public Object fetchConstValue(int id) {
+		Variable var = consts.get(id);
+		if(var == null)
+			return null;
+		return var.getValue();
 	}
 
 	// >>>>>> SCRIPT EXECUTION ENGINE >>>>>> //
@@ -108,7 +114,7 @@ class ScriptEngine {
 
 	private boolean inLoop = false;
 
-	private void putVar(int id, int type, Object value) {
+	private void putVar(int id, int type, Object value) throws ScriptInvocationException {
 		Variable prev = fetchVar(id);
 		if(prev != null) {
 			prev.setValue(value); // setValue runs type verification
@@ -306,12 +312,14 @@ class ScriptEngine {
 			putVar(id, currVar.type, ret);
 			break;
 		case ALLOC_INT:
+			ret = ((Operand)ret).getValue();
 			if(constant)
 				putConst(id, Flags.TYPE_INT, ret);
 			else
 				putVar(id, Flags.TYPE_INT, ret);
 			break;
 		case ALLOC_FLOAT:
+			ret = ((Operand)ret).getValue();
 			if(constant)
 				putConst(id, Flags.TYPE_FLOAT, ret);
 			else
@@ -329,6 +337,11 @@ class ScriptEngine {
 			else
 				putVar(id, Flags.TYPE_STRING, ret);
 			break;
+		case ALLOC_VEC2:
+			if(constant)
+				putConst(id, Flags.TYPE_VEC2, ret);
+			else
+				putVar(id, Flags.TYPE_VEC2, ret);
 		}
 
 		if((next=buff.get()) != END_CMD)
@@ -364,7 +377,7 @@ class ScriptEngine {
 	 * Returns Double.NaN if calculation fails.  This should, however, be irrelevant since
 	 * a ScriptInvocationException will be thrown.
 	 */
-	private double execEvaluation() throws ScriptInvocationException {
+	private Operand execEvaluation() throws ScriptInvocationException {
 		byte next = -1;
 		StringBuilder sb = new StringBuilder();
 		while((next=buff.get()) != Bytecodes.END_CMD) {
@@ -380,6 +393,11 @@ class ScriptEngine {
 			case READ_INT:
 				sb.append(buff.getInt());
 				break;
+			case READ_VEC2:
+				double x = (Double) execEvaluation().getValue();
+				double y = (Double) execEvaluation().getValue();
+				sb.append("["+x+","+y+"]");
+				break;
 			case TRUE:
 				sb.append(1.0);
 				break;
@@ -390,9 +408,15 @@ class ScriptEngine {
 				Variable var = execRefVar();
 				if(var.type == Flags.TYPE_STRING)
 					throw(new ScriptInvocationException("found type 'string' in mathematical expression", curr));
-				double val = checkNumberObject(var.getValue());
-				String strval = BigDecimal.valueOf(val).toPlainString();
-				sb.append(strval);
+				double val = 0;
+				if(var.type == Flags.TYPE_VEC2) {
+					Vector2d vec = (Vector2d) var.getValue();
+					sb.append("["+vec.x+","+vec.y+"]");
+				} else {
+					val = checkNumberObject(var.getValue());
+					String strval = BigDecimal.valueOf(val).toPlainString();
+					sb.append(strval);
+				}
 				break;
 			case INVOKE_FUNC:
 				Object ret = execFuncCall();
@@ -412,7 +436,7 @@ class ScriptEngine {
 			sb.append(MathParser.SEP);
 		}
 		sb.deleteCharAt(sb.length() - 1);
-		double result = Double.NaN;
+		Operand result = null;
 		try {
 			MathParser math = new MathParser();
 			result = math.calculate(sb.toString());
@@ -504,9 +528,11 @@ class ScriptEngine {
 
 			Keyword type = f.getParamTypes()[i];
 			if(type == Keyword.INT)
-				args[i] = ((Double)args[i]).intValue();
+				args[i] = ((Double)((Scalar)args[i]).getValue()).intValue();
+			else if(type == Keyword.FLOAT)
+				args[i] = ((Scalar)args[i]).getValue();
 			else if(type == Keyword.BOOL)
-				args[i] = ((Double)args[i] == 0) ? false:true;
+				args[i] = (((Scalar)args[i]).val == 0) ? false:true;
 		}
 		return args;
 	}
@@ -519,7 +545,10 @@ class ScriptEngine {
 		if(next != EVAL)
 			throw(new ScriptInvocationException("found unexpected bytecode instruction in IF cond: 0x" + Integer.toHexString(next), curr));
 		while(true) {
-			boolean cond = (execEvaluation() != 0) ? true:false;
+			Operand val = execEvaluation();
+			if(val.isVector())
+				throw(new ScriptInvocationException("conditional expression must return boolean value", curr));
+			boolean cond = ((Double)val.getValue() != 0) ? true:false;
 			next = buff.get();
 			if(next != END_COND)
 				throw(new ScriptInvocationException("found unexpected bytecode instruction in IF cond: 0x" + Integer.toHexString(next), curr));
@@ -559,7 +588,9 @@ class ScriptEngine {
 		if(next != FOR_COND)
 			throw(new ScriptInvocationException("expected loop condition evaluation: found="+Integer.toHexString(next), curr));
 		int cst = buff.position();
-		boolean chk = ((Double) execExpression() != 0) ? true:false;  // we need to parse first to find the command's proper endpoint
+		
+		// we need to parse first to find the command's proper endpoint
+		boolean chk = (((Scalar)execExpression()).getValue() != 0) ? true : false;
 		if(!chk)
 			return;
 		int cen = buff.position();
@@ -634,7 +665,7 @@ class ScriptEngine {
 		boolean cont;
 		ByteBuffer sto = this.buff;
 		this.buff = condBuff;
-		cont = ((Double) execExpression() != 0) ? true:false;
+		cont = (((Scalar)execExpression()).getValue() != 0) ? true:false;
 		this.buff = sto;
 		condBuff.rewind(); // reset condition bytecode buffer
 		return cont;
@@ -690,7 +721,7 @@ class ScriptEngine {
 		boolean doubleStore;
 		ByteBuffer val;
 
-		Variable(int id, int type, Object value) {
+		Variable(int id, int type, Object value) throws ScriptInvocationException {
 			this.id = id;
 			this.type = type;
 
@@ -702,7 +733,7 @@ class ScriptEngine {
 		 * proper type handling.  DO NOT (in most cases) directly assign the 'value' field
 		 * to the new Object.
 		 */
-		void setValue(Object value) {
+		void setValue(Object value) throws ScriptInvocationException {
 			// if useDouble has changed, float values must be re-allocated
 			if(val != null && type == Flags.TYPE_FLOAT && useDouble != this.doubleStore) {
 				val.clear();
@@ -737,8 +768,8 @@ class ScriptEngine {
 			case Flags.TYPE_BOOL:
 				if(val == null)
 					val = ByteBuffer.allocateDirect(1);
-				if(value instanceof Double) {
-					val.put(((Double)value).byteValue());
+				if(value instanceof Scalar) {
+					val.put(((Scalar)value).getValue().byteValue());
 				} else
 					val.put(((Boolean)value) ? (byte)1 : (byte)0);
 				break;
@@ -748,6 +779,19 @@ class ScriptEngine {
 				if(val == null || val.capacity() < sbytes.length)
 					val = ByteBuffer.allocateDirect(sbytes.length);
 				val.put(sbytes);
+				break;
+			case Flags.TYPE_VEC2:
+				Operand opn = (Operand) value;
+				if(!opn.isVector())
+					throw(new ScriptInvocationException("cannot assign non-vector value to vector type", curr));
+				Vector2d vec = (Vector2d) opn.getValue();
+				if(val == null)
+					val = ByteBuffer.allocateDirect((int)Utils.DOUBLE_SIZE*2);
+				val.putDouble(vec.x);
+				val.putDouble(vec.y);
+				break;
+			default:
+				throw(new ScriptInvocationException("unrecognized variable type: " + type, curr));
 			}
 			val.flip();
 		}
@@ -771,12 +815,17 @@ class ScriptEngine {
 				byte[] bytes = new byte[val.limit()];
 				val.get(bytes);
 				value = new String(bytes);
+				break;
+			case Flags.TYPE_VEC2:
+				double x = val.getDouble();
+				double y = val.getDouble();
+				value = new Vector2d(x, y);
 			}
 			val.rewind();
 			return value;
 		}
 	}
-	
+
 	private static <T> T castVariable(Variable var, Function context, Class<T> type) {
 		if(Keyword.isValidDataType(type))
 			return type.cast(var.getValue());

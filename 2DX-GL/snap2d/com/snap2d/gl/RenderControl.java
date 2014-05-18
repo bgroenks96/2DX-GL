@@ -1,5 +1,5 @@
 /*
- *  Copyright (C) 2012-2014 Brian Groenke
+ *  Copyright (C) 2011-2014 Brian Groenke
  *  All rights reserved.
  * 
  *  This file is part of the 2DX Graphics Library.
@@ -629,15 +629,16 @@ public class RenderControl {
 					while (running) {
 						try {
 							Thread.sleep(800);
-							if (!Boolean
-									.getBoolean(Property.SNAP2D_PRINT_RENDER_STAT.getProperty())) {
-								continue;
-							}
+							boolean print = Boolean
+									.getBoolean(Property.SNAP2D_PRINT_RENDER_STAT.getProperty());
 							while (!printFrames) {
 								;
 							}
-							System.out.print("[Snap2D] ");
-							System.out.println(fps + " fps " + tps + " ticks");
+							String printStr = fps + " fps " + tps + " ticks";
+						    if(print)
+						    	SnapLogger.println(printStr);
+						    else
+						    	SnapLogger.log(printStr);
 							printFrames = false;
 						} catch (InterruptedException e) {
 							e.printStackTrace();

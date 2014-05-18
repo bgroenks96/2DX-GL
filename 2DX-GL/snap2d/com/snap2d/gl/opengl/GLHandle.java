@@ -1,5 +1,5 @@
 /*
- *  Copyright (C) 2012-2014 Brian Groenke
+ *  Copyright (C) 2011-2014 Brian Groenke
  *  All rights reserved.
  * 
  *  This file is part of the 2DX Graphics Library.
@@ -46,7 +46,7 @@ public class GLHandle {
 	public static final int FILTER_LINEAR = GL_LINEAR, FILTER_NEAREST = GL_NEAREST;
 
 	public static final String UNIFORM_ORTHO_MATRIX = "mOrtho", UNIFORM_TRANSLATE = "vTranslate",
-			UNIFORM_ROTATE = "vRotate", UNIFORM_SCALE = "vScale";
+			UNIFORM_ROTATE = "fRotate", UNIFORM_ROTATE_PIVOT = "vPivot", UNIFORM_SCALE = "vScale";
 
 	private static final String DEFAULT_VERTEX_SHADER = "default.vert", DEFAULT_FRAG_SHADER = "default.frag";
 
@@ -66,7 +66,7 @@ public class GLHandle {
 	HashSet<LightSource> lights = new HashSet<LightSource>();
 	
 	// transformation values
-	float theta, tx, ty, sx = 1, sy = 1;
+	float theta, rx, ry, tx, ty, sx = 1, sy = 1;
 
 	protected GLHandle(GLConfig config) {
 		this.config = config;
@@ -214,6 +214,10 @@ public class GLHandle {
 	public void setRotation(float theta) {
 		this.theta = theta;
 	}
+	
+	public void setRotationPoint(float x, float y) {
+		this.rx = x; this.ry = y;
+	}
 
 	public void setTranslation(float x, float y) {
 		this.tx = x; this.ty = y;
@@ -237,6 +241,7 @@ public class GLHandle {
 		orthoMatrix.rewind();
 		prog.setUniformf(UNIFORM_TRANSLATE, tx, ty);
 		prog.setUniformf(UNIFORM_ROTATE, theta);
+		prog.setUniformf(UNIFORM_ROTATE_PIVOT, rx, ry);
 		prog.setUniformf(UNIFORM_SCALE, sx, sy);
 	}
 
@@ -248,6 +253,7 @@ public class GLHandle {
 		this.theta = 0;
 		this.sx = 1; this.sy = 1;
 		this.tx = 0; this.ty = 0;
+		this.rx = 0; this.ry = 0;
 		pushTransform();
 	}
 
@@ -297,7 +303,7 @@ public class GLHandle {
 	}
 	
 	// lighting system string constants
-	private static final String UNIFORM_NOT_FOUND = "failed to locate expected uniforms in current shader program",
+	private static final String
 			UNIFORM_LCOUNT = "light_count", UNIFORM_LCOORDS = "lights", UNIFORM_LCOLORS = "light_colors",
 			UNIFORM_LINTENSITY = "intensity", UNIFORM_LRADIUS = "radius", UNIFORM_AMBIENT = "ambient",
 			UNIFORM_AMBIENT_COLOR = "ambient_color";
@@ -372,13 +378,14 @@ public class GLHandle {
 		}
 
 		gl.glEnableVertexAttribArray(vertCoordPos);
-		gl.glVertexAttribPointer(vertCoordPos, 2, GL_FLOAT, false, 0, 0);
 		if(texBound && texEnabled) {
+			gl.glVertexAttribPointer(vertCoordPos, 2, GL_FLOAT, false, 4 * Buffers.SIZEOF_FLOAT, 0);
 			gl.glEnableVertexAttribArray(texCoordPos);
-			gl.glVertexAttribPointer(texCoordPos, 2, GL_FLOAT, false, 0, 2 * buffObj.nverts * Buffers.SIZEOF_FLOAT);
+			gl.glVertexAttribPointer(texCoordPos, 2, GL_FLOAT, false, 4 * Buffers.SIZEOF_FLOAT, 2 * Buffers.SIZEOF_FLOAT);
 		} else {
+			gl.glVertexAttribPointer(vertCoordPos, 2, GL_FLOAT, false, 6 * Buffers.SIZEOF_FLOAT, 0);
 			gl.glEnableVertexAttribArray(vertColorPos);
-			gl.glVertexAttribPointer(vertColorPos, 4, GL_FLOAT, false, 0, 2 * buffObj.nverts * Buffers.SIZEOF_FLOAT);
+			gl.glVertexAttribPointer(vertColorPos, 4, GL_FLOAT, false, 6 * Buffers.SIZEOF_FLOAT, 2 * Buffers.SIZEOF_FLOAT);
 		}
 
 		gl.glMultiDrawArrays(buffObj.drawFunc.getGLCommand(), buffObj.vertIndices, 0, buffObj.vertNum, 0, buffObj.objCount);
@@ -408,13 +415,14 @@ public class GLHandle {
 		}
 
 		gl.glEnableVertexAttribArray(vertCoordPos);
-		gl.glVertexAttribPointer(vertCoordPos, 2, GL2.GL_DOUBLE, false, 0, 0);
 		if(texBound && texEnabled) {
+			gl.glVertexAttribPointer(vertCoordPos, 2, GL2.GL_DOUBLE, false, 4 * Buffers.SIZEOF_DOUBLE, 0);
 			gl.glEnableVertexAttribArray(texCoordPos);
-			gl.glVertexAttribPointer(texCoordPos, 2, GL2.GL_DOUBLE, false, 0, 2 * buffObj.nverts * Buffers.SIZEOF_DOUBLE);
+			gl.glVertexAttribPointer(texCoordPos, 2, GL2.GL_DOUBLE, false, 4 * Buffers.SIZEOF_DOUBLE, 2 * Buffers.SIZEOF_DOUBLE);
 		} else {
+			gl.glVertexAttribPointer(vertCoordPos, 2, GL2.GL_DOUBLE, false, 6 * Buffers.SIZEOF_DOUBLE, 0);
 			gl.glEnableVertexAttribArray(vertColorPos);
-			gl.glVertexAttribPointer(vertColorPos, 4, GL2.GL_DOUBLE, false, 0, 2 * buffObj.nverts * Buffers.SIZEOF_DOUBLE);
+			gl.glVertexAttribPointer(vertColorPos, 4, GL2.GL_DOUBLE, false, 6 * Buffers.SIZEOF_DOUBLE, 2 * Buffers.SIZEOF_DOUBLE);
 		}
 
 		gl.glMultiDrawArrays(buffObj.drawFunc.getGLCommand(), buffObj.vertIndices, 0, buffObj.vertNum, 0, buffObj.objCount);
@@ -471,13 +479,39 @@ public class GLHandle {
 			floatBuff.position(buffSize / Buffers.SIZEOF_FLOAT / buffObj.nobjs * buffObj.objCount);
 
 			floatBuff.put(x); floatBuff.put(y);
+			if(!buffObj.textured) {
+				GLUtils.readAvailable(colorBuffer, color);
+				floatBuff.put(color);
+			} else {
+				floatBuff.put(texCoords[0]); floatBuff.put(texCoords[1]);
+			}
 
 			floatBuff.put(x); floatBuff.put(y + ht);
+			if(!buffObj.textured) {
+				GLUtils.readAvailable(colorBuffer, color);
+				floatBuff.put(color);
+			} else {
+				floatBuff.put(texCoords[2]); floatBuff.put(texCoords[3]);
+			}
 
 			floatBuff.put(x + wt); floatBuff.put(y);
+			if(!buffObj.textured) {
+				GLUtils.readAvailable(colorBuffer, color);
+				floatBuff.put(color);
+			} else {
+				floatBuff.put(texCoords[4]); floatBuff.put(texCoords[5]);
+			}
 
 			floatBuff.put(x + wt); floatBuff.put(y + ht);
+			if(!buffObj.textured) {
+				GLUtils.readAvailable(colorBuffer, color);
+				floatBuff.put(color);
+			} else {
+				floatBuff.put(texCoords[6]); floatBuff.put(texCoords[7]);
+			}
 
+
+		    /*
 			if(buffObj.textured)
 				floatBuff.put(texCoords);
 			else {
@@ -486,33 +520,46 @@ public class GLHandle {
 					colorBuffer.get(color, 0, readLen);
 					floatBuff.put(color);
 				}
-			}
+			}*/
 			buffObj.objCount++; // increment object count
 			gl.glUnmapBuffer(GL_ARRAY_BUFFER);
 		} else {
 			FloatBuffer floatBuff = (FloatBuffer) buffObj.data;
-			//if(buffObj.objCount != 0)
-			//	gl.glGetBufferSubData(GL_ARRAY_BUFFER, 0, buffSize / buffObj.nobjs * buffObj.objCount, floatBuff);
 			floatBuff.limit(floatBuff.capacity());
 			floatBuff.position(buffSize / Buffers.SIZEOF_FLOAT / buffObj.nobjs * buffObj.objCount);
 
 			floatBuff.put(x); floatBuff.put(y);
+			if(!buffObj.textured) {
+				GLUtils.readAvailable(colorBuffer, color);
+				floatBuff.put(color);
+			} else {
+				floatBuff.put(texCoords[0]); floatBuff.put(texCoords[1]);
+			}
 
 			floatBuff.put(x); floatBuff.put(y + ht);
+			if(!buffObj.textured) {
+				GLUtils.readAvailable(colorBuffer, color);
+				floatBuff.put(color);
+			} else {
+				floatBuff.put(texCoords[2]); floatBuff.put(texCoords[3]);
+			}
 
 			floatBuff.put(x + wt); floatBuff.put(y);
+			if(!buffObj.textured) {
+				GLUtils.readAvailable(colorBuffer, color);
+				floatBuff.put(color);
+			} else {
+				floatBuff.put(texCoords[4]); floatBuff.put(texCoords[5]);
+			}
 
 			floatBuff.put(x + wt); floatBuff.put(y + ht);
-
-			if(buffObj.textured)
-				floatBuff.put(texCoords);
-			else {
-				for(int i=0; i < buffObj.nverts; i++) {
-					int readLen = Math.min(colorBuffer.limit() - colorBuffer.position(), color.length);
-					colorBuffer.get(color, 0, readLen);
-					floatBuff.put(color);
-				}
+			if(!buffObj.textured) {
+				GLUtils.readAvailable(colorBuffer, color);
+				floatBuff.put(color);
+			} else {
+				floatBuff.put(texCoords[6]); floatBuff.put(texCoords[7]);
 			}
+
 			buffObj.objCount++; // increment object count
 		}
 	}
@@ -535,47 +582,94 @@ public class GLHandle {
 
 		gl.glBindBuffer(GL_ARRAY_BUFFER, rectBuffId);
 
+		final double[] dcolor = new double[4];
 		if(buffObj.storeHint == BufferUsage.STATIC_DRAW) {
 			ByteBuffer buff = gl.glMapBuffer(GL_ARRAY_BUFFER, GL_WRITE_ONLY);
 			DoubleBuffer doubleBuff = buff.order(ByteOrder.nativeOrder()).asDoubleBuffer();
 			doubleBuff.position(buffSize / Buffers.SIZEOF_DOUBLE / buffObj.nobjs * buffObj.objCount);
+
 			doubleBuff.put(x); doubleBuff.put(y);
+			if(!buffObj.textured) {
+				GLUtils.readAvailable(colorBuffer, color);
+				doubleBuff.put(Buffers.getDoubleArray(color, 0, dcolor, 0, color.length));
+			} else {
+				doubleBuff.put(texCoords[0]); doubleBuff.put(texCoords[1]);
+			}
+
 			doubleBuff.put(x); doubleBuff.put(y + ht);
+			if(!buffObj.textured) {
+				GLUtils.readAvailable(colorBuffer, color);
+				doubleBuff.put(Buffers.getDoubleArray(color, 0, dcolor, 0, color.length));
+			} else {
+				doubleBuff.put(texCoords[2]); doubleBuff.put(texCoords[3]);
+			}
+
 			doubleBuff.put(x + wt); doubleBuff.put(y);
+			if(!buffObj.textured) {
+				GLUtils.readAvailable(colorBuffer, color);
+				doubleBuff.put(Buffers.getDoubleArray(color, 0, dcolor, 0, color.length));
+			} else {
+				doubleBuff.put(texCoords[4]); doubleBuff.put(texCoords[5]);
+			}
+
 			doubleBuff.put(x + wt); doubleBuff.put(y + ht);
+			if(!buffObj.textured) {
+				GLUtils.readAvailable(colorBuffer, color);
+				doubleBuff.put(Buffers.getDoubleArray(color, 0, dcolor, 0, color.length));
+			} else {
+				doubleBuff.put(texCoords[6]); doubleBuff.put(texCoords[7]);
+			}
+
+
+		    /*
 			if(buffObj.textured)
-				doubleBuff.put(Buffers.getDoubleArray(texCoords, 0, new double[texCoords.length], 
-						0, texCoords.length));
+				floatBuff.put(texCoords);
 			else {
 				for(int i=0; i < buffObj.nverts; i++) {
 					int readLen = Math.min(colorBuffer.limit() - colorBuffer.position(), color.length);
 					colorBuffer.get(color, 0, readLen);
-					doubleBuff.put(Buffers.getDoubleArray(color, 0, new double[color.length], 0, color.length));
+					floatBuff.put(color);
 				}
-			}
+			}*/
 			buffObj.objCount++; // increment object count
 			gl.glUnmapBuffer(GL_ARRAY_BUFFER);
 		} else {
 			DoubleBuffer doubleBuff = (DoubleBuffer) buffObj.data;
-			//if(buffObj.objCount != 0)
-			//	gl.glGetBufferSubData(GL_ARRAY_BUFFER, 0, buffSize / buffObj.nobjs * buffObj.objCount, floatBuff);
 			doubleBuff.limit(doubleBuff.capacity());
 			doubleBuff.position(buffSize / Buffers.SIZEOF_DOUBLE / buffObj.nobjs * buffObj.objCount);
+
 			doubleBuff.put(x); doubleBuff.put(y);
-			doubleBuff.put(x); doubleBuff.put(y + ht);
-			doubleBuff.put(x + wt); doubleBuff.put(y);
-			doubleBuff.put(x + wt); doubleBuff.put(y + ht);
-			if(buffObj.textured)
-				doubleBuff.put(Buffers.getDoubleArray(texCoords, 0, new double[texCoords.length], 
-						0, texCoords.length));
-			else {
-				for(int i=0; i < buffObj.nverts; i++) {
-					int readLen = Math.min(colorBuffer.limit() - colorBuffer.position(), color.length);
-					colorBuffer.get(color, 0, readLen);
-					doubleBuff.put(Buffers.getDoubleArray(color, 0, new double[color.length], 0, color.length));
-				}
+			if(!buffObj.textured) {
+				GLUtils.readAvailable(colorBuffer, color);
+				doubleBuff.put(Buffers.getDoubleArray(color, 0, dcolor, 0, color.length));
+			} else {
+				doubleBuff.put(texCoords[0]); doubleBuff.put(texCoords[1]);
 			}
-			doubleBuff.flip();
+
+			doubleBuff.put(x); doubleBuff.put(y + ht);
+			if(!buffObj.textured) {
+				GLUtils.readAvailable(colorBuffer, color);
+				doubleBuff.put(Buffers.getDoubleArray(color, 0, dcolor, 0, color.length));
+			} else {
+				doubleBuff.put(texCoords[2]); doubleBuff.put(texCoords[3]);
+			}
+
+			doubleBuff.put(x + wt); doubleBuff.put(y);
+			if(!buffObj.textured) {
+				GLUtils.readAvailable(colorBuffer, color);
+				doubleBuff.put(Buffers.getDoubleArray(color, 0, dcolor, 0, color.length));
+			} else {
+				doubleBuff.put(texCoords[4]); doubleBuff.put(texCoords[5]);
+			}
+
+			doubleBuff.put(x + wt); doubleBuff.put(y + ht);
+			if(!buffObj.textured) {
+				GLUtils.readAvailable(colorBuffer, color);
+				doubleBuff.put(Buffers.getDoubleArray(color, 0, dcolor, 0, color.length));
+			} else {
+				doubleBuff.put(texCoords[6]); doubleBuff.put(texCoords[7]);
+			}
+
 			buffObj.objCount++; // increment object count
 		}
 	}
@@ -619,16 +713,14 @@ public class GLHandle {
 			ByteBuffer buff = gl.glMapBuffer(GL_ARRAY_BUFFER, GL_WRITE_ONLY);
 			FloatBuffer floatBuff = buff.order(ByteOrder.nativeOrder()).asFloatBuffer();
 			floatBuff.position(buffSize / Buffers.SIZEOF_FLOAT / buffObj.nobjs * buffObj.objCount);
-			for(PointUD pt : points) {
+			for(int i = 0, t = 0; i < points.length; i++, t+=2) {
+				PointUD pt = points[i];
 				floatBuff.put(pt.getFloatX()); 
 				floatBuff.put(pt.getFloatY());
-			}
-			if(buffObj.textured)
-				floatBuff.put(texCoords);
-			else {
-				for(int i=0; i < buffObj.nverts; i++) {
-					int readLen = Math.min(colorBuffer.limit() - colorBuffer.position(), color.length);
-					colorBuffer.get(color, 0, readLen);
+				if(buffObj.textured) {
+					floatBuff.put(texCoords[t]); floatBuff.put(texCoords[t+1]);
+				} else {
+					GLUtils.readAvailable(colorBuffer, color);
 					floatBuff.put(color);
 				}
 			}
@@ -640,16 +732,14 @@ public class GLHandle {
 			//	gl.glGetBufferSubData(GL_ARRAY_BUFFER, 0, buffSize / buffObj.nobjs * buffObj.objCount, floatBuff);
 			floatBuff.limit(floatBuff.capacity());
 			floatBuff.position(buffSize / Buffers.SIZEOF_FLOAT / buffObj.nobjs * buffObj.objCount);
-			for(PointUD pt : points) {
+			for(int i = 0, t = 0; i < points.length; i++, t+=2) {
+				PointUD pt = points[i];
 				floatBuff.put(pt.getFloatX()); 
 				floatBuff.put(pt.getFloatY());
-			}
-			if(buffObj.textured)
-				floatBuff.put(texCoords);
-			else {
-				for(int i=0; i < buffObj.nverts; i++) {
-					int readLen = Math.min(colorBuffer.limit() - colorBuffer.position(), color.length);
-					colorBuffer.get(color, 0, readLen);
+				if(buffObj.textured) {
+					floatBuff.put(texCoords[t]); floatBuff.put(texCoords[t+1]);
+				} else {
+					GLUtils.readAvailable(colorBuffer, color);
 					floatBuff.put(color);
 				}
 			}
@@ -677,22 +767,20 @@ public class GLHandle {
 
 		gl.glBindBuffer(GL_ARRAY_BUFFER, rectBuffId);
 
+		final double[] dcolor = new double[4];
 		if(buffObj.storeHint == BufferUsage.STATIC_DRAW) {
 			ByteBuffer buff = gl.glMapBuffer(GL_ARRAY_BUFFER, GL_WRITE_ONLY);
 			DoubleBuffer doubleBuff = buff.order(ByteOrder.nativeOrder()).asDoubleBuffer();
 			doubleBuff.position(buffSize / Buffers.SIZEOF_DOUBLE / buffObj.nobjs * buffObj.objCount);
-			for(PointUD pt : points) {
+			for(int i = 0, t = 0; i < points.length; i++, t+=2) {
+				PointUD pt = points[i];
 				doubleBuff.put(pt.getFloatX()); 
 				doubleBuff.put(pt.getFloatY());
-			}
-			if(buffObj.textured)
-				doubleBuff.put(Buffers.getDoubleArray(texCoords, 0, new double[texCoords.length], 
-						0, texCoords.length));
-			else {
-				for(int i=0; i < buffObj.nverts; i++) {
-					int readLen = Math.min(colorBuffer.limit() - colorBuffer.position(), color.length);
-					colorBuffer.get(color, 0, readLen);
-					doubleBuff.put(Buffers.getDoubleArray(color, 0, new double[color.length], 0, color.length));
+				if(buffObj.textured) {
+					doubleBuff.put(texCoords[t]); doubleBuff.put(texCoords[t+1]);
+				} else {
+					GLUtils.readAvailable(colorBuffer, color);
+					doubleBuff.put(Buffers.getDoubleArray(color, 0, dcolor, 0, color.length));
 				}
 			}
 			buffObj.objCount++; // increment object count
@@ -702,19 +790,16 @@ public class GLHandle {
 			//if(buffObj.objCount != 0)
 			//	gl.glGetBufferSubData(GL_ARRAY_BUFFER, 0, buffSize / buffObj.nobjs * buffObj.objCount, floatBuff);
 			doubleBuff.limit(doubleBuff.capacity());
-			doubleBuff.position(buffSize / Buffers.SIZEOF_FLOAT / buffObj.nobjs * buffObj.objCount);
-			for(PointUD pt : points) {
+			doubleBuff.position(buffSize / Buffers.SIZEOF_DOUBLE / buffObj.nobjs * buffObj.objCount);
+			for(int i = 0, t = 0; i < points.length; i++, t+=2) {
+				PointUD pt = points[i];
 				doubleBuff.put(pt.getFloatX()); 
 				doubleBuff.put(pt.getFloatY());
-			}
-			if(buffObj.textured)
-				doubleBuff.put(Buffers.getDoubleArray(texCoords, 0, new double[texCoords.length], 
-						0, texCoords.length));
-			else {
-				for(int i=0; i < buffObj.nverts; i++) {
-					int readLen = Math.min(colorBuffer.limit() - colorBuffer.position(), color.length);
-					colorBuffer.get(color, 0, readLen);
-					doubleBuff.put(Buffers.getDoubleArray(color, 0, new double[color.length], 0, color.length));
+				if(buffObj.textured) {
+					doubleBuff.put(texCoords[t]); doubleBuff.put(texCoords[t+1]);
+				} else {
+					GLUtils.readAvailable(colorBuffer, color);
+					doubleBuff.put(Buffers.getDoubleArray(color, 0, dcolor, 0, color.length));
 				}
 			}
 			doubleBuff.flip();
@@ -811,9 +896,9 @@ public class GLHandle {
 		gl.glBindBuffer(GL_ARRAY_BUFFER, buffIds[ind]);
 		int buffSize;
 		if(textured) {
-			buffSize = 2 * 2 * nobjs * nverts * Buffers.SIZEOF_FLOAT;
+			buffSize = 4 * nobjs * nverts * Buffers.SIZEOF_FLOAT;
 		} else {
-			buffSize = 2 * 4 * nobjs * nverts * Buffers.SIZEOF_FLOAT;
+			buffSize = 6 * nobjs * nverts * Buffers.SIZEOF_FLOAT;
 		}
 
 		gl.glBufferData(GL_ARRAY_BUFFER, buffSize, 
@@ -824,7 +909,7 @@ public class GLHandle {
 		BufferObject buffObj = new BufferObject(buffIds[ind], nverts, nobjs, Buffers.SIZEOF_FLOAT, buffSize, 
 				textured, drawFunc, storeType);
 		if(storeType != BufferUsage.STATIC_DRAW)
-			buffObj.data = Buffers.newDirectFloatBuffer(buffSize);
+			buffObj.data = Buffers.newDirectFloatBuffer(buffSize / Buffers.SIZEOF_FLOAT);
 		buffInfo[buffInfo.length - 1] = buffObj;
 		return buffObj;
 	}
@@ -897,7 +982,7 @@ public class GLHandle {
 			for(int i=0; i < vertNum.length; i++)
 				vertNum[i] = nverts;
 			for(int i=0; i < vertIndices.length; i++)
-				vertIndices[i] = size / typeSize / nobjs / 2 * i;
+				vertIndices[i] = size / typeSize / nobjs / ((textured) ? 4:6) * i;
 		}
 	}
 
@@ -1118,7 +1203,7 @@ public class GLHandle {
 		}
 	}
 	
-	private int checkGLError(String pre) {
+	protected int checkGLError(String pre) {
 		final GL2GL3 gl = getGL();
 		int errno = gl.glGetError();
 		if(errno != GL.GL_NO_ERROR)
@@ -1126,11 +1211,7 @@ public class GLHandle {
 		return errno;
 	}
 	
-	private GL2GL3 getGL() {
-		return GLContext.getCurrentGL().getGL2GL3();
-	}
-	
-	private static String mapGLErrorToString(int errno) {
+	protected static String mapGLErrorToString(int errno) {
 		switch(errno) {
 		case GL.GL_NO_ERROR:
 			return "No error";
@@ -1145,6 +1226,10 @@ public class GLHandle {
 		default:
 			return "unknown error";
 		}
+	}
+	
+	private GL2GL3 getGL() {
+		return GLContext.getCurrentGL().getGL2GL3();
 	}
 	
 	// --- DEPRECATED / DISCARDED ---- //

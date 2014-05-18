@@ -1,5 +1,5 @@
 /*
- *  Copyright (C) 2012-2014 Brian Groenke
+ *  Copyright (C) 2011-2014 Brian Groenke
  *  All rights reserved.
  * 
  *  This file is part of the 2DX Graphics Library.
@@ -39,6 +39,10 @@ public class ScriptUI extends JFrame {
 
 	private static final int WIDTH = 1100, HEIGHT = 750;
 	private static final String TEMP_FILE = "snap2d_scriptui_tmpstr.txt";
+	
+	private static final PrintStream STD_OUT = System.out;
+	
+	private final OutStream printOut = new OutStream(System.out);
 
 	JFrame parent = this;
 	JSplitPane rootPane;
@@ -47,12 +51,13 @@ public class ScriptUI extends JFrame {
 	JMenuItem exit, save, open, compile, run, clear;
 
 	ScriptProgram prog;
+	ScriptSource src;
 	Function[] funcs = new Function[0];
 
 	Function lastRun;
 	Object[] lastRunArgs;
 
-	public ScriptUI() {
+	public ScriptUI(int exitOp) {
 		super("SnapScript Editor Interface");
 		input = new JTextArea();
 		input.setMinimumSize(new Dimension(1, 200));
@@ -77,11 +82,16 @@ public class ScriptUI extends JFrame {
 		setJMenuBar(initMenuBar());
 		setSize(WIDTH, HEIGHT);
 		setLocationRelativeTo(null);
-		setDefaultCloseOperation(EXIT_ON_CLOSE);
-		addWindowListener(new OnWindowClose());
-		System.setOut(new OutStream(System.out));
+		setDefaultCloseOperation(exitOp);
+		addWindowListener(new WindowMonitor());
 		readTempFile();
 		validate();
+		src = new ScriptSource(input.getText() + "\n");
+		prog = new ScriptProgram(true, src);
+	}
+	
+	public ScriptProgram getScriptProgram() {
+		return prog;
 	}
 
 	private JMenuBar initMenuBar() {
@@ -133,8 +143,10 @@ public class ScriptUI extends JFrame {
 		return jmb;
 	}
 
-	private void runCompiler() {
-		prog = new ScriptProgram(true, new ScriptSource(input.getText() + "\n"));
+	public void runCompiler(Class<?>... javaClasses) {
+		src.setSourceFrom(input.getText() + "\n");;
+		for(Class<?> c : javaClasses)
+			prog.link(c);
 		output.setText("");
 		boolean success = prog.compile();
 		if(success) {
@@ -168,7 +180,7 @@ public class ScriptUI extends JFrame {
 			@Override
 			public void run() {
 				try {
-					output.setText(new SimpleDateFormat("dd MMM HH:mm:ss").format(Calendar.getInstance().getTime())
+					output.setText(new SimpleDateFormat("HH:mm:ss:SSS").format(Calendar.getInstance().getTime())
 							+"\n<Executing script function: invocation target -> fid="+f.getID()+">\n\n");
 					Object ret = prog.invoke(f, args);
 					lastRun = f;
@@ -303,16 +315,21 @@ public class ScriptUI extends JFrame {
 		}
 	}
 
-	private class OnWindowClose extends WindowAdapter {
+	private class WindowMonitor extends WindowAdapter {
 
 		@Override
 		public void windowClosing(WindowEvent e) {
+			System.setOut(STD_OUT);
 			try {
 				Utils.writeToTempStorage(input.getText(), TEMP_FILE, true);
 			} catch (IOException e1) {
 				e1.printStackTrace();
 			}
-			System.exit(0);
+		}
+		
+		@Override
+		public void windowActivated(WindowEvent e) {
+			System.setOut(printOut);
 		}
 	}
 
@@ -375,8 +392,9 @@ public class ScriptUI extends JFrame {
 
 	/**
 	 * @param args
+	 * @throws FileNotFoundException 
 	 */
-	public static void main(String[] args) {
+	public static void main(String[] args) throws FileNotFoundException {
 		try {
 			UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
 		} catch (ClassNotFoundException e) {
@@ -388,7 +406,7 @@ public class ScriptUI extends JFrame {
 		} catch (UnsupportedLookAndFeelException e) {
 			e.printStackTrace();
 		}
-		ScriptUI sui = new ScriptUI();
+		ScriptUI sui = new ScriptUI(EXIT_ON_CLOSE);
 		sui.setVisible(true);
 	}
 }

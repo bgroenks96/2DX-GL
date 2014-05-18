@@ -1,5 +1,5 @@
 /*
- *  Copyright (C) 2012-2014 Brian Groenke
+ *  Copyright (C) 2011-2014 Brian Groenke
  *  All rights reserved.
  * 
  *  This file is part of the 2DX Graphics Library.
@@ -69,7 +69,7 @@ public class World2D {
 	}
 
 	public Rect2D getBounds() {
-		return new Rect2D(viewX, minY, wt, ht);
+		return new Rect2D(getX(), getY(), wt, ht);
 	}
 
 	/**
@@ -252,8 +252,13 @@ public class World2D {
 		double y2 = r2.getY();
 		double y2m = y2 + r2.getHeight(); ///
 
-		double xOverlap = DoubleMath.round(Math.max(0, Math.min(x1m, x2m) - Math.max(x1, x2)), PRECISION);
-		double yOverlap = DoubleMath.round(Math.max(0, Math.min(y1m, y2m) - Math.max(y1, y2)), PRECISION);
+		double xOverlap = Math.max(0, Math.min(x1m, x2m) - Math.max(x1, x2));
+		double yOverlap = Math.max(0, Math.min(y1m, y2m) - Math.max(y1, y2));
+		if(Double.isNaN(xOverlap) || Double.isNaN(yOverlap)) {
+			System.out.println(x1m + " " + x2m + " " + x1 + " " + x2);
+		}
+		xOverlap = DoubleMath.round(xOverlap, PRECISION);
+		yOverlap = DoubleMath.round(yOverlap, PRECISION);
 
 		if (xOverlap == 0 || yOverlap == 0) {
 			return null;
@@ -281,6 +286,15 @@ public class World2D {
 		boolean inXBounds = rect.getX() >= vx
 				&& rect.getX() + rect.getWidth() <= vx + vwt;
 		return inYBounds && inXBounds;
+	}
+	
+	public boolean viewContains(PointUD p) {
+		double vx = getX();
+		double vy = getY();
+		double vwt = getWorldWidth();
+		double vht = getWorldHeight();
+		return p.ux > vx && p.ux < vx + vwt
+				&& p.uy > vy && p.uy < vy + vht;
 	}
 
 	/**

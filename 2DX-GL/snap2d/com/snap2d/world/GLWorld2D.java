@@ -1,5 +1,5 @@
 /*
- *  Copyright � 2011-2013 Brian Groenke
+ *  Copyright (C) 2011-2014 Brian Groenke
  *  All rights reserved.
  * 
  *  This file is part of the 2DX Graphics Library.
@@ -31,6 +31,8 @@ public final class GLWorld2D extends World2D {
 	/*
 	 * Note that ALL uses of variable 'minY' are in this implementation actually the maximum Y but
 	 * the same variable from World2D's inverted Y axis screen space has to be used.
+	 * 
+	 * Yes this is ridiculously counter-intuitive and poor foresight in design.  I'm sorry :(
 	 */
 
 	/**
@@ -66,6 +68,16 @@ public final class GLWorld2D extends World2D {
 		ht = Math.abs(minY - viewY);
 		maxX = viewX + (viewWt / ppu);
 		minY = viewY + (viewHt / ppu);
+	}
+	
+	@Override
+	public double getY() {
+		return viewY;
+	}
+	
+	@Override
+	public double getMaxY() {
+		return minY;
 	}
 	
 	/**

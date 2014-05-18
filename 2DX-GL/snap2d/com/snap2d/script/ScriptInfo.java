@@ -1,5 +1,5 @@
 /*
- *  Copyright (C) 2012-2014 Brian Groenke
+ *  Copyright (C) 2011-2014 Brian Groenke
  *  All rights reserved.
  * 
  *  This file is part of the 2DX Graphics Library.
@@ -24,11 +24,11 @@ public enum ScriptInfo {
 	/**
 	 * The language specification version.
 	 */
-	SCRIPT_VERSION("1.1", 0x0002),
+	SCRIPT_VERSION("1.1.2", 0x0003),
 	/**
 	 * The bytecode specification version.
 	 */
-	BYTECODE_SPEC("0.2", 0x1002);
+	BYTECODE_SPEC("0.2a", 0x1003);
 	
 	String str;
 	int code;

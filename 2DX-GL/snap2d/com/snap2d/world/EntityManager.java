@@ -1,5 +1,5 @@
 /*
- *  Copyright (C) 2012-2014 Brian Groenke
+ *  Copyright (C) 2011-2014 Brian Groenke
  *  All rights reserved.
  * 
  *  This file is part of the 2DX Graphics Library.
@@ -154,8 +154,10 @@ public class EntityManager implements GLRenderable, Renderable {
 	@Override
 	public void update(long nanoTimeNow, long nanosSinceLastUpdate) {
 		chkCache.addAll(entities);
-		for (Entity e : entities) {
+		for (Entity e : entities)
 			e.update(nanoTimeNow, nanosSinceLastUpdate);
+		
+		for(Entity e : entities) {
 			chkCache.remove(e);
 			for (Entity opp : chkCache) {
 				EntityCollision coll;

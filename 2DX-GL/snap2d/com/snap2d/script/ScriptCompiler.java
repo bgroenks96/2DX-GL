@@ -1,5 +1,5 @@
 /*
- *  Copyright (C) 2012-2014 Brian Groenke
+ *  Copyright (C) 2011-2014 Brian Groenke
  *  All rights reserved.
  * 
  *  This file is part of the 2DX Graphics Library.
@@ -12,12 +12,14 @@
 
 package com.snap2d.script;
 
-import java.nio.*;
+import java.nio.ByteBuffer;
 import java.util.*;
+
+import org.junit.Test;
 
 import bg.x2d.utils.*;
 
-import com.snap2d.*;
+import com.snap2d.SnapLogger;
 
 /**
  * Parses and compiles script source code to bytecode form.
@@ -49,7 +51,7 @@ class ScriptCompiler {
 
 		int ekey = Flags.PC_RETURN; // expected Keyword type
 		int nextFlush = Flags.W_FLUSH; // next buffer flush point
-		boolean allowDigits = false;
+		boolean allowDigits = true;
 		String fname = null; Keyword rtype = null; Keyword[] params = null; String[] paramNames;
 		for(int i = 0; i < chars.length; i++) {
 			char c = chars[i];
@@ -92,6 +94,7 @@ class ScriptCompiler {
 						throw(new ScriptCompilationException("expected " + Keyword.PARAM_BEGIN.getSymbol() +
 								" in function declaration", src, i));
 					fname = buff.toString();
+					checkValidName(fname);
 					buff.delete(0, buff.length());
 					ekey = Flags.PC_RETURN;
 					nextFlush = Flags.W_FLUSH;
@@ -265,6 +268,7 @@ class ScriptCompiler {
 					for(;pos < csrc.length() && Character.isWhitespace(csrc.charAt(pos)); pos++); // skip whitespace
 				}
 				Variable[] consts = stackVars.values().toArray(new Variable[stackVars.size()]);
+				Arrays.sort(consts, new VariableIdComparator());
 				cfunc.setConstantVars(consts);
 				constVars.putAll(stackVars);
 				stackVars.clear();
@@ -383,6 +387,9 @@ class ScriptCompiler {
 						i = parseVarFromType(keyw, src, i);
 						break;
 					case BOOL:
+						i = parseVarFromType(keyw, src, i);
+						break;
+					case VEC2:
 						i = parseVarFromType(keyw, src, i);
 						break;
 					case BREAK:
@@ -539,7 +546,7 @@ class ScriptCompiler {
 		this.buff = curr; // re-assign primary pointer to the main buffer object
 
 		buff.put(Bytecodes.END_CMD);
-		return endPos + 1;
+		return endPos;
 	}
 
 	private int parseForLoop(String src, int pos) throws ScriptCompilationException {
@@ -655,6 +662,7 @@ class ScriptCompiler {
 			throw(new ScriptCompilationException("illegal variable name: " + name, src, pos));
 		if(stackVars.containsKey(name))
 			throw(new ScriptCompilationException("variable '"+name+"' is already declared in scope", src, pos));
+		checkValidName(name);
 		return parseVarAssign(varType, name, src, true, constant, pos + name.length());
 	}
 
@@ -678,6 +686,9 @@ class ScriptCompiler {
 				break;
 			case Flags.TYPE_BOOL:
 				buff.put(Bytecodes.ALLOC_BOOL);
+				break;
+			case Flags.TYPE_VEC2:
+				buff.put(Bytecodes.ALLOC_VEC2);
 			}
 			Variable var = new Variable(name, varType);
 			stackVars.put(name, var);
@@ -707,6 +718,9 @@ class ScriptCompiler {
 			break;
 		case Flags.TYPE_BOOL:
 			parseBoolean(str, src, st);
+			break;
+		case Flags.TYPE_VEC2:
+			parseEvaluation(str, src, st, Flags.TYPE_VEC2);
 		}
 
 		buff.put(Bytecodes.END_CMD); // end var assign
@@ -720,6 +734,7 @@ class ScriptCompiler {
 		int typeflag = getVarTypeFromKeyword(type);
 		String arg = src.substring(pos, endPos).trim();
 		switch(type) {
+		case VEC2:
 		case INT:
 		case FLOAT:
 			parseEvaluation(arg, src, pos, typeflag);
@@ -838,6 +853,7 @@ class ScriptCompiler {
 				nstr.insert(i, Keyword.BLOCK_END.sym);
 		}
 
+		parser.format(nstr);
 		str = nstr.toString();
 		String exp = parser.shuntingYard(str);
 		String[] pts = exp.split(MathParser.SEP);
@@ -949,6 +965,11 @@ class ScriptCompiler {
 					buff.put(Bytecodes.READ_INT);
 					buff.putInt(a);
 				}
+			} else if(isVector(s)) {
+				String[] vecPts = s.substring(1, s.length() - 1).split(",");
+				buff.put(Bytecodes.READ_VEC2);
+				parseEvaluation(vecPts[0], src, pos, returnFlag);
+				parseEvaluation(vecPts[1], src, pos, returnFlag);
 			} else if(keyw != null) {
 				if(keyw == Keyword.TRUE) {
 					if(returnFlag != Flags.TYPE_BOOL)
@@ -1013,7 +1034,7 @@ class ScriptCompiler {
 		str = str.replaceAll(TMP_CHK, String.valueOf(MathRef.EQUALS));
 		parseEvaluation(str, src, pos, Flags.TYPE_BOOL);
 	}
-
+	
 	// valid boolean operator replacements from MathRef class
 	private final String[] validOps = new String[] {strval(MathRef.AND_BOOL), strval(MathRef.OR_BOOL), strval(MathRef.EQUALS),
 			strval(MathRef.NOT_EQUALS), strval(MathRef.LESS_EQUALS), strval(MathRef.LESS_EQUALS), strval(MathRef.GREAT_EQUALS)};
@@ -1074,8 +1095,10 @@ class ScriptCompiler {
 							parseBoolean(pt, src, pos);
 						else if(ptypes[ii] == Keyword.INT)
 							parseEvaluation(pt, src, pos, Flags.TYPE_INT);
-						else if(ptypes[ii] == Keyword.FLOAT) {
+						else if(ptypes[ii] == Keyword.FLOAT)
 							parseEvaluation(pt, src, pos, Flags.TYPE_FLOAT);
+						else if(ptypes[ii] == Keyword.VEC2) {
+							parseEvaluation(pt, src, pos, Flags.TYPE_VEC2);
 						} else if(ptypes[ii] == Keyword.STRING)
 							parseString(pt, src, pos);
 					} catch(ScriptCompilationException e) {
@@ -1166,6 +1189,15 @@ class ScriptCompiler {
 		return len > 0 && shouldPermit;
 	}
 
+	private void checkValidName(String name) throws ScriptCompilationException {
+		for(Keyword k : Keyword.values()) {
+			if(k.sym.equals(name))
+				throw(new ScriptCompilationException("illegal member string identifier: " + name + " is a reserved keyword"));
+			else if(name.startsWith("consts"))
+				throw(new ScriptCompilationException("illegal member string identifier: cannot start with 'consts'"));
+		}
+	}
+	
 	private boolean isTypeCompatible(int type0, int type1) {
 		if(type0 == type1)
 			return true;
@@ -1184,6 +1216,13 @@ class ScriptCompiler {
 		}
 	}
 
+	private boolean isVector(String s) {
+		if(s.startsWith("[") && s.endsWith("]") && s.split(",").length == 2)
+			return true;
+		else
+			return false;
+	}
+	
 	private int getVarTypeFromKeyword(Keyword keyw) {
 		int varType = 0;
 		switch(keyw) {
@@ -1198,6 +1237,9 @@ class ScriptCompiler {
 			break;
 		case BOOL:
 			varType = Flags.TYPE_BOOL;
+			break;
+		case VEC2:
+			varType = Flags.TYPE_VEC2;
 		default:
 			break;
 		}
@@ -1248,7 +1290,10 @@ class ScriptCompiler {
 
 	static volatile int globalId = Integer.MIN_VALUE;
 
-	class Variable {
+	/*
+	 * Represents a compiler variable by its name, type, and internal ID.
+	 */
+	final class Variable {
 		public String name;
 		public int varType;
 		private int id;
@@ -1261,6 +1306,33 @@ class ScriptCompiler {
 
 		public int getID() {
 			return id;
+		}
+
+		@Override
+		public String toString() {
+			return name + "@id="+id;
+		}
+	}
+	
+	static class VariableNameComparator implements Comparator<Variable> {
+
+		/**
+		 *
+		 */
+		@Override
+		public int compare(Variable o1, Variable o2) {
+			return o1.name.compareTo(o2.name);
+		}
+	}
+	
+	static class VariableIdComparator implements Comparator<Variable> {
+
+		/**
+		 *
+		 */
+		@Override
+		public int compare(Variable o1, Variable o2) {
+			return (int) Math.signum(o1.id - o2.id);
 		}
 	}
 }

@@ -1,5 +1,5 @@
 /*
- *  Copyright (C) 2012-2014 Brian Groenke
+ *  Copyright (C) 2011-2014 Brian Groenke
  *  All rights reserved.
  * 
  *  This file is part of the 2DX Graphics Library.
@@ -46,5 +46,9 @@ class ConstantInitializer extends Function {
 	
 	Variable[] getConstantVars() {
 		return Arrays.copyOf(this.vars, this.vars.length);
+	}
+	
+	int getConstantVarCount() {
+		return this.vars.length;
 	}
 }

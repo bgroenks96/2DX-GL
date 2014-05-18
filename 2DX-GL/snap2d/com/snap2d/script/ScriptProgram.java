@@ -1,5 +1,5 @@
 /*
- *  Copyright (C) 2012-2014 Brian Groenke
+ *  Copyright (C) 2011-2014 Brian Groenke
  *  All rights reserved.
  * 
  *  This file is part of the 2DX Graphics Library.
@@ -14,11 +14,13 @@ package com.snap2d.script;
 
 import java.io.IOException;
 import java.lang.reflect.Method;
+import java.net.URL;
 import java.util.*;
 
-import bg.x2d.utils.*;
+import bg.x2d.utils.Multimap;
 
 import com.snap2d.SnapLogger;
+import com.snap2d.script.ScriptCompiler.Variable;
 import com.snap2d.script.lib.*;
 
 /**
@@ -44,14 +46,23 @@ public class ScriptProgram {
 	 * @param scriptSources the sources to compile
 	 */
 	public ScriptProgram(boolean linkLibs, ScriptSource...scriptSources) {	
-		for(ScriptSource s:scriptSources)
-			scripts.add(s);
+		addSources(scriptSources);
 		if(linkLibs) {
 			link(ScriptMath.class);
 			link(VarStore.class);
 			link(ScriptUtils.class);
 			link(ScriptTimer.class);
 		}
+	}
+	
+	public void addSources(ScriptSource...scriptSources) {
+		for(ScriptSource s:scriptSources)
+			scripts.add(s);
+	}
+	
+	public void removeSources(ScriptSource...scriptSources) {
+		for(ScriptSource s:scriptSources)
+			scripts.remove(s);
 	}
 
 	public void link(ScriptSource script) {
@@ -72,7 +83,7 @@ public class ScriptProgram {
 
 	public boolean compile() {
 		SnapLogger.println("Initializing SnapScript " + ScriptInfo.SCRIPT_VERSION.str + 
-				" [bcs."+ ScriptInfo.BYTECODE_SPEC.str+"]");
+				" [BCS."+ ScriptInfo.BYTECODE_SPEC.str+"]");
 		ScriptCompiler compiler = new ScriptCompiler();
 		boolean chk;
 		try {
@@ -144,10 +155,18 @@ public class ScriptProgram {
 		SnapLogger.println("SnapScript runtime successfully initialized!\n");
 	}
 	
-	public void clearRuntime() {
+	public void disposeRuntime() {
 		
 	}
 
+	public void attachToJavaFunction(Object o, Function func) throws ScriptInvocationException {
+		if(!func.isJavaFunction())
+			throw(new IllegalArgumentException("cannot attach objects to script functions"));
+		if(engine == null)
+			throw(new IllegalStateException("cannot attach objects before runtime initialization"));
+		engine.attachObjectToFunction(func.getID(), o);
+	}
+	
 	public Function findFunction(String name, Class<?>... params) {
 		Function[] matches = funcs.getAll(name);
 		if(matches == null || matches.length == 0)
@@ -188,6 +207,39 @@ public class ScriptProgram {
 	public Function[] getScriptFunctions() {
 		return Arrays.copyOf(scriptFuncs, scriptFuncs.length);
 	}
+	
+	public String[] getConstants() {
+		if(initConsts == null)
+			return null;
+		ArrayList<String> constNames = new ArrayList<String>();
+		for(ConstantInitializer ci : initConsts) {
+			Variable[] vars = ci.getConstantVars();
+			for(Variable v : vars)
+				constNames.add(v.name);
+		}
+		return constNames.toArray(new String[constNames.size()]);
+	}
+	
+	public Object getConstantValue(String constant) {
+		if(initConsts == null || engine == null)
+			throw(new IllegalStateException("constant values cannot be accessed until script runtime is initialized"));
+		Object val = null;
+		for(ConstantInitializer ci : initConsts) {
+			Variable[] vars = ci.getConstantVars();
+			for(Variable v : vars) {
+				if(v.name.equals(constant)) {
+					val = engine.fetchConstValue(v.getID());
+					break;
+				} else
+					continue;
+			}
+		}
+		return val;
+	}
+	
+	public VarStore getVarStore() {
+		return engine.vars;
+	}
 
 	/**
 	 * Invokes the script function with the given arguments.
@@ -203,7 +255,8 @@ public class ScriptProgram {
 	}
 	
 	/**
-	 * Invokes the first matching script Function object with the given argument.
+	 * Invokes the first matching script Function object with the given arguments.
+	 * This method is equivalent to: <code>invoke(findFunction(funcName), args)</code>
 	 * @param funcName
 	 * @param args
 	 * @return
@@ -229,8 +282,7 @@ public class ScriptProgram {
 	}
 	
 	public static void main(String[] args) throws IOException {
-		ScriptProgram prog = new ScriptProgram(true, new ScriptSource(Utils.readText(
-				ClassLoader.getSystemResource("com/snap2d/script/test_script.txt"))));
+		ScriptProgram prog = new ScriptProgram(true, new ScriptSource(ScriptProgram.class.getResource("/test_script.txt")));
 		if(prog.compile()) {
 			try {
 				prog.initRuntime(true);

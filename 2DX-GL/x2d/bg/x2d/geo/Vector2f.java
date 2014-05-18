@@ -1,5 +1,5 @@
 /*
- *  Copyright (C) 2012-2014 Brian Groenke
+ *  Copyright (C) 2011-2014 Brian Groenke
  *  All rights reserved.
  * 
  *  This file is part of the 2DX Graphics Library.
@@ -110,6 +110,11 @@ public class Vector2f {
 		checkPrecision();
 		return mag;
 	}
+	
+	public Vector2f setXY(float x, float y) {
+		this.x = x; this.y = y;
+		return this;
+	}
 
 	/**
 	 * Sets the direction and magnitude of this vector from polar coordinates.
@@ -190,7 +195,7 @@ public class Vector2f {
 	 */
 	public float dot(Vector2f arg) {
 		checkPrecision();
-		return (float) (mag * arg.mag * cos(angleBetween(arg)));
+		return x * arg.x + y * arg.y;
 	}
 
 	public float det(Vector2f arg) {
@@ -210,7 +215,7 @@ public class Vector2f {
 	}
 
 	public float angleBetween(Vector2f vec) {
-		return abs(vec.angle - angle);
+		return (float) Math.acos(dot(vec) / (mag * vec.mag));
 	}
 
 	public Vector2f interpolate(Vector2f vec, float alpha) {

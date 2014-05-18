@@ -1,5 +1,5 @@
 /*
- *  Copyright (C) 2012-2014 Brian Groenke
+ *  Copyright (C) 2011-2014 Brian Groenke
  *  All rights reserved.
  * 
  *  This file is part of the 2DX Graphics Library.
@@ -34,7 +34,7 @@ enum Keyword {
 	DIV_MOD("/=", Flags.OP, Flags.ARG_NUM, 2, Flags.RETURN_MATCH_ARG), REM_LINE("//", Flags.STATEMENT), REM_START("/*", Flags.STATEMENT), REM_END("*/", Flags.STATEMENT),
 	CAST_INT("#", Flags.OP, Flags.ARG_FLOAT, 1, Flags.RETURN_INT), BITXOR("~", Flags.OP, Flags.ARG_INT, 2, Flags.RETURN_INT), MODULO("%", Flags.OP, Flags.ARG_INT, 2, Flags.RETURN_INT),
 	GREAT_EQUALS(">=", Flags.OP, Flags.ARG_NUM, 2, Flags.RETURN_BOOL), LESS_EQUALS("<=", Flags.OP, Flags.ARG_NUM, 2, Flags.RETURN_BOOL),
-	CONST("const", Flags.STATEMENT);
+	CONST("const", Flags.STATEMENT), VEC2("vec2", Flags.TYPE);
 
 	private static final int TYPE_POS = 0, ARG_TYPE_POS = 1, ARG_COUNT_POS = 2, RETURN_POS = 3;
 
@@ -129,6 +129,8 @@ enum Keyword {
 			return Flags.TYPE_BOOL;
 		case STRING:
 			return Flags.TYPE_STRING;
+		case VEC2:
+			return Flags.TYPE_VEC2;
 		default:
 			return -1;
 		}
@@ -144,6 +146,8 @@ enum Keyword {
 			return BOOL;
 		case Flags.TYPE_STRING:
 			return STRING;
+		case Flags.TYPE_VEC2:
+			return VEC2;
 		default:
 			return null;
 		}

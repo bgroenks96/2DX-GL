@@ -1,5 +1,5 @@
 /*
- *  Copyright (C) 2012-2014 Brian Groenke
+ *  Copyright (C) 2011-2014 Brian Groenke
  *  All rights reserved.
  * 
  *  This file is part of the 2DX Graphics Library.
@@ -50,7 +50,7 @@ final class Flags {
 	
 	// keyword type flags
 	public static final int TYPE_INT = 0xFC00000, TYPE_FLOAT = 0xFC00001, TYPE_STRING = 0xFC00002, 
-			TYPE_BOOL = 0xFC00003;
+			TYPE_BOOL = 0xFC00003, TYPE_VEC2 = 0xFC00004;
 	
 	// engine main execution completion status signals
 	public static final int RETURN = 0xFD000000, BREAK = 0xFD000001;
