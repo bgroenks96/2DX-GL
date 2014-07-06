@@ -21,7 +21,7 @@ import javax.media.opengl.*;
 /**
  * Represents an individual OpenGL shader object.  GLShader loads and compiles
  * GLSL source files for use in a GLProgram.  All vertex shaders loaded via this
- * class will have the Snap2D transform vertex shader appended to the head of the
+ * class will have the Snap2D transform vertex shader prepended to the head of the
  * source string.  This means any vertex shaders passed into this class should NOT
  * declare a version string in the shader source file, rather the desired version
  * should be specified in the constructor.  The default GLSL version is 150 (GL 3.2).
@@ -109,9 +109,10 @@ public class GLShader {
 		final GL2ES2 gl = getGL();
 		sobj = gl.glCreateShader(type);
 		StringBuilder sb = new StringBuilder();
-		sb.append("#version " + version);
-		if(type == TYPE_VERTEX)
+		if(type == TYPE_VERTEX) {
+			sb.append("#version " + version+"\n");
 			sb.append(loadTransformShaderSource()); // append transform vertex shader source
+		}
 		for(String s : sources)
 			sb.append(s);
 		gl.glShaderSource(sobj, 1, new String[] {sb.toString()}, null);

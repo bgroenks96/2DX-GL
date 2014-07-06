@@ -1,5 +1,5 @@
-#version 150
 // snap2d-transform.vert - Snap2D GLSL Vertex Transformation Shader
+// version declaration prepended by GLShader compilation
 /*
  *  Copyright (C) 2012-2014 Brian Groenke
  *  All rights reserved.
