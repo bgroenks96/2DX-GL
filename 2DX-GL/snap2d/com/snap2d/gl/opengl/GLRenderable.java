@@ -12,6 +12,8 @@
 
 package com.snap2d.gl.opengl;
 
+import com.snap2d.gl.spi.RenderableSpi;
+
 
 /**
  * Rendering interface for the Snap2D OpenGL pipeline.  Any Object that should
@@ -20,7 +22,7 @@ package com.snap2d.gl.opengl;
  * @author Brian Groenke
  *
  */
-public interface GLRenderable {
+public interface GLRenderable extends RenderableSpi {
 	
 	/**
 	 * Called during initialization and/or recreation of the current rendering environment.

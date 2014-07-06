@@ -19,41 +19,99 @@ import java.util.ArrayList;
 import javax.media.opengl.*;
 
 /**
+ * Represents an individual OpenGL shader object.  GLShader loads and compiles
+ * GLSL source files for use in a GLProgram.  All vertex shaders loaded via this
+ * class will have the Snap2D transform vertex shader appended to the head of the
+ * source string.  This means any vertex shaders passed into this class should NOT
+ * declare a version string in the shader source file, rather the desired version
+ * should be specified in the constructor.  The default GLSL version is 150 (GL 3.2).
+ * The minimum required is 130 (GL 3.0), although this is not recommended.
  * @author Brian Groenke
- *
  */
 public class GLShader {
 
-	public static final String DEFAULT_SHADER_PATH = "snap2d_opengl/shaders/",
-			DEFAULT_TRANSFORM_UTIL = "transform.vert";
+	public static final String DEFAULT_SHADER_PATH = "com/snap2d/gl/opengl/res/",
+			DEFAULT_TRANSFORM_UTIL = "snap2d-transform.vert", ATTRIB_VERT_COORD = "vert_coord",
+			ATTRIB_VERT_COLOR = "vert_color", ATTRIB_TEX_COORD = "tex_coord", DEFAULT_GLSL_VERSION = "150";
 
 	public static final int TYPE_VERTEX = GL2.GL_VERTEX_SHADER, TYPE_FRAGMENT = GL2.GL_FRAGMENT_SHADER;
 
 	private int sobj;
-
-	public GLShader(int type, String...sources) throws GLShaderException {
-		compile(type, sources);
+	
+	/**
+	 * Convenience constructor using the default GLSL version.  Equivalent to calling
+	 * <code>new GLShader(type, GLShader.DEFAULT_GLSL_VERSION, sources)</code>
+	 * @param type
+	 * @param sources
+	 * @throws GLShaderException
+	 * @throws IOException
+	 * @see #GLShader(int, String, String...)
+	 */
+	public GLShader(int type, String...sources) throws GLShaderException, IOException {
+		this(type, DEFAULT_GLSL_VERSION, sources);
+	}
+	
+	/**
+	 * Convenience constructor using the default GLSL version.  Equivalent to calling
+	 * <code>new GLShader(type, GLShader.DEFAULT_GLSL_VERSION, sources)</code>
+	 * @param type
+	 * @param sources
+	 * @throws GLShaderException
+	 * @throws IOException
+	 * @see #GLShader(int, String, URL...)
+	 */
+	public GLShader(int type, URL...sources) throws GLShaderException, IOException {
+		this(type, DEFAULT_GLSL_VERSION, sources);
 	}
 
-	public GLShader(int type, URL... sources) throws GLShaderException, IOException {
+	/**
+	 * Initialize and compile a new GLShader of the given type and version from the given sources.
+	 * @param type
+	 * @param version a valid GLSL version string; e.g. for shader version 330 (GL 3.3), use "330"
+	 * @param sources
+	 * @throws GLShaderException
+	 * @throws IOException
+	 */
+	public GLShader(int type, String version, String...sources) throws GLShaderException, IOException {
+		compile(type, version, sources);
+	}
+
+	/**
+	 * Create a new GLShader of the given type and version.  Sources will be loaded and compiled from
+	 * the given URLs.
+	 * @param type
+	 * @param version a valid GLSL version string; e.g. for shader version 330 (GL 3.3), use "330"
+	 * @param sources
+	 * @throws GLShaderException
+	 * @throws IOException
+	 */
+	public GLShader(int type, String version, URL... sources) throws GLShaderException, IOException {
 		ArrayList<String> sourceStrs = new ArrayList<String>();
 		for(URL source : sources) {
+			if(source == null)
+				continue;
 			InputStream in = source.openStream();
-			BufferedReader br = new BufferedReader(new InputStreamReader(in));
-			StringBuilder sb = new StringBuilder();
-			String line = null;
-			while((line=br.readLine()) != null)
-				sb.append(line + "\n");
-			in.close();
-			sourceStrs.add(sb.toString());
+			sourceStrs.add(readFromStream(in));
 		}
-		compile(type, sourceStrs.toArray(new String[sourceStrs.size()]));
+		compile(type, version, sourceStrs.toArray(new String[sourceStrs.size()]));
+	}
+	
+	public int getShaderObj() {
+		return sobj;
 	}
 
-	private void compile(int type, String... sources) throws GLShaderException {
-		final GL2ES2 gl = getGL2();
+	public void dispose() {
+		final GL2ES2 gl = getGL();
+		gl.glDeleteShader(sobj);
+	}
+
+	private void compile(int type, String version, String... sources) throws GLShaderException, IOException {
+		final GL2ES2 gl = getGL();
 		sobj = gl.glCreateShader(type);
 		StringBuilder sb = new StringBuilder();
+		sb.append("#version " + version);
+		if(type == TYPE_VERTEX)
+			sb.append(loadTransformShaderSource()); // append transform vertex shader source
 		for(String s : sources)
 			sb.append(s);
 		gl.glShaderSource(sobj, 1, new String[] {sb.toString()}, null);
@@ -75,17 +133,23 @@ public class GLShader {
 		}
 	}
 
-	public int getShaderObj() {
-		return sobj;
+	private String loadTransformShaderSource() throws IOException {
+		InputStream in = GLShader.class.getResourceAsStream("res/snap2d-transform.vert");
+		return readFromStream(in);
 	}
 
-	public void dispose() {
-		final GL2ES2 gl = getGL2();
-		gl.glDeleteShader(sobj);
+	private String readFromStream(InputStream in) throws IOException {
+		BufferedReader br = new BufferedReader(new InputStreamReader(in));
+		StringBuilder sb = new StringBuilder();
+		String line = null;
+		while((line=br.readLine()) != null)
+			sb.append(line + "\n");
+		in.close();
+		return sb.toString();
 	}
 
-	private GL2ES2 getGL2() {
-		return GLContext.getCurrentGL().getGL2ES2();
+	private GL2ES2 getGL() {
+		return GLContext.getCurrentGL().getGL2GL3();
 	}
 
 	/**
@@ -101,10 +165,10 @@ public class GLShader {
 	public static GLShader loadLibraryShader(int type, String...shaderFiles) throws 
 	GLShaderException, IOException {
 		ArrayList<URL> urls = new ArrayList<URL>();
-		if(type == TYPE_VERTEX)
-			urls.add(ClassLoader.getSystemResource(DEFAULT_SHADER_PATH + DEFAULT_TRANSFORM_UTIL));
 		for(String s : shaderFiles) {
-			URL url = ClassLoader.getSystemResource(DEFAULT_SHADER_PATH + s);
+			URL url = ClassLoader.getSystemClassLoader().getResource(DEFAULT_SHADER_PATH + s);
+			if(url == null)
+				throw(new IOException("failed to load library shader: " + s));
 			urls.add(url);
 		}
 		GLShader shader = new GLShader(type, urls.toArray(new URL[urls.size()]));

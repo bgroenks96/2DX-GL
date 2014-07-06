@@ -12,15 +12,16 @@
 
 package com.snap2d.gl.opengl;
 
+import java.util.logging.Logger;
+
 import javax.media.nativewindow.WindowClosingProtocol.WindowClosingMode;
 import javax.media.opengl.*;
 
-import bg.x2d.utils.*;
+import bg.x2d.utils.Utils;
 
 import com.jogamp.newt.*;
 import com.jogamp.newt.event.*;
-import com.jogamp.newt.opengl.*;
-import com.snap2d.*;
+import com.jogamp.newt.opengl.GLWindow;
 import com.snap2d.gl.Display.Type;
 import com.snap2d.gl.opengl.GLConfig.Property;
 import com.snap2d.input.*;
@@ -34,8 +35,8 @@ import com.snap2d.input.*;
 public class GLDisplay {
 
 	final int SCREEN_WIDTH = Utils.getScreenSize().width, SCREEN_HEIGHT = Utils.getScreenSize().height;
-
-	GLDisplay ref = this;
+	
+	private final Logger log = Logger.getLogger(GLDisplay.class.getCanonicalName());
 
 	int wt, ht;
 	Type type;
@@ -50,8 +51,11 @@ public class GLDisplay {
 	boolean exitOnClose = false;
 
 	/**
-	 * Creates this GLDisplay with the given window dimensions and graphics configuration.
-	 * JOGLConfig.applyProperties is called before the environment is initialized.
+	 * Creates this GLDisplay with the given window properties and GL configuration.
+	 * @param width
+	 * @param height
+	 * @param type the window type; windowed or fullscreen
+	 * @param config GL configuration; may be null (default configuration will be used)
 	 */
 	public GLDisplay(int width, int height, Type type, GLConfig config) {
 		initDisplay(width, height, type, config);
@@ -64,7 +68,7 @@ public class GLDisplay {
 		this.ht = height;
 		this.type = type;
 		GLProfile.initSingleton();
-		GLProfile glp = GLProfile.get(GLProfile.GL2);
+		GLProfile glp = GLConfig.loadGLProfile(config);
 		GLCapabilities glc = new GLCapabilities(glp);
 		setCapabilities(config, glc);
 		newtDisp = NewtFactory.createDisplay(null);
@@ -83,7 +87,6 @@ public class GLDisplay {
 			if(!type.isNativeFullscreen())
 				glWin.setSize(SCREEN_WIDTH, SCREEN_HEIGHT);
 		}
-		centerOnScreen();
 	}
 
 	private void setCapabilities(GLConfig config, GLCapabilities glc) {
@@ -131,10 +134,10 @@ public class GLDisplay {
 	}
 
 	public void updateConfig(GLConfig config) throws InterruptedException {
-		GLProfile glp = GLProfile.get(GLProfile.GL2);
+		GLProfile glp = GLConfig.loadGLProfile(config);
 		GLCapabilities glc = new GLCapabilities(glp);
 		setCapabilities(config, glc);
-		boolean renderActive = rc.isRenderActive(), loopRunning = rc.isLoopRunning();
+		boolean renderActive = rc.isRenderActive(), loopRunning = rc.isRunning();
 		rc.stopRenderLoop();
 		GLWindow old = glWin;
 		old.disposeGLEventListener(rc, true);
@@ -146,7 +149,7 @@ public class GLDisplay {
 		if(loopRunning)
 			rc.startRenderLoop();
 		rc.setRenderActive(renderActive);
-		SnapLogger.println("updated GLDisplay config");
+		log.info("updated GLDisplay config");
 	}
 
 	/**

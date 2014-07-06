@@ -17,8 +17,6 @@ import java.io.*;
 import java.net.*;
 import java.util.*;
 
-import com.snap2d.*;
-
 /**
  * Static, miscellaneous utility methods.
  * 
@@ -64,7 +62,6 @@ public class Utils {
 
 				@Override
 				public void run() {
-					SnapLogger.log("Received exit signal");
 					try {
 						if(!keepTempDir)
 							removeDirectory(TEMP_DIR, true);

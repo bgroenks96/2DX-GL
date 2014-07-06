@@ -18,11 +18,11 @@ import java.lang.reflect.*;
 import java.math.BigDecimal;
 import java.nio.ByteBuffer;
 import java.util.*;
+import java.util.logging.Logger;
 
 import bg.x2d.geo.Vector2d;
 import bg.x2d.utils.*;
 
-import com.snap2d.SnapLogger;
 import com.snap2d.script.VecMath.Operand;
 import com.snap2d.script.VecMath.Scalar;
 import com.snap2d.script.lib.*;
@@ -33,6 +33,8 @@ import com.snap2d.script.lib.*;
  *
  */
 class ScriptEngine {
+	
+	private static final Logger log = Logger.getLogger(ScriptEngine.class.getCanonicalName());
 
 	HashMap<Long, Function> funcMap = new HashMap<Long, Function>();
 	HashMap<Function, Object> javaObjs = new HashMap<Function, Object>();
@@ -251,7 +253,7 @@ class ScriptEngine {
 			case CLEAR_STACK:
 				stacks.pop().clear();
 				if(varGC > RELEASE_GC || mathGC > RELEASE_GC) {
-					SnapLogger.log("SnapScript: GC requested [varGC="+varGC+" mathGC="+mathGC+"]");
+					log.fine("SnapScript: GC requested [varGC="+varGC+" mathGC="+mathGC+"]");
 					System.runFinalization();
 					System.gc();
 					if(varGC > RELEASE_GC)

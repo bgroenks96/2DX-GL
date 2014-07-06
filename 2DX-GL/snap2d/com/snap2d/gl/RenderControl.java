@@ -19,30 +19,40 @@ import java.awt.image.*;
 import java.util.*;
 import java.util.List;
 import java.util.concurrent.*;
+import java.util.logging.*;
 
 import bg.x2d.*;
+import bg.x2d.utils.ConfigLogHandler;
 
 import com.snap2d.*;
 import com.snap2d.gl.GraphicsConfig.Property;
+import com.snap2d.gl.spi.RenderController;
 
 /**
- * Acts as a rendering handle to a Display. This class handles the core game update/render thread.
+ * Acts as a rendering handle to a Display. This class handles the core game update/render thread
+ * for the Java2D renderer.
  * 
  * @author Brian Groenke
  * @since Snap2D 1.0
  * @see com.snap2d.gl.Display
  */
-public class RenderControl {
+public class RenderControl implements RenderController {
 
 	public static final String CL_LIB_LOC = Local.getNativeLibraryLocation()
 			+ "/opencl";
 
-	public static final int POSITION_LAST = 0x07FFFFFFF;
+	public static final int POSITION_LAST = RenderController.POSITION_LAST;
 	public static final Color CANVAS_BACK = Color.WHITE;
 
 	public static int stopTimeout = 2000;
 
 	private static final long RESIZE_TIMER = (long) 1.0E8;
+	
+	private static final Logger log = Logger.getLogger(RenderControl.class.getCanonicalName());
+	{
+		log.setLevel(Level.CONFIG);
+		log.addHandler(new ConfigLogHandler(""));
+	}
 
 	/**
 	 * Determines whether or not auto-resizing should be used. True by default.
@@ -160,8 +170,8 @@ public class RenderControl {
 		loop.noUpdate = noUpdate;
 	}
 	
-	public boolean areUpdatesDisabled() {
-		return loop.noUpdate;
+	public boolean isUpdating() {
+		return !loop.noUpdate;
 	}
 
 	/**
@@ -256,6 +266,7 @@ public class RenderControl {
 		loop.setMaxUpdates(maxUpdates);
 	}
 
+	@Deprecated
 	/**
 	 * Sets the gamma value that will be applied to all pixels rendered on screen.
 	 * 
@@ -301,7 +312,7 @@ public class RenderControl {
 	 * 
 	 * @return true if active, false otherwise.
 	 */
-	public boolean isActive() {
+	public boolean isRenderActive() {
 		return loop.active;
 	}
 
@@ -454,8 +465,6 @@ public class RenderControl {
 
 		Graphics2D g = (Graphics2D) bs.getDrawGraphics();
 		g.setRenderingHints(renderOps);
-		g.setColor(CANVAS_BACK);
-		g.fillRect(0, 0, canvas.getWidth(), canvas.getHeight());
 		try {
 
 			// Check the status of the VolatileImage and update/re-create it if necessary.
@@ -476,6 +485,8 @@ public class RenderControl {
 				}
 
 				Graphics2D img = accBuff.createGraphics();
+				img.setColor(CANVAS_BACK);
+				img.fillRect(0, 0, canvas.getWidth(), canvas.getHeight());
 				for (Renderable r : renderables) {
 					r.render(img, interpolation);
 				}
@@ -636,9 +647,9 @@ public class RenderControl {
 							}
 							String printStr = fps + " fps " + tps + " ticks";
 						    if(print)
-						    	SnapLogger.println(printStr);
+						    	log.info(printStr);
 						    else
-						    	SnapLogger.log(printStr);
+						    	log.fine(printStr);
 							printFrames = false;
 						} catch (InterruptedException e) {
 							e.printStackTrace();
@@ -855,9 +866,9 @@ public class RenderControl {
 	private void printInitReport() {
 		if(!Boolean.getBoolean(Property.SNAP2D_PRINT_J2D_CONFIG.getProperty()))
 			return;
-		SnapLogger.println("initialized Java2D graphics pipeline");
+		log.info("initialized Java2D graphics pipeline");
 		for(Property p:config.configMap.keySet()) {
-			SnapLogger.println(p.getProperty()+"="+config.get(p));
+			log.config(p.getProperty()+"="+config.get(p));
 		}
 	}
 }

@@ -23,8 +23,6 @@ import javax.swing.border.EmptyBorder;
 
 import bg.x2d.utils.Utils;
 
-import com.snap2d.SnapLogger;
-
 /**
  * A graphical interface utility that allows for live script compilation/execution.
  * @author Brian Groenke
@@ -339,7 +337,7 @@ public class ScriptUI extends JFrame {
 			text = Utils.readText(Utils.getFileURL(new File(System.getProperty("java.io.tmpdir") + File.separator + TEMP_FILE)));
 			input.setText(text);
 		} catch (IOException e) {
-			SnapLogger.printErr("ScriptUI: no tmp file - initializing new input data...", true);
+			System.out.println("ScriptUI: no tmp file - initializing new input data...");
 		}
 	}
 

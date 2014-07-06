@@ -12,24 +12,13 @@
 
 package com.snap2d.gl.opengl;
 
-import static javax.media.opengl.GL.*;
-
 import java.awt.*;
-import java.io.*;
 import java.nio.*;
-import java.util.*;
 
 import javax.media.opengl.*;
 
-import bg.x2d.geo.*;
-import bg.x2d.utils.*;
+import bg.x2d.geo.PointUD;
 
-import com.jogamp.common.nio.*;
-import com.jogamp.opengl.util.awt.*;
-import com.snap2d.*;
-import com.snap2d.gl.opengl.GLConfig.Property;
-import com.snap2d.gl.opengl.GLHandle.BufferUsage;
-import com.snap2d.light.*;
 
 /**
  * Main handle object for manipulating GL data and graphics.  This class serves as the primary
@@ -39,193 +28,61 @@ import com.snap2d.light.*;
  * @author Brian Groenke
  *
  */
-public class GLHandle {
-
+public interface GLHandle {
 	public static final float[] DEFAULT_RECT_TEX_COORDS = new float[] {0, 0, 0, 1, 1, 0, 1, 1},
 			INVERTED_RECT_TEX_COORDS = new float[] {0, 1, 0, 0, 1, 1, 1, 0};
-	public static final int FILTER_LINEAR = GL_LINEAR, FILTER_NEAREST = GL_NEAREST;
-
-	public static final String UNIFORM_ORTHO_MATRIX = "mOrtho", UNIFORM_TRANSLATE = "vTranslate",
-			UNIFORM_ROTATE = "fRotate", UNIFORM_ROTATE_PIVOT = "vPivot", UNIFORM_SCALE = "vScale";
-
-	private static final String DEFAULT_VERTEX_SHADER = "default.vert", DEFAULT_FRAG_SHADER = "default.frag";
-
-	protected GLConfig config;
-	protected TextRenderer textRender;
-
-	float vx, vy, vwt, vht;
-	int swt, sht;
-	float ppu;
-	float[] texCoords = DEFAULT_RECT_TEX_COORDS;
-	boolean texEnabled, texBound;
-
-	int magFilter = FILTER_LINEAR, minFilter = FILTER_LINEAR;
-
-	FloatBuffer defColorBuff, orthoMatrix;
+	public static final int FILTER_LINEAR = GL.GL_LINEAR, FILTER_NEAREST = GL.GL_NEAREST;
 	
-	HashSet<LightSource> lights = new HashSet<LightSource>();
-	
-	// transformation values
-	float theta, rx, ry, tx, ty, sx = 1, sy = 1;
-
-	protected GLHandle(GLConfig config) {
-		this.config = config;
-		this.textRender = new TextRenderer(new Font("Arial",Font.PLAIN,12), true, true, null, 
-				config.getAsBool(Property.GL_RENDER_TEXT_MIPMAP));
-		this.defColorBuff = Buffers.newDirectFloatBuffer(new float[] {1,1,1,1});
-
-		// create default shader program
-		try {
-			GLShader vert = GLShader.loadLibraryShader(GLShader.TYPE_VERTEX, DEFAULT_VERTEX_SHADER);
-			GLShader frag = GLShader.loadLibraryShader(GLShader.TYPE_FRAGMENT, DEFAULT_FRAG_SHADER);
-			GLProgram prog = new GLProgram(this);
-			prog.attachShader(vert);
-			prog.attachShader(frag);
-			if(!prog.link()) {
-				SnapLogger.printErr("error linking default shaders: ", true);
-				prog.printLinkLog();
-			}
-			GLProgram.setDefaultProgram(prog);
-			prog.setDefaultShaderProgram(true);
-			prog.enable();
-			prog.setUniformf("gamma", 1.0f);
-		} catch (GLShaderException e) {
-			SnapLogger.printErr("error loading default shaders:", true);
-			e.printStackTrace();
-		} catch (IOException e) {
-			SnapLogger.printErr("error loading default shaders:", true);
-			e.printStackTrace();
-		}
-	}
-
 	/**
-	 * Sets the coordinate viewport of the OpenGL context by creating an
-	 * orthographic projection matrix that transforms vertices 2D space.
-	 * The matrix will be uploaded into the 'ortho' mat4 uniform in the
-	 * default shader program and the currently enabled program if it is
-	 * not the default.
+	 * Sets the 2D coordinate viewport of the OpenGL context according
+	 * to the dimensions and units specified here.
 	 * @see {@link #setProgramTransform(GLProgram)}
 	 * @param x
 	 * @param y
 	 * @param width
 	 * @param height
-	 * @param ppu
+	 * @param ppu pixels-per-unit; for normal use, just use 1
 	 */
-	public void setViewport(float x, float y, int width, int height, float ppu) {
-		if(width <= 0 || height <= 0)
-			throw(new IllegalArgumentException("viewport dimensions must be > 0"));
-		swt = width;
-		sht = height;
-		vx = x;
-		vy = y;
-		vwt = width / ppu;
-		vht = height / ppu;
-		this.ppu = ppu;
+	public void setViewport(float x, float y, float width, float height, float ppu);
+	
+	/**
+	 * Set the size of the display in the current OpenGL context.  This should be
+	 * the current size of the window or panel on which the context is being rendered.
+	 * @param width
+	 * @param height
+	 */
+	public void setDisplaySize(int width, int height);
+	
+	public float getViewportWidth();
 
-		orthoMatrix = GLUtils.createOrthoMatrix(x, x + vwt, y, y + vht, -1, 1);
-		pushTransform();
-		if(!GLProgram.isDefaultProgEnabled()) {
-			GLProgram curr = GLProgram.getCurrentProgram();
-			GLProgram.getDefaultProgram().enable();
-			pushTransform();
-			curr.enable();
-		}
-		
-		/*
-		gl.glMatrixMode(GL2.GL_PROJECTION);
-		gl.glLoadIdentity();
-		gl.glOrtho(x, x + vwt, y, y + vht, 0, 1);
-		gl.glMatrixMode(GL2.GL_MODELVIEW);
-		gl.glLoadIdentity();
-		 */
+	public float getViewportHeight();
 
-	}
+	public float getPPU();
 
-	public void setTextureEnabled(boolean enabled) {
-		final GL2GL3 gl = getGL();
-		if(enabled)
-			gl.glEnable(GL_TEXTURE_2D);
-		else
-			gl.glDisable(GL_TEXTURE_2D);
-		texEnabled = enabled;
-	}
+	public void setTextureEnabled(boolean enabled);
 
-	public void bindTexture(Texture2D tex) {
-		final GL2GL3 gl = getGL();
-		if(!texEnabled) {
-			tex.enable(gl);
-			texEnabled = true;
-		}
-
-		tex.bind(gl);
-		tex.setTexParameteri(gl, GL_TEXTURE_MIN_FILTER, minFilter);
-		tex.setTexParameteri(gl, GL_TEXTURE_MAG_FILTER, magFilter);
-		//gl.glTexEnvi(GL2.GL_TEXTURE_ENV, GL2.GL_TEXTURE_ENV_MODE, GL2.GL_MODULATE); 
-		texBound = true;
-	}
+	public void bindTexture(Texture2D tex);
 
 	/**
 	 * LINEAR or NEAREST texture filtering for texture down-scaling
 	 * @param filterType linear for best quality, nearest for best performance
 	 * @param mipmapType linear or nearest; use -1 for no mipmapping
 	 */
-	public void setTextureMinFilter(int filterType, int mipmapType) {
-		if(filterType != FILTER_NEAREST && filterType != FILTER_LINEAR)
-			throw(new IllegalArgumentException("illegal argument value for 'filterType': expected FILTER_NEAREST or FILTER_LINEAR"));
-		if(mipmapType != FILTER_NEAREST && mipmapType != FILTER_LINEAR)
-			throw(new IllegalArgumentException("illegal argument value for 'filterType': expected FILTER_NEAREST or FILTER_LINEAR"));
-		if(mipmapType < 0)
-			minFilter = filterType;
-		else {
-			switch(filterType) {
-			case FILTER_LINEAR:
-				if(mipmapType == FILTER_LINEAR)
-					minFilter = GL_LINEAR_MIPMAP_LINEAR;
-				else if(mipmapType == FILTER_NEAREST)
-					minFilter = GL_LINEAR_MIPMAP_NEAREST;
-				break;
-			case FILTER_NEAREST:
-				if(mipmapType == FILTER_LINEAR)
-					minFilter = GL_NEAREST_MIPMAP_LINEAR;
-				else if(mipmapType == FILTER_NEAREST)
-					minFilter = GL_NEAREST_MIPMAP_NEAREST;
+	public void setTextureMinFilter(int filterType, int mipmapType);
 
-			}
-		}
-	}
+	public void setTextureMagFilter(int filterType);
 
-	public void setTextureMagFilter(int filterType) {
-		if(filterType != FILTER_NEAREST && filterType != FILTER_LINEAR)
-			throw(new IllegalArgumentException("illegal argument value for 'filterType': expected FILTER_NEAREST or FILTER_LINEAR"));
-		magFilter = filterType;
-	}
+	public void setColor3f(float r, float g, float b);
 
-	public void setColor3f(float r, float g, float b) {
-		setColor4f(r, g, b, 1);
-	}
+	public void setColor4f(float r, float g, float b, float a);
 
-	public void setColor4f(float r, float g, float b, float a) {
-		float[] colors = new float[] {r, g, b, a};
-		defColorBuff.rewind();
-		defColorBuff.put(colors);
-		defColorBuff.flip();
-	}
+	public void setRotation(float theta);
 
-	public void setRotation(float theta) {
-		this.theta = theta;
-	}
-	
-	public void setRotationPoint(float x, float y) {
-		this.rx = x; this.ry = y;
-	}
+	public void setRotationPoint(float x, float y);
 
-	public void setTranslation(float x, float y) {
-		this.tx = x; this.ty = y;
-	}
+	public void setTranslation(float x, float y);
 
-	public void setScale(float sx, float sy) {
-		this.sx = sx; this.sy = sy;
-	}
+	public void setScale(float sx, float sy);
 
 	/**
 	 * Pushes the current transformations to the default/current shader program's matrix.
@@ -233,29 +90,13 @@ public class GLHandle {
 	 * transformation settings at the time of the call until this method is invoked again
 	 * or {@link #clearTransform()} is called to reset the transformation matrix.
 	 */
-	public void pushTransform() {
-		if(orthoMatrix == null)
-			throw(new IllegalStateException("error in pushTransform: coordinate viewport uninitialized"));
-		GLProgram prog = GLProgram.getCurrentProgram();
-		prog.setUniformMatrix(UNIFORM_ORTHO_MATRIX, 4, orthoMatrix);
-		orthoMatrix.rewind();
-		prog.setUniformf(UNIFORM_TRANSLATE, tx, ty);
-		prog.setUniformf(UNIFORM_ROTATE, theta);
-		prog.setUniformf(UNIFORM_ROTATE_PIVOT, rx, ry);
-		prog.setUniformf(UNIFORM_SCALE, sx, sy);
-	}
+	public void pushTransform();
 
 	/**
 	 * Resets all currently stored transformation values to the default configuration (untransformed)
 	 * and uploads the cleared transform to the active program via {@link #pushTransform()}
 	 */
-	public void clearTransform() {
-		this.theta = 0;
-		this.sx = 1; this.sy = 1;
-		this.tx = 0; this.ty = 0;
-		this.rx = 0; this.ry = 0;
-		pushTransform();
-	}
+	public void clearTransform();
 
 	/**
 	 * Sets the coordinates for <code>glTexCoord2f</code> when drawing texture-enabled geometry.
@@ -266,174 +107,25 @@ public class GLHandle {
 	 * 0, 0, 0, 1, 1, 1, 1, 1 (bottom-left, top-left, top-right, bottom-right)
 	 * @param coords the alternating x and y texture coordinates
 	 */
-	public void setTexCoords(float... coords) {
-		if(coords != null && coords.length > 2)
-			this.texCoords = coords;
-	}
+	public void setTexCoords(float... coords);
 
 	/**
 	 * Sets the texture coordinates based on the four corners of the given
 	 * Texture2D.
 	 * @param rectCoords the texture to set texture coordinates from.
 	 */
-	public void setRectTexCoords(Texture2D rectCoords) {
-		texCoords[0] = rectCoords.getLeftCoord(); texCoords[1] = rectCoords.getBottomCoord();
-		texCoords[2] = rectCoords.getLeftCoord(); texCoords[3] = rectCoords.getTopCoord();
-		texCoords[4] = rectCoords.getRightCoord(); texCoords[5] = rectCoords.getBottomCoord();
-		texCoords[6] = rectCoords.getRightCoord(); texCoords[7] = rectCoords.getTopCoord();
-	}
-	
-	public void addLightSource(LightSource light) {
-		lights.add(light);
-	}
-	
-	public void removeLightSource(LightSource light) {
-		lights.remove(light);
-	}
-	
-	float[] ambientColor = new float[] {1,1,1};
-	float ambientFactor;
-	
-	public void setAmbientLightFactor(float ambientFactor) {
-		this.ambientFactor = ambientFactor;
-	}
-	
-	public void setAmbientLightColor(float[] ambientLightColor) {
-		System.arraycopy(ambientLightColor, 0, ambientColor, 0, ambientColor.length);
-	}
-	
-	// lighting system string constants
-	private static final String
-			UNIFORM_LCOUNT = "light_count", UNIFORM_LCOORDS = "lights", UNIFORM_LCOLORS = "light_colors",
-			UNIFORM_LINTENSITY = "intensity", UNIFORM_LRADIUS = "radius", UNIFORM_AMBIENT = "ambient",
-			UNIFORM_AMBIENT_COLOR = "ambient_color";
-	
-	public void updateLightData() throws IllegalStateException {
-		FloatBuffer lightCoords = Buffers.newDirectFloatBuffer(lights.size() * 2);
-		FloatBuffer lightColors = Buffers.newDirectFloatBuffer(lights.size() * 3);
-		FloatBuffer radii = Buffers.newDirectFloatBuffer(lights.size());
-		FloatBuffer intensity = Buffers.newDirectFloatBuffer(lights.size());
-		for(LightSource light : lights) {
-			if(!light.isEnabled())
-				continue;
-			PointUD loc = light.getLocation();
-			lightCoords.put(loc.getFloatX()); lightCoords.put(loc.getFloatY());
-			float[] color = light.getColor();
-			lightColors.put(color);
-			float radius = light.getRadius();
-			radii.put(radius);
-			float ifactor = light.getIntensity();
-			intensity.put(ifactor);
-		}
-		
-		lightCoords.flip();
-		lightColors.flip();
-		radii.flip();
-		intensity.flip();
-		
-		GLProgram prog = GLProgram.getCurrentProgram();
-		prog.setUniformi(UNIFORM_LCOUNT, lights.size());
-		checkGLError(UNIFORM_LCOUNT);
-		prog.setUniformfv(UNIFORM_LCOORDS, 2, lightCoords);
-		checkGLError(UNIFORM_LCOORDS);
-		prog.setUniformfv(UNIFORM_LCOLORS, 3, lightColors);
-		checkGLError(UNIFORM_LCOLORS);
-		prog.setUniformfv(UNIFORM_LRADIUS, 1, radii);
-		checkGLError(UNIFORM_LRADIUS);
-		prog.setUniformfv(UNIFORM_LINTENSITY, 1, intensity);
-		checkGLError(UNIFORM_LINTENSITY);
-		prog.setUniformf(UNIFORM_AMBIENT, ambientFactor);
-		checkGLError(UNIFORM_AMBIENT);
-		prog.setUniformf(UNIFORM_AMBIENT_COLOR, ambientColor);
-		checkGLError(UNIFORM_AMBIENT_COLOR);
-	}
+	public void setRectTexCoords(Texture2D rectCoords);
 
 	// ---- Data Store/Access and Drawing ---- //
-
-	private int[] buffIds;
-	private BufferObject[] buffInfo;
-
-	private final float[] color = new float[4]; // array that holds color data for buffer I/O
-
-	private static final int vertColorPos = 0, vertCoordPos = 1, texCoordPos = 2;
 
 	/**
 	 * Draws the buffer specified by 'buffId' to screen according to parameters set using its
 	 * associated buffer properties.
 	 * @param buffId the id of the vertex buffer to draw
 	 */
-	public void draw2f(int buffId) {
-		final GL2GL3 gl = getGL();
-		if(texBound && texEnabled) {
-			setColor4f(1,1,1,1);
-		}
+	public void draw2f(int buffId);
 
-		BufferObject buffObj = buffInfo[findIndexOfID(buffId)];
-		// draw all quads in vertex buffer
-		gl.glBindBuffer(GL_ARRAY_BUFFER, buffId);
-
-		if(buffObj.data != null) {
-			buffObj.data.flip();
-			gl.glBufferSubData(GL_ARRAY_BUFFER, 0, buffObj.size / buffObj.nobjs * buffObj.objCount, buffObj.data);
-		}
-
-		gl.glEnableVertexAttribArray(vertCoordPos);
-		if(texBound && texEnabled) {
-			gl.glVertexAttribPointer(vertCoordPos, 2, GL_FLOAT, false, 4 * Buffers.SIZEOF_FLOAT, 0);
-			gl.glEnableVertexAttribArray(texCoordPos);
-			gl.glVertexAttribPointer(texCoordPos, 2, GL_FLOAT, false, 4 * Buffers.SIZEOF_FLOAT, 2 * Buffers.SIZEOF_FLOAT);
-		} else {
-			gl.glVertexAttribPointer(vertCoordPos, 2, GL_FLOAT, false, 6 * Buffers.SIZEOF_FLOAT, 0);
-			gl.glEnableVertexAttribArray(vertColorPos);
-			gl.glVertexAttribPointer(vertColorPos, 4, GL_FLOAT, false, 6 * Buffers.SIZEOF_FLOAT, 2 * Buffers.SIZEOF_FLOAT);
-		}
-
-		gl.glMultiDrawArrays(buffObj.drawFunc.getGLCommand(), buffObj.vertIndices, 0, buffObj.vertNum, 0, buffObj.objCount);
-
-		// disable arrays
-		gl.glBindBuffer(GL_ARRAY_BUFFER, 0);
-		gl.glDisableVertexAttribArray(vertCoordPos);
-		gl.glDisableVertexAttribArray(vertColorPos);
-		if(texBound && texEnabled)
-			gl.glDisableVertexAttribArray(texCoordPos);
-
-	}
-
-	public void draw2d(int buffId) {
-		final GL2GL3 gl = getGL();
-		if(texBound && texEnabled) {
-			setColor4f(1,1,1,1);
-		}
-
-		BufferObject buffObj = buffInfo[findIndexOfID(buffId)];
-		// draw all quads in vertex buffer
-		gl.glBindBuffer(GL_ARRAY_BUFFER, buffId);
-
-		if(buffObj.data != null) {
-			buffObj.data.flip();
-			gl.glBufferSubData(GL_ARRAY_BUFFER, 0, buffObj.size / buffObj.nobjs * buffObj.objCount, buffObj.data);
-		}
-
-		gl.glEnableVertexAttribArray(vertCoordPos);
-		if(texBound && texEnabled) {
-			gl.glVertexAttribPointer(vertCoordPos, 2, GL2.GL_DOUBLE, false, 4 * Buffers.SIZEOF_DOUBLE, 0);
-			gl.glEnableVertexAttribArray(texCoordPos);
-			gl.glVertexAttribPointer(texCoordPos, 2, GL2.GL_DOUBLE, false, 4 * Buffers.SIZEOF_DOUBLE, 2 * Buffers.SIZEOF_DOUBLE);
-		} else {
-			gl.glVertexAttribPointer(vertCoordPos, 2, GL2.GL_DOUBLE, false, 6 * Buffers.SIZEOF_DOUBLE, 0);
-			gl.glEnableVertexAttribArray(vertColorPos);
-			gl.glVertexAttribPointer(vertColorPos, 4, GL2.GL_DOUBLE, false, 6 * Buffers.SIZEOF_DOUBLE, 2 * Buffers.SIZEOF_DOUBLE);
-		}
-
-		gl.glMultiDrawArrays(buffObj.drawFunc.getGLCommand(), buffObj.vertIndices, 0, buffObj.vertNum, 0, buffObj.objCount);
-
-		// disable arrays
-		gl.glBindBuffer(GL_ARRAY_BUFFER, 0);
-		gl.glDisableVertexAttribArray(vertCoordPos);
-		gl.glDisableVertexAttribArray(vertColorPos);
-		if(texBound && texEnabled)
-			gl.glDisableVertexAttribArray(texCoordPos);
-	}
+	public void draw2d(int buffId);
 
 	/**
 	 * Writes coordinate data for a given quad to the vertex buffer.  Each successive call to this
@@ -455,224 +147,9 @@ public class GLHandle {
 	 * buffer contains fewer colors than there are vertices, the last color in the buffer will be reused.  You may
 	 * pass null in this argument to use the current default color set via {@link #setColor4f(float, float, float, float)}
 	 */
-	public void putQuad2f(int rectBuffId, float x, float y, float wt, float ht, FloatBuffer colorBuffer) {
-		if(buffIds == null)
-			throw(new GLException("can't write quad data: no allocated buffers"));
-		
-		final GL2GL3 gl = getGL();
+	public void putQuad2f(int rectBuffId, float x, float y, float wt, float ht, FloatBuffer colorBuffer);
 
-		if(colorBuffer == null || colorBuffer.limit() < 4) {
-			defColorBuff.rewind();
-			colorBuffer = defColorBuff;
-		}
-
-		BufferObject buffObj = buffInfo[findIndexOfID(rectBuffId)];
-		int buffSize = buffObj.size;
-		if(buffObj.objCount >= buffObj.nobjs) // if we've reached the total number of objects, reset count
-			buffObj.objCount = 0;
-
-		gl.glBindBuffer(GL_ARRAY_BUFFER, rectBuffId);
-
-		if(buffObj.storeHint == BufferUsage.STATIC_DRAW) {
-			ByteBuffer buff = gl.glMapBuffer(GL_ARRAY_BUFFER, GL_WRITE_ONLY);
-			FloatBuffer floatBuff = buff.order(ByteOrder.nativeOrder()).asFloatBuffer();
-			floatBuff.position(buffSize / Buffers.SIZEOF_FLOAT / buffObj.nobjs * buffObj.objCount);
-
-			floatBuff.put(x); floatBuff.put(y);
-			if(!buffObj.textured) {
-				GLUtils.readAvailable(colorBuffer, color);
-				floatBuff.put(color);
-			} else {
-				floatBuff.put(texCoords[0]); floatBuff.put(texCoords[1]);
-			}
-
-			floatBuff.put(x); floatBuff.put(y + ht);
-			if(!buffObj.textured) {
-				GLUtils.readAvailable(colorBuffer, color);
-				floatBuff.put(color);
-			} else {
-				floatBuff.put(texCoords[2]); floatBuff.put(texCoords[3]);
-			}
-
-			floatBuff.put(x + wt); floatBuff.put(y);
-			if(!buffObj.textured) {
-				GLUtils.readAvailable(colorBuffer, color);
-				floatBuff.put(color);
-			} else {
-				floatBuff.put(texCoords[4]); floatBuff.put(texCoords[5]);
-			}
-
-			floatBuff.put(x + wt); floatBuff.put(y + ht);
-			if(!buffObj.textured) {
-				GLUtils.readAvailable(colorBuffer, color);
-				floatBuff.put(color);
-			} else {
-				floatBuff.put(texCoords[6]); floatBuff.put(texCoords[7]);
-			}
-
-
-		    /*
-			if(buffObj.textured)
-				floatBuff.put(texCoords);
-			else {
-				for(int i=0; i < buffObj.nverts; i++) {
-					int readLen = Math.min(colorBuffer.limit() - colorBuffer.position(), color.length);
-					colorBuffer.get(color, 0, readLen);
-					floatBuff.put(color);
-				}
-			}*/
-			buffObj.objCount++; // increment object count
-			gl.glUnmapBuffer(GL_ARRAY_BUFFER);
-		} else {
-			FloatBuffer floatBuff = (FloatBuffer) buffObj.data;
-			floatBuff.limit(floatBuff.capacity());
-			floatBuff.position(buffSize / Buffers.SIZEOF_FLOAT / buffObj.nobjs * buffObj.objCount);
-
-			floatBuff.put(x); floatBuff.put(y);
-			if(!buffObj.textured) {
-				GLUtils.readAvailable(colorBuffer, color);
-				floatBuff.put(color);
-			} else {
-				floatBuff.put(texCoords[0]); floatBuff.put(texCoords[1]);
-			}
-
-			floatBuff.put(x); floatBuff.put(y + ht);
-			if(!buffObj.textured) {
-				GLUtils.readAvailable(colorBuffer, color);
-				floatBuff.put(color);
-			} else {
-				floatBuff.put(texCoords[2]); floatBuff.put(texCoords[3]);
-			}
-
-			floatBuff.put(x + wt); floatBuff.put(y);
-			if(!buffObj.textured) {
-				GLUtils.readAvailable(colorBuffer, color);
-				floatBuff.put(color);
-			} else {
-				floatBuff.put(texCoords[4]); floatBuff.put(texCoords[5]);
-			}
-
-			floatBuff.put(x + wt); floatBuff.put(y + ht);
-			if(!buffObj.textured) {
-				GLUtils.readAvailable(colorBuffer, color);
-				floatBuff.put(color);
-			} else {
-				floatBuff.put(texCoords[6]); floatBuff.put(texCoords[7]);
-			}
-
-			buffObj.objCount++; // increment object count
-		}
-	}
-
-	public void putQuad2d(int rectBuffId, double x, double y, double wt, double ht, FloatBuffer colorBuffer) {
-		if(buffIds == null)
-			throw(new GLException("can't write quad data: no allocated buffers"));
-		
-		final GL2GL3 gl = getGL();
-		
-		if(colorBuffer == null || colorBuffer.limit() < 4) {
-			defColorBuff.rewind();
-			colorBuffer = defColorBuff;
-		}
-
-		BufferObject buffObj = buffInfo[findIndexOfID(rectBuffId)];
-		int buffSize = buffObj.size;
-		if(buffObj.objCount >= buffObj.nobjs) // if we've reached the total number of objects, reset count
-			buffObj.objCount = 0;
-
-		gl.glBindBuffer(GL_ARRAY_BUFFER, rectBuffId);
-
-		final double[] dcolor = new double[4];
-		if(buffObj.storeHint == BufferUsage.STATIC_DRAW) {
-			ByteBuffer buff = gl.glMapBuffer(GL_ARRAY_BUFFER, GL_WRITE_ONLY);
-			DoubleBuffer doubleBuff = buff.order(ByteOrder.nativeOrder()).asDoubleBuffer();
-			doubleBuff.position(buffSize / Buffers.SIZEOF_DOUBLE / buffObj.nobjs * buffObj.objCount);
-
-			doubleBuff.put(x); doubleBuff.put(y);
-			if(!buffObj.textured) {
-				GLUtils.readAvailable(colorBuffer, color);
-				doubleBuff.put(Buffers.getDoubleArray(color, 0, dcolor, 0, color.length));
-			} else {
-				doubleBuff.put(texCoords[0]); doubleBuff.put(texCoords[1]);
-			}
-
-			doubleBuff.put(x); doubleBuff.put(y + ht);
-			if(!buffObj.textured) {
-				GLUtils.readAvailable(colorBuffer, color);
-				doubleBuff.put(Buffers.getDoubleArray(color, 0, dcolor, 0, color.length));
-			} else {
-				doubleBuff.put(texCoords[2]); doubleBuff.put(texCoords[3]);
-			}
-
-			doubleBuff.put(x + wt); doubleBuff.put(y);
-			if(!buffObj.textured) {
-				GLUtils.readAvailable(colorBuffer, color);
-				doubleBuff.put(Buffers.getDoubleArray(color, 0, dcolor, 0, color.length));
-			} else {
-				doubleBuff.put(texCoords[4]); doubleBuff.put(texCoords[5]);
-			}
-
-			doubleBuff.put(x + wt); doubleBuff.put(y + ht);
-			if(!buffObj.textured) {
-				GLUtils.readAvailable(colorBuffer, color);
-				doubleBuff.put(Buffers.getDoubleArray(color, 0, dcolor, 0, color.length));
-			} else {
-				doubleBuff.put(texCoords[6]); doubleBuff.put(texCoords[7]);
-			}
-
-
-		    /*
-			if(buffObj.textured)
-				floatBuff.put(texCoords);
-			else {
-				for(int i=0; i < buffObj.nverts; i++) {
-					int readLen = Math.min(colorBuffer.limit() - colorBuffer.position(), color.length);
-					colorBuffer.get(color, 0, readLen);
-					floatBuff.put(color);
-				}
-			}*/
-			buffObj.objCount++; // increment object count
-			gl.glUnmapBuffer(GL_ARRAY_BUFFER);
-		} else {
-			DoubleBuffer doubleBuff = (DoubleBuffer) buffObj.data;
-			doubleBuff.limit(doubleBuff.capacity());
-			doubleBuff.position(buffSize / Buffers.SIZEOF_DOUBLE / buffObj.nobjs * buffObj.objCount);
-
-			doubleBuff.put(x); doubleBuff.put(y);
-			if(!buffObj.textured) {
-				GLUtils.readAvailable(colorBuffer, color);
-				doubleBuff.put(Buffers.getDoubleArray(color, 0, dcolor, 0, color.length));
-			} else {
-				doubleBuff.put(texCoords[0]); doubleBuff.put(texCoords[1]);
-			}
-
-			doubleBuff.put(x); doubleBuff.put(y + ht);
-			if(!buffObj.textured) {
-				GLUtils.readAvailable(colorBuffer, color);
-				doubleBuff.put(Buffers.getDoubleArray(color, 0, dcolor, 0, color.length));
-			} else {
-				doubleBuff.put(texCoords[2]); doubleBuff.put(texCoords[3]);
-			}
-
-			doubleBuff.put(x + wt); doubleBuff.put(y);
-			if(!buffObj.textured) {
-				GLUtils.readAvailable(colorBuffer, color);
-				doubleBuff.put(Buffers.getDoubleArray(color, 0, dcolor, 0, color.length));
-			} else {
-				doubleBuff.put(texCoords[4]); doubleBuff.put(texCoords[5]);
-			}
-
-			doubleBuff.put(x + wt); doubleBuff.put(y + ht);
-			if(!buffObj.textured) {
-				GLUtils.readAvailable(colorBuffer, color);
-				doubleBuff.put(Buffers.getDoubleArray(color, 0, dcolor, 0, color.length));
-			} else {
-				doubleBuff.put(texCoords[6]); doubleBuff.put(texCoords[7]);
-			}
-
-			buffObj.objCount++; // increment object count
-		}
-	}
+	public void putQuad2d(int rectBuffId, double x, double y, double wt, double ht, FloatBuffer colorBuffer);
 
 	/**
 	 * Writes coordinate data for a given poly to the vertex buffer.  Each successive call to this
@@ -691,122 +168,9 @@ public class GLHandle {
 	 * pass null in this argument to use the current default color set via {@link #setColor4f(float, float, float, float)}
 	 * @param points the vertices of the polygon in world-space as a varargs
 	 */
-	public void putPoly2f(int polyBuffId, FloatBuffer colorBuffer, PointUD... points) {
-		if(buffIds == null)
-			throw(new GLException("can't write poly data: no allocated buffers"));
-		
-		final GL2GL3 gl = getGL();
+	public void putPoly2f(int polyBuffId, FloatBuffer colorBuffer, PointUD... points);
 
-		if(colorBuffer == null || colorBuffer.limit() < 4) {
-			defColorBuff.rewind();
-			colorBuffer = defColorBuff;
-		}
-
-		BufferObject buffObj = buffInfo[findIndexOfID(polyBuffId)];
-		int buffSize = buffObj.size;
-		if(buffObj.objCount >= buffObj.nobjs) // if we've reached the total number of objects, reset count
-			buffObj.objCount = 0;
-
-		gl.glBindBuffer(GL_ARRAY_BUFFER, polyBuffId);
-
-		if(buffObj.storeHint == BufferUsage.STATIC_DRAW) {
-			ByteBuffer buff = gl.glMapBuffer(GL_ARRAY_BUFFER, GL_WRITE_ONLY);
-			FloatBuffer floatBuff = buff.order(ByteOrder.nativeOrder()).asFloatBuffer();
-			floatBuff.position(buffSize / Buffers.SIZEOF_FLOAT / buffObj.nobjs * buffObj.objCount);
-			for(int i = 0, t = 0; i < points.length; i++, t+=2) {
-				PointUD pt = points[i];
-				floatBuff.put(pt.getFloatX()); 
-				floatBuff.put(pt.getFloatY());
-				if(buffObj.textured) {
-					floatBuff.put(texCoords[t]); floatBuff.put(texCoords[t+1]);
-				} else {
-					GLUtils.readAvailable(colorBuffer, color);
-					floatBuff.put(color);
-				}
-			}
-			buffObj.objCount++; // increment object count
-			gl.glUnmapBuffer(GL_ARRAY_BUFFER);
-		} else {
-			FloatBuffer floatBuff = (FloatBuffer) buffObj.data;
-			//if(buffObj.objCount != 0)
-			//	gl.glGetBufferSubData(GL_ARRAY_BUFFER, 0, buffSize / buffObj.nobjs * buffObj.objCount, floatBuff);
-			floatBuff.limit(floatBuff.capacity());
-			floatBuff.position(buffSize / Buffers.SIZEOF_FLOAT / buffObj.nobjs * buffObj.objCount);
-			for(int i = 0, t = 0; i < points.length; i++, t+=2) {
-				PointUD pt = points[i];
-				floatBuff.put(pt.getFloatX()); 
-				floatBuff.put(pt.getFloatY());
-				if(buffObj.textured) {
-					floatBuff.put(texCoords[t]); floatBuff.put(texCoords[t+1]);
-				} else {
-					GLUtils.readAvailable(colorBuffer, color);
-					floatBuff.put(color);
-				}
-			}
-			floatBuff.flip();
-			colorBuffer.flip();
-			buffObj.objCount++; // increment object count
-		}
-	}
-
-	public void putPoly2d(int rectBuffId, PointUD[] points, FloatBuffer colorBuffer) {
-		if(buffIds == null)
-			throw(new GLException("can't write poly data: no allocated buffers"));
-		
-		final GL2GL3 gl = getGL();
-
-		if(colorBuffer == null || colorBuffer.limit() < 4) {
-			defColorBuff.rewind();
-			colorBuffer = defColorBuff;
-		}
-
-		BufferObject buffObj = buffInfo[findIndexOfID(rectBuffId)];
-		int buffSize = buffObj.size;
-		if(buffObj.objCount >= buffObj.nobjs) // if we've reached the total number of objects, reset count
-			buffObj.objCount = 0;
-
-		gl.glBindBuffer(GL_ARRAY_BUFFER, rectBuffId);
-
-		final double[] dcolor = new double[4];
-		if(buffObj.storeHint == BufferUsage.STATIC_DRAW) {
-			ByteBuffer buff = gl.glMapBuffer(GL_ARRAY_BUFFER, GL_WRITE_ONLY);
-			DoubleBuffer doubleBuff = buff.order(ByteOrder.nativeOrder()).asDoubleBuffer();
-			doubleBuff.position(buffSize / Buffers.SIZEOF_DOUBLE / buffObj.nobjs * buffObj.objCount);
-			for(int i = 0, t = 0; i < points.length; i++, t+=2) {
-				PointUD pt = points[i];
-				doubleBuff.put(pt.getFloatX()); 
-				doubleBuff.put(pt.getFloatY());
-				if(buffObj.textured) {
-					doubleBuff.put(texCoords[t]); doubleBuff.put(texCoords[t+1]);
-				} else {
-					GLUtils.readAvailable(colorBuffer, color);
-					doubleBuff.put(Buffers.getDoubleArray(color, 0, dcolor, 0, color.length));
-				}
-			}
-			buffObj.objCount++; // increment object count
-			gl.glUnmapBuffer(GL_ARRAY_BUFFER);
-		} else {
-			DoubleBuffer doubleBuff = (DoubleBuffer) buffObj.data;
-			//if(buffObj.objCount != 0)
-			//	gl.glGetBufferSubData(GL_ARRAY_BUFFER, 0, buffSize / buffObj.nobjs * buffObj.objCount, floatBuff);
-			doubleBuff.limit(doubleBuff.capacity());
-			doubleBuff.position(buffSize / Buffers.SIZEOF_DOUBLE / buffObj.nobjs * buffObj.objCount);
-			for(int i = 0, t = 0; i < points.length; i++, t+=2) {
-				PointUD pt = points[i];
-				doubleBuff.put(pt.getFloatX()); 
-				doubleBuff.put(pt.getFloatY());
-				if(buffObj.textured) {
-					doubleBuff.put(texCoords[t]); doubleBuff.put(texCoords[t+1]);
-				} else {
-					GLUtils.readAvailable(colorBuffer, color);
-					doubleBuff.put(Buffers.getDoubleArray(color, 0, dcolor, 0, color.length));
-				}
-			}
-			doubleBuff.flip();
-			colorBuffer.flip();
-			buffObj.objCount++; // increment object count
-		}
-	}
+	public void putPoly2d(int rectBuffId, PointUD[] points, FloatBuffer colorBuffer);
 
 	/**
 	 * Resets the object data for the given buffer to zero.
@@ -815,10 +179,7 @@ public class GLHandle {
 	 * partially filled buffer after it has been drawn.
 	 * @param buffId
 	 */
-	public void resetBuff(int buffId) {
-		int ind = findIndexOfID(buffId);
-		buffInfo[ind].objCount = 0;
-	}
+	public void resetBuff(int buffId);
 
 	/**
 	 * Allocates a vertex buffer for rendering a given number of quads.  The returned
@@ -828,15 +189,9 @@ public class GLHandle {
 	 * @param textured true if this quad will be textured (so tex coords are stored), false otherwise
 	 * @return the id for the quad buffer
 	 */
-	public int createQuadBuffer2f(BufferUsage storeType, int nobjs, boolean textured) {
-		BufferObject buffObj = initVBO2f(storeType, GeomFunc.TRIANGLE_STRIP, 4, nobjs, textured);
-		return buffObj.id;
-	}
+	public int createQuadBuffer2f(BufferUsage storeType, int nobjs, boolean textured);
 
-	public int createQuadBuffer2d(BufferUsage storeType, int nobjs, boolean textured) {
-		BufferObject buffObj = initVBO2d(storeType, GeomFunc.TRIANGLE_STRIP, 4, nobjs, textured);
-		return buffObj.id;
-	}
+	public int createQuadBuffer2d(BufferUsage storeType, int nobjs, boolean textured);
 
 	/**
 	 * Allocates a vertex buffer for rendering a given number of polygons with a
@@ -849,142 +204,17 @@ public class GLHandle {
 	 * @param textured true if this polygon will be textured (1 tex coord per vertex), false otherwise
 	 * @return the id for the poly buffer
 	 */
-	public int createPolyBuffer2f(BufferUsage storeType, GeomFunc drawFunc, int verts, int nobjs, boolean textured) {
-		BufferObject buffObj = initVBO2f(storeType, drawFunc, verts, nobjs, textured);
-		return buffObj.id;
-	}
+	public int createPolyBuffer2f(BufferUsage storeType, GeomFunc drawFunc, int verts, int nobjs, boolean textured);
 
-	public int createPolyBuffer2d(BufferUsage storeType, GeomFunc drawFunc, int verts, int nobjs, boolean textured) {
-		BufferObject buffObj = initVBO2d(storeType, drawFunc, verts, nobjs, textured);
-		return buffObj.id;
-	}
+	public int createPolyBuffer2d(BufferUsage storeType, GeomFunc drawFunc, int verts, int nobjs, boolean textured);
 
 	/**
 	 * Deletes the VBO held with the given ID from memory.
 	 * @param id the id for the buffer returned by {@link #createRectBuff2f(BufferUsage)}
 	 * and {@link #createRectBuff2d(BufferUsage)}
-	 * @return
+	 * @return true if successful, false otherwise
 	 */
-	public boolean destroyBuff(int id) {
-		final GL2GL3 gl = getGL();
-		int ind = findIndexOfID(id);
-		if(ind < 0)
-			return false;
-		// delete buffer from GL system
-		gl.glDeleteBuffers(1, buffIds, ind);
-		// delete buffer id and BufferObject from GLHandle
-		buffIds = Utils.arrayDelete(buffIds, ind);
-		buffInfo = Utils.arrayDelete(buffInfo, new BufferObject[buffInfo.length - 1], ind);
-		return true;
-	}
-
-	/*
-	 * appends the buffer index to 'buffIds' and returns the BufferObject for the newly created buffer
-	 */
-	private BufferObject initVBO2f(BufferUsage storeType, GeomFunc drawFunc, int nverts, 
-			int nobjs, boolean textured) {
-		final GL2GL3 gl = getGL();
-		if(buffIds == null) {
-			buffIds = new int[1];
-			buffInfo = new BufferObject[1];
-		} else {
-			buffIds = Arrays.copyOf(buffIds, buffIds.length + 1);
-			buffInfo = Arrays.copyOf(buffInfo, buffInfo.length + 1);
-		}
-		int ind = buffIds.length - 1;
-		gl.glGenBuffers(1, buffIds, ind);
-		gl.glBindBuffer(GL_ARRAY_BUFFER, buffIds[ind]);
-		int buffSize;
-		if(textured) {
-			buffSize = 4 * nobjs * nverts * Buffers.SIZEOF_FLOAT;
-		} else {
-			buffSize = 6 * nobjs * nverts * Buffers.SIZEOF_FLOAT;
-		}
-
-		gl.glBufferData(GL_ARRAY_BUFFER, buffSize, 
-				null, storeType.usageHint);
-
-		gl.glBindBuffer(GL_ARRAY_BUFFER, 0);
-
-		BufferObject buffObj = new BufferObject(buffIds[ind], nverts, nobjs, Buffers.SIZEOF_FLOAT, buffSize, 
-				textured, drawFunc, storeType);
-		if(storeType != BufferUsage.STATIC_DRAW)
-			buffObj.data = Buffers.newDirectFloatBuffer(buffSize / Buffers.SIZEOF_FLOAT);
-		buffInfo[buffInfo.length - 1] = buffObj;
-		return buffObj;
-	}
-
-	/*
-	 * appends the buffer index to 'buffIds' and returns the BufferObject for the newly created buffer
-	 */
-	private BufferObject initVBO2d(BufferUsage storeType, GeomFunc drawFunc, int nverts, 
-			int nobjs, boolean textured) {
-		final GL2GL3 gl = getGL();
-		if(buffIds == null) {
-			buffIds = new int[1];
-			buffInfo = new BufferObject[1];
-		} else {
-			buffIds = Arrays.copyOf(buffIds, buffIds.length + 1);
-			buffInfo = Arrays.copyOf(buffInfo, buffInfo.length + 1);
-		}
-		int ind = buffIds.length - 1;
-		gl.glGenBuffers(1, buffIds, ind);
-		gl.glBindBuffer(GL_ARRAY_BUFFER, buffIds[ind]);
-		int buffSize;
-		if(textured) {
-			buffSize = 4 * 3 * nobjs * nverts * Buffers.SIZEOF_DOUBLE;
-		} else {
-			buffSize = 2 * 3 * nobjs * nverts * Buffers.SIZEOF_DOUBLE;
-		}
-
-		gl.glBufferData(GL_ARRAY_BUFFER, buffSize, 
-				null, storeType.usageHint);
-
-		gl.glBindBuffer(GL_ARRAY_BUFFER, 0);
-
-		BufferObject buffObj = new BufferObject(buffIds[ind], nverts, nobjs, Buffers.SIZEOF_DOUBLE, buffSize, 
-				textured, drawFunc, storeType);
-		buffObj.data = Buffers.newDirectDoubleBuffer(buffSize / Buffers.SIZEOF_DOUBLE);
-		buffInfo[buffInfo.length - 1] = buffObj;
-		return buffObj;
-	}
-
-	private int findIndexOfID(int id) {
-		for(int i=0; i < buffIds.length; i++) {
-			if(id == buffIds[i])
-				return i;
-		}
-		throw(new GLException("failed to locate buffer - ID does not exist: " + id));
-	}
-
-	/*
-	 * Holds data used for handling Vertex Buffer Objects
-	 */
-	private class BufferObject {
-		int[] vertIndices, vertNum;
-		int id, nverts, nobjs, objCount, size;
-		boolean textured;
-		GeomFunc drawFunc;
-		BufferUsage storeHint;
-
-		Buffer data;
-
-		// constructor sets values and pre-computes arrays that are needed for glMultiDrawArrays function
-		BufferObject(int id, int nverts, int nobjs, int typeSize, int size, boolean textured, 
-				GeomFunc drawFunc, BufferUsage usage) {
-			this.id = id; this.nverts = nverts; this.nobjs = nobjs;
-			this.size = size;
-			this.textured = textured;
-			this.drawFunc = drawFunc;
-			this.storeHint = usage;
-			vertIndices = new int[nobjs];
-			vertNum = new int[nobjs];
-			for(int i=0; i < vertNum.length; i++)
-				vertNum[i] = nverts;
-			for(int i=0; i < vertIndices.length; i++)
-				vertIndices[i] = size / typeSize / nobjs / ((textured) ? 4:6) * i;
-		}
-	}
+	public boolean destroyBuff(int id);
 
 	/**
 	 * Draws text to the given screen location.  If the default shader
@@ -996,25 +226,9 @@ public class GLHandle {
 	 * @param x
 	 * @param y
 	 */
-	public void drawText(String text, Color color, int x, int y) {
-		drawText(text, x, y, color.getComponents(new float[4]));
-	}
+	public void drawText(String text, Color color, int x, int y);
 
-	public void drawText(String text, int x, int y, float[] rgba) {
-		boolean disableShaders = GLProgram.isDefaultProgEnabled();
-		if(disableShaders)
-			GLProgram.getDefaultProgram().disable();
-
-		textRender.beginRendering(swt, sht);
-		textRender.setSmoothing(config.getAsBool(Property.GL_RENDER_TEXT_SMOOTH));
-		textRender.setUseVertexArrays(config.getAsBool(Property.GL_RENDER_TEXT_USE_VAO));
-		textRender.setColor(rgba[0], rgba[1], rgba[2], rgba[3]);
-		textRender.draw(text, x, y);
-		textRender.endRendering();
-
-		if(disableShaders)
-			GLProgram.getDefaultProgram().enable();
-	}
+	public void drawText(String text, int x, int y, float[] rgba);
 
 	/**
 	 * Draws the given array of text strings at their respective screen coordinates 
@@ -1023,289 +237,25 @@ public class GLHandle {
 	 * @param coords
 	 * @param colors
 	 */
-	public void drawTextBatch(String[] texts, IntBuffer coords, FloatBuffer colors) {
-		float[] color = new float[4];
-		if(colors.limit() < 4)
-			throw(new IllegalArgumentException("color buffer must have at least 4 values"));
-		for(String s : texts) {
-			int x = coords.get();
-			int y = coords.get();
-			if(colors.position() < colors.limit())
-				colors.get(color, 0, Math.min(colors.remaining(), color.length));
-			drawText(s, x, y, color);
-		}
-	}
+	public void drawTextBatch(String[] texts, IntBuffer coords, FloatBuffer colors);
 
 	/**
 	 * Re-creates the internal TextRenderer with the given Font.
 	 * @param font
 	 */
-	public void setFont(Font font) {
-		textRender.dispose();
-		textRender = new TextRenderer(font, true, true, null, config.getAsBool(Property.GL_RENDER_TEXT_MIPMAP));
-	}
-
-	// -------- OpenGL Feature Control --------- //
-
-	public void setEnabled(GLFeature feature, boolean enable) {
-		final GL2GL3 gl = getGL();
-		if(enable)
-			gl.glEnable(feature.getGLCommand());
-		else
-			gl.glDisable(feature.getGLCommand());
-	}
-
-	/**
-	 * Mappings to selected OpenGL features that may be enabled/disabled by the caller.
-	 * @author Brian Groenke
-	 *
-	 */
-	public enum GLFeature {
-
-		BLENDING(GL_BLEND);
-
-		private int mapping;
-
-		GLFeature(int glMapping) {
-			this.mapping = glMapping;
-		}
-
-		public int getGLCommand() {
-			return mapping;
-		}
-	}
-
-	/**
-	 * Sets the alpha blending function.
-	 * @param blendFunc
-	 */
-	public void setBlendFunc(AlphaFunc blendFunc) {
-		final GL2GL3 gl = getGL();
-		switch(blendFunc) {
-		case CLEAR:
-			gl.glBlendFunc(GL_ZERO, GL_ZERO);
-			break;
-		case SRC:
-			gl.glBlendFunc(GL_ONE, GL_ZERO);
-			break;
-		case DST:
-			gl.glBlendFunc(GL_ZERO, GL_ONE);
-			break;
-		case SRC_OVER:
-			gl.glBlendFunc(GL_ONE, GL_ONE_MINUS_SRC_ALPHA);
-			break;
-		case DST_OVER:
-			gl.glBlendFunc(GL_ONE_MINUS_DST_ALPHA, GL_ONE);
-			break;
-		case SRC_IN:
-			gl.glBlendFunc(GL_DST_ALPHA, GL_ZERO);
-			break;
-		case DST_IN:
-			gl.glBlendFunc(GL_ZERO, GL_SRC_ALPHA);
-			break;
-		case SRC_OUT:
-			gl.glBlendFunc(GL_ONE_MINUS_DST_ALPHA, GL_ZERO);
-			break;
-		case DST_OUT:
-			gl.glBlendFunc(GL_ZERO, GL_ONE_MINUS_SRC_ALPHA);
-			break;
-		case SRC_ATOP:
-			gl.glBlendFunc(GL_DST_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-			break;
-		case DST_ATOP:
-			gl.glBlendFunc(GL_ONE_MINUS_DST_ALPHA, GL_SRC_ALPHA);
-			break;
-		case ALPHA_XOR:
-			gl.glBlendFunc(GL_ONE_MINUS_DST_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-			break;
-		case SRC_DST:
-			gl.glBlendFunc(GL_ONE, GL_ONE);
-			break;
-		case SRC_BLEND:
-			gl.glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-			break;
-		case DST_BLEND:
-			gl.glBlendFunc(GL_DST_ALPHA, GL_ONE_MINUS_DST_ALPHA);
-		}
-	}
-
-	/**
-	 * Specifies standard methods of alpha blending.
-	 * @author Brian Groenke
-	 *
-	 */
-	public enum AlphaFunc {
-		CLEAR, SRC, DST, SRC_OVER, DST_OVER, SRC_IN, DST_IN,
-		SRC_OUT, DST_OUT, SRC_ATOP, DST_ATOP, ALPHA_XOR, SRC_DST, SRC_BLEND,
-		DST_BLEND;
-	}
-
-	/**
-	 * Represents a set number of supported OpenGL geometry drawing functions.
-	 * @author Brian Groenke
-	 *
-	 */
-	public enum GeomFunc {
-
-		POINTS(GL_POINTS), 
-		LINES(GL_LINES), 
-		LINE_STRIP(GL_LINE_STRIP), 
-		TRIANGLES(GL_TRIANGLES),
-		TRIANGLE_STRIP(GL_TRIANGLE_STRIP), 
-		TRIANGLE_FAN(GL_TRIANGLE_FAN);
-
-		private int glcmd;
-
-		GeomFunc(int glCommand) {
-			this.glcmd = glCommand;
-		}
-
-		public int getGLCommand() {
-			return glcmd;
-		}
-	}
-
-	/**
-	 * Provides a set of hints used when allocating Vertex Buffer Objects to tell
-	 * the system how often the data will be updated.
-	 * @author Brian Groenke
-	 *
-	 */
-	public enum BufferUsage {
-		/**
-		 * Should be used for data that will be written once and updated
-		 * infrequently.  Maps to field GL_STATIC_DRAW.
-		 */
-		STATIC_DRAW(GL_STATIC_DRAW), 
-		/**
-		 * Should be used for data that will be updated frequently (i.e.
-		 * every few frames).  Maps to field GL_DYNAMIC_DRAW.
-		 */
-		DYNAMIC_DRAW(GL_DYNAMIC_DRAW),
-		/**
-		 * Should be used for data that will be updated on every frame.
-		 * Maps to field GL_STREAM_DRAW.
-		 */
-		STREAM_DRAW(GL2.GL_STREAM_DRAW);
-
-		final int usageHint;
-
-		BufferUsage(int usage) {
-			this.usageHint = usage;
-		}
-	}
-
-	protected void onDispose() {
-		textRender.dispose();
-		if(buffIds != null) {
-			for(int i : buffIds)
-				destroyBuff(i);
-		}
-	}
+	public void setFont(Font font);
 	
-	protected int checkGLError(String pre) {
-		final GL2GL3 gl = getGL();
-		int errno = gl.glGetError();
-		if(errno != GL.GL_NO_ERROR)
-			SnapLogger.printErr(pre + ": " + mapGLErrorToString(errno), true);;
-		return errno;
-	}
+	public void setEnabled(GLFeature feature, boolean enabled);
 	
-	protected static String mapGLErrorToString(int errno) {
-		switch(errno) {
-		case GL.GL_NO_ERROR:
-			return "No error";
-		case GL.GL_INVALID_ENUM:
-        	return "Invalid enum";
-		case GL.GL_INVALID_OPERATION:
-			return "Invalid operation";
-		case GL.GL_INVALID_FRAMEBUFFER_OPERATION:
-			return "Invalid FBO operation";
-		case GL.GL_OUT_OF_MEMORY:
-			return "Out of memory!";
-		default:
-			return "unknown error";
-		}
-	}
+	public void setBlendFunc(AlphaFunc func);
 	
-	private GL2GL3 getGL() {
-		return GLContext.getCurrentGL().getGL2GL3();
-	}
+	public void dispose();
 	
-	// --- DEPRECATED / DISCARDED ---- //
-
-	/*
-	@Deprecated
-	public void drawRect2f(float x, float y, float wt, float ht) {
-		GL2 gl = GLContext.getCurrentGL().getGL2();
-		if(texBound && texEnabled) {
-			setColor4f(1,1,1,1);
-			if(texCoords.length < 8) // 4 corners * 2 coordinates per corner
-				throw(new GLException("too few tex coords: " + texCoords.length + " < 8"));
-		}
-		int tcoord = 0;
-		gl.glBegin(GL_TRIANGLE_STRIP);
-		if(texBound && texEnabled)
-			gl.glTexCoord2f(texCoords[tcoord++], texCoords[tcoord++]);
-		gl.glVertex2f(x, y);
-		if(texBound && texEnabled)
-			gl.glTexCoord2f(texCoords[tcoord++], texCoords[tcoord++]);
-		gl.glVertex2f(x, y + ht);
-		if(texBound && texEnabled)
-			gl.glTexCoord2f(texCoords[tcoord++], texCoords[tcoord++]);
-		gl.glVertex2f(x + wt, y);
-		if(texBound && texEnabled)
-			gl.glTexCoord2f(texCoords[tcoord++], texCoords[tcoord++]);
-		gl.glVertex2f(x + wt, y + ht);
-		gl.glEnd();
-	}
-	 */
-	/*
-	public void drawRect2d(double x, double y, double wt, double ht) {
-		if(texBound && texEnabled) {
-			setColor3f(1,1,1);
-			if(texCoords.length < 8) // 4 corners * 2 coordinates per corner
-				throw(new GLException("too few tex coords: " + texCoords.length + " < 8"));
-		}
-		int tcoord = 0;
-		gl.glBegin(GL_TRIANGLE_STRIP);
-		if(texBound && texEnabled)
-			gl.glTexCoord2f(texCoords[tcoord++], texCoords[tcoord++]);
-		gl.glVertex2d(x, y);
-		if(texBound && texEnabled)
-			gl.glTexCoord2f(texCoords[tcoord++], texCoords[tcoord++]);
-		gl.glVertex2d(x, y + ht);
-		if(texBound && texEnabled)
-			gl.glTexCoord2f(texCoords[tcoord++], texCoords[tcoord++]);
-		gl.glVertex2d(x + wt, y + ht);
-		if(texBound && texEnabled)
-			gl.glTexCoord2f(texCoords[tcoord++], texCoords[tcoord++]);
-		gl.glVertex2d(x + wt, y);
-		if(texBound && texEnabled)
-			gl.glTexCoord2f(texCoords[tcoord++], texCoords[tcoord++]);
-		gl.glVertex2d(x, y);
-		gl.glEnd();
-	}
-	 */
-
-	/*
-	private void drawNoGLSL2f(BufferObject buffObj) {
-		gl.glEnableClientState( GL2.GL_VERTEX_ARRAY);
-		if(texBound && texEnabled) {
-			gl.glEnableClientState(GL2.GL_TEXTURE_COORD_ARRAY);
-			gl.glVertexPointer(2, GL_FLOAT, 0, 0);
-			gl.glTexCoordPointer(2, GL_FLOAT, 0, 2 * buffObj.nverts * Buffers.SIZEOF_FLOAT);
-		} else {
-			gl.glVertexPointer(2, GL_FLOAT, 0, 0);
-		}
-
-		gl.glMultiDrawArrays(buffObj.drawFunc.getGLCommand(), buffObj.vertIndices, 0, buffObj.vertNum, 0, buffObj.objCount);
-
-		// disable arrays
-		gl.glBindBuffer(GL_ARRAY_BUFFER, 0);
-		gl.glDisableClientState(GL2.GL_VERTEX_ARRAY);
-		if(texBound && texEnabled)
-			gl.glDisableClientState(GL2.GL_TEXTURE_COORD_ARRAY);
-	}
-	 */
+	public boolean isGL3();
+	
+	public boolean isGL2();
+	
+	public GL3Handle asGL3() throws UnsupportedOperationException;
+	
+	public GL2Handle asGL2() throws UnsupportedOperationException;
 }

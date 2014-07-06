@@ -14,12 +14,11 @@ package com.snap2d.script;
 
 import java.io.IOException;
 import java.lang.reflect.Method;
-import java.net.URL;
 import java.util.*;
+import java.util.logging.Logger;
 
 import bg.x2d.utils.Multimap;
 
-import com.snap2d.SnapLogger;
 import com.snap2d.script.ScriptCompiler.Variable;
 import com.snap2d.script.lib.*;
 
@@ -28,6 +27,8 @@ import com.snap2d.script.lib.*;
  *
  */
 public class ScriptProgram {
+	
+	private static final Logger log = Logger.getLogger(ScriptProgram.class.getCanonicalName());
 
 	ArrayList<ScriptSource> scripts = new ArrayList<ScriptSource>();
 	ArrayList<Class<?>> classes = new ArrayList<Class<?>>();
@@ -82,7 +83,7 @@ public class ScriptProgram {
 	}
 
 	public boolean compile() {
-		SnapLogger.println("Initializing SnapScript " + ScriptInfo.SCRIPT_VERSION.str + 
+		log.info("Initializing SnapScript " + ScriptInfo.SCRIPT_VERSION.str + 
 				" [BCS."+ ScriptInfo.BYTECODE_SPEC.str+"]");
 		ScriptCompiler compiler = new ScriptCompiler();
 		boolean chk;
@@ -92,11 +93,11 @@ public class ScriptProgram {
 				srcs[i] = scripts.get(i).getSource();
 			}
 			ArrayList<ConstantInitializer> constList = new ArrayList<ConstantInitializer>();
-			SnapLogger.println("Running precompiler...");
+			log.info("Running precompiler...");
 			funcs = compiler.precompile(constList, srcs);
 			scriptFuncs = new Function[funcs.size()];
 			funcs.values().toArray(scriptFuncs);
-			SnapLogger.println("Linking Java functions...");
+			log.info("Linking Java functions...");
 			// register methods from linked classes
 			for(Class<?> c:classes) {
 				Method[] methods = c.getDeclaredMethods();
@@ -116,11 +117,11 @@ public class ScriptProgram {
 				}
 			}
 
-			SnapLogger.println("Running compiler...");
+			log.info("Running compiler...");
 			compiler.compile(funcs, constList);
 			initConsts = new ConstantInitializer[constList.size()];
 			constList.toArray(initConsts);
-			SnapLogger.println("Done");
+			log.info("Done");
 			chk = true;
 		} catch (ScriptCompilationException e) {
 			e.printStackTrace();
@@ -152,7 +153,7 @@ public class ScriptProgram {
 			throw(new IllegalStateException("cannot initialize runtime before compilation"));
 		
 		engine = new ScriptEngine(this, funcs.values().toArray(new Function[funcs.size()]), initConsts, useDoubleStore);
-		SnapLogger.println("SnapScript runtime successfully initialized!\n");
+		log.info("SnapScript runtime successfully initialized!\n");
 	}
 	
 	public void disposeRuntime() {
@@ -279,18 +280,5 @@ public class ScriptProgram {
 			return Keyword.VOID;
 		else
 			return null;
-	}
-	
-	public static void main(String[] args) throws IOException {
-		ScriptProgram prog = new ScriptProgram(true, new ScriptSource(ScriptProgram.class.getResource("/test_script.txt")));
-		if(prog.compile()) {
-			try {
-				prog.initRuntime(true);
-				Function f = prog.findFunction("Func");
-				prog.invoke(f, 3, 4);
-			} catch (ScriptInvocationException e) {
-				e.printStackTrace();
-			}
-		}
 	}
 }

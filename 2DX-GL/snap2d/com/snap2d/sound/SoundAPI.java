@@ -12,9 +12,9 @@
 
 package com.snap2d.sound;
 
-import paulscode.sound.*;
+import java.util.logging.Logger;
 
-import com.snap2d.SnapLogger;
+import paulscode.sound.*;
 
 /**
  * Acts as a static entrance point to the Snap2D Sound API. You MUST call the
@@ -30,6 +30,7 @@ import com.snap2d.SnapLogger;
 public class SoundAPI {
 	
 	private static final String JOAL_VERSION_CLASS_NAME = "com.jogamp.openal.JoalVersion";
+	private static final Logger log = Logger.getLogger(SoundAPI.class.getCanonicalName());
 	
 	static Sound2D sound2d;
 	static CleanupSoundSystem shutdownTask = new CleanupSoundSystem();
@@ -47,18 +48,18 @@ public class SoundAPI {
 		}
 		try {
 			if(sound2d == null) {
-				SnapLogger.println("SoundAPI: initializing...");
+				log.info("SoundAPI: initializing...");
 				boolean joal = isJOALAvailable();
 				sound2d = new Sound2D(joal);
 				Runtime.getRuntime().addShutdownHook(
 						new Thread(shutdownTask));
 			} else
-				SnapLogger.println("SoundAPI: re-initializing...");
+			    log.info("SoundAPI: re-initializing...");
 			
 			sound2d.initSystem();
-			SnapLogger.println("SoundAPI: successfully initialized sound system");
+			log.info("SoundAPI: successfully initialized sound system");
 		} catch (SoundSystemException e) {
-			SnapLogger.printErr("failed to initialize Snap2D Sound API: " + e.getMessage(), true);
+			log.warning("failed to initialize Snap2D Sound API: " + e.getMessage());
 			sound2d = null;
 		}
 	}
@@ -131,7 +132,7 @@ public class SoundAPI {
 		@Override
 		public void run() {
 			if (sound2d != null && sound2d.isInitialized()) {
-				SnapLogger.println("SoundAPI: shutting down");
+				log.info("SoundAPI: shutting down");
 				sound2d.shutdown();
 				sound2d = null;
 			}

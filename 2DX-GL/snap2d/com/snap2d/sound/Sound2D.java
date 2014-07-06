@@ -15,13 +15,12 @@ package com.snap2d.sound;
 import java.awt.geom.Point2D;
 import java.net.URL;
 import java.util.*;
+import java.util.logging.Logger;
 
 import paulscode.sound.*;
 import paulscode.sound.codecs.*;
 import paulscode.sound.libraries.LibraryJavaSound;
 import bg.x2d.geo.Vector2f;
-
-import com.snap2d.SnapLogger;
 
 /**
  * Main facility for the Snap2D Sound API. Sound2D allows control over loading, playing, and
@@ -61,6 +60,7 @@ public class Sound2D {
 	ATTENUATION_LINEAR = SoundSystemConfig.ATTENUATION_LINEAR;
 
 	private static final String LIBRARY_JOAL_CLASS_NAME = "paulscode.sound.libraries.LibraryJOAL";
+	private static final Logger log = Logger.getLogger(Sound2D.class.getCanonicalName());
 
 	private SoundSystem sound;
 	private boolean useJOAL;
@@ -182,7 +182,7 @@ public class Sound2D {
 					attValue, fade);
 		}
 		if(sources.put(id, src) != null)
-			SnapLogger.println("SoundMap: overwrote previous source id '"+id+"'");
+			log.warning("SoundMap: overwrote previous source id '"+id+"'");
 	}
 	
 	/**
@@ -212,7 +212,7 @@ public class Sound2D {
 					attValue, fade);
 		}
 		if(sources.put(id, src) != null)
-			SnapLogger.println("SoundMap: overwrote previous source id '"+id+"'");
+			log.warning("SoundMap: overwrote previous source id '"+id+"'");
 	}
 	
 	/**
@@ -563,11 +563,11 @@ public class Sound2D {
 				libJOAL = ClassLoader.getSystemClassLoader().loadClass(LIBRARY_JOAL_CLASS_NAME);
 				// if LibraryJOAL is available, make sure it is compatible with the system
 				if(!SoundSystemConfig.libraryCompatible(libJOAL)) {
-					SnapLogger.printErr("Sound2D: OpenAL not compatible", true);
+					log.warning("Sound2D: OpenAL not compatible");
 					libJOAL = null;
 				}
 			} catch (ClassNotFoundException e) {
-				SnapLogger.printErr("Sound2D: failed to locate " + LIBRARY_JOAL_CLASS_NAME, true);
+				log.warning("Sound2D: failed to locate " + LIBRARY_JOAL_CLASS_NAME);
 			}
 		return libJOAL;
 	}

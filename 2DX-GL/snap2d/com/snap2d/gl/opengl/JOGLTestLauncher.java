@@ -12,29 +12,20 @@
 
 package com.snap2d.gl.opengl;
 
-import java.awt.*;
-import java.awt.image.*;
-import java.io.*;
-import java.net.*;
+import java.awt.Font;
+import java.io.IOException;
 import java.nio.*;
 import java.util.*;
 
-import bg.x2d.*;
-import bg.x2d.gen.*;
+import bg.x2d.gen.ColorGenerator;
 import bg.x2d.geo.*;
-import bg.x2d.utils.*;
+import bg.x2d.utils.Utils;
 
-import com.jogamp.common.nio.*;
-import com.snap2d.*;
+import com.jogamp.common.nio.Buffers;
 import com.snap2d.gl.Display.Type;
 import com.snap2d.gl.opengl.GLConfig.Property;
-import com.snap2d.gl.opengl.GLHandle.AlphaFunc;
-import com.snap2d.gl.opengl.GLHandle.BufferUsage;
-import com.snap2d.gl.opengl.GLHandle.GLFeature;
-import com.snap2d.gl.opengl.GLHandle.GeomFunc;
 import com.snap2d.input.*;
-import com.snap2d.light.*;
-import com.snap2d.ui.nifty.*;
+import com.snap2d.light.PointLight;
 import com.snap2d.world.*;
 
 /**
@@ -53,9 +44,10 @@ class JOGLTestLauncher {
 		Utils.sleep(4000);
 		glWin.destroy();
 		 */
+		Arrays.sort(args);
 		GLConfig config = new GLConfig();
 		config.set(Property.GL_RENDER_MSAA, "16");
-		final GLDisplay gldisp = new GLDisplay(1600, 900, Type.FULLSCREEN, config);
+		final GLDisplay gldisp = new GLDisplay(1100, 825, Type.WINDOWED, config);
 		gldisp.setExitOnClose(true);
 		gldisp.initInputSystem(false);
 		gldisp.addKeyListener(new GLKeyAdapter() {
@@ -71,10 +63,11 @@ class JOGLTestLauncher {
 		final GLRenderControl rc = gldisp.getRenderControl();
 		rc.addRenderable(new TestObj(gldisp.getWidth(), gldisp.getHeight()), GLRenderControl.POSITION_LAST);
 		rc.addRenderable(new TestBack(), 0);
-		rc.addRenderable(new NiftyRenderable(gldisp), GLRenderControl.POSITION_LAST);
-		rc.addRenderable(new RenderText(rc), GLRenderControl.POSITION_LAST);
+		//rc.addRenderable(new NiftyRenderable(gldisp), GLRenderControl.POSITION_LAST);
+		//rc.addRenderable(new RenderText(rc), GLRenderControl.POSITION_LAST);
 		gldisp.show();
-		rc.setVSync(true);
+		if(Arrays.binarySearch(args, "vsync") >= 0)
+			rc.setVSync(true);
 		rc.startRenderLoop();
 		rc.setTargetFPS(5000);
 	}
@@ -86,11 +79,10 @@ class JOGLTestLauncher {
 	static class TestObj implements GLRenderable {
 
 		World2D world;
-		Texture2D tex;
 		int vwt, vht;
 		Rect2D bounds = new Rect2D(-500, -500, 100, 100);
 
-		int texCircleBuff, rectBuff, polyBuff;
+		int rectBuff, polyBuff;
 
 		public TestObj(int vwt, int vht) {
 
@@ -102,59 +94,22 @@ class JOGLTestLauncher {
 		Vector2f v0 = new Vector2f(2f,1f), v1 = new Vector2f(2f, -1f);
 		PointUD[] points = new PointUD[5];
 		PointUD basePoint = new PointUD(200, 500), 
-				origin = new PointUD(basePoint.ux, basePoint.uy - 50);
+				origin = new PointUD(basePoint.ux, basePoint.uy - 100);
 
+		float interpolation = 1;
 		@Override
 		public void render(GLHandle handle, float interpolation) {
+			
+			this.interpolation = interpolation;
 
-			handle.setTextureEnabled(true);
-			handle.setRectTexCoords(tex);
 			handle.setTextureMinFilter(GLHandle.FILTER_LINEAR, GLHandle.FILTER_NEAREST);
 			handle.setEnabled(GLFeature.BLENDING, true);
 			handle.setBlendFunc(AlphaFunc.SRC_BLEND);
-			handle.bindTexture(tex);
 
 			prog.enable();
 
-			/*
-			prog.setUniformi("tex_bound", 1);
-			prog.setUniformi("tex", 0);
-
-			Rectangle r = world.convertWorldRect(bounds);
-			for(int i=1 ; i <= N ; i++) {
-				handle.putQuad2f(texCircleBuff, 100 + i*50, 100 + i*50, r.width, r.height, null);
-			}
-
-			handle.draw2f(texCircleBuff);*/
-
-
-
 			handle.setTextureEnabled(false);
 			prog.setUniformi("tex_bound", 0);
-
-			
-			Rect2D r0 = new Rect2D(p0.ux,p0.uy,200,200), r1 = new Rect2D(p1.ux, p1.uy, rwt, rht);
-			if(!world.viewContains(r0)) {
-				Rect2D bounds = world.checkCollision(world.getBounds(), r0);
-				if(bounds == null)
-					bounds = world.getBounds();
-				if(bounds.getHeight() < r0.getHeight())
-					v0.negateY();
-				if(bounds.getWidth() < r0.getWidth())
-					v0.negateX();
-			}
-			if(!world.viewContains(r1)) {
-				Rect2D bounds = world.checkCollision(world.getBounds(), r1);
-				if(bounds == null)
-					bounds = world.getBounds();
-				if(bounds.getHeight() < r1.getHeight())
-					v1.negateY();
-				if(bounds.getWidth() < r1.getWidth())
-					v1.negateX();
-			}
-			
-			v0.applyTo(p0, interpolation);
-			v1.applyTo(p1, interpolation);
 			
 			PointUD sp0 = world.worldToScreen(p0.ux, p0.uy);
 			PointUD sp1 = world.worldToScreen(p1.ux, p1.uy);
@@ -188,6 +143,29 @@ class JOGLTestLauncher {
 
 		@Override
 		public void update(long nanoTimeNow, long nanosSinceLastUpdate) {
+			Rect2D r0 = new Rect2D(p0.ux,p0.uy,200,200), r1 = new Rect2D(p1.ux, p1.uy, rwt, rht);
+			if(!world.viewContains(r0)) {
+				Rect2D bounds = world.checkCollision(world.getBounds(), r0);
+				if(bounds == null)
+					bounds = world.getBounds();
+				if(bounds.getHeight() < r0.getHeight())
+					v0.negateY();
+				if(bounds.getWidth() < r0.getWidth())
+					v0.negateX();
+			}
+			if(!world.viewContains(r1)) {
+				Rect2D bounds = world.checkCollision(world.getBounds(), r1);
+				if(bounds == null)
+					bounds = world.getBounds();
+				if(bounds.getHeight() < r1.getHeight())
+					v1.negateY();
+				if(bounds.getWidth() < r1.getWidth())
+					v1.negateX();
+			}
+			
+			v0.applyTo(p0, interpolation);
+			v1.applyTo(p1, interpolation);
+			
 			for(PointUD p : points)
 				p.setLocation(p.ux+0.5, p.uy-=0.5);
 		}
@@ -206,26 +184,11 @@ class JOGLTestLauncher {
 		 */
 		@Override
 		public void init(GLHandle handle) {
-			try {
-				BufferedImage bimg = ImageLoader.load(new URL("file:/media/WIN7/Users/Brian/Pictures/test_alpha.png"));
-				bimg = ImageUtils.convertBufferedImage(bimg, BufferedImage.TYPE_INT_ARGB_PRE);
-				tex = ImageLoader.loadTexture(bimg, true);
-				//tex = ImageLoader.loadTexture(new URL("file:/media/WIN7/Users/Brian/Pictures/fnrr_flag.png"), ImageLoader.PNG, true);
-			} catch (MalformedURLException e) {
-				e.printStackTrace();
-			}
-
-			texCircleBuff = handle.createQuadBuffer2f(BufferUsage.STREAM_DRAW, N, true);
 			rectBuff = handle.createQuadBuffer2f(BufferUsage.STREAM_DRAW, 2, false);
 			polyBuff = handle.createPolyBuffer2f(BufferUsage.STREAM_DRAW, GeomFunc.TRIANGLE_FAN, points.length, 5, false);
 			for(int i=0; i < points.length; i++) {
 				points[i] = GeoUtils.rotatePoint(basePoint, origin, 2*Math.PI / points.length * i);
 			}
-			/*
-			for(int i=1 ; i <= N ; i++) {
-				handle.putQuad2f(buffId, rand.nextInt(1000), rand.nextInt(700), 100, 100);
-			}
-			 */
 		}
 
 		/**
@@ -246,19 +209,19 @@ class JOGLTestLauncher {
 		long last = System.currentTimeMillis();
 		@Override
 		public void render(GLHandle handle, float interpolation) {
-			//handle.setColor4f(0.2f, 0.5f, 0.8f, 1f);
+			handle.setColor4f(0.2f, 0.5f, 0.8f, 1f);
 			prog.enable();
 			prog.setUniformi("tex_bound", 0);
 			handle.draw2f(buffId);
 
-			if(System.currentTimeMillis() - last > 1) {
+			if(System.currentTimeMillis() - last > 250) {
 				ColorGenerator colorgen = ColorGenerator.createRGB();
 				for(PointLight ptlight : lights) {
-					ptlight.setLocation(150 + rand.nextInt(1500), 150 + rand.nextInt(800));
+					ptlight.setLocation(150 + rand.nextInt(900), 150 + rand.nextInt(600));
 					ptlight.setColor(colorgen.generate().getColorComponents(new float[4]));
 				}
-				handle.updateLightData();
-				last += 1;
+				handle.asGL3().updateLightData();
+				last += 250;
 			}
 			prog.disable();
 		}
@@ -274,7 +237,7 @@ class JOGLTestLauncher {
 			this.ht = ht;
 			prog.enable();
 			handle.setViewport(0, 0, wt, ht, 1);
-			handle.setColor4f(0.75f, 0.75f, 0.75f, 1f);
+			handle.setColor4f(0.2f, 0.2f, 0.5f, 1f);
 			handle.putQuad2f(buffId, 0, 0, wt, ht, null);
 			prog.disable();
 		}
@@ -285,7 +248,7 @@ class JOGLTestLauncher {
 		@Override
 		public void init(GLHandle handle) {
 			buffId = handle.createQuadBuffer2f(BufferUsage.STATIC_DRAW, 1, false);
-			prog = new GLProgram(handle);
+			prog = new GLProgram();
 			try {
 				try {
 					String vertName = "test.vert";
@@ -306,15 +269,15 @@ class JOGLTestLauncher {
 				//handle.addLightSource(new PointLight(500, 500, new float[] {0.6f, 0.4f, 0.75f}, 1, 100));
 				//handle.addLightSource(new PointLight(1000, 600, new float[] {0.75f,0.6f,0.3f}, 2.0f, 200));
 				ColorGenerator colorgen = ColorGenerator.createRGB();
-				for(int i=0; i < 20; i++) {
+				for(int i=0; i < 5; i++) {
 					PointLight ptlight = new PointLight(100 + 50 + rand.nextInt(1500), 100 + 50 + rand.nextInt(800), 
-							colorgen.generate().getColorComponents(new float[4]), 2f, 30);
-					handle.addLightSource(ptlight);
+							colorgen.generate().getColorComponents(new float[4]), 2f, 50);
+					handle.asGL3().addLightSource(ptlight);
 					lights.add(ptlight);
 				}
-				handle.setAmbientLightFactor(0.05f);
+				handle.asGL3().setAmbientLightFactor(0.2f);
 				prog.enable();
-				handle.updateLightData();
+				handle.asGL3().updateLightData();
 				prog.disable();
 			} catch (IOException e) {
 				e.printStackTrace();
@@ -326,8 +289,6 @@ class JOGLTestLauncher {
 		 */
 		@Override
 		public void dispose(GLHandle handle) {
-			if(prog.getHandle() != handle)
-				prog.setHandle(handle);
 			prog.dispose();
 		}
 	}
@@ -336,12 +297,14 @@ class JOGLTestLauncher {
 
 		String text0 = "", text1 = "Seconds Elapsed: 00";
 
-		int x0 = 10, y0 = 10, x1 = 50, y1 = 850;
+		int x0 = 10, y0 = 10, x1 = 50, y1;
 
 		GLRenderControl rc;
 
 		RenderText(GLRenderControl rc) {
 			this.rc = rc;
+			int ht = rc.getGLWindow().getHeight();
+			y1 = ht - ht / 4;
 		}
 
 		/**

@@ -12,9 +12,9 @@
 
 package com.snap2d.script;
 
-import java.lang.reflect.Method;
-import java.nio.ByteBuffer;
-import java.util.Arrays;
+import java.lang.reflect.*;
+import java.nio.*;
+import java.util.*;
 
 import com.snap2d.script.VecMath.Vec;
 

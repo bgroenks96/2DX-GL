@@ -13,10 +13,10 @@
 package com.snap2d.script.lib;
 
 import java.util.*;
+import java.util.logging.Logger;
 
 import bg.x2d.utils.Utils;
 
-import com.snap2d.SnapLogger;
 import com.snap2d.script.*;
 
 /**
@@ -27,6 +27,7 @@ import com.snap2d.script.*;
  */
 public class ScriptTimer {
 	
+	private static final Logger log = Logger.getLogger(ScriptTimer.class.getCanonicalName());
 	private static volatile int threadid = 0;
 	
 	private TimerThread timerThread;
@@ -154,8 +155,8 @@ public class ScriptTimer {
 				else {
 					long sleepTime = nextTask.runTime.getTime() - System.currentTimeMillis();
 					if(sleepTime < 0) {
-						SnapLogger.printErr("timer-thread"+id+": task not valid - negative time difference!", true);
-						SnapLogger.printErr("discarding task request...", true);
+						log.warning("timer-thread"+id+": task not valid - negative time difference!");
+						log.warning("discarding task request...");
 						tasks.pollFirst();
 						continue;
 					}
@@ -167,16 +168,15 @@ public class ScriptTimer {
 						try {
 							program.invoke(f, nextTask.args);
 						} catch (ScriptInvocationException e) {
-							SnapLogger.printErr("timer-thread"+id+": error invoking script function: " + f, true);
+							log.warning("timer-thread"+id+": error invoking script function: " + f);
 						}
 						tasks.pollFirst();
 					} catch (InterruptedException e) {
-						SnapLogger.log("timer-thread"+id+": interrupted while waiting for task: " + nextTask.id + 
+						log.warning("timer-thread"+id+": interrupted while waiting for task: " + nextTask.id + 
 								" func=" + nextTask.scriptFunc);
 					}
 				}
 			}
-			SnapLogger.println("");
 		}
 		
 		private Class<?>[] getArgClasses(Object[] args) {

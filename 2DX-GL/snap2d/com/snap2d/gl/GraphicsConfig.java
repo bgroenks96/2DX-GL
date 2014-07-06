@@ -141,14 +141,14 @@ public class GraphicsConfig {
 		 * Sets whether or not Snap2D should try to force Windows to use a
 		 * high resolution timer by starting an indefinite sleeping thread.
 		 */
-		SNAP2D_WINDOWS_HIGH_RES_TIMER("com.snap2d.gl.force_timer", "true"),
+		SNAP2D_WINDOWS_HIGH_RES_TIMER("snap2d.gl.force_timer", "true"),
 
 		/**
 		 * Boolean (default=true)
 		 * <br/><br/>
 		 * Sets whether or not FPS and TPS will be printed to stdout each second.
 		 */
-		SNAP2D_PRINT_RENDER_STAT("com.snap2d.gl.printframes", "true"),
+		SNAP2D_PRINT_RENDER_STAT("snap2d.gl.printframes", "true"),
 		
 		/**
 		 * Boolean (default=true)
@@ -156,7 +156,7 @@ public class GraphicsConfig {
 		 * If true, initialization and modification to the rendering engine configuration
 		 * will be printed to stdout.
 		 */
-		SNAP2D_PRINT_J2D_CONFIG("com.snap2d.gl.printconfig", "true");
+		SNAP2D_PRINT_J2D_CONFIG("snap2d.gl.printconfig", "true");
 
 		private String property, defValue;
 

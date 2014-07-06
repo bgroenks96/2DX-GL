@@ -14,7 +14,7 @@ package com.snap2d.gl.opengl;
 
 import java.lang.reflect.*;
 import java.nio.*;
-import java.util.ArrayList;
+import java.util.*;
 
 import javax.media.opengl.*;
 
@@ -29,7 +29,6 @@ public class GLProgram {
 
 	private static GLProgram defaultShaderProg, currentShaderProg;
 
-	private GLHandle handle;
 	private int progId;
 	private ArrayList<GLShader> shaders = new ArrayList<GLShader>();
 
@@ -37,25 +36,99 @@ public class GLProgram {
 	
 	private FloatBuffer matBufferFloat;
 
-	public GLProgram(GLHandle handle) {
-		final GL2ES2 gl = getGL2();
+	public GLProgram() {
+		final GL2ES2 gl = getGL();
 		progId = gl.glCreateProgram();
 	}
 	
+	/**
+	 * Get the currently set shader program.
+	 * Note that this works ONLY with programs created and enabled
+	 * via GLProgram.
+	 * @return the current shader program or null if nothing is set
+	 */
 	public static GLProgram getCurrentProgram() {
 		return currentShaderProg;
 	}
 	
+	/**
+	 * Enable the currently set shader program.
+	 * This is effectively the same as GLProgram.getCurrentProgram().enable()
+	 * but with a null check in case the value has not been set.
+	 * @return true if current program exists and was enabled, false otherwise
+	 */
+	public static boolean enableCurrentProgram() {
+		if(currentShaderProg != null)
+			currentShaderProg.enable();
+		else
+			return false;
+		return true;
+	}
+	
+	/**
+	 * Disable the currently set shader program.
+	 * This is effectively the same as GLProgram.getCurrentProgram().disable()
+	 * but with a null check in case the value has not been set.
+	 * @return true if current program exists and was disabled, false otherwise
+	 */
+	public static boolean disableCurrentProgram() {
+		if(currentShaderProg != null)
+			currentShaderProg.disable();
+		else
+			return false;
+		return true;
+	}
+	
+	/**
+	 * Get the default shader program provided by the Snap2D OpenGL API.
+	 * @return the default shader program, or null if not set (compat mode)
+	 */
 	public static GLProgram getDefaultProgram() {
 		return defaultShaderProg;
 	}
 	
+	/**
+	 * Enable the default shader program.
+	 * This is effectively the same as GLProgram.getDefaultProgram().enable()
+	 * but with a null check in case the value has not been set.
+	 * @return true if default program exists and was enabled, false otherwise
+	 */
+	public static boolean enableDefaultProgram() {
+		if(defaultShaderProg != null)
+			defaultShaderProg.enable();
+		else
+			return false;
+		return true;
+	}
+	
+	/**
+	 * Disable the default shader program.
+	 * This is effectively the same as GLProgram.getDefaultProgram().disable()
+	 * but with a null check in case the value has not been set.
+	 * @return true if default program exists and was disabled, false otherwise
+	 */
+	public static boolean disableDefaultProgram() {
+		if(defaultShaderProg != null)
+			defaultShaderProg.disable();
+		else
+			return false;
+		return true;
+	}
+	
+	/**
+	 * @return true if the default program is enabled, false otherwise
+	 */
 	public static boolean isDefaultProgEnabled() {
-		return currentShaderProg == defaultShaderProg;
+		final GL gl = GLContext.getCurrentGL();
+		int currId = GLUtils.glGetInteger(gl, GL2.GL_CURRENT_PROGRAM);
+		if(defaultShaderProg != null && defaultShaderProg.progId == currId)
+			return true;
+		else
+			return false;
 	}
 
 	public void attachShader(GLShader shader) {
-		final GL2ES2 gl = getGL2();
+		final GL2ES2 gl = getGL();
 		gl.glAttachShader(progId, shader.getShaderObj());
 		shaders.add(shader);
 	}
@@ -71,12 +144,17 @@ public class GLProgram {
 	 * removal.
 	 */
 	private final void detachShader(int sobj) {
-		final GL2ES2 gl = getGL2();
+		final GL2ES2 gl = getGL();
 		gl.glDetachShader(progId, sobj);
 	}
 
 	public boolean link() {
-		final GL2ES2 gl = getGL2();
+		final GL2ES2 gl = getGL();
+		// bind default vertex transform shader attributes
+		gl.glBindAttribLocation(progId, 0, GLShader.ATTRIB_VERT_COORD);
+		gl.glBindAttribLocation(progId, 1, GLShader.ATTRIB_VERT_COLOR);
+		gl.glBindAttribLocation(progId, 2, GLShader.ATTRIB_TEX_COORD);
+		
 		gl.glLinkProgram(progId);
 		gl.glValidateProgram(progId);
 		IntBuffer intBuff = IntBuffer.allocate(1);
@@ -85,7 +163,7 @@ public class GLProgram {
 	}
 
 	public void printLinkLog() {
-		final GL2ES2 gl = getGL2();
+		final GL2ES2 gl = getGL();
 		IntBuffer intBuff = IntBuffer.allocate(1);
 		gl.glGetProgramiv(progId, GL2.GL_INFO_LOG_LENGTH, intBuff);
 		int size = intBuff.get(0);
@@ -105,7 +183,7 @@ public class GLProgram {
 	 * Enable the shader program for use in subsequent pipeline calls.
 	 */
 	public void enable() {
-		final GL2ES2 gl = getGL2();
+		final GL2ES2 gl = getGL();
 		gl.glUseProgram(progId);
 		currentShaderProg = this;
 	}
@@ -115,7 +193,7 @@ public class GLProgram {
 	 * library default program will be automatically re-enabled.
 	 */
 	public void disable() {
-		final GL2ES2 gl = getGL2();
+		final GL2ES2 gl = getGL();
 		gl.glUseProgram(0);
 		if(!defaultProg) {
 			defaultShaderProg.enable();
@@ -126,25 +204,12 @@ public class GLProgram {
 		return currentShaderProg == this;
 	}
 
-	public void setHandle(GLHandle handle) {
-		this.handle = handle;
-	}
-
-	public GLHandle getHandle() {
-		return handle;
-	}
-
 	public int getProgramObject() {
 		return progId;
 	}
 
 	public boolean isDefaultShaderProgram() {
-		return defaultProg;
-	}
-
-	// hide from public API
-	void setDefaultShaderProgram(boolean def) {
-		defaultProg = def;
+		return this == defaultShaderProg;
 	}
 
 	public void setUniformi(final String name, final int...values) {
@@ -211,22 +276,22 @@ public class GLProgram {
 			case 1:
 				Method m = GL2ES2.class.getMethod(method, int.class, type.value);
 				m.setAccessible(true);
-				m.invoke(getGL2(), loc, values[0]);
+				m.invoke(getGL(), loc, values[0]);
 				break;
 			case 2:
 				m = GL2ES2.class.getMethod(method, int.class, type.value, type.value);
 				m.setAccessible(true);
-				m.invoke(getGL2(), loc, values[0], values[1]);
+				m.invoke(getGL(), loc, values[0], values[1]);
 				break;
 			case 3:
 				m = GL2ES2.class.getMethod(method, int.class, type.value, type.value, type.value);
 				m.setAccessible(true);
-				m.invoke(getGL2(), loc, values[0], values[1], values[2]);
+				m.invoke(getGL(), loc, values[0], values[1], values[2]);
 				break;
 			case 4:
 				m = GL2ES2.class.getMethod(method, int.class, type.value, type.value, type.value, type.value);
 				m.setAccessible(true);
-				m.invoke(getGL2(), loc, values[0], values[1], values[2], values[3]);
+				m.invoke(getGL(), loc, values[0], values[1], values[2], values[3]);
 				break;
 			default:
 				throw(new IllegalArgumentException("illegal number of values supplied to "
@@ -252,7 +317,7 @@ public class GLProgram {
 		try {
 			Method m = GL2ES2.class.getMethod(method, int.class, int.class, type.buffer);
 			m.setAccessible(true);
-			m.invoke(getGL2(), loc, data.limit(), data);
+			m.invoke(getGL(), loc, data.limit(), data);
 		} catch (NoSuchMethodException e) {
 			throw(new IllegalArgumentException("failed to locate set uniform method: " + method));
 		} catch (SecurityException e) {
@@ -273,7 +338,7 @@ public class GLProgram {
 		try {
 			Method m = GL2ES2.class.getMethod(method, int.class, int.class, boolean.class, type.buffer);
 			m.setAccessible(true);
-			m.invoke(getGL2(), loc, 1, false, data);
+			m.invoke(getGL(), loc, 1, false, data);
 		} catch (NoSuchMethodException e) {
 			throw(new IllegalArgumentException("failed to locate set uniform method: " + method));
 		} catch (SecurityException e) {
@@ -341,16 +406,21 @@ public class GLProgram {
 	}
 	 */
 
-	public void setAttrib1f(String attrib, float val) {
-		final GL2ES2 gl = getGL2();
-		gl.glVertexAttrib1f(attloc(attrib), val);
+	public void bindAttribLoc(String attrib, int loc) {
+		final GL2ES2 gl = getGL();
+		gl.glBindAttribLocation(progId, loc, attrib);
+	}
+	
+	public int getAttribLoc(String attrib) {
+		final GL2ES2 gl = getGL();
+		return gl.glGetAttribLocation(progId, attrib);
 	}
 
 	/**
 	 * Disposes this OpenGL program object as well as all attached shaders.
 	 */
 	public void dispose() {
-		final GL2ES2 gl = getGL2();
+		final GL2ES2 gl = getGL();
 		for(GLShader gls:shaders) {
 			detachShader(gls.getShaderObj());
 			gls.dispose();
@@ -364,17 +434,12 @@ public class GLProgram {
 	 * @return the uniform location, or -1 if not found
 	 */
 	public int getLocation(String uniform) {
-		final GL2ES2 gl = getGL2();
+		final GL2ES2 gl = getGL();
 		return gl.glGetUniformLocation(progId, uniform);
 	}
 	
 	static void setDefaultProgram(GLProgram newDefaultProg) {
 		defaultShaderProg = newDefaultProg;
-	}
-
-	private int attloc(String attrib) {
-		final GL2ES2 gl = getGL2();
-		return gl.glGetAttribLocation(progId, attrib);
 	}
 
 	private enum UniformType {
@@ -413,7 +478,7 @@ public class GLProgram {
 		return intObjs;
 	}
 
-	private GL2ES2 getGL2() {
-		return GLContext.getCurrentGL().getGL2ES2();
+	private GL2ES2 getGL() {
+		return GLContext.getCurrentGL().getGL2GL3();
 	}
 }

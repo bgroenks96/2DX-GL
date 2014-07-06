@@ -17,9 +17,8 @@ import java.awt.*;
 import bg.x2d.anim.*;
 
 /**
- * Objects of type Background define a Paint or Graphics2D object as a standard to be used among
- * other 2DX objects when repainting frames. If no Paint object is specified, the passed Graphics2D
- * object will be used as a background.
+ * Background defines an object of type Drawable or Paint to be used as a static background for each frame. 
+ * If no Drawable object is specified, the default Paint object will be used instead.
  * 
  * @since 2DX 1.0 (1st Edition)
  */
@@ -28,14 +27,10 @@ public class Background {
 
 	private Paint color;
 	private int width, height;
-	private Graphics2D graphics;
 	private Drawable redraw;
 
-	public Background(int w, int h, Paint p, Graphics2D g) {
+	public Background(int w, int h, Paint p) {
 		if (p != null) {
-			g.setPaint(p);
-			g.fillRect(0, 0, w, h);
-			graphics = g;
 			color = p;
 			width = w;
 			height = h;
@@ -66,18 +61,10 @@ public class Background {
 		return ints;
 	}
 
-	public void setGraphics(Graphics2D g2) {
-		graphics = g2;
-	}
-
-	public Graphics2D getGraphics() {
-		return graphics;
-	}
-
 	public void redraw(Graphics2D g2) {
 		if (redraw != null) {
 			redraw.draw(g2);
-		} else {
+		} else if(color != null) {
 			g2.setPaint(color);
 			g2.fillRect(0, 0, width, height);
 		}
@@ -88,8 +75,6 @@ public class Background {
 	}
 
 	public void dispose() {
-		graphics.dispose();
-		graphics = null;
 		color = null;
 		width = 0;
 		height = 0;

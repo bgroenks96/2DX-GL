@@ -12,7 +12,6 @@
 
 package com.snap2d.gl.opengl;
 
-import javax.media.opengl.*;
 
 /**
  * @author Brian Groenke
@@ -54,5 +53,13 @@ public class GLShaderException extends Exception {
 	
 	public long getTimestamp() {
 		return timestamp;
+	}
+	
+	@Override
+	public void printStackTrace() {
+		System.err.println("\n-------Shader Compile Log-------");
+		System.err.println(getExtendedMessage());
+		System.err.println("----------- End Log  -----------");
+		super.printStackTrace();
 	}
 }

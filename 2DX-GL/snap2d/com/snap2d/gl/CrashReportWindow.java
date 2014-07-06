@@ -97,8 +97,8 @@ public class CrashReportWindow extends JFrame {
 		str.append("OS = " + Local.getPlatform()+"\n");
 		str.append("Arch = " + Local.getOSArch()+"\n");
 		str.append("Graphics Device = " + deviceName+"\n");
-		str.append("Total RAM = " + sysMem+" bytes\n");
-		str.append("Available RAM = " + sysFree+" bytes\n");
+		str.append("Total RAM = " + ((sysMem < 0) ? "Unavailable\n":sysMem+" bytes\n"));
+		str.append("Available RAM = " + ((sysFree < 0) ? "Unavailable\n":sysFree+" bytes\n"));
 		str.append("Java Version = " + Local.getJavaVersion()+"\n");
 		str.append("Java Arch = " + Local.getJavaArch()+"\n");
 		str.append("JVM Name = " + Local.getJVM()+"\n");

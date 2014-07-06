@@ -1,12 +1,14 @@
 ###The 2DX Project - _Open Source 2D Java Graphics Library_
 
+The 2DX Project aims to provide powerful, versatile, and felxible tools for 2D graphics programming in Java.
+
 **2DX-GL (Advanced 2-dimensional Graphics Library)**
 
-Extends the Java2D (AWT/Swing) API by adding more high-level functionality for rendering 2D geometry, UIs, effects, animations and physics.  Also aims to provide utility methods for geometric math and general functionality.
+A standalone, dependency free library that extends the Java2D AWT API by adding more high-level functionality for rendering 2D geometry, effects, animations, physics, and general utilities.
 
 **Snap2D**
 
-A 2D Java game engine built on 2DX-GL.  Snap2D utilizes and extends the 2DX-GL API by re-applying its functionality and providing its own infrastructure for game development.  Snap2D aims to squeeze the best quality and performance through manipulation of the Java standard libraries.
+A 2D Java game engine built on 2DX-GL.  Snap2D utilizes and extends the 2DX-GL API by re-applying its functionality and providing its own infrastructure for game development.  Snap2D aims to provide high performance 2D graphics rendering as well as a wide range of facilities for building games in Java.
 
 Notable features:
 
@@ -28,7 +30,7 @@ Notable features:
 
 -Built in sound library via Paul Lamb's SoundSystem API
 
--Rendered user interface framework (independent of Swing/AWT)
+-Integration with NiftyGUI provides support for building effective, high-performance user interfaces
 
 -Math/geometry libraries
 
@@ -76,5 +78,10 @@ Follow @The2DXProject on Twitter for real-time updates on development of the pro
 **Additional credits:**
 
 Snap2D Sound API utilizes SoundSystem for Java by Paul Lamb [www.paulscode.com]
+
+Snap2D integrates with NiftyGUI by void256 [http://nifty-gui.lessvoid.com/]
 	
-OpenGL renderer utilizes JOGL 2.0 by JogAmp [www.jogamp.org] (special thanks to Julien Gouesse for his work and help with JOGL)
+OpenGL renderer utilizes JOGL 2.0 by JogAmp [www.jogamp.org]
+
+**Special Thanks**
+Julien Gousse and Sven Gothel (JogAmp)

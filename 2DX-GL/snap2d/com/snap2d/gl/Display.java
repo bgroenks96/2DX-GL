@@ -14,9 +14,9 @@ package com.snap2d.gl;
 
 import java.awt.*;
 
-import javax.swing.*;
+import javax.swing.JFrame;
 
-import bg.x2d.utils.*;
+import bg.x2d.utils.Utils;
 
 /**
  * Represents the underlying frame used to display rendered content on screen. Display creates a
@@ -162,7 +162,7 @@ public class Display {
 	public void setType(Type dispType) {
 		boolean wasActive = false;
 		if (rc != null) {
-			wasActive = rc.isActive();
+			wasActive = rc.isRenderActive();
 			rc.setRenderActive(false);
 		}
 		boolean frameVisible = frame.isShowing();
@@ -183,7 +183,7 @@ public class Display {
 	 * 
 	 * @return the local monitor's screen dimensions.
 	 */
-	public Dimension getScreenSize() {
+	private Dimension getScreenSize() {
 		return Utils.getScreenSize();
 	}
 

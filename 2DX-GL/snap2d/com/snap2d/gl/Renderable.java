@@ -14,6 +14,8 @@ package com.snap2d.gl;
 
 import java.awt.*;
 
+import com.snap2d.gl.spi.RenderableSpi;
+
 /**
  * Defines a standard for objects that are rendered on screen and called on each tick of the game
  * loop.
@@ -21,7 +23,7 @@ import java.awt.*;
  * @author Brian Groenke
  * 
  */
-public interface Renderable {
+public interface Renderable extends RenderableSpi {
 
 	/**
 	 * Called when the engine is rendering a new frame.

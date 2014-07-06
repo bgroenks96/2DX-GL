@@ -15,11 +15,7 @@ package com.snap2d.script;
 import java.nio.ByteBuffer;
 import java.util.*;
 
-import org.junit.Test;
-
 import bg.x2d.utils.*;
-
-import com.snap2d.SnapLogger;
 
 /**
  * Parses and compiles script source code to bytecode form.
@@ -1285,7 +1281,7 @@ class ScriptCompiler {
 	}
 
 	private void printWarning(Function context, String msg) {
-		SnapLogger.println("WARNING - function '"+context.getName()+"': " + msg, true);
+		System.err.println("[SnapScript] WARNING - function '"+context.getName()+"': " + msg);
 	}
 
 	static volatile int globalId = Integer.MIN_VALUE;

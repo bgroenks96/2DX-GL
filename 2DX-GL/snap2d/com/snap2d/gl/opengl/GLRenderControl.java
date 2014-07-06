@@ -14,25 +14,36 @@ package com.snap2d.gl.opengl;
 
 import java.util.*;
 import java.util.concurrent.*;
+import java.util.logging.*;
 
 import javax.media.opengl.*;
 
 import bg.x2d.Local;
+import bg.x2d.utils.ConfigLogHandler;
 
+import com.jogamp.common.util.VersionNumber;
 import com.jogamp.newt.opengl.GLWindow;
-import com.jogamp.opengl.*;
-import com.jogamp.opengl.FBObject.TextureAttachment;
-import com.snap2d.*;
+import com.jogamp.opengl.FBObject;
+import com.jogamp.opengl.util.Gamma;
+import com.snap2d.ThreadManager;
 import com.snap2d.gl.CrashReportWindow;
 import com.snap2d.gl.opengl.GLConfig.Property;
+import com.snap2d.gl.spi.*;
 
 /**
  * @author Brian Groenke
  *
  */
-public class GLRenderControl implements GLEventListener {
+public class GLRenderControl implements RenderController, GLEventListener {
 
-	public static final int DEFAULT_TARGET_FPS = 60, POSITION_LAST = 0x07FFFFFFF;
+	public static final int DEFAULT_TARGET_FPS = RenderController.DEFAULT_TARGET_FPS, 
+			POSITION_LAST = RenderController.POSITION_LAST;
+
+	private static final Logger log = Logger.getLogger(GLRenderControl.class.getCanonicalName());
+	{
+		log.setLevel(Level.CONFIG);
+		log.addHandler(new ConfigLogHandler(""));
+	}
 
 	int wt, ht;
 
@@ -44,7 +55,7 @@ public class GLRenderControl implements GLEventListener {
 	protected GLHandle handle;
 	protected GLRenderLoop loop = new GLRenderLoop();
 	protected ThreadManager exec = new ThreadManager();
-	protected volatile boolean updateVSync = true, vsync;
+	protected volatile boolean updateDisplay = true, vsync;
 	protected volatile float gamma = 1.0f;
 
 	private Semaphore loopChk = new Semaphore(1, true);
@@ -58,27 +69,31 @@ public class GLRenderControl implements GLEventListener {
 	}
 
 	private volatile GLRenderable[] renderables = new GLRenderable[0]; // independent of task list
-	
+
 	private FBObject fbo;
-	
+
 	/**
 	 *
 	 */
 	@Override
 	public void display(GLAutoDrawable arg0) {
-		//final GL2 gl = arg0.getGL().getGL2();
+		final GL gl = arg0.getGL();
+		gl.glClearColor(0, 0, 0, 1);
+		gl.glClear(GL.GL_COLOR_BUFFER_BIT);
 
-		if(updateVSync) {
+		if(updateDisplay) {
 			updateVSync();
-			updateVSync = false;
+			updateGamma();
+			updateDisplay = false;
 		}
 
 		checkAddQueue();
 
 		for(GLRenderable r : renderables) {
+			GLProgram.enableDefaultProgram();
 			r.render(handle, loop.interpolation);
 		}
-        
+
 		/* seriously.... fuck FBOs
 		gl.glMatrixMode(GL2.GL_PROJECTION);
 		gl.glLoadIdentity();
@@ -101,21 +116,21 @@ public class GLRenderControl implements GLEventListener {
         gl.glVertex2f(wt, 0);
         gl.glEnd();
         fbo.unuse(gl);
-        */
-		
+		 */
+
 		// FBO TESTING
 		/*
 		GLProgram.getDefaultProgram().disable();
-        
+
         gl.glDisable(GL.GL_DEPTH_TEST);
 		gl.glMatrixMode(GL2.GL_PROJECTION);
 		gl.glLoadIdentity();
 		gl.glOrtho(0, wt, 0, ht, 0, 1);
 		gl.glMatrixMode(GL2.GL_MODELVIEW);
 		gl.glLoadIdentity();
-		
+
         fbo.bind(gl);
-		
+
         gl.glColor3f(0, 1, 1);
         gl.glBegin(GL2.GL_QUADS);
         gl.glVertex2f(0, 0);
@@ -123,7 +138,7 @@ public class GLRenderControl implements GLEventListener {
         gl.glVertex2f(wt, ht);
         gl.glVertex2f(wt, 0);
         gl.glEnd();
-		
+
         gl.glColor3f(1,0,0);
         gl.glBegin(GL2.GL_QUADS);
         gl.glVertex2f(100, 100);
@@ -131,9 +146,9 @@ public class GLRenderControl implements GLEventListener {
         gl.glVertex2f(150, 150);
         gl.glVertex2f(150, 100);
         gl.glEnd();
-       
+
         fbo.syncSamplingSink(gl);
-       
+
         gl.glColor3f(1,1,1);
         final TextureAttachment tex0 = (TextureAttachment) fbo.getColorbuffer(0);
         gl.glActiveTexture(GL2.GL_TEXTURE0);
@@ -150,8 +165,8 @@ public class GLRenderControl implements GLEventListener {
         gl.glVertex2f(wt, 0);
         gl.glEnd();
         fbo.unuse(gl); 
-        */
-		
+		 */
+
 	}
 
 	/**
@@ -159,10 +174,11 @@ public class GLRenderControl implements GLEventListener {
 	 */
 	@Override
 	public void dispose(GLAutoDrawable arg0) {
+		Gamma.resetDisplayGamma(arg0.getGL());
 		for(GLRenderable glr : renderables)
 			glr.dispose(handle);
 		fbo.destroy(arg0.getGL());
-		handle.onDispose();
+		handle.dispose();
 	}
 
 	/**
@@ -170,7 +186,11 @@ public class GLRenderControl implements GLEventListener {
 	 */
 	@Override
 	public void init(GLAutoDrawable arg0) {
-		handle = new GLHandle(config);
+		checkCompat();
+		if(config.getAsBool(Property.GL_RENDER_COMPAT))
+		    handle = new GL2Handle(config);
+		else
+			handle = new GL3Handle(config);
 		fbo = new FBObject();
 		printInitReport();
 	}
@@ -196,20 +216,16 @@ public class GLRenderControl implements GLEventListener {
 	@Override
 	public void reshape(GLAutoDrawable arg0, int x, int y, int width,
 			int height) {
-		final GL2 gl = arg0.getGL().getGL2();
+		handle.setDisplaySize(width, height);
 		wt = width;
 		ht = height;
-		
-		fbo.reset(gl, wt, ht, glWin.getChosenGLCapabilities().getNumSamples(), true);
-	    fbo.attachTexture2D(gl, 0, true);
-		fbo.syncSamplingSink(gl);
-		
-		
+
 		checkAddQueue();
 
 		for(GLRenderable r : renderables) {
 			r.resize(handle, width, height);
 		}
+		Gamma.resetDisplayGamma(arg0.getGL());
 	}
 
 	public void startRenderLoop() {
@@ -234,7 +250,7 @@ public class GLRenderControl implements GLEventListener {
 		awaitShutdown.await();
 	}
 
-	public boolean isLoopRunning() {
+	public boolean isRunning() {
 		return loop.running;
 	}
 
@@ -278,9 +294,13 @@ public class GLRenderControl implements GLEventListener {
 		delQueue.add(r);
 	}
 
+	public synchronized boolean isRegistered(GLRenderable r) {
+		return rtasks.contains(r);
+	}
+	
 	public void setVSync(boolean enabled) {
 		vsync = enabled;
-		updateVSync = true;
+		updateDisplay = true;
 	}
 
 	public boolean isVSyncEnabled() {
@@ -294,10 +314,23 @@ public class GLRenderControl implements GLEventListener {
 		else
 			gl.setSwapInterval(0);
 	}
+	
+	private void updateGamma() {
+		final GL gl = GLContext.getCurrentGL();
+		if(handle.isGL2()) {
+			Gamma.setDisplayGamma(gl, gamma, 0, 1);
+		} else if(handle.isGL3()) {
+			int currProg = GLUtils.glGetInteger(gl, GL2.GL_CURRENT_PROGRAM);
+			GLProgram.enableDefaultProgram();
+			if(GLProgram.isDefaultProgEnabled())
+				GLProgram.getDefaultProgram().setUniformf("gamma", gamma);
+			gl.getGL2GL3().glUseProgram(currProg);
+		}
+	}
 
 	public void setGamma(float gamma) {
 		this.gamma = gamma;
-		updateVSync = true;
+		updateDisplay = true;
 	}
 
 	public float getGamma() {
@@ -342,6 +375,14 @@ public class GLRenderControl implements GLEventListener {
 		loop.setTargetTPS(tps);
 	}
 
+	public void setDisableUpdates(boolean disable) {
+		loop.noUpdate = disable;
+	}
+	
+	public boolean isUpdating() {
+		return !loop.noUpdate;
+	}
+	
 	/**
 	 * Sets the max number of times updates can be issued before a render must occur. If animations
 	 * are "chugging" or skipping, it may help to set this value to a very low value (1-2). Higher
@@ -380,7 +421,7 @@ public class GLRenderControl implements GLEventListener {
 		try {
 			stopRenderLoop();
 		} catch (InterruptedException e1) {
-			SnapLogger.println("GLRenderControl.dispose: interrupted before shutdown completion");
+			log.warning("GLRenderControl.dispose: interrupted before shutdown completion");
 		}
 		rtasks.clear();
 		addQueue.clear();
@@ -420,7 +461,7 @@ public class GLRenderControl implements GLEventListener {
 		@Override
 		public void run() {
 			Thread.currentThread().setName("snap2d-render_loop");
-			SnapLogger.println("GLRenderLoop: initializing...");
+			log.info("GLRenderLoop: initializing...");
 
 			exec.newDaemon(new Runnable() {
 
@@ -456,10 +497,9 @@ public class GLRenderControl implements GLEventListener {
 								;
 							}
 							String printStr = fps + " fps " + tps + " ticks";
-						    if(print)
-						    	SnapLogger.println(printStr);
-						    else
-						    	SnapLogger.log(printStr);
+							if(print)
+								System.out.println("[Snap2D] " + printStr);
+							log.fine(printStr);
 							printFrames = false;
 						} catch (InterruptedException e) {
 							e.printStackTrace();
@@ -543,7 +583,7 @@ public class GLRenderControl implements GLEventListener {
 						Thread.sleep(SLEEP_WHILE_INACTIVE);
 					}
 				} catch (InterruptedException e) {
-					SnapLogger.println("snap2d-render_loop interrupted");
+					log.warning("snap2d-render_loop interrupted");
 				} catch (Throwable e) {
 					System.err.println("Snap2D: error in rendering loop: " + e.toString() + "\nTerminating loop execution...");
 					CrashReportWindow crashDisp = new CrashReportWindow();
@@ -556,7 +596,7 @@ public class GLRenderControl implements GLEventListener {
 
 				@Override
 				public void run() {
-					SnapLogger.println("GLRenderLoop: Shutting down rendering thread pool...");
+					log.fine("GLRenderLoop: Shutting down rendering thread pool...");
 					exec.shutdown();
 					boolean success = false;
 					try {
@@ -568,14 +608,14 @@ public class GLRenderControl implements GLEventListener {
 						final String failMsg = "GLRenderLoop: Warning - not all threads terminated successfully";
 						if(success) {
 							if(Boolean.getBoolean(Property.SNAP2D_PRINT_GLRENDER_STAT.getProperty()))
-								SnapLogger.println(successMsg);
+								log.info(successMsg);
 							else
-								SnapLogger.log(successMsg);
+								log.info(successMsg);
 						} else {
 							if(Boolean.getBoolean(Property.SNAP2D_PRINT_GLRENDER_STAT.getProperty()))
-							    SnapLogger.println(failMsg);
+								log.warning(failMsg);
 							else
-								SnapLogger.log(failMsg);
+								log.warning(failMsg);
 						}
 						awaitShutdown.countDown();
 					}
@@ -611,18 +651,33 @@ public class GLRenderControl implements GLEventListener {
 		int pos;
 	}
 
+	private void checkCompat() {
+		GLContext ctxt = glWin.getContext();
+		boolean isGL32Core = ctxt.getGLVersionNumber().compareTo(GLContext.Version320) >= 0 &&
+				ctxt.getGLSLVersionNumber().compareTo(new VersionNumber("3.20")) >=0;
+		if(!isGL32Core) {
+			log.warning("enabling compatibility mode");
+			config.set(Property.GL_RENDER_COMPAT, "true");
+		}
+	}
+	
 	private void printInitReport() {
 		if(!Boolean.getBoolean(Property.SNAP2D_PRINT_GL_CONFIG.getProperty()))
 			return;
-		SnapLogger.println("initialized OpenGL graphics pipeline");
+		log.info("initialized OpenGL graphics pipeline");
 		GLContext ctxt = glWin.getContext();
-		SnapLogger.println("OpenGL-version: " + ctxt.getGLVersion());
+		log.config("|--------OpenGL Configuration--------|");
+		log.config("version-#: " + ctxt.getGLVersionNumber());
+		log.config("version-info: " + ctxt.getGLVersion());
+		log.config("vendor-version: " + ctxt.getGLVendorVersionNumber());
+		log.config("jogl-profile: " + glWin.getGLProfile().getName());
 		boolean glsl = ctxt.hasGLSL();
-		SnapLogger.println("GLSL-support=" + glsl);
+		log.config("glsl-support=" + glsl);
 		if(glsl)
-			SnapLogger.print("GLSL-version: " + ctxt.getGLSLVersionString());
+			log.config("glsl-version: " + ctxt.getGLSLVersionString());
 		for(GLConfig.Property jglp : Property.values()) {
-			SnapLogger.println(jglp.getProperty() + "=" + config.get(jglp));
+			log.config(jglp.getProperty() + "=" + config.get(jglp));
 		}
 	}
+
 }
