@@ -16,8 +16,6 @@ import java.lang.reflect.*;
 import java.nio.*;
 import java.util.*;
 
-import com.snap2d.script.VecMath.Vec;
-
 /**
  * @author Brian Groenke
  *

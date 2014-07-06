@@ -12,14 +12,9 @@
 
 package com.snap2d.script;
 
-import static java.lang.Math.*;
+import java.util.HashMap;
 
-import java.math.*;
-import java.util.*;
-
-abstract class MathRef {
-
-	private static final GME gme = new GME();
+class MathRef {
 
 	private static HashMap<Character, Integer> pmap = new HashMap<Character, Integer>();
 	private static HashMap<Character, Assoc> amap = new HashMap<Character, Assoc>();
@@ -237,122 +232,7 @@ abstract class MathRef {
 		return false;
 	}
 
-	private static class GME {
 
-		// These variables are part of the GME base structure.
-		protected double a, b, c;
-		protected int polyFound;
-
-		public static final double PI = 3.14159265358979323846264338327950288419716;
-		public static final double E = 2.7182818284590452353602874713526624977572470;
-		public static final String STRING_PI = "3.14159265358979323846264338327950288419716";
-		public static final String STRING_E = "2.7182818284590452353602874713526624977572470";
-
-		public static boolean rads;
-
-		// ---------------------------------------------------
-
-		public double last() {
-			return c;
-		}
-
-		public double sqr(double a) {
-			b = sqrt(a);
-			return b;
-		}
-
-		public double root(double a, double root) {
-			c = Math.pow(a, 1 / root);
-			return c;
-		}
-
-		public double absv(double a) {
-			b = abs(a);
-			return b;
-		}
-
-		public double pwr(double a, double b) {
-			c = pow(a, b);
-			return c;
-		}
-
-		public double log(double a) {
-			b = log10(a);
-			return b;
-		}
-
-		public double ln(double a) {
-			b = log(a);
-			return b;
-		}
-
-		public double max(double a, double b) {
-			c = (a > b) ? a : b;
-			return c;
-		}
-
-		public double min(double a, double b) {
-			c = (a < b) ? a : b;
-			return c;
-		}
-
-		public double tan(double a) {
-			c = Math.tan(rads ? a : toRadians(a));
-			return c;
-		}
-
-		public double cos(double a) {
-			c = Math.cos(rads ? a : toRadians(a));
-			return c;
-		}
-
-		public double sin(double a) {
-			c = Math.sin(rads ? a : toRadians(a));
-			return c;
-		}
-
-		public double cot(double a) {
-			b = 1 / tan(a);
-			return b;
-		}
-
-		public double sec(double a) {
-			b = 1 / cos(a);
-			return b;
-		}
-
-		public double csc(double a) {
-			b = 1 / sin(a);
-			return b;
-		}
-
-		public double arcTan(double a) {
-			c = atan(rads ? a : toRadians(a));
-			return rads ? c : toDegrees(c);
-		}
-
-		public double arcCos(double a) {
-			c = acos(rads ? a : toRadians(a));
-			return rads ? c : toDegrees(c);
-		}
-
-		public double arcSin(double a) {
-			c = asin(rads ? a : toRadians(a));
-			return rads ? c : toDegrees(c);
-		}
-
-		/*
-		 * The rounding method uses the BigDecimal method of rounding half up.
-		 * Decimals 1-4 round to nearest floating floor while decimals 5-9 round to
-		 * nearest floating ceiling
-		 */
-		public double roundNum(double toRound, int places) {
-			BigDecimal bd = new BigDecimal(toRound);
-			bd = bd.setScale(places, BigDecimal.ROUND_HALF_UP);
-			a = bd.doubleValue();
-			return a;
-		}
-	}
 	
 	protected interface MathOp {
 
@@ -462,7 +342,7 @@ abstract class MathRef {
 	public static class PowerOp implements MathOp {
 		@Override
 		public double eval(double... args) {
-			return (float) gme.pwr(args[0], args[1]);
+			return (float) Math.pow(args[0], args[1]);
 		}
 
 		@Override

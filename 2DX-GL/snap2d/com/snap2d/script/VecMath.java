@@ -20,7 +20,7 @@ import bg.x2d.geo.Vector2d;
  * @author Brian Groenke
  *
  */
-public class VecMath {
+class VecMath {
 
 	private VecMath() {}
 
@@ -49,66 +49,6 @@ public class VecMath {
 
 	protected static VecOp getOp(char c) {
 		return opMap.get(c);
-	}
-
-	public interface Operand {
-		public Object getValue();
-		public boolean isVector();
-	}
-
-	public static class Scalar implements Operand {
-
-		double val;
-
-		Scalar(double val) {
-			this.val = val;
-		}
-
-		@Override
-		public Double getValue() {
-			return val;
-		}
-
-		@Override
-		public boolean isVector() {
-			return false;
-		}
-
-		@Override
-		public String toString() {
-			return String.valueOf(val);
-		}
-	}
-
-	public static class Vec implements Operand {
-
-		Vector2d vec;
-
-		Vec(double x, double y) {
-			vec = new Vector2d(x, y);
-		}
-
-		Vec(Vector2d vec) {
-			this(vec.x, vec.y);
-		}
-
-		@Override
-		public Vector2d getValue() {
-			return vec;
-		}
-
-		/**
-		 *
-		 */
-		 @Override
-		 public boolean isVector() {
-			 return true;
-		 }
-
-		 @Override
-		 public String toString() {
-			 return "["+vec.x+", "+vec.y+"]";
-		 }
 	}
 
 	protected interface VecOp {

@@ -23,8 +23,6 @@ import java.util.logging.Logger;
 import bg.x2d.geo.Vector2d;
 import bg.x2d.utils.*;
 
-import com.snap2d.script.VecMath.Operand;
-import com.snap2d.script.VecMath.Scalar;
 import com.snap2d.script.lib.*;
 
 /**

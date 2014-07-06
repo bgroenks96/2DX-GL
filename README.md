@@ -84,4 +84,5 @@ Snap2D integrates with NiftyGUI by void256 [http://nifty-gui.lessvoid.com/]
 OpenGL renderer utilizes JOGL 2.0 by JogAmp [www.jogamp.org]
 
 **Special Thanks**
+
 Julien Gousse and Sven Gothel (JogAmp)

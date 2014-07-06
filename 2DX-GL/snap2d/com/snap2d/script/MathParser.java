@@ -17,8 +17,6 @@ import java.util.*;
 import bg.x2d.math.DoubleMath;
 
 import com.snap2d.script.MathRef.MathOp;
-import com.snap2d.script.VecMath.Operand;
-import com.snap2d.script.VecMath.Scalar;
 import com.snap2d.script.VecMath.VecOp;
 
 /**
@@ -222,13 +220,13 @@ public class MathParser {
 						String[] pts = num.toString().substring(1, num.length() - 1).split(",");
 						double x = Double.parseDouble(pts[0]);
 						double y = Double.parseDouble(pts[1]);
-						numStack.add(new VecMath.Vec(x, y));
+						numStack.add(new Vec(x, y));
 						num.delete(0, num.length());
 						num.trimToSize();
 					} else {
 						try {
 							double val = Double.parseDouble(num.toString());
-							numStack.add(new VecMath.Scalar(val));
+							numStack.add(new Scalar(val));
 							num.delete(0, num.length());
 							num.trimToSize();
 						} catch (NumberFormatException e) {
@@ -268,11 +266,11 @@ public class MathParser {
 				String[] pts = num.toString().substring(1, num.length() - 1).split(",");
 				double x = Double.parseDouble(pts[0]);
 				double y = Double.parseDouble(pts[1]);
-				numStack.add(new VecMath.Vec(x, y));
+				numStack.add(new Vec(x, y));
 			} else {
 				try {
 					double val = Double.parseDouble(num.toString());
-					numStack.add(new VecMath.Scalar(val));
+					numStack.add(new Scalar(val));
 				} catch (NumberFormatException e) {
 					e.printStackTrace();
 					throw (new MathParseException("error parsing input: "

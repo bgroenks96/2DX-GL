@@ -13,7 +13,6 @@
 package com.snap2d.script.lib;
 
 import com.snap2d.script.*;
-import com.snap2d.script.VecMath.Vec;
 
 /**
  * @author Brian Groenke
