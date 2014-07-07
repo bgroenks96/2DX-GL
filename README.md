@@ -39,7 +39,9 @@ Notable features:
 Planned features:
 
 -2D lighting engine for JOGL renderer
+
 -Particle system
+
 -(?) Animation editor and bone system
 
 Official builds are in the 'release_jars' directory and source folders labeled build##.
@@ -61,6 +63,7 @@ Project dev status: API-Stable
 To-do (next commit):
 
 -Utility additions
+
 -Physics engine cleanup/bug fixes if necessary
 
 **Snap2D**
@@ -70,7 +73,9 @@ Project dev status: API-Alpha
 To-do (in development):
 
 -OpenGL rendering engine (via JOGL 2.0 libraries)
+
 -Snap2D physics package (in development)
+
 -Rendered UI (both J2D and JOGL versions)
 
 Follow @The2DXProject on Twitter for real-time updates on development of the project!
@@ -85,4 +90,4 @@ OpenGL renderer utilizes JOGL 2.0 by JogAmp [www.jogamp.org]
 
 **Special Thanks**
 
-Julien Gousse and Sven Gothel (JogAmp)
+Julien Gouesse and Sven Gothel (JogAmp)
