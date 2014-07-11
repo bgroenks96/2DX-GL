@@ -23,12 +23,13 @@ import bg.x2d.utils.ConfigLogHandler;
 
 import com.jogamp.common.util.VersionNumber;
 import com.jogamp.newt.opengl.GLWindow;
-import com.jogamp.opengl.FBObject;
+import com.jogamp.opengl.*;
+import com.jogamp.opengl.FBObject.TextureAttachment;
 import com.jogamp.opengl.util.Gamma;
 import com.snap2d.ThreadManager;
 import com.snap2d.gl.CrashReportWindow;
 import com.snap2d.gl.opengl.GLConfig.Property;
-import com.snap2d.gl.spi.*;
+import com.snap2d.gl.spi.RenderController;
 
 /**
  * @author Brian Groenke
@@ -77,7 +78,7 @@ public class GLRenderControl implements RenderController, GLEventListener {
 	 */
 	@Override
 	public void display(GLAutoDrawable arg0) {
-		final GL gl = arg0.getGL();
+		final GL2 gl = arg0.getGL().getGL2();
 		gl.glClearColor(0, 0, 0, 1);
 		gl.glClear(GL.GL_COLOR_BUFFER_BIT);
 
@@ -93,79 +94,6 @@ public class GLRenderControl implements RenderController, GLEventListener {
 			GLProgram.enableDefaultProgram();
 			r.render(handle, loop.interpolation);
 		}
-
-		/* seriously.... fuck FBOs
-		gl.glMatrixMode(GL2.GL_PROJECTION);
-		gl.glLoadIdentity();
-		gl.glOrtho(0, wt, 0, ht, 0, 1);
-		gl.glMatrixMode(GL2.GL_MODELVIEW);
-		gl.glLoadIdentity();
-        gl.glColor3f(1,1,1);
-        final TextureAttachment tex0 = (TextureAttachment) fbo.getColorbuffer(0);
-        gl.glActiveTexture(GL2.GL_TEXTURE0);
-        gl.glEnable(GL2.GL_TEXTURE_2D);
-        fbo.use(gl, tex0);
-        gl.glBegin(GL2.GL_QUADS);
-        gl.glTexCoord2f(0, 0);
-        gl.glVertex2f(0, 0);
-        gl.glTexCoord2f(0, 1);
-        gl.glVertex2f(0, ht);
-        gl.glTexCoord2f(1, 1);
-        gl.glVertex2f(wt, ht);
-        gl.glTexCoord2f(1, 0);
-        gl.glVertex2f(wt, 0);
-        gl.glEnd();
-        fbo.unuse(gl);
-		 */
-
-		// FBO TESTING
-		/*
-		GLProgram.getDefaultProgram().disable();
-
-        gl.glDisable(GL.GL_DEPTH_TEST);
-		gl.glMatrixMode(GL2.GL_PROJECTION);
-		gl.glLoadIdentity();
-		gl.glOrtho(0, wt, 0, ht, 0, 1);
-		gl.glMatrixMode(GL2.GL_MODELVIEW);
-		gl.glLoadIdentity();
-
-        fbo.bind(gl);
-
-        gl.glColor3f(0, 1, 1);
-        gl.glBegin(GL2.GL_QUADS);
-        gl.glVertex2f(0, 0);
-        gl.glVertex2f(0, ht);
-        gl.glVertex2f(wt, ht);
-        gl.glVertex2f(wt, 0);
-        gl.glEnd();
-
-        gl.glColor3f(1,0,0);
-        gl.glBegin(GL2.GL_QUADS);
-        gl.glVertex2f(100, 100);
-        gl.glVertex2f(100, 150);
-        gl.glVertex2f(150, 150);
-        gl.glVertex2f(150, 100);
-        gl.glEnd();
-
-        fbo.syncSamplingSink(gl);
-
-        gl.glColor3f(1,1,1);
-        final TextureAttachment tex0 = (TextureAttachment) fbo.getColorbuffer(0);
-        gl.glActiveTexture(GL2.GL_TEXTURE0);
-        gl.glEnable(GL2.GL_TEXTURE_2D);
-        fbo.use(gl, tex0);
-        gl.glBegin(GL2.GL_QUADS);
-        gl.glTexCoord2f(0, 0);
-        gl.glVertex2f(0, 0);
-        gl.glTexCoord2f(0, 1);
-        gl.glVertex2f(0, ht);
-        gl.glTexCoord2f(1, 1);
-        gl.glVertex2f(wt, ht);
-        gl.glTexCoord2f(1, 0);
-        gl.glVertex2f(wt, 0);
-        gl.glEnd();
-        fbo.unuse(gl); 
-		 */
 
 	}
 
@@ -221,6 +149,11 @@ public class GLRenderControl implements RenderController, GLEventListener {
 		ht = height;
 
 		checkAddQueue();
+		
+		final GL gl = arg0.getGL();
+		fbo.reset(gl, wt, ht, glWin.getChosenGLCapabilities().getNumSamples(), true);
+		fbo.attachTexture2D(gl, 0, true);
+		fbo.syncSamplingSink(gl);
 
 		for(GLRenderable r : renderables) {
 			r.resize(handle, width, height);

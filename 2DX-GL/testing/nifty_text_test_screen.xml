@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<nifty>
+  <useStyles filename="nifty-default-styles.xml"/>
+  <useControls filename="nifty-default-controls.xml"/>
+  <screen id="screen0">
+    <layer childLayout="absolute" id="layer1">
+      <panel backgroundColor="#003" childLayout="vertical" height="100%" id="panel1" style="nifty-panel-simple" width="40%" x="0" y="0">
+        <panel childLayout="center" height="50%" id="panel4" style="nifty-panel-simple" width="100%">
+          <control color="#f00" font="aurulent-sans-16.fnt" height="50px" id="label11" name="label" text="HELLO WORLD" textColor="#00f" width="100px" x="132" y="26"/>
+        </panel>
+        <control font="aurulent-sans-16.fnt" height="50px" id="label6" name="label" text="Play" width="100px"/>
+        <control font="aurulent-sans-16.fnt" height="50px" id="label8" name="label" text="Options" width="100px"/>
+        <control font="aurulent-sans-16.fnt" height="50px" id="label9" name="label" text="Credits" width="100px"/>
+        <control font="aurulent-sans-16.fnt" height="50px" id="label10" name="label" text="Quit" width="100px"/>
+      </panel>
+    </layer>
+  </screen>
+</nifty>

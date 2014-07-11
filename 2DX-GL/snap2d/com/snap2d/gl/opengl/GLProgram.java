@@ -183,7 +183,7 @@ public class GLProgram {
 	 * Enable the shader program for use in subsequent pipeline calls.
 	 */
 	public void enable() {
-		final GL2ES2 gl = getGL();
+		final GL2GL3 gl = getGL().getGL2GL3();
 		gl.glUseProgram(progId);
 		currentShaderProg = this;
 	}
@@ -406,6 +406,11 @@ public class GLProgram {
 	}
 	 */
 
+	public void bindFragDataLoc(String name, int loc) {
+		final GL2GL3 gl = getGL().getGL2GL3();
+		gl.glBindFragDataLocation(progId, 0, name);
+	}
+	
 	public void bindAttribLoc(String attrib, int loc) {
 		final GL2ES2 gl = getGL();
 		gl.glBindAttribLocation(progId, loc, attrib);

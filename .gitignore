@@ -1,10 +1,11 @@
 bin/
 .settings/
-*.xml
+ant_makefile.xml
 .classpath
 .project
 .externalToolBuilders/
 .settings/
+.gitignore
 physxtest/
 buildtracker.jar
 build_id.log

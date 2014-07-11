@@ -277,6 +277,7 @@ class JOGLTestLauncher {
 				}
 				handle.asGL3().setAmbientLightFactor(0.2f);
 				prog.enable();
+				prog.bindFragDataLoc("frag_out", 0);
 				handle.asGL3().updateLightData();
 				prog.disable();
 			} catch (IOException e) {
