@@ -2,15 +2,15 @@
 
 The 2DX Project aims to provide powerful, versatile, and felxible tools for 2D graphics programming in Java.
 
-**2DX-GL (Advanced 2-dimensional Graphics Library)**
+**2DX-GL Core API**
 
-A standalone, dependency free library that extends the Java2D AWT API by adding more high-level functionality for rendering 2D geometry, effects, animations, physics, and general utilities.
+2DX-GL (Advanced 2-dimensional Graphics Library) is a standalone, dependency free library that extends the Java2D AWT API by adding more high-level functionality for rendering 2D geometry, effects, animations, physics, and general utilities.
 
 **Snap2D**
 
 A 2D Java game engine built on 2DX-GL.  Snap2D utilizes and extends the 2DX-GL API by re-applying its functionality and providing its own infrastructure for game development.  Snap2D aims to provide high performance 2D graphics rendering as well as a wide range of facilities for building games in Java.
 
-Notable features:
+Notable features in Snap2D thus far:
 
 -Fast, efficient, high level rendering engines (separate Java2D and OpenGL frameworks)
 
@@ -39,14 +39,14 @@ Notable features:
 Planned features:
 
 -2D lighting engine for JOGL renderer
+
 -Particle system
+
 -(?) Animation editor and bone system
 
-Official builds are in the 'release_jars' directory and source folders labeled build##.
+Code in the primary source folders ('snap2d' and 'x2d') is under development and may or may not be complete/working.
 
-Code in the primary source folders ('snapdragon' and 'x2d') is under development and may or may not be complete/working.
-
-If you decide to use 2DX/Snap2D for actual application production, I would appreicate it if you let me know on GitHub or by any other means so that I know to be careful about making changes!
+If you decide to use 2DX/Snap2D for actual application production, I would appreicate it if you let me know on GitHub or by any other means so that I know to be careful about making changes!  You can email me at: bgroe8@gmail.com
 
 The 'builds' folder in the project directory contains the latest development builds.  All JARs in this folder include both the base 2DX-GL and Snap2D libraries.
 
@@ -60,8 +60,7 @@ Project dev status: API-Stable
 
 To-do (next commit):
 
--Utility additions
--Physics engine cleanup/bug fixes if necessary
+-
 
 **Snap2D**
 
@@ -69,9 +68,11 @@ Project dev status: API-Alpha
 
 To-do (in development):
 
--OpenGL rendering engine (via JOGL 2.0 libraries)
+-2D Tile/Map system
+
 -Snap2D physics package (in development)
--Rendered UI (both J2D and JOGL versions)
+
+-Continued improvements to OpenGL rendering engine
 
 Follow @The2DXProject on Twitter for real-time updates on development of the project!
 
@@ -85,4 +86,4 @@ OpenGL renderer utilizes JOGL 2.0 by JogAmp [www.jogamp.org]
 
 **Special Thanks**
 
-Julien Gousse and Sven Gothel (JogAmp)
+Julien Gouesse and Sven Gothel (JogAmp)
