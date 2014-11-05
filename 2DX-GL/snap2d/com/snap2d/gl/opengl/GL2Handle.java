@@ -185,7 +185,11 @@ public class GL2Handle implements GLHandle {
 	 * or {@link #clearTransform()} is called to reset the transformation matrix.
 	 */
 	public void pushTransform() {
-		
+		GL2 gl = getGL2();
+		gl.glPushMatrix();
+		gl.glTranslatef(tx, ty, 0);
+		gl.glRotatef(theta, rx, ry, 0);
+		gl.glScalef(sx, sy, 1);
 	}
 
 	/**

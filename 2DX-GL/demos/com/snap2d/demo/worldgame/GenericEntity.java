@@ -22,7 +22,7 @@ import com.snap2d.world.*;
  * @author Brian Groenke
  * 
  */
-public class GenericEntity extends Entity {
+public class GenericEntity extends WorldGameEntity {
 
 	/**
 	 * 

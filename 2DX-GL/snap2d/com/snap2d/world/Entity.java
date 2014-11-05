@@ -19,8 +19,7 @@ import java.io.Serializable;
 
 import bg.x2d.geo.*;
 
-import com.snap2d.gl.Renderable;
-import com.snap2d.gl.opengl.*;
+import com.snap2d.gl.spi.RenderableSpi;
 import com.snap2d.physics.GamePhysics;
 import com.snap2d.world.event.EntityCollision;
 
@@ -37,7 +36,7 @@ import com.snap2d.world.event.EntityCollision;
  * @author Brian Groenke
  * 
  */
-public abstract class Entity implements Renderable, GLRenderable, Serializable {
+public abstract class Entity implements RenderableSpi, Serializable {
 
 	/**
 	 * 
@@ -271,6 +270,7 @@ public abstract class Entity implements Renderable, GLRenderable, Serializable {
 	 */
 	public abstract CollisionModel getCollisionModel();
 	
+	/*
 	@Override
 	public void render(Graphics2D g, float interpolation) {}
 	
@@ -288,6 +288,7 @@ public abstract class Entity implements Renderable, GLRenderable, Serializable {
 	
 	@Override
 	public void dispose(GLHandle handle) {}
+	*/
 	
 	public class EntityCollisionImpl implements EntityCollision {
 		Entity e;

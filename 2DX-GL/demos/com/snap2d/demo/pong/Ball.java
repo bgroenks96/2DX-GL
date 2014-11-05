@@ -18,6 +18,7 @@ import java.awt.geom.Point2D;
 import bg.x2d.geo.*;
 import bg.x2d.physics.*;
 
+import com.snap2d.gl.Renderable;
 import com.snap2d.physics.GamePhysics;
 import com.snap2d.world.*;
 
@@ -25,7 +26,7 @@ import com.snap2d.world.*;
  * @author Brian Groenke
  * 
  */
-public class Ball extends Entity {
+public class Ball extends Entity implements Renderable {
 
 	/**
 	 * 

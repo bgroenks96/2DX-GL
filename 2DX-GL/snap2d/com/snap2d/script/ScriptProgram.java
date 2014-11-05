@@ -12,7 +12,6 @@
 
 package com.snap2d.script;
 
-import java.io.IOException;
 import java.lang.reflect.Method;
 import java.util.*;
 import java.util.logging.Logger;
@@ -94,6 +93,7 @@ public class ScriptProgram {
 			}
 			ArrayList<ConstantInitializer> constList = new ArrayList<ConstantInitializer>();
 			log.info("Running precompiler...");
+			System.out.println("Running precompiler...");
 			funcs = compiler.precompile(constList, srcs);
 			scriptFuncs = new Function[funcs.size()];
 			funcs.values().toArray(scriptFuncs);
@@ -118,10 +118,11 @@ public class ScriptProgram {
 			}
 
 			log.info("Running compiler...");
+			System.out.println("Running compiler...");
 			compiler.compile(funcs, constList);
 			initConsts = new ConstantInitializer[constList.size()];
 			constList.toArray(initConsts);
-			log.info("Done");
+			System.out.println("Done");
 			chk = true;
 		} catch (ScriptCompilationException e) {
 			e.printStackTrace();

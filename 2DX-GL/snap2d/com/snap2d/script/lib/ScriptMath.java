@@ -12,9 +12,11 @@
 
 package com.snap2d.script.lib;
 
-import bg.x2d.gen.*;
+import bg.x2d.gen.NumberGenerator;
+import bg.x2d.geo.Vector2d;
 
-import com.snap2d.script.*;
+import com.snap2d.script.ScriptLink;
+import com.snap2d.script.Vec2;
 
 /**
  * @author Brian Groenke
@@ -78,6 +80,16 @@ public class ScriptMath {
 	}
 	
 	@ScriptLink
+	public static double toRads(double degrees) {
+		return Math.toRadians(degrees);
+	}
+	
+	@ScriptLink
+	public static double toDegs(double rads) {
+		return Math.toDegrees(rads);
+	}
+	
+	@ScriptLink
 	/**
 	 * @param arg0 integer to be shifted
 	 * @param arg1 number of binary places to be shifted
@@ -120,6 +132,18 @@ public class ScriptMath {
 	@ScriptLink
 	public static int round(double arg0) {
 		return (int) Math.round(arg0);
+	}
+	
+	@ScriptLink
+	public static double vecMag(Vec2 v) {
+		Vector2d vec = v.getValue();
+		return vec.getMagnitude();
+	}
+	
+	@ScriptLink
+	public static double vecAngle(Vec2 v) {
+		Vector2d vec = v.getValue();
+		return vec.rads();
 	}
 	
 	@ScriptLink

@@ -10,7 +10,7 @@
  *  http://mozilla.org/MPL/2.0/.
  */
 
-package com.snap2d.gl.opengl;
+package com.snap2d.tests.opengl;
 
 import java.awt.Font;
 import java.io.IOException;
@@ -23,6 +23,7 @@ import bg.x2d.utils.Utils;
 
 import com.jogamp.common.nio.Buffers;
 import com.snap2d.gl.Display.Type;
+import com.snap2d.gl.opengl.*;
 import com.snap2d.gl.opengl.GLConfig.Property;
 import com.snap2d.input.*;
 import com.snap2d.light.PointLight;
@@ -35,19 +36,22 @@ import com.snap2d.world.*;
 class JOGLTestLauncher {
 
 	public static void main(String[] args) {
+		
 		/*
 		Display newtDisp = NewtFactory.createDisplay(null);
 		Screen newtScreen = NewtFactory.createScreen(newtDisp, 0);
 		GLWindow glWin = GLWindow.create(newtScreen, new GLCapabilities(GLProfile.get(GLProfile.GL2)));
-		glWin.setFullscreen(true);
+		glWin.setFullscreen(false);
 		glWin.setVisible(true);
-		Utils.sleep(4000);
+		Utils.sleep(1000);
 		glWin.destroy();
-		 */
+		System.exit(0);
+		*/
+		
 		Arrays.sort(args);
 		GLConfig config = new GLConfig();
 		config.set(Property.GL_RENDER_MSAA, "16");
-		final GLDisplay gldisp = new GLDisplay(1100, 825, Type.WINDOWED, config);
+		final GLDisplay gldisp = new GLDisplay(1100, 825, Type.FULLSCREEN, config);
 		gldisp.setExitOnClose(true);
 		gldisp.initInputSystem(false);
 		gldisp.addKeyListener(new GLKeyAdapter() {
@@ -64,10 +68,12 @@ class JOGLTestLauncher {
 		rc.addRenderable(new TestObj(gldisp.getWidth(), gldisp.getHeight()), GLRenderControl.POSITION_LAST);
 		rc.addRenderable(new TestBack(), 0);
 		//rc.addRenderable(new NiftyRenderable(gldisp), GLRenderControl.POSITION_LAST);
-		//rc.addRenderable(new RenderText(rc), GLRenderControl.POSITION_LAST);
+		rc.addRenderable(new RenderText(rc), GLRenderControl.POSITION_LAST);
 		gldisp.show();
 		if(Arrays.binarySearch(args, "vsync") >= 0)
 			rc.setVSync(true);
+		else
+			rc.setVSync(false);
 		rc.startRenderLoop();
 		rc.setTargetFPS(5000);
 	}
@@ -209,7 +215,7 @@ class JOGLTestLauncher {
 		long last = System.currentTimeMillis();
 		@Override
 		public void render(GLHandle handle, float interpolation) {
-			handle.setColor4f(0.2f, 0.5f, 0.8f, 1f);
+			handle.setColor4f(0.2f, 0.2f, 0.2f, 1f);
 			prog.enable();
 			prog.setUniformi("tex_bound", 0);
 			handle.draw2f(buffId);
@@ -217,7 +223,7 @@ class JOGLTestLauncher {
 			if(System.currentTimeMillis() - last > 250) {
 				ColorGenerator colorgen = ColorGenerator.createRGB();
 				for(PointLight ptlight : lights) {
-					ptlight.setLocation(150 + rand.nextInt(900), 150 + rand.nextInt(600));
+					ptlight.setLocation(150 + rand.nextInt(3*wt/4), 150 + rand.nextInt(3*ht / 4));
 					ptlight.setColor(colorgen.generate().getColorComponents(new float[4]));
 				}
 				handle.asGL3().updateLightData();
@@ -237,7 +243,7 @@ class JOGLTestLauncher {
 			this.ht = ht;
 			prog.enable();
 			handle.setViewport(0, 0, wt, ht, 1);
-			handle.setColor4f(0.2f, 0.2f, 0.5f, 1f);
+			handle.setColor4f(0.2f, 0.2f, 0.2f, 1f);
 			handle.putQuad2f(buffId, 0, 0, wt, ht, null);
 			prog.disable();
 		}
@@ -269,13 +275,13 @@ class JOGLTestLauncher {
 				//handle.addLightSource(new PointLight(500, 500, new float[] {0.6f, 0.4f, 0.75f}, 1, 100));
 				//handle.addLightSource(new PointLight(1000, 600, new float[] {0.75f,0.6f,0.3f}, 2.0f, 200));
 				ColorGenerator colorgen = ColorGenerator.createRGB();
-				for(int i=0; i < 5; i++) {
-					PointLight ptlight = new PointLight(100 + 50 + rand.nextInt(1500), 100 + 50 + rand.nextInt(800), 
-							colorgen.generate().getColorComponents(new float[4]), 2f, 50);
+				for(int i=0; i < 20; i++) {
+					PointLight ptlight = new PointLight(100 + 50 + rand.nextInt(800), 100 + 50 + rand.nextInt(600), 
+							colorgen.generate().getColorComponents(new float[4]), 3f, 50);
 					handle.asGL3().addLightSource(ptlight);
 					lights.add(ptlight);
 				}
-				handle.asGL3().setAmbientLightFactor(0.2f);
+				handle.asGL3().setAmbientLightFactor(0.1f);
 				prog.enable();
 				prog.bindFragDataLoc("frag_out", 0);
 				handle.asGL3().updateLightData();

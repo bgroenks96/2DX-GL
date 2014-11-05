@@ -483,4 +483,11 @@ public class Utils {
 	public static float nanoToSecs(long nanoTime) {
 		return nanoTime / 1000000000.0f;
 	}
+	
+	public static boolean isNull(Object...objs) {
+		for(Object o : objs)
+			if(o == null)
+				return true;
+		return false;
+	}
 }

@@ -45,7 +45,7 @@ public class GLDisplay {
 	GLWindow glWin;
 	GLRenderControl rc;
 
-	NEWTInputDispatcher inputDispatcher;
+	NEWTInputDispatch inputDispatcher;
 
 	ProcessCloseRequest onClose;
 	boolean exitOnClose = false;
@@ -159,7 +159,7 @@ public class GLDisplay {
 	public void initInputSystem(boolean consumeEvents) {
 		if(inputDispatcher != null)
 			return;
-		inputDispatcher = new NEWTInputDispatcher(consumeEvents);
+		inputDispatcher = new NEWTInputDispatch(consumeEvents);
 		addNewtKeyListener(inputDispatcher);
 		addNewtMouseListener(inputDispatcher);
 	}

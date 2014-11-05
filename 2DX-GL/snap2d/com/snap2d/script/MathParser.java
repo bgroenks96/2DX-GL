@@ -220,7 +220,7 @@ public class MathParser {
 						String[] pts = num.toString().substring(1, num.length() - 1).split(",");
 						double x = Double.parseDouble(pts[0]);
 						double y = Double.parseDouble(pts[1]);
-						numStack.add(new Vec(x, y));
+						numStack.add(new Vec2(x, y));
 						num.delete(0, num.length());
 						num.trimToSize();
 					} else {
@@ -266,7 +266,7 @@ public class MathParser {
 				String[] pts = num.toString().substring(1, num.length() - 1).split(",");
 				double x = Double.parseDouble(pts[0]);
 				double y = Double.parseDouble(pts[1]);
-				numStack.add(new Vec(x, y));
+				numStack.add(new Vec2(x, y));
 			} else {
 				try {
 					double val = Double.parseDouble(num.toString());

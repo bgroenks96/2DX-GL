@@ -62,11 +62,12 @@ public class SnapObjectParser {
 	
 	private void parseProperties(String str, SnapObject obj) throws ScriptObjectParsingException {
 		str = str.trim();
-		String[] pts = str.split("\\s+");
+		String[] pts = str.split("\n");
 		for(String s : pts) {
 			String[] kv = s.split("=");
 			if(kv.length != 2)
-				throw new ScriptObjectParsingException("error parsing properties: invalid assignment syntax in " + s);
+				throw new ScriptObjectParsingException("error parsing properties: invalid assignment syntax in: " + s + " [" + obj.name + "]");
+			kv[0] = kv[0].trim(); kv[1] = kv[1].trim();
 			if(!kv[1].startsWith("\"") || !kv[1].endsWith("\""))
 				throw new ScriptObjectParsingException("error parsing properties: values must be delimited by quotes " + s);
 			obj.put(kv[0], kv[1].substring(1,kv[1].length() - 1));

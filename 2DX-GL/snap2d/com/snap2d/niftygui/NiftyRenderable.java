@@ -20,6 +20,7 @@ import de.lessvoid.nifty.Nifty;
 import de.lessvoid.nifty.render.batch.BatchRenderDevice;
 import de.lessvoid.nifty.renderer.jogl.input.JoglInputSystem;
 import de.lessvoid.nifty.renderer.jogl.render.JoglBatchRenderBackendCoreProfileFactory;
+import de.lessvoid.nifty.screen.ScreenController;
 import de.lessvoid.nifty.spi.time.impl.AccurateTimeProvider;
 
 /**
@@ -27,10 +28,10 @@ import de.lessvoid.nifty.spi.time.impl.AccurateTimeProvider;
  *
  */
 public class NiftyRenderable implements GLRenderable {
-	
+
 	Nifty nifty;
 	GLWindow window;
-	
+
 	public NiftyRenderable(GLDisplay disp) {
 		this.window = disp.getNewtWindow();
 		SoundAPI.init();
@@ -43,6 +44,7 @@ public class NiftyRenderable implements GLRenderable {
 	public void init(GLHandle handle) {
 		nifty = new Nifty(new BatchRenderDevice(JoglBatchRenderBackendCoreProfileFactory.create()), new Snap2DSoundDevice(SoundAPI.getSound2D()), 
 				new JoglInputSystem(window), new AccurateTimeProvider());
+		fromXml("ui/map_screen_ui.xml", "screen0");
 	}
 
 	/**
@@ -50,7 +52,7 @@ public class NiftyRenderable implements GLRenderable {
 	 */
 	@Override
 	public void dispose(GLHandle handle) {
-		
+
 	}
 
 	/**
@@ -67,7 +69,7 @@ public class NiftyRenderable implements GLRenderable {
 	 */
 	@Override
 	public void update(long nanoTimeNow, long nanoTimeLast) {
-		
+
 	}
 
 	/**
@@ -75,7 +77,29 @@ public class NiftyRenderable implements GLRenderable {
 	 */
 	@Override
 	public void resize(GLHandle handle, int wt, int ht) {
-		
+
 	}
 
+	public void fromXml(String fileName, String startScreen, NiftyScreenController... controllers) {
+		if(controllers != null && controllers.length == 0)
+			nifty.fromXml(fileName, startScreen, controllers);
+		else
+			nifty.fromXml(fileName, startScreen);
+	}
+
+	public void addXml(String fileName) {
+		nifty.addXml(fileName);
+	}
+
+	public Nifty getNifty() {
+		return nifty;
+	}
+
+	/**
+	 * Forward, blank implementation of de.lessvoid.nifty.screen.ScreenController
+	 * @author Brian Groenke
+	 */
+	public interface NiftyScreenController extends ScreenController {
+		//
+	}
 }

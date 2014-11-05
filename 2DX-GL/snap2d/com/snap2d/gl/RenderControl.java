@@ -647,7 +647,7 @@ public class RenderControl implements RenderController {
 							}
 							String printStr = fps + " fps " + tps + " ticks";
 						    if(print)
-						    	log.info(printStr);
+						    	System.err.println("snap2d-renderer: " + printStr);
 						    else
 						    	log.fine(printStr);
 							printFrames = false;

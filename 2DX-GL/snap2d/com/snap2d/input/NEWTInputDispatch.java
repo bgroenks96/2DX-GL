@@ -10,12 +10,11 @@
  *  http://mozilla.org/MPL/2.0/.
  */
 
-package com.snap2d.gl.opengl;
+package com.snap2d.input;
 
 import java.util.HashSet;
 
 import com.jogamp.newt.event.*;
-import com.snap2d.input.*;
 
 /**
  * Internal Snap2D JOGL library class responsible for relaying NEWT input events
@@ -23,35 +22,35 @@ import com.snap2d.input.*;
  * @author Brian Groenke
  *
  */
-class NEWTInputDispatcher implements KeyListener, MouseListener {
+public class NEWTInputDispatch implements KeyListener, MouseListener {
 	
 	private HashSet<GLKeyListener> keyListeners;
 	private HashSet<GLMouseListener> mouseListeners;
 	private boolean consume;
 	
-	NEWTInputDispatcher(boolean consumeEvents) {
+	public NEWTInputDispatch(boolean consumeEvents) {
 		this.consume = consumeEvents;
 		keyListeners = new HashSet<GLKeyListener>();
 		mouseListeners = new HashSet<GLMouseListener>();
 	}
 	
-	void registerKeyListener(GLKeyListener listener) {
+	public void registerKeyListener(GLKeyListener listener) {
 		keyListeners.add(listener);
 	}
 	
-	void registerMouseListener(GLMouseListener listener) {
+	public void registerMouseListener(GLMouseListener listener) {
 		mouseListeners.add(listener);
 	}
 	
-	void removeKeyListener(GLKeyListener listener) {
+	public void removeKeyListener(GLKeyListener listener) {
 		keyListeners.remove(listener);
 	}
 	
-	void removeMouseListener(GLMouseListener listener) {
+	public void removeMouseListener(GLMouseListener listener) {
 		mouseListeners.remove(listener);
 	}
 	
-	void dispose() {
+	public void dispose() {
 		keyListeners.clear();
 		mouseListeners.clear();
 	}

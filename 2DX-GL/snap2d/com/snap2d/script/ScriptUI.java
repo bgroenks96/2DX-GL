@@ -184,7 +184,7 @@ public class ScriptUI extends JFrame {
 					lastRun = f;
 					lastRunArgs = args;
 					if(f.getReturnType() != Keyword.VOID)
-						System.out.print(ret.toString() + "\n");
+						System.out.print("return value = " + ret.toString() + "\n");
 				} catch (ScriptInvocationException e1) {
 					System.out.println(e1.toString());
 					e1.printStackTrace();

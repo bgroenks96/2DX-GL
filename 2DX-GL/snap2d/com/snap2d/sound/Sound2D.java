@@ -66,7 +66,7 @@ public class Sound2D {
 	private boolean useJOAL;
 	private Class<?> libJOAL;
 	
-	static final int Z = -10;
+	public static final int Z = -10;
 
 	HashMap<String, SoundSource> sources = new HashMap<String, SoundSource>();
 	HashMap<String, SoundSource> staticSources = new HashMap<String, SoundSource>();
@@ -151,7 +151,7 @@ public class Sound2D {
 	/**
 	 * Creates a new sound source at the given position in world space.  The sound source will
 	 * play at the given position relative to the listener once {@link #play(String, boolean)} is
-	 * called.  All sources are created with a constant Z coordinate defined by SoundMap.
+	 * called.  All sources are created with a constant Z coordinate defined by Sound2D.
 	 * @param id a string id for this source source
 	 * @param filename the name of the file relative to Sound2D.setSoundFilesPackage - if this
 	 * sound has already been pre-loaded, the cached sound data will be used
@@ -217,7 +217,7 @@ public class Sound2D {
 	
 	/**
 	 * Creates a new sound source whose position will be attached to the listener.  Each time the
-	 * listener position is modified in SoundMap, all static source positions will also be set accordingly.
+	 * listener position is modified in Sound2D, all static source positions will also be set accordingly.
 	 * @param id
 	 * @param filename
 	 * @param priority
@@ -573,7 +573,7 @@ public class Sound2D {
 	}
 	
 	/*
-	 * Stores data about each sound source so that it can retrieved by accessors.
+	 * Stores data about each sound source so that it can retrieved by callers.
 	 */
 	private class SoundSource {
 

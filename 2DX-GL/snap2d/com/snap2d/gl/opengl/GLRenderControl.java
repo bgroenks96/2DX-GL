@@ -23,8 +23,7 @@ import bg.x2d.utils.ConfigLogHandler;
 
 import com.jogamp.common.util.VersionNumber;
 import com.jogamp.newt.opengl.GLWindow;
-import com.jogamp.opengl.*;
-import com.jogamp.opengl.FBObject.TextureAttachment;
+import com.jogamp.opengl.FBObject;
 import com.jogamp.opengl.util.Gamma;
 import com.snap2d.ThreadManager;
 import com.snap2d.gl.CrashReportWindow;
@@ -105,7 +104,7 @@ public class GLRenderControl implements RenderController, GLEventListener {
 		Gamma.resetDisplayGamma(arg0.getGL());
 		for(GLRenderable glr : renderables)
 			glr.dispose(handle);
-		fbo.destroy(arg0.getGL());
+		//fbo.destroy(arg0.getGL());
 		handle.dispose();
 	}
 
@@ -119,7 +118,7 @@ public class GLRenderControl implements RenderController, GLEventListener {
 		    handle = new GL2Handle(config);
 		else
 			handle = new GL3Handle(config);
-		fbo = new FBObject();
+		//fbo = new FBObject();
 		printInitReport();
 	}
 
@@ -150,10 +149,10 @@ public class GLRenderControl implements RenderController, GLEventListener {
 
 		checkAddQueue();
 		
-		final GL gl = arg0.getGL();
-		fbo.reset(gl, wt, ht, glWin.getChosenGLCapabilities().getNumSamples(), true);
-		fbo.attachTexture2D(gl, 0, true);
-		fbo.syncSamplingSink(gl);
+		//final GL gl = arg0.getGL();
+		//fbo.reset(gl, wt, ht, glWin.getChosenGLCapabilities().getNumSamples(), true);
+		//fbo.attachTexture2D(gl, 0, true);
+		//fbo.syncSamplingSink(gl);
 
 		for(GLRenderable r : renderables) {
 			r.resize(handle, width, height);

@@ -14,15 +14,15 @@ package com.snap2d.script;
 
 import bg.x2d.geo.Vector2d;
 
-public class Vec implements Operand {
+public class Vec2 implements Operand {
 
 	Vector2d vec;
 
-	Vec(double x, double y) {
+	Vec2(double x, double y) {
 		vec = new Vector2d(x, y);
 	}
 
-	Vec(Vector2d vec) {
+	Vec2(Vector2d vec) {
 		this(vec.x, vec.y);
 	}
 

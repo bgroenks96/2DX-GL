@@ -13,9 +13,16 @@
 package com.snap2d.script;
 
 import java.nio.ByteBuffer;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Comparator;
+import java.util.HashMap;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.TreeMap;
 
-import bg.x2d.utils.*;
+import bg.x2d.utils.Multimap;
+import bg.x2d.utils.Utils;
 
 /**
  * Parses and compiles script source code to bytecode form.
@@ -72,8 +79,8 @@ class ScriptCompiler {
 					nextFlush = Flags.DELIM_FLUSH;
 					allowDigits = true;
 				}
-		    // nextFlush rule exception for PC_CONST flag (single line const initializers):
-		    // allow whitespace flush for non-empty buffer
+				// nextFlush rule exception for PC_CONST flag (single line const initializers):
+				// allow whitespace flush for non-empty buffer
 			} else if(Character.isWhitespace(c) && buff.length() != 0 && ekey == Flags.PC_CONST) {
 				int st = i - buff.length();
 				int en = src.indexOf(Keyword.END.sym, st);
@@ -435,7 +442,7 @@ class ScriptCompiler {
 
 		if(parseMainStack == 1 && func.getReturnType() != Keyword.VOID && !returnCall)
 			printWarning(func, "function declares non-void return type but does not explicitly return a value");
-		
+
 		buff.put(Bytecodes.CLEAR_STACK);
 		stackVars.clear();
 		stackVars = snapshot;
@@ -852,6 +859,10 @@ class ScriptCompiler {
 		parser.format(nstr);
 		str = nstr.toString();
 		String exp = parser.shuntingYard(str);
+		int type = parseExpressionType(exp, src, pos);
+		//System.out.println(exp + " " + Keyword.flagToTypeKey(returnFlag) +  " " + Keyword.flagToTypeKey(type));
+		if(!isTypeCompatible(type, returnFlag))
+			throw new ScriptCompilationException("expression does not match return value type: " + str, src, pos);
 		String[] pts = exp.split(MathParser.SEP);
 		boolean hasbool = false;
 		for(int i = 0; i < pts.length; i++) {
@@ -964,8 +975,8 @@ class ScriptCompiler {
 			} else if(isVector(s)) {
 				String[] vecPts = s.substring(1, s.length() - 1).split(",");
 				buff.put(Bytecodes.READ_VEC2);
-				parseEvaluation(vecPts[0], src, pos, returnFlag);
-				parseEvaluation(vecPts[1], src, pos, returnFlag);
+				parseEvaluation(vecPts[0], src, pos, Flags.TYPE_FLOAT);
+				parseEvaluation(vecPts[1], src, pos, Flags.TYPE_FLOAT);
 			} else if(keyw != null) {
 				if(keyw == Keyword.TRUE) {
 					if(returnFlag != Flags.TYPE_BOOL)
@@ -988,30 +999,36 @@ class ScriptCompiler {
 				int mpos = parseFunctionInvocation(funcs, func, argStart)[1]; // second position in array is matched function
 				Function matched = funcs[mpos];
 				Keyword rtype = matched.getReturnType();
+				/*
 				int rtypeFlag = Keyword.typeKeyToFlag(rtype);
 				if(Keyword.typeKeyToFlag(rtype) != returnFlag && !isTypeCompatible(returnFlag, rtypeFlag))
 					throw(new ScriptCompilationException("function return type does not match expression", src, pos));
+				 */
 				if(rtype == Keyword.BOOL)
 					hasbool = true;
-				
+
 			} else {
 				Variable v = stackVars.get(s);
+				/*
 				if(v != null && v.varType != Flags.TYPE_INT && v.varType != Flags.TYPE_FLOAT && v.varType != returnFlag)
 					throw(new ScriptCompilationException("variable type does not match expression: " + s, src, pos));
 				if(v != null && returnFlag == Flags.TYPE_INT && v.varType == Flags.TYPE_FLOAT)
 					throw(new ScriptCompilationException("float variable does not match expected integer expression: " + s, src, pos));
 				if(v != null && v.varType == Flags.TYPE_BOOL)
 					hasbool = true;
+				 */
 				putVarRef(s, buff, src, pos);
 			}
 		}
 
+		/*
 		if(returnFlag == Flags.TYPE_BOOL && !hasbool)
 			throw(new ScriptCompilationException("expression does not match boolean type", src, pos));
 		else if(returnFlag != Flags.TYPE_BOOL && hasbool)
 			throw(new ScriptCompilationException("boolean expression does not match assigned type", src, pos));
+		 */
 
-		
+
 		buff.put(Bytecodes.END_CMD); // end EVAL
 	}
 
@@ -1030,7 +1047,7 @@ class ScriptCompiler {
 		str = str.replaceAll(TMP_CHK, String.valueOf(MathRef.EQUALS));
 		parseEvaluation(str, src, pos, Flags.TYPE_BOOL);
 	}
-	
+
 	// valid boolean operator replacements from MathRef class
 	private final String[] validOps = new String[] {strval(MathRef.AND_BOOL), strval(MathRef.OR_BOOL), strval(MathRef.EQUALS),
 			strval(MathRef.NOT_EQUALS), strval(MathRef.LESS_EQUALS), strval(MathRef.LESS_EQUALS), strval(MathRef.GREAT_EQUALS)};
@@ -1123,9 +1140,9 @@ class ScriptCompiler {
 				buff = curr;
 				break;
 			}
-		
+
 		buff.put(Bytecodes.END_CMD);
-		
+
 		for(int i=0; i < origArr.length; i++)
 			if(origArr[i].equals(f))
 				fpos = i;
@@ -1193,16 +1210,115 @@ class ScriptCompiler {
 				throw(new ScriptCompilationException("illegal member string identifier: cannot start with 'consts'"));
 		}
 	}
-	
+
+	/*
+	 * Takes an expression returned by MathRef.shuntingYard and parses the type of its return value
+	 */
+	private int parseExpressionType(String exp, String src, int pos) throws ScriptCompilationException {
+		int retType = -1;
+		String[] pts = exp.split(MathParser.SEP);
+		LinkedList<Integer> typeQueue = new LinkedList<Integer>();
+		MathParser parser = new MathParser();
+		for (int i=0; i < pts.length; i++) {
+			if (Keyword.isOperator(pts[i])) {
+				if (typeQueue.size() < 2) {
+					throw new ScriptCompilationException("too few operands: " + exp, src, pos);
+				}
+				int opRetFlag = Keyword.getFromSymbol(pts[i]).getReturnType();
+				if (opRetFlag == Flags.RETURN_BOOL) {
+					retType = Flags.TYPE_BOOL;
+				} else if (opRetFlag == Flags.RETURN_INT) {
+					retType = Flags.TYPE_INT;
+				} else if (opRetFlag == Flags.RETURN_MATCH_ARG) {
+					if (typeQueue.getFirst() == Flags.TYPE_FLOAT || typeQueue.getLast() == Flags.TYPE_FLOAT) {
+						retType = Flags.TYPE_FLOAT;
+					} else if (typeQueue.getFirst() == Flags.TYPE_INT && typeQueue.getLast() == Flags.TYPE_INT) {
+						retType = Flags.TYPE_INT;
+					} else if (typeQueue.getFirst() == Flags.TYPE_VEC2 ^ typeQueue.getLast() == Flags.TYPE_VEC2) {
+						retType = Flags.TYPE_VEC2;
+					} else if (typeQueue.getFirst() == Flags.TYPE_VEC2 && typeQueue.getLast() == Flags.TYPE_VEC2) {
+						retType = Flags.TYPE_FLOAT;
+					} else {
+						throw new ScriptCompilationException("argument type mismatch in expression: " + exp, src, pos);
+					}
+				}
+				typeQueue.clear();
+				typeQueue.push(retType);
+			} else if (pts[i].startsWith(Keyword.BLOCK_BEGIN.sym) && pts[i].endsWith(Keyword.BLOCK_END.sym)) {
+				String funcName = pts[i].substring(1, pts[i].indexOf(Keyword.PARAM_BEGIN.sym));
+				Function[] funcMatches = functions.getAll(funcName);
+				int paramBegin = pts[i].indexOf(Keyword.PARAM_BEGIN.sym);
+				String argStr = pts[i].substring(paramBegin+1, findParamEnd(pts[i], paramBegin));
+				String[] args = splitArgs(argStr, Keyword.SEPARATOR.sym);
+				Function func = null;
+				if (funcMatches == null)
+					throw new ScriptCompilationException("unrecognized function: " + funcName,src,pos);
+				for (Function f : funcMatches) { // we need to check for each function
+					if (f.getParamTypes().length != args.length)
+						continue;
+					Keyword[] types = f.getParamTypes();
+					boolean matching = true;
+					for (int n=0; n < args.length; n++) { // check each argument
+						String s = args[n];
+						int type = parseExpressionType(parser.shuntingYard(s), src, pos); // recursive call for expression return type
+						int paramType = getVarTypeFromKeyword(types[n]);
+						if (type == Flags.TYPE_INT && paramType == Flags.TYPE_FLOAT) {
+							type = Flags.TYPE_FLOAT;
+						}
+						// check types
+						if (type != paramType) {
+							matching = false;
+							break;
+						}
+					}
+					// if we have found a match, set the func var and break
+					if (matching) {
+						func = f;
+						break;
+					}
+				}
+				if (func != null) {
+					typeQueue.push(getVarTypeFromKeyword(func.getReturnType()));
+				} else {
+					throw new ScriptCompilationException("unrecognized function: " + funcName, src, pos);
+				}
+			} else if (isNumber(pts[i])) {
+				if (pts[i].contains("."))
+					typeQueue.push(Flags.TYPE_FLOAT);
+				else 
+					typeQueue.push(Flags.TYPE_INT);
+			}  else if (pts[i].startsWith(Keyword.STR_MARK.sym)) {
+				parseString(pts[i], src, pos);
+			} else if (isVector(pts[i])) {
+				typeQueue.push(Flags.TYPE_VEC2);
+			} else {
+				Variable var = stackVars.get(pts[i]);
+				if (var == null) {
+					//int type = parseExpressionType(parser.shuntingYard(pts[i]), src, pos);
+					typeQueue.push(Flags.TYPE_STRING);
+				} else {
+					typeQueue.push(var.varType);
+				}
+			}
+
+			if (typeQueue.size() > 2) {
+				throw new ScriptCompilationException("operand mismatch in expression: " + exp, src, pos);
+			}
+		}
+		if(retType < 0 && typeQueue.size() == 1)
+			retType = typeQueue.getFirst();
+		return retType;
+	}
+
 	private boolean isTypeCompatible(int type0, int type1) {
 		if(type0 == type1)
 			return true;
-		if(type1 == Flags.TYPE_INT && type0 == Flags.TYPE_FLOAT)
+		if(type0 == Flags.TYPE_INT && type1 == Flags.TYPE_FLOAT)
 			return true;
 		else
 			return false;
 	}
-	
+
 	private boolean isNumber(String s) {
 		try {
 			Float.parseFloat(s);
@@ -1218,7 +1334,7 @@ class ScriptCompiler {
 		else
 			return false;
 	}
-	
+
 	private int getVarTypeFromKeyword(Keyword keyw) {
 		int varType = 0;
 		switch(keyw) {
@@ -1281,7 +1397,7 @@ class ScriptCompiler {
 	}
 
 	private void printWarning(Function context, String msg) {
-		System.err.println("[SnapScript] WARNING - function '"+context.getName()+"': " + msg);
+		System.out.println("WARNING - function '"+context.getName()+"': " + msg);
 	}
 
 	static volatile int globalId = Integer.MIN_VALUE;
@@ -1309,7 +1425,7 @@ class ScriptCompiler {
 			return name + "@id="+id;
 		}
 	}
-	
+
 	static class VariableNameComparator implements Comparator<Variable> {
 
 		/**
@@ -1320,7 +1436,7 @@ class ScriptCompiler {
 			return o1.name.compareTo(o2.name);
 		}
 	}
-	
+
 	static class VariableIdComparator implements Comparator<Variable> {
 
 		/**

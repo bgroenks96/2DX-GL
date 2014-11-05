@@ -22,7 +22,7 @@ import com.snap2d.script.*;
  */
 public class VarStore {
 	
-	private static final int INT = 0x10, FLOAT = 0x11, BOOL = 0x12, STRING = 0x13;
+	private static final int INT = 0x10, FLOAT = 0x11, BOOL = 0x12, STRING = 0x13, VEC2 = 0x14;
 	
 	private HashMap<String, Object> globals = new HashMap<String, Object>();
 	private HashMap<String, Array<?>> arrays = new HashMap<String, Array<?>>();
@@ -39,23 +39,28 @@ public class VarStore {
 	}
 	
 	@ScriptLink
-	public void setInt(String name, int value) {
+	public void putInt(String name, int value) {
 		globals.put(name, value);
 	}
 	
 	@ScriptLink
-	public void setFloat(String name, double value) {
+	public void putFloat(String name, double value) {
 		globals.put(name, (useDouble) ? value:(float)value);
 	}
 	
 	@ScriptLink
-	public void setString(String name, String value) {
+	public void putString(String name, String value) {
 		globals.put(name, value);
 	}
 	
 	@ScriptLink
-	public void setBool(String name, boolean value) {
+	public void putBool(String name, boolean value) {
 		globals.put(name, value);
+	}
+	
+	@ScriptLink
+	public void putVec(String name, Vec2 v) {
+		globals.put(name, v);
 	}
 	
 	@ScriptLink
@@ -76,6 +81,11 @@ public class VarStore {
 	@ScriptLink
 	public String getString(String name) {
 		return (String) globals.get(name);
+	}
+	
+	@ScriptLink
+	public Vec2 getVec(String name) {
+		return (Vec2) globals.get(name);
 	}
 	
 	@ScriptLink

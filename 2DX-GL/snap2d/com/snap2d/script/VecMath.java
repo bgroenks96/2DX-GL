@@ -63,14 +63,14 @@ class VecMath {
 		 *
 		 */
 		@Override
-		public Vec eval(Operand... args) throws MathParseException {
+		public Vec2 eval(Operand... args) throws MathParseException {
 			if(args.length != argCount())
 				throw(new MathParseException("invalid number of arguments for vector add"));
 			if(!args[0].isVector() || !args[1].isVector())
 				throw(new MathParseException("invalid operands for vector add"));
-			Vector2d vec1 = ((Vec)args[0]).getValue();
-			Vector2d vec2 = ((Vec)args[1]).getValue();
-			return new Vec(vec1.addNew(vec2));
+			Vector2d vec1 = ((Vec2)args[0]).getValue();
+			Vector2d vec2 = ((Vec2)args[1]).getValue();
+			return new Vec2(vec1.addNew(vec2));
 		}
 
 		/**
@@ -89,14 +89,14 @@ class VecMath {
 		 *
 		 */
 		@Override
-		public Vec eval(Operand... args) throws MathParseException {
+		public Vec2 eval(Operand... args) throws MathParseException {
 			if(args.length != argCount())
 				throw(new MathParseException("invalid number of arguments for vector subtract"));
 			if(!args[0].isVector() || !args[1].isVector())
 				throw(new MathParseException("invalid operands for vector subtract"));
-			Vector2d vec1 = ((Vec)args[0]).getValue();
-			Vector2d vec2 = ((Vec)args[1]).getValue();
-			return new Vec(vec1.subNew(vec2));
+			Vector2d vec1 = ((Vec2)args[0]).getValue();
+			Vector2d vec2 = ((Vec2)args[1]).getValue();
+			return new Vec2(vec1.subNew(vec2));
 		}
 
 		/**
@@ -119,18 +119,18 @@ class VecMath {
 			if(!args[0].isVector() && !args[1].isVector()) {
 				throw(new MathParseException("at least one argument must be a vector for mult op"));
 			} else if(!args[1].isVector()) {
-				return eval((Vec)args[0], (Scalar)args[1]);
+				return mult((Scalar)args[1],(Vec2)args[0]);
 			} else if(!args[0].isVector()) {
-				return eval((Scalar)args[0], (Vec)args[1]);
+				return mult((Scalar)args[0], (Vec2)args[1]);
 			} else
-				return eval((Vec)args[0], (Vec)args[1]);
+				return dot((Vec2)args[0], (Vec2)args[1]);
 		}
 
-		private Vec eval(Scalar s, Vec v) {
-			return new Vec(v.vec.multNew(s.val));
+		private Vec2 mult(Scalar s, Vec2 v) {
+			return new Vec2(v.vec.multNew(s.val));
 		}
 
-		private Scalar eval(Vec v1, Vec v2) {
+		private Scalar dot(Vec2 v1, Vec2 v2) {
 			return new Scalar(v1.vec.dot(v2.vec));
 		}
 
@@ -154,8 +154,8 @@ class VecMath {
 			if(args[0].isVector() && args[1].isVector())
 				throw(new MathParseException("vectors can only be divided by a scalar"));
 			Scalar s = (Scalar) ((args[0].isVector()) ? args[1] : args[0]);
-			Vec v = (Vec) ((args[0].isVector()) ? args[0] : args[1]);
-			return new Vec(v.vec.divNew(s.val));
+			Vec2 v = (Vec2) ((args[0].isVector()) ? args[0] : args[1]);
+			return new Vec2(v.vec.divNew(s.val));
 		}
 
 		/**

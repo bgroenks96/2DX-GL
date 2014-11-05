@@ -41,7 +41,7 @@ public class ScriptUtils {
 	}
 	
 	@ScriptLink
-	public static void print(Vec vec) {
+	public static void print(Vec2 vec) {
 		System.out.print(vec);
 	}
 	
@@ -66,7 +66,7 @@ public class ScriptUtils {
 	}
 	
 	@ScriptLink
-	public static void println(Vec vec) {
+	public static void println(Vec2 vec) {
 		System.out.println(vec.toString());
 	}
 	

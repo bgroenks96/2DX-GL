@@ -61,7 +61,6 @@ public class GL3Handle implements GLHandle {
 	float theta, rx, ry, tx, ty, sx = 1, sy = 1;
 
 	GL3Handle(GLConfig config) {
-		final GL2GL3 gl = getGL2GL3();
 		this.config = config;
 		this.textRender = new TextRenderer(new Font("Arial",Font.PLAIN,12), true, true, null, 
 				config.getAsBool(Property.GL_RENDER_TEXT_MIPMAP));

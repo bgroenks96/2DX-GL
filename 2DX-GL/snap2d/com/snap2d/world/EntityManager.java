@@ -12,12 +12,9 @@
 
 package com.snap2d.world;
 
-import java.awt.*;
 import java.util.*;
-import java.util.List;
 
-import com.snap2d.gl.Renderable;
-import com.snap2d.gl.opengl.*;
+import com.snap2d.gl.spi.RenderableSpi;
 import com.snap2d.world.event.*;
 
 /**
@@ -33,7 +30,7 @@ import com.snap2d.world.event.*;
  * @author Brian Groenke
  * 
  */
-public class EntityManager implements GLRenderable, Renderable {
+public class EntityManager implements RenderableSpi {
 
 	ArrayList<Entity> entities = new ArrayList<Entity>();
 	HashMap<Entity, List<EntityListener>> listeners = new HashMap<Entity, List<EntityListener>>();
@@ -111,32 +108,6 @@ public class EntityManager implements GLRenderable, Renderable {
 			}
 		}
 	}
-	
-	/**
-	 * Dispatches the JOGL renderer's initialization request to all registered
-	 * Entity objects.
-	 */
-	@Override
-	public void init(GLHandle handle) {
-		for(Entity e : entities)
-			e.init(handle);
-	}
-
-	/**
-	 * Dispatches the Java2D renderer's draw request to all registered Entity objects.
-	 */
-	@Override
-	public void render(Graphics2D g, float interpolation) {
-		for (Entity e : entities) {
-			e.render(g, interpolation);
-		}
-	}
-	
-	@Override
-	public void render(GLHandle handle, float interpolation) {
-		for(Entity e : entities)
-			e.render(handle, interpolation);
-	}
 
 	/*
 	 * Cache lists used for collision checking. chkCache - Starts with every Entity object and
@@ -172,34 +143,6 @@ public class EntityManager implements GLRenderable, Renderable {
 				collCache.clear();
 			}
 		}
-	}
-
-	/**
-	 * Dispatches the Java2D renderer's resize request to all registered Entity objects.
-	 */
-	@Override
-	public void onResize(Dimension oldSize, Dimension newSize) {
-		for (Entity e : entities) {
-			e.onResize(oldSize, newSize);
-		}
-	}
-	
-	/**
-	 * Dispatches the OpenGL renderer's resize request to all registered Entity objects.
-	 */
-	@Override
-	public void resize(GLHandle handle, int wt, int ht) {
-		for(Entity e : entities)
-			e.resize(handle, wt, ht);
-	}
-	
-	/**
-	 * Dispatches the OpenGL renderer's disposal request to all registered Entity objects.
-	 */
-	@Override
-	public void dispose(GLHandle handle) {
-		for(Entity e : entities)
-			e.dispose(handle);
 	}
 
 	protected void fireCollisionEvent(Entity e, EntityCollision... colls) {

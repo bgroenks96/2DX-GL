@@ -281,7 +281,7 @@ class ScriptEngine {
 			case RETURN:
 				this.ret = execExpression();
 				if(curr.getReturnType() == Keyword.INT && !Function.isInt(ret.getClass()))
-					ret = ((Double)ret).intValue();
+					ret = ((Scalar)ret).getValue().intValue();
 				else if(curr.getReturnType() == Keyword.BOOL && !Function.isBool(ret.getClass()))
 					ret = (((Double)ret).byteValue() == 1) ? true:false;
 			case CONTINUE:

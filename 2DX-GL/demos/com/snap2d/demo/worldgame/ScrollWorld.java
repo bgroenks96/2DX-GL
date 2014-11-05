@@ -24,7 +24,7 @@ import com.snap2d.world.*;
  */
 public class ScrollWorld extends World2D implements GameWorld, Renderable {
 
-	HashSet<Entity> entities = new HashSet<Entity>();
+	HashSet<WorldGameEntity> entities = new HashSet<WorldGameEntity>();
 	EntityManager manager = new EntityManager();
 
 	/**
@@ -44,7 +44,9 @@ public class ScrollWorld extends World2D implements GameWorld, Renderable {
 	 */
 	@Override
 	public void render(Graphics2D g, float interpolation) {
-		manager.render(g, interpolation);
+		for (WorldGameEntity e : entities) {
+			e.render(g, interpolation);
+		}
 	}
 
 	/**
@@ -69,7 +71,7 @@ public class ScrollWorld extends World2D implements GameWorld, Renderable {
 	 */
 	@Override
 	public void onResize(Dimension oldSize, Dimension newSize) {
-		for (Entity e : entities) {
+		for (WorldGameEntity e : entities) {
 			e.onResize(oldSize, newSize);
 		}
 	}
@@ -79,7 +81,7 @@ public class ScrollWorld extends World2D implements GameWorld, Renderable {
 	 */
 	@Override
 	public boolean addEntity(Entity e) {
-		return entities.add(e);
+		return entities.add((WorldGameEntity)e);
 	}
 
 	/**

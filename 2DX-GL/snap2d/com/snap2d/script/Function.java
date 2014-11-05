@@ -215,7 +215,7 @@ public class Function implements Comparable<Function> {
 	}
 	
 	static boolean isVector(Class<?> c) {
-		if(c.equals(Vec.class))
+		if(c.equals(Vec2.class))
 			return true;
 		else
 			return false;

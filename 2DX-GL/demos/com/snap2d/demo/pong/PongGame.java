@@ -55,7 +55,7 @@ public class PongGame {
 
 		// initialize Display; Type is an inner type of Display
 		// the Display size doesn't really matter since we are using full-screen mode
-		disp = new Display(800, 600, Type.FULLSCREEN,
+		disp = new Display(800, 600, Type.WINDOWED,
 				GraphicsConfig.getDefaultSystemConfig());
 		disp.setTitle("Snap2D: Pong Demo");
 
@@ -63,9 +63,8 @@ public class PongGame {
 		// we will be using a double buffered render control for this demo
 		rc = disp.getRenderControl(2);
 
-		// create a new EntityManager for handling entities and register it as a Renderable task
+		// create a new EntityManager for handling entities
 		em = new EntityManager();
-		rc.addRenderable(em, RenderControl.POSITION_LAST);
 
 		Dimension dispSize = disp.getSize();
 		// create a new background Renderable for the game using the size of our Display.
@@ -90,12 +89,15 @@ public class PongGame {
 				dispSize.height / 2);
 		ball = new Ball(ballStart, world, new ScoreListener());
 		em.register(ball, new BallCollisionListener());
+		rc.addRenderable(ball, RenderControl.POSITION_LAST);
 
 		Paddle p1 = new Paddle(world.screenToWorld(dispSize.width
 				- Paddle.PADDLE_SIZE.width - 10, 0, Paddle.PADDLE_SIZE.height), world, input, true);
 		Paddle p2 = new Paddle(world.screenToWorld(10, 0, Paddle.PADDLE_SIZE.height), world, input, false);
 		em.register(p1);
+		rc.addRenderable(p1, RenderControl.POSITION_LAST);
 		em.register(p2);
+		rc.addRenderable(p2, RenderControl.POSITION_LAST);
 
 		// show the Display and tell the rendering handle to start the game loop.
 		// typically the Display should be shown first to ensure everything is ready to start
