@@ -15,7 +15,8 @@ package com.snap2d.demo.worldgame;
 import java.awt.geom.Point2D;
 
 import com.snap2d.gl.Renderable;
-import com.snap2d.world.*;
+import com.snap2d.world.Entity;
+import com.snap2d.world.World2D;
 
 /**
  * @author brian
@@ -23,17 +24,18 @@ import com.snap2d.world.*;
  */
 public abstract class WorldGameEntity extends Entity implements Renderable {
 
-	/**
-	 * 
-	 */
-	private static final long serialVersionUID = -2903152253423920417L;
+    /**
+     * 
+     */
+    private static final long serialVersionUID = -2903152253423920417L;
 
-	/**
-	 * @param worldLoc
-	 * @param world
-	 */
-	protected WorldGameEntity(Point2D worldLoc, World2D world) {
-		super(worldLoc, world);
-	}
+    /**
+     * @param worldLoc
+     * @param world
+     */
+    protected WorldGameEntity(final Point2D worldLoc, final World2D world) {
+
+        super(worldLoc, world);
+    }
 
 }

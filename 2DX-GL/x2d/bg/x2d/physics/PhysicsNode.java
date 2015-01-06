@@ -12,38 +12,38 @@
 
 package bg.x2d.physics;
 
-import bg.x2d.geo.*;
+import bg.x2d.geo.Vector2d;
+import bg.x2d.geo.Vector2f;
 
 public interface PhysicsNode {
 
-	public Vector2f getVelocity2f();
+    public Vector2f getVelocity2f();
 
-	public Vector2d getVelocity2d();
+    public Vector2d getVelocity2d();
 
-	public double getVelocity();
+    public double getVelocity();
 
-	public void setVelocity(Vector2f vec);
+    public void setVelocity(Vector2f vec);
 
-	public void setVelocity(Vector2d vec);
-	
-	public Vector2f getAcceleration2f();
-	
-	public Vector2d getAcceleration2d();
+    public void setVelocity(Vector2d vec);
 
-	public void setMass(double kg);
-	
-	public double getMass();
+    public Vector2f getAcceleration2f();
 
-	public Vector2f collide(float velFactor, float surfaceAngle, Collision type);
+    public Vector2d getAcceleration2d();
 
-	public Vector2d collide(double velFactor, double surfaceAngle,
-			Collision type);
+    public void setMass(double kg);
 
-	public Vector2f applyForces(float time, Force... f);
+    public double getMass();
 
-	public Vector2d applyForces(double time, Force... f);
+    public Vector2f collide(float velFactor, float surfaceAngle, Collision type);
 
-	public enum Collision {
-		X, Y, XY, ANGLED;
-	}
+    public Vector2d collide(double velFactor, double surfaceAngle, Collision type);
+
+    public Vector2f applyForces(float time, Force... f);
+
+    public Vector2d applyForces(double time, Force... f);
+
+    public enum Collision {
+        X, Y, XY, ANGLED;
+    }
 }

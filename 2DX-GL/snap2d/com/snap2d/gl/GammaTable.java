@@ -12,126 +12,134 @@
 
 package com.snap2d.gl;
 
-import java.util.*;
+import java.util.Arrays;
 
-import bg.x2d.utils.*;
+import bg.x2d.utils.ColorUtils;
 
 /**
- * Pre-calculates an internal table of gamma corrected RGB values and provides look-up functionality
- * to apply the gamma to integer pixels.
+ * Pre-calculates an internal table of gamma corrected RGB values and provides
+ * look-up functionality to apply the gamma to integer pixels.
  * 
  * @author Brian Groenke
  * 
  */
 public class GammaTable {
 
-	private static final float COLORS = 255;
-	private static final int TABLE_SIZE = 256;
+    private static final float COLORS = 255;
+    private static final int TABLE_SIZE = 256;
 
-	private float gamma;
-	private int[] table;
+    private float gamma;
+    private int[] table;
 
-	/**
-	 * 
-	 */
-	public GammaTable(float gamma) {
-		if (gamma < 0) {
-			throw (new IllegalArgumentException("illegal gamma value"));
-		}
-		this.gamma = gamma;
-		buildGammaTable();
-	}
+    /**
+     * 
+     */
+    public GammaTable(final float gamma) {
 
-	/**
-	 * Applies the current gamma table to the given integer pixel.
-	 * 
-	 * @param color
-	 *            the integer pixel to which gamma will be applied
-	 * @param type
-	 *            a pixel type defined by ColorUtils
-	 * @param rgbArr
-	 *            optional pre-instantiated array to use when unpacking. May be null.
-	 * @return the modified pixel value
-	 */
-	public int applyGamma(int color, int type, int[] rgbArr) {
-		int[] argb = (rgbArr != null) ? ColorUtils.unpackInt(rgbArr, color)
-				: ColorUtils.unpackInt(color, type);
-		for (int i = 0; i < argb.length; i++) {
-			int col = argb[i];
-			argb[i] = table[col];
-		}
-		int newColor = ColorUtils.packInt(argb);
-		return newColor;
-	}
+        if (gamma < 0) {
+            throw (new IllegalArgumentException("illegal gamma value"));
+        }
+        this.gamma = gamma;
+        buildGammaTable();
+    }
 
-	/**
-	 * Same as {@link #applyGamma(int, int, int[])} but uses the separate ARGB values stored in the
-	 * given array.
-	 * 
-	 * @param argb
-	 * @return
-	 */
-	public int[] applyGamma(int[] argb) {
-		for (int i = 0; i < argb.length; i++) {
-			int col = argb[i];
-			argb[i] = table[col];
-		}
-		return argb;
-	}
+    /**
+     * Applies the current gamma table to the given integer pixel.
+     * 
+     * @param color
+     *            the integer pixel to which gamma will be applied
+     * @param type
+     *            a pixel type defined by ColorUtils
+     * @param rgbArr
+     *            optional pre-instantiated array to use when unpacking. May be
+     *            null.
+     * @return the modified pixel value
+     */
+    public int applyGamma(final int color, final int type, final int[] rgbArr) {
 
-	/**
-	 * Applies gamma correction to a single ARGB component value. <br/>
-	 * <br/>
-	 * Note: Value must be within valid color range (0-255) or ArrayIndexOutOfBounds exception will
-	 * be thrown by the VM.
-	 * 
-	 * @param val
-	 * @return the gamma modified color component
-	 */
-	public int applyGamma(int val) {
-		return table[val];
-	}
+        int[] argb = (rgbArr != null) ? ColorUtils.unpackInt(rgbArr, color) : ColorUtils.unpackInt(color, type);
+        for (int i = 0; i < argb.length; i++ ) {
+            int col = argb[i];
+            argb[i] = table[col];
+        }
+        int newColor = ColorUtils.packInt(argb);
+        return newColor;
+    }
 
-	/**
-	 * Sets the gamma and rebuilds the internal gamma table. The passed value should be >= 0.0
-	 * specifying how much to darken or brighten the image, where 1.0 has no change, < 1 is darker,
-	 * and > 1 is brighter. <br/>
-	 * <br/>
-	 * This method MAY consume noticeable time in the calling thread from rebuilding the gamma
-	 * table.
-	 * 
-	 * @param gamma
-	 *            the new gamma value
-	 */
-	public void setGamma(float gamma) {
-		if (gamma >= 0) {
-			this.gamma = gamma;
-			buildGammaTable();
-		}
-	}
+    /**
+     * Same as {@link #applyGamma(int, int, int[])} but uses the separate ARGB
+     * values stored in the given array.
+     * 
+     * @param argb
+     * @return
+     */
+    public int[] applyGamma(final int[] argb) {
 
-	public float getGamma() {
-		return gamma;
-	}
+        for (int i = 0; i < argb.length; i++ ) {
+            int col = argb[i];
+            argb[i] = table[col];
+        }
+        return argb;
+    }
 
-	/**
-	 * @return a copy of the pre-calculated gamma values array.
-	 */
-	public int[] getTable() {
-		return Arrays.copyOf(table, table.length);
-	}
+    /**
+     * Applies gamma correction to a single ARGB component value. <br/>
+     * <br/>
+     * Note: Value must be within valid color range (0-255) or
+     * ArrayIndexOutOfBounds exception will be thrown by the VM.
+     * 
+     * @param val
+     * @return the gamma modified color component
+     */
+    public int applyGamma(final int val) {
 
-	/**
-	 * Called when a new gamma value is set to rebuild the gamma table.
-	 */
-	private synchronized void buildGammaTable() {
-		if (table == null || table.length != TABLE_SIZE) {
-			table = new int[TABLE_SIZE];
-		}
-		float ginv = 1 / gamma;
-		for (int i = 0; i < table.length; i++) {
-			table[i] = (int) Math.round(COLORS * Math.pow(i / COLORS, ginv));
-		}
-	}
+        return table[val];
+    }
+
+    /**
+     * Sets the gamma and rebuilds the internal gamma table. The passed value
+     * should be >= 0.0 specifying how much to darken or brighten the image,
+     * where 1.0 has no change, < 1 is darker, and > 1 is brighter. <br/>
+     * <br/>
+     * This method MAY consume noticeable time in the calling thread from
+     * rebuilding the gamma table.
+     * 
+     * @param gamma
+     *            the new gamma value
+     */
+    public void setGamma(final float gamma) {
+
+        if (gamma >= 0) {
+            this.gamma = gamma;
+            buildGammaTable();
+        }
+    }
+
+    public float getGamma() {
+
+        return gamma;
+    }
+
+    /**
+     * @return a copy of the pre-calculated gamma values array.
+     */
+    public int[] getTable() {
+
+        return Arrays.copyOf(table, table.length);
+    }
+
+    /**
+     * Called when a new gamma value is set to rebuild the gamma table.
+     */
+    private synchronized void buildGammaTable() {
+
+        if (table == null || table.length != TABLE_SIZE) {
+            table = new int[TABLE_SIZE];
+        }
+        float ginv = 1 / gamma;
+        for (int i = 0; i < table.length; i++ ) {
+            table[i] = (int) Math.round(COLORS * Math.pow(i / COLORS, ginv));
+        }
+    }
 
 }

@@ -14,28 +14,30 @@ package com.snap2d.script;
 
 public class MathParseException extends ScriptCompilationException {
 
-	/**
-	 * @param message
-	 * @param source
-	 * @param charPos
-	 */
-	public MathParseException(String message) {
-		super(message, null, 0);
-	}
+    /**
+     * @param message
+     * @param source
+     * @param charPos
+     */
+    public MathParseException(final String message) {
 
-	/**
-	 * 
-	 */
-	private static final long serialVersionUID = -5617820949413283255L;
+        super(message, null, 0);
+    }
 
-	public static final int UNSPECIFIED_POS = -1;
+    /**
+     * 
+     */
+    private static final long serialVersionUID = -5617820949413283255L;
 
-	int pos = UNSPECIFIED_POS;
+    public static final int UNSPECIFIED_POS = -1;
 
-	/*
-	 * Value of -1 means not specified.
-	 */
-	public int getPos() {
-		return pos;
-	}
+    int pos = UNSPECIFIED_POS;
+
+    /*
+     * Value of -1 means not specified.
+     */
+    public int getPos() {
+
+        return pos;
+    }
 }

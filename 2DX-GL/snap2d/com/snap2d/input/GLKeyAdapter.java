@@ -12,27 +12,26 @@
 
 package com.snap2d.input;
 
-
 /**
  * @author Brian Groenke
  *
  */
 public class GLKeyAdapter implements GLKeyListener {
 
-	/**
-	 *
-	 */
-	@Override
-	public void keyPressed(GLKeyEvent event) {
-		
-	}
+    /**
+     *
+     */
+    @Override
+    public void keyPressed(final GLKeyEvent event) {
 
-	/**
-	 *
-	 */
-	@Override
-	public void keyReleased(GLKeyEvent event) {
-		
-	}
+    }
+
+    /**
+     *
+     */
+    @Override
+    public void keyReleased(final GLKeyEvent event) {
+
+    }
 
 }

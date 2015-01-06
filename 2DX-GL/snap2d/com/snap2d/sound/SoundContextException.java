@@ -18,38 +18,42 @@ package com.snap2d.sound;
  */
 public class SoundContextException extends Exception {
 
-	/**
-	 * 
-	 */
-	private static final long serialVersionUID = 389563910801777238L;
+    /**
+     * 
+     */
+    private static final long serialVersionUID = 389563910801777238L;
 
-	/**
-	 * 
-	 */
-	public SoundContextException() {
-		super();
-	}
+    /**
+     * 
+     */
+    public SoundContextException() {
 
-	/**
-	 * @param message
-	 */
-	public SoundContextException(String message) {
-		super(message);
-	}
+        super();
+    }
 
-	/**
-	 * @param cause
-	 */
-	public SoundContextException(Throwable cause) {
-		super(cause);
-	}
+    /**
+     * @param message
+     */
+    public SoundContextException(final String message) {
 
-	/**
-	 * @param message
-	 * @param cause
-	 */
-	public SoundContextException(String message, Throwable cause) {
-		super(message, cause);
-	}
+        super(message);
+    }
+
+    /**
+     * @param cause
+     */
+    public SoundContextException(final Throwable cause) {
+
+        super(cause);
+    }
+
+    /**
+     * @param message
+     * @param cause
+     */
+    public SoundContextException(final String message, final Throwable cause) {
+
+        super(message, cause);
+    }
 
 }

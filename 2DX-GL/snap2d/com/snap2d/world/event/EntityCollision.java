@@ -12,30 +12,35 @@
 
 package com.snap2d.world.event;
 
-import com.snap2d.world.*;
+import com.snap2d.world.Entity;
+import com.snap2d.world.Rect2D;
 
 /**
  * @author Brian Groenke
  *
  */
 public interface EntityCollision {
-	
-	/**
-	 * Fetches the Entity that generated this EntityCollision
-	 * @return
-	 */
-	public Entity getEntity();
-	
-	/**
-	 * Fetches the Entity that is colliding with the Entity from {@link #getEntity()}
-	 * @return
-	 */
-	public Entity getCollidingEntity();
-	
-	/**
-	 * Fetches a Rect2D that represents the overlap between the rectangular bounds
-	 * of the two colliding Entities.
-	 * @return
-	 */
-	public Rect2D getCollisionBounds();
+
+    /**
+     * Fetches the Entity that generated this EntityCollision
+     * 
+     * @return
+     */
+    public Entity getEntity();
+
+    /**
+     * Fetches the Entity that is colliding with the Entity from
+     * {@link #getEntity()}
+     * 
+     * @return
+     */
+    public Entity getCollidingEntity();
+
+    /**
+     * Fetches a Rect2D that represents the overlap between the rectangular
+     * bounds of the two colliding Entities.
+     * 
+     * @return
+     */
+    public Rect2D getCollisionBounds();
 }

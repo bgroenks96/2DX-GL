@@ -19,16 +19,25 @@ import bg.x2d.geo.PointUD;
  *
  */
 public interface LightSource {
-	
-	public void setLocation(double x, double y);
-	public void setColor(float[] color);
-	public void setIntensity(float ifactor);
-	public void setRadius(float radius);
-	public void setEnabled(boolean enabled);
-	public PointUD getLocation();
-	public float[] getColor();
-	public float getIntensity();
-	public float getRadius();
-	public boolean isEnabled();
-	
+
+    public void setLocation(double x, double y);
+
+    public void setColor(float[] color);
+
+    public void setIntensity(float ifactor);
+
+    public void setRadius(float radius);
+
+    public void setEnabled(boolean enabled);
+
+    public PointUD getLocation();
+
+    public float[] getColor();
+
+    public float getIntensity();
+
+    public float getRadius();
+
+    public boolean isEnabled();
+
 }

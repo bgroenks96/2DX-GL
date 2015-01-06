@@ -12,27 +12,30 @@
 
 package com.snap2d.script;
 
-
 public class Scalar implements Operand {
 
-	double val;
+    double val;
 
-	Scalar(double val) {
-		this.val = val;
-	}
+    Scalar(final double val) {
 
-	@Override
-	public Double getValue() {
-		return val;
-	}
+        this.val = val;
+    }
 
-	@Override
-	public boolean isVector() {
-		return false;
-	}
+    @Override
+    public Double getValue() {
 
-	@Override
-	public String toString() {
-		return String.valueOf(val);
-	}
+        return val;
+    }
+
+    @Override
+    public boolean isVector() {
+
+        return false;
+    }
+
+    @Override
+    public String toString() {
+
+        return String.valueOf(val);
+    }
 }

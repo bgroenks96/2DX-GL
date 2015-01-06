@@ -17,18 +17,28 @@ package com.snap2d.gl.spi;
  *
  */
 public interface RenderController {
-	
-	public static final int DEFAULT_TARGET_FPS = 60, POSITION_LAST = 0x07FFFFFFF;
-	
-	public void startRenderLoop();
-	public void stopRenderLoop() throws InterruptedException;
-	public void setRenderActive(boolean active);
-	public boolean isRenderActive();
-	public void setMaxUpdates(int maxUpdates);
-	public void setTargetFPS(int targetFPS);
-	public void setTargetTPS(int targetTPS);
-	public int getCurrentFPS();
-	public int getCurrentTPS();
-	public void setDisableUpdates(boolean disableUpdates);
-	public boolean isUpdating();
+
+    public static final int DEFAULT_TARGET_FPS = 60, POSITION_LAST = 0x07FFFFFFF;
+
+    public void startRenderLoop();
+
+    public void stopRenderLoop() throws InterruptedException;
+
+    public void setRenderActive(boolean active);
+
+    public boolean isRenderActive();
+
+    public void setMaxUpdates(int maxUpdates);
+
+    public void setTargetFPS(int targetFPS);
+
+    public void setTargetTPS(int targetTPS);
+
+    public int getCurrentFPS();
+
+    public int getCurrentTPS();
+
+    public void setDisableUpdates(boolean disableUpdates);
+
+    public boolean isUpdating();
 }

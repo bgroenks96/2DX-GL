@@ -16,13 +16,14 @@ package com.snap2d.script.obj;
  * @author brian
  */
 public class ScriptObjectParsingException extends Exception {
-	
-	/**
-	 * 
-	 */
-	private static final long serialVersionUID = -5916171390137373617L;
 
-	public ScriptObjectParsingException(String message) {
-		super(message);
-	}
+    /**
+     * 
+     */
+    private static final long serialVersionUID = -5916171390137373617L;
+
+    public ScriptObjectParsingException(final String message) {
+
+        super(message);
+    }
 }

@@ -17,7 +17,7 @@ package com.snap2d.gl.spi;
  *
  */
 public interface RenderableSpi {
-	
-	public void update(long nanoTimeNow, long nanosSinceLastUpdate);
-	
+
+    public void update(long nanoTimeNow, long nanosSinceLastUpdate);
+
 }

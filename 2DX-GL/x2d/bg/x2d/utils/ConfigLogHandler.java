@@ -12,44 +12,49 @@
 
 package bg.x2d.utils;
 
-import java.util.logging.*;
+import java.util.logging.Handler;
+import java.util.logging.Level;
+import java.util.logging.LogRecord;
 
 /**
  * @author Brian Groenke
  *
  */
 public class ConfigLogHandler extends Handler {
-	
-	private final String prefix;
-	
-	public ConfigLogHandler(String msgprefix) {
-		this.prefix = msgprefix;
-	}
 
-	/**
-	 *
-	 */
-	@Override
-	public void publish(LogRecord record) {
-		if(record.getLevel() != Level.CONFIG)
-			return;
-		System.err.println(prefix + " " + record.getMessage());
-	}
+    private final String prefix;
 
-	/**
-	 *
-	 */
-	@Override
-	public void flush() {
-		
-	}
+    public ConfigLogHandler(final String msgprefix) {
 
-	/**
-	 *
-	 */
-	@Override
-	public void close() throws SecurityException {
-		
-	}
+        this.prefix = msgprefix;
+    }
+
+    /**
+     *
+     */
+    @Override
+    public void publish(final LogRecord record) {
+
+        if (record.getLevel() != Level.CONFIG) {
+            return;
+        }
+        System.err.println(prefix + " " + record.getMessage());
+    }
+
+    /**
+     *
+     */
+    @Override
+    public void flush() {
+
+    }
+
+    /**
+     *
+     */
+    @Override
+    public void close() throws SecurityException {
+
+    }
 
 }

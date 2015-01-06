@@ -10,11 +10,24 @@
  *  http://mozilla.org/MPL/2.0/.
  */
 
-package com.snap2d.script;
+package com.snap2d.script.refactor;
 
-public interface Operand {
+import java.nio.ByteBuffer;
 
-    public Object getValue();
+/**
+ * @author brian
+ *
+ */
+public class Expression implements Parseable {
 
-    public boolean isVector();
+    /**
+     *
+     */
+    @Override
+    public int parse(final ByteBuffer buff, final String src, final int pos) {
+
+        // TODO Auto-generated method stub
+        return 0;
+    }
+
 }

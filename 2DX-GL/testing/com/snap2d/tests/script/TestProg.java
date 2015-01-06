@@ -14,6 +14,8 @@ package com.snap2d.tests.script;
 
 import org.junit.Test;
 
+import bg.x2d.utils.Utils;
+
 import com.snap2d.script.Function;
 import com.snap2d.script.ScriptInvocationException;
 import com.snap2d.script.ScriptProgram;
@@ -24,26 +26,36 @@ import com.snap2d.script.ScriptSource;
  *
  */
 public class TestProg {
-	
-	private static final String SRC1 =
-			"void Init() { putInt(\"tick\",0);}\n"
-			+ "void Tick() { int tick = getInt(\"tick\"); println(tick); sleep(1000);}";
-	
-	@Test
-	public void testLoop() {
-		ScriptProgram prog = new ScriptProgram(true, new ScriptSource(SRC1));
-		if (!prog.compile())
-			throw new RuntimeException("compilation failed",prog.getLastCompileError());
-		try {
-			prog.initRuntime(true);
-			Function init = prog.findFunction("Init");
-			Function tick = prog.findFunction("Tick");
-			prog.invoke(init);
-			for (int i=0; i < 10; i++) {
-				prog.invoke(tick);
-			}
-		} catch (ScriptInvocationException e) {
-			e.printStackTrace();
-		}
-	}
+
+    private static final String SRC1 = "void Init() { putInt(\"tick\",0);}\n"
+            + "void Tick() { int tick = getInt(\"tick\"); println(tick); sleep(1000);}";
+
+    @Test
+    public void testLoop() {
+
+        ScriptProgram prog = new ScriptProgram(true, new ScriptSource(SRC1));
+        if (!prog.compile()) {
+            throw new RuntimeException("compilation failed", prog.getLastCompileError());
+        }
+        try {
+            prog.initRuntime(true);
+            Function init = prog.findFunction("Init");
+            Function tick = prog.findFunction("Tick");
+            prog.invoke(init);
+            for (int i = 0; i < 10; i++ ) {
+                prog.invoke(tick);
+            }
+        } catch (ScriptInvocationException e) {
+            e.printStackTrace();
+        }
+    }
+
+    public static void main(final String[] args) {
+
+        String[] nations = { "England", "France", "Germany", "Italy", "Russia", "Austria-Hungary", "Turkey" };
+        nations = Utils.randomize(nations);
+        for (int i = 1; i <= nations.length; i++ ) {
+            System.out.println(i + " = " + nations[i - 1]);
+        }
+    }
 }

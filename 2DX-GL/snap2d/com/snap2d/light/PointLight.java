@@ -21,97 +21,108 @@ import bg.x2d.geo.PointUD;
  *
  */
 public class PointLight implements LightSource {
-	
-	PointUD loc = new PointUD(0,0);
-	float[] color = new float[3];
-	float ifactor, radius;
-	boolean enabled = true;
-	
-	public PointLight(double x, double y, float[] color, float intensity, float radius) {
-		setLocation(x, y);
-		setColor(color);
-		setIntensity(intensity);
-		setRadius(radius);
-	}
 
-	/**
-	 *
-	 */
-	@Override
-	public void setLocation(double x, double y) {
-		loc.setLocation(x, y);
-	}
+    PointUD loc = new PointUD(0, 0);
+    float[] color = new float[3];
+    float ifactor, radius;
+    boolean enabled = true;
 
-	/**
-	 *
-	 */
-	@Override
-	public void setColor(float[] color) {
-		System.arraycopy(color, 0, this.color, 0, this.color.length);
-	}
+    public PointLight(final double x, final double y, final float[] color, final float intensity, final float radius) {
 
-	/**
-	 *
-	 */
-	@Override
-	public void setIntensity(float ifactor) {
-		this.ifactor = ifactor;
-	}
+        setLocation(x, y);
+        setColor(color);
+        setIntensity(intensity);
+        setRadius(radius);
+    }
 
-	/**
-	 *
-	 */
-	@Override
-	public void setRadius(float radius) {
-		this.radius = radius;
-	}
+    /**
+     *
+     */
+    @Override
+    public void setLocation(final double x, final double y) {
 
-	/**
-	 *
-	 */
-	@Override
-	public void setEnabled(boolean enabled) {
-		this.enabled = enabled;
-	}
+        loc.setLocation(x, y);
+    }
 
-	/**
-	 *
-	 */
-	@Override
-	public PointUD getLocation() {
-		return new PointUD(loc);
-	}
+    /**
+     *
+     */
+    @Override
+    public void setColor(final float[] color) {
 
-	/**
-	 *
-	 */
-	@Override
-	public float[] getColor() {
-		return Arrays.copyOf(color, color.length);
-	}
+        System.arraycopy(color, 0, this.color, 0, this.color.length);
+    }
 
-	/**
-	 *
-	 */
-	@Override
-	public float getIntensity() {
-		return ifactor;
-	}
+    /**
+     *
+     */
+    @Override
+    public void setIntensity(final float ifactor) {
 
-	/**
-	 *
-	 */
-	@Override
-	public float getRadius() {
-		return radius;
-	}
+        this.ifactor = ifactor;
+    }
 
-	/**
-	 *
-	 */
-	@Override
-	public boolean isEnabled() {
-		return enabled;
-	}
+    /**
+     *
+     */
+    @Override
+    public void setRadius(final float radius) {
+
+        this.radius = radius;
+    }
+
+    /**
+     *
+     */
+    @Override
+    public void setEnabled(final boolean enabled) {
+
+        this.enabled = enabled;
+    }
+
+    /**
+     *
+     */
+    @Override
+    public PointUD getLocation() {
+
+        return new PointUD(loc);
+    }
+
+    /**
+     *
+     */
+    @Override
+    public float[] getColor() {
+
+        return Arrays.copyOf(color, color.length);
+    }
+
+    /**
+     *
+     */
+    @Override
+    public float getIntensity() {
+
+        return ifactor;
+    }
+
+    /**
+     *
+     */
+    @Override
+    public float getRadius() {
+
+        return radius;
+    }
+
+    /**
+     *
+     */
+    @Override
+    public boolean isEnabled() {
+
+        return enabled;
+    }
 
 }

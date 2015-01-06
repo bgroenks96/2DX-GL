@@ -13,273 +13,329 @@
 package com.snap2d.script;
 
 import java.lang.reflect.Method;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.logging.Logger;
 
 import bg.x2d.utils.Multimap;
 
 import com.snap2d.script.ScriptCompiler.Variable;
-import com.snap2d.script.lib.*;
+import com.snap2d.script.lib.ScriptMath;
+import com.snap2d.script.lib.ScriptTimer;
+import com.snap2d.script.lib.ScriptUtils;
+import com.snap2d.script.lib.VarStore;
 
 /**
  * @author Brian Groenke
  *
  */
 public class ScriptProgram {
-	
-	private static final Logger log = Logger.getLogger(ScriptProgram.class.getCanonicalName());
 
-	ArrayList<ScriptSource> scripts = new ArrayList<ScriptSource>();
-	ArrayList<Class<?>> classes = new ArrayList<Class<?>>();
-	Multimap<String, Function> funcs;
-	ConstantInitializer[] initConsts;
-	ScriptEngine engine;
+    private static final Logger log = Logger.getLogger(ScriptProgram.class.getCanonicalName());
 
-	ScriptCompilationException lastErr;
-	
-	Function[] scriptFuncs = new Function[0];
+    ArrayList <ScriptSource> scripts = new ArrayList <ScriptSource>();
+    ArrayList <Class <?>> classes = new ArrayList <Class <?>>();
+    Multimap <String, Function> funcs;
+    ConstantInitializer[] initConsts;
+    ScriptEngine engine;
 
-	/**
-	 * Create a new ScriptProgram with the given sources.  The program is not compiled or executable
-	 * until the <code>compile</code> method is called.
-	 * @param linkLibs whether or not the standard SnapScript libraries should be automatically linked (usually should be true)
-	 * @param scriptSources the sources to compile
-	 */
-	public ScriptProgram(boolean linkLibs, ScriptSource...scriptSources) {	
-		addSources(scriptSources);
-		if(linkLibs) {
-			link(ScriptMath.class);
-			link(VarStore.class);
-			link(ScriptUtils.class);
-			link(ScriptTimer.class);
-		}
-	}
-	
-	public void addSources(ScriptSource...scriptSources) {
-		for(ScriptSource s:scriptSources)
-			scripts.add(s);
-	}
-	
-	public void removeSources(ScriptSource...scriptSources) {
-		for(ScriptSource s:scriptSources)
-			scripts.remove(s);
-	}
+    ScriptCompilationException lastErr;
 
-	public void link(ScriptSource script) {
-		scripts.add(script);
-	}
+    Function[] scriptFuncs = new Function[0];
 
-	public void link(Class<?> javaClass) {
-		classes.add(javaClass);
-	}
+    /**
+     * Create a new ScriptProgram with the given sources. The program is not
+     * compiled or executable until the <code>compile</code> method is called.
+     * 
+     * @param linkLibs
+     *            whether or not the standard SnapScript libraries should be
+     *            automatically linked (usually should be true)
+     * @param scriptSources
+     *            the sources to compile
+     */
+    public ScriptProgram(final boolean linkLibs, final ScriptSource... scriptSources) {
 
-	public void unlink(ScriptSource script) {
-		scripts.remove(script);
-	}
+        addSources(scriptSources);
+        if (linkLibs) {
+            link(ScriptMath.class);
+            link(VarStore.class);
+            link(ScriptUtils.class);
+            link(ScriptTimer.class);
+        }
+    }
 
-	public void unlink(Class<?> javaClass) {
-		classes.remove(javaClass);
-	}
+    public void addSources(final ScriptSource... scriptSources) {
 
-	public boolean compile() {
-		log.info("Initializing SnapScript " + ScriptInfo.SCRIPT_VERSION.str + 
-				" [BCS."+ ScriptInfo.BYTECODE_SPEC.str+"]");
-		ScriptCompiler compiler = new ScriptCompiler();
-		boolean chk;
-		try {
-			String[] srcs = new String[scripts.size()];
-			for(int i = 0; i < scripts.size(); i++) {
-				srcs[i] = scripts.get(i).getSource();
-			}
-			ArrayList<ConstantInitializer> constList = new ArrayList<ConstantInitializer>();
-			log.info("Running precompiler...");
-			System.out.println("Running precompiler...");
-			funcs = compiler.precompile(constList, srcs);
-			scriptFuncs = new Function[funcs.size()];
-			funcs.values().toArray(scriptFuncs);
-			log.info("Linking Java functions...");
-			// register methods from linked classes
-			for(Class<?> c:classes) {
-				Method[] methods = c.getDeclaredMethods();
-				for(Method m:methods) {
-					ScriptLink link = m.getAnnotation(ScriptLink.class);
-					if(link == null || !link.value())
-						continue;
-					Function func = new Function(m.getName(), c, m.getParameterTypes());
-					Function[] other = funcs.getAll(func.getName());
-					if(other != null) {
-						for(Function f:other) {
-							if(Arrays.equals(func.getParamTypes(), f.getParamTypes()))
-								throw(new ScriptCompilationException("found duplicate linked method '"+f.getName()+"' in class " + c.getName()));
-						}
-					}
-					funcs.put(m.getName(), func);
-				}
-			}
+        for (ScriptSource s : scriptSources) {
+            scripts.add(s);
+        }
+    }
 
-			log.info("Running compiler...");
-			System.out.println("Running compiler...");
-			compiler.compile(funcs, constList);
-			initConsts = new ConstantInitializer[constList.size()];
-			constList.toArray(initConsts);
-			System.out.println("Done");
-			chk = true;
-		} catch (ScriptCompilationException e) {
-			e.printStackTrace();
-			lastErr = e;
-			funcs = null;
-			chk = false;
-		} catch (Throwable e) {
-			System.out.println("An internal compiler error occurred: " + e.toString());
-			e.printStackTrace();
-			funcs = null;
-			chk = false;
-		}
+    public void removeSources(final ScriptSource... scriptSources) {
 
-		return chk;
-	}
+        for (ScriptSource s : scriptSources) {
+            scripts.remove(s);
+        }
+    }
 
-	public ScriptCompilationException getLastCompileError() {
-		return lastErr;
-	}
+    public void link(final ScriptSource script) {
 
-	/**
-	 * Initializes the script engine runtime after successful compilation.
-	 * @param useDoubleStore if true, the script engine will store 'float' data types as Java doubles, otherwise they will be stored
-	 * 		as Java floats
-	 * @throws ScriptInvocationException if the ScriptEngine encounters an initialization error
-	 */
-	public void initRuntime(boolean useDoubleStore) throws ScriptInvocationException {
-		if(funcs == null)
-			throw(new IllegalStateException("cannot initialize runtime before compilation"));
-		
-		engine = new ScriptEngine(this, funcs.values().toArray(new Function[funcs.size()]), initConsts, useDoubleStore);
-		log.info("SnapScript runtime successfully initialized!\n");
-	}
-	
-	public void disposeRuntime() {
-		
-	}
+        scripts.add(script);
+    }
 
-	public void attachToJavaFunction(Object o, Function func) throws ScriptInvocationException {
-		if(!func.isJavaFunction())
-			throw(new IllegalArgumentException("cannot attach objects to script functions"));
-		if(engine == null)
-			throw(new IllegalStateException("cannot attach objects before runtime initialization"));
-		engine.attachObjectToFunction(func.getID(), o);
-	}
-	
-	public Function findFunction(String name, Class<?>... params) {
-		Function[] matches = funcs.getAll(name);
-		if(matches == null || matches.length == 0)
-			return null;
+    public void link(final Class <?> javaClass) {
 
-		funcLoop:
-			for(Function f:matches) {
-				Keyword[] ks = f.getParamTypes();
-				if(ks.length != params.length)
-					continue;
-				for(int i=0;i<ks.length;i++) {
-					Keyword pkw = getKeyword(params[i]);
-					if(!ks[i].equals(pkw))
-						continue funcLoop;
-				}
+        classes.add(javaClass);
+    }
 
-				return f;
-			}
-		return null;
-	}
-	
-	public Function findFunction(String name) {
-		Function[] matches = funcs.getAll(name);
-		if(matches == null || matches.length == 0)
-			return null;
-		else
-			return matches[0];
-	}
-	
-	public Function[] findFunctions(String name) {
-		Function[] matches = funcs.getAll(name);
-		if(matches == null || matches.length == 0)
-			return null;
-		else
-			return matches;
-	}
-	
-	public Function[] getScriptFunctions() {
-		return Arrays.copyOf(scriptFuncs, scriptFuncs.length);
-	}
-	
-	public String[] getConstants() {
-		if(initConsts == null)
-			return null;
-		ArrayList<String> constNames = new ArrayList<String>();
-		for(ConstantInitializer ci : initConsts) {
-			Variable[] vars = ci.getConstantVars();
-			for(Variable v : vars)
-				constNames.add(v.name);
-		}
-		return constNames.toArray(new String[constNames.size()]);
-	}
-	
-	public Object getConstantValue(String constant) {
-		if(initConsts == null || engine == null)
-			throw(new IllegalStateException("constant values cannot be accessed until script runtime is initialized"));
-		Object val = null;
-		for(ConstantInitializer ci : initConsts) {
-			Variable[] vars = ci.getConstantVars();
-			for(Variable v : vars) {
-				if(v.name.equals(constant)) {
-					val = engine.fetchConstValue(v.getID());
-					break;
-				} else
-					continue;
-			}
-		}
-		return val;
-	}
-	
-	public VarStore getVarStore() {
-		return engine.vars;
-	}
+    public void unlink(final ScriptSource script) {
 
-	/**
-	 * Invokes the script function with the given arguments.
-	 * @param f
-	 * @param args
-	 * @return
-	 * @throws ScriptInvocationException
-	 */
-	public Object invoke(Function f, Object...args) throws ScriptInvocationException {
-		if(engine == null)
-			throw(new IllegalStateException("script engine not initialized"));
-		return engine.invoke(f.getID(), args);
-	}
-	
-	/**
-	 * Invokes the first matching script Function object with the given arguments.
-	 * This method is equivalent to: <code>invoke(findFunction(funcName), args)</code>
-	 * @param funcName
-	 * @param args
-	 * @return
-	 * @throws ScriptInvocationException
-	 */
-	public Object invoke(String funcName, Object...args) throws ScriptInvocationException {
-		return invoke(findFunction(funcName), args);
-	}
+        scripts.remove(script);
+    }
 
-	private Keyword getKeyword(Class<?> param) {
-		if(Function.isInt(param))
-			return Keyword.INT;
-		else if(Function.isFloat(param))
-			return Keyword.FLOAT;
-		else if(Function.isBool(param))
-			return Keyword.BOOL;
-		else if(Function.isString(param))
-			return Keyword.STRING;
-		else if(Function.isVoid(param))
-			return Keyword.VOID;
-		else
-			return null;
-	}
+    public void unlink(final Class <?> javaClass) {
+
+        classes.remove(javaClass);
+    }
+
+    public boolean compile() {
+
+        log.info("Initializing SnapScript " + ScriptInfo.SCRIPT_VERSION.str + " [BCS." + ScriptInfo.BYTECODE_SPEC.str
+                + "]");
+        ScriptCompiler compiler = new ScriptCompiler();
+        boolean chk;
+        try {
+            String[] srcs = new String[scripts.size()];
+            for (int i = 0; i < scripts.size(); i++ ) {
+                srcs[i] = scripts.get(i).getSource();
+            }
+            ArrayList <ConstantInitializer> constList = new ArrayList <ConstantInitializer>();
+            log.info("Running precompiler...");
+            System.out.println("Running precompiler...");
+            funcs = compiler.precompile(constList, srcs);
+            scriptFuncs = new Function[funcs.size()];
+            funcs.values().toArray(scriptFuncs);
+            log.info("Linking Java functions...");
+            // register methods from linked classes
+            for (Class <?> c : classes) {
+                Method[] methods = c.getDeclaredMethods();
+                for (Method m : methods) {
+                    ScriptLink link = m.getAnnotation(ScriptLink.class);
+                    if (link == null || !link.value()) {
+                        continue;
+                    }
+                    Function func = new Function(m.getName(), c, m.getParameterTypes());
+                    Function[] other = funcs.getAll(func.getName());
+                    if (other != null) {
+                        for (Function f : other) {
+                            if (Arrays.equals(func.getParamTypes(), f.getParamTypes())) {
+                                throw (new ScriptCompilationException("found duplicate linked method '" + f.getName()
+                                        + "' in class " + c.getName()));
+                            }
+                        }
+                    }
+                    funcs.put(m.getName(), func);
+                }
+            }
+
+            log.info("Running compiler...");
+            System.out.println("Running compiler...");
+            compiler.compile(funcs, constList);
+            initConsts = new ConstantInitializer[constList.size()];
+            constList.toArray(initConsts);
+            System.out.println("Done");
+            chk = true;
+        } catch (ScriptCompilationException e) {
+            e.printStackTrace();
+            lastErr = e;
+            funcs = null;
+            chk = false;
+        } catch (Throwable e) {
+            System.out.println("An internal compiler error occurred: " + e.toString());
+            e.printStackTrace();
+            funcs = null;
+            chk = false;
+        }
+
+        return chk;
+    }
+
+    public ScriptCompilationException getLastCompileError() {
+
+        return lastErr;
+    }
+
+    /**
+     * Initializes the script engine runtime after successful compilation.
+     * 
+     * @param useDoubleStore
+     *            if true, the script engine will store 'float' data types as
+     *            Java doubles, otherwise they will be stored as Java floats
+     * @throws ScriptInvocationException
+     *             if the ScriptEngine encounters an initialization error
+     */
+    public void initRuntime(final boolean useDoubleStore) throws ScriptInvocationException {
+
+        if (funcs == null) {
+            throw (new IllegalStateException("cannot initialize runtime before compilation"));
+        }
+
+        engine = new ScriptEngine(this, funcs.values().toArray(new Function[funcs.size()]), initConsts, useDoubleStore);
+        log.info("SnapScript runtime successfully initialized!\n");
+    }
+
+    public void disposeRuntime() {
+
+    }
+
+    public void attachToJavaFunction(final Object o, final Function func) throws ScriptInvocationException {
+
+        if (!func.isJavaFunction()) {
+            throw (new IllegalArgumentException("cannot attach objects to script functions"));
+        }
+        if (engine == null) {
+            throw (new IllegalStateException("cannot attach objects before runtime initialization"));
+        }
+        engine.attachObjectToFunction(func.getID(), o);
+    }
+
+    public Function findFunction(final String name, final Class <?>... params) {
+
+        Function[] matches = funcs.getAll(name);
+        if (matches == null || matches.length == 0) {
+            return null;
+        }
+
+        funcLoop:
+            for (Function f : matches) {
+                Keyword[] ks = f.getParamTypes();
+                if (ks.length != params.length) {
+                    continue;
+                }
+                for (int i = 0; i < ks.length; i++ ) {
+                    Keyword pkw = getKeyword(params[i]);
+                    if (!ks[i].equals(pkw)) {
+                        continue funcLoop;
+                    }
+                }
+
+                return f;
+            }
+        return null;
+    }
+
+    public Function findFunction(final String name) {
+
+        Function[] matches = funcs.getAll(name);
+        if (matches == null || matches.length == 0) {
+            return null;
+        } else {
+            return matches[0];
+        }
+    }
+
+    public Function[] findFunctions(final String name) {
+
+        Function[] matches = funcs.getAll(name);
+        if (matches == null || matches.length == 0) {
+            return null;
+        } else {
+            return matches;
+        }
+    }
+
+    public Function[] getScriptFunctions() {
+
+        return Arrays.copyOf(scriptFuncs, scriptFuncs.length);
+    }
+
+    public String[] getConstants() {
+
+        if (initConsts == null) {
+            return null;
+        }
+        ArrayList <String> constNames = new ArrayList <String>();
+        for (ConstantInitializer ci : initConsts) {
+            Variable[] vars = ci.getConstantVars();
+            for (Variable v : vars) {
+                constNames.add(v.name);
+            }
+        }
+        return constNames.toArray(new String[constNames.size()]);
+    }
+
+    public Object getConstantValue(final String constant) {
+
+        if (initConsts == null || engine == null) {
+            throw (new IllegalStateException("constant values cannot be accessed until script runtime is initialized"));
+        }
+        Object val = null;
+        for (ConstantInitializer ci : initConsts) {
+            Variable[] vars = ci.getConstantVars();
+            for (Variable v : vars) {
+                if (v.name.equals(constant)) {
+                    val = engine.fetchConstValue(v.getID());
+                    break;
+                } else {
+                    continue;
+                }
+            }
+        }
+        return val;
+    }
+
+    public VarStore getVarStore() {
+
+        return engine.vars;
+    }
+
+    /**
+     * Invokes the script function with the given arguments.
+     * 
+     * @param f
+     * @param args
+     * @return
+     * @throws ScriptInvocationException
+     */
+    public Object invoke(final Function f, final Object... args) throws ScriptInvocationException {
+
+        if (engine == null) {
+            throw (new IllegalStateException("script engine not initialized"));
+        }
+        return engine.invoke(f.getID(), args);
+    }
+
+    /**
+     * Invokes the first matching script Function object with the given
+     * arguments. This method is equivalent to:
+     * <code>invoke(findFunction(funcName), args)</code>
+     * 
+     * @param funcName
+     * @param args
+     * @return
+     * @throws ScriptInvocationException
+     */
+    public Object invoke(final String funcName, final Object... args) throws ScriptInvocationException {
+
+        return invoke(findFunction(funcName), args);
+    }
+
+    private Keyword getKeyword(final Class <?> param) {
+
+        if (Function.isInt(param)) {
+            return Keyword.INT;
+        } else if (Function.isFloat(param)) {
+            return Keyword.FLOAT;
+        } else if (Function.isBool(param)) {
+            return Keyword.BOOL;
+        } else if (Function.isString(param)) {
+            return Keyword.STRING;
+        } else if (Function.isVoid(param)) {
+            return Keyword.VOID;
+        } else if (Function.isVector(param)) {
+            return Keyword.VEC2;
+        } else {
+            return null;
+        }
+    }
 }

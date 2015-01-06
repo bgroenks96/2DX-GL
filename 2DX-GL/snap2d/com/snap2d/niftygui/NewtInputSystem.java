@@ -15,7 +15,11 @@ package com.snap2d.niftygui;
 import java.util.concurrent.ConcurrentLinkedQueue;
 
 import com.jogamp.newt.Window;
-import com.jogamp.newt.event.*;
+import com.jogamp.newt.event.InputEvent;
+import com.jogamp.newt.event.KeyEvent;
+import com.jogamp.newt.event.KeyListener;
+import com.jogamp.newt.event.MouseEvent;
+import com.jogamp.newt.event.MouseListener;
 
 import de.lessvoid.nifty.NiftyInputConsumer;
 import de.lessvoid.nifty.input.keyboard.KeyboardInputEvent;
@@ -24,160 +28,171 @@ import de.lessvoid.nifty.tools.resourceloader.NiftyResourceLoader;
 
 /**
  * Implementation of NiftyGUI's InputSystem for NEWT.
+ * 
  * @author Brian Groenke
  *
  */
 public class NewtInputSystem implements InputSystem, KeyListener, MouseListener {
 
-	Window inputWindow;
+    Window inputWindow;
 
-	NewtToNiftyKeyCodeConverter toNifty = new NewtToNiftyKeyCodeConverter();
-	NiftyResourceLoader rscLoader;
+    NewtToNiftyKeyCodeConverter toNifty = new NewtToNiftyKeyCodeConverter();
+    NiftyResourceLoader rscLoader;
 
-	ConcurrentLinkedQueue<InputEvent> eventQueue = new ConcurrentLinkedQueue<InputEvent>();
+    ConcurrentLinkedQueue <InputEvent> eventQueue = new ConcurrentLinkedQueue <InputEvent>();
 
-	public NewtInputSystem(Window inputWindow) {
-		this.inputWindow = inputWindow;
-		inputWindow.addKeyListener(this);
-		inputWindow.addMouseListener(this);
-	}
+    public NewtInputSystem(final Window inputWindow) {
 
-	/**
-	 *
-	 */
-	@Override
-	public void forwardEvents(NiftyInputConsumer arg0) {
-		InputEvent next = null;
-		while((next = eventQueue.poll()) != null) {
-			if(next instanceof MouseEvent) {
-				MouseEvent mevt = (MouseEvent) next;
-				boolean pressed = mevt.getEventType() == MouseEvent.EVENT_MOUSE_PRESSED ||
-						mevt.getEventType() == MouseEvent.EVENT_MOUSE_DRAGGED;
-				arg0.processMouseEvent(
-						mevt.getX(), 
-						mevt.getY(), 
-						(int)mevt.getRotationScale(), 
-						mevt.getButton() - 1, 
-						pressed);
-			} else if(next instanceof KeyEvent) {
-				KeyEvent kevt = (KeyEvent) next;
-				arg0.processKeyboardEvent(
-						new KeyboardInputEvent(toNifty.convertToNiftyKeyCode(kevt.getKeyCode()), 
-								kevt.getKeyChar(), 
-								kevt.getEventType() == KeyEvent.EVENT_KEY_PRESSED, 
-								kevt.isShiftDown(), 
-								kevt.isControlDown()));
-			}
-		}
-	}
+        this.inputWindow = inputWindow;
+        inputWindow.addKeyListener(this);
+        inputWindow.addMouseListener(this);
+    }
 
-	/**
-	 *
-	 */
-	@Override
-	public void setMousePosition(int arg0, int arg1) {
+    /**
+     *
+     */
+    @Override
+    public void forwardEvents(final NiftyInputConsumer arg0) {
 
-		// Nifty uses screen coordinates for passing mouse coords to this method, so we
-		// need to convert to relative window coords to accomodate the NEWT Window.
-		int windowX = inputWindow.getX(), windowY = inputWindow.getY();
-		inputWindow.warpPointer(arg0 - windowX, arg1 - windowY);
-	}
+        InputEvent next = null;
+        while ( (next = eventQueue.poll()) != null) {
+            if (next instanceof MouseEvent) {
+                MouseEvent mevt = (MouseEvent) next;
+                boolean pressed = mevt.getEventType() == MouseEvent.EVENT_MOUSE_PRESSED
+                        || mevt.getEventType() == MouseEvent.EVENT_MOUSE_DRAGGED;
+                arg0.processMouseEvent(mevt.getX(), mevt.getY(), (int) mevt.getRotationScale(), mevt.getButton() - 1,
+                        pressed);
+            } else if (next instanceof KeyEvent) {
+                KeyEvent kevt = (KeyEvent) next;
+                arg0.processKeyboardEvent(new KeyboardInputEvent(toNifty.convertToNiftyKeyCode(kevt.getKeyCode()), kevt
+                        .getKeyChar(), kevt.getEventType() == KeyEvent.EVENT_KEY_PRESSED, kevt.isShiftDown(), kevt
+                        .isControlDown()));
+            }
+        }
+    }
 
-	/**
-	 *
-	 */
-	@Override
-	public void setResourceLoader(NiftyResourceLoader arg0) {
-		this.rscLoader = arg0;
-	}
+    /**
+     *
+     */
+    @Override
+    public void setMousePosition(final int arg0, final int arg1) {
 
-	private void queueMouseEvent(MouseEvent mevt) {
-		eventQueue.offer(mevt);
-	}
+        // Nifty uses screen coordinates for passing mouse coords to this
+        // method, so we
+        // need to convert to relative window coords to accomodate the NEWT
+        // Window.
+        int windowX = inputWindow.getX(), windowY = inputWindow.getY();
+        inputWindow.warpPointer(arg0 - windowX, arg1 - windowY);
+    }
 
-	private void queueKeyEvent(KeyEvent kevt) {
-		eventQueue.offer(kevt);
-	}
+    /**
+     *
+     */
+    @Override
+    public void setResourceLoader(final NiftyResourceLoader arg0) {
 
-	/**
-	 *
-	 */
-	@Override
-	public void mouseClicked(MouseEvent e) {
-		//queueMouseEvent(e);
-	}
+        this.rscLoader = arg0;
+    }
 
-	/**
-	 *
-	 */
-	@Override
-	public void mouseDragged(MouseEvent e) {
-		queueMouseEvent(e);
-	}
+    private void queueMouseEvent(final MouseEvent mevt) {
 
-	/**
-	 *
-	 */
-	@Override
-	public void mouseEntered(MouseEvent e) {
-		queueMouseEvent(e);
-	}
+        eventQueue.offer(mevt);
+    }
 
-	/**
-	 *
-	 */
-	@Override
-	public void mouseExited(MouseEvent e) {
-		queueMouseEvent(e);
-	}
+    private void queueKeyEvent(final KeyEvent kevt) {
 
-	/**
-	 *
-	 */
-	@Override
-	public void mouseMoved(MouseEvent e) {
-		queueMouseEvent(e);
+        eventQueue.offer(kevt);
+    }
 
-	}
+    /**
+     *
+     */
+    @Override
+    public void mouseClicked(final MouseEvent e) {
 
-	/**
-	 *
-	 */
-	@Override
-	public void mousePressed(MouseEvent e) {
-		queueMouseEvent(e);
-	}
+        // queueMouseEvent(e);
+    }
 
-	/**
-	 *
-	 */
-	@Override
-	public void mouseReleased(MouseEvent e) {
-		queueMouseEvent(e);
-	}
+    /**
+     *
+     */
+    @Override
+    public void mouseDragged(final MouseEvent e) {
 
-	/**
-	 *
-	 */
-	@Override
-	public void mouseWheelMoved(MouseEvent e) {
-		queueMouseEvent(e);
-	}
+        queueMouseEvent(e);
+    }
 
-	/**
-	 *
-	 */
-	@Override
-	public void keyPressed(KeyEvent event) {
-		queueKeyEvent(event);
-	}
+    /**
+     *
+     */
+    @Override
+    public void mouseEntered(final MouseEvent e) {
 
-	/**
-	 *
-	 */
-	@Override
-	public void keyReleased(KeyEvent event) {
-		queueKeyEvent(event);
-	}
+        queueMouseEvent(e);
+    }
+
+    /**
+     *
+     */
+    @Override
+    public void mouseExited(final MouseEvent e) {
+
+        queueMouseEvent(e);
+    }
+
+    /**
+     *
+     */
+    @Override
+    public void mouseMoved(final MouseEvent e) {
+
+        queueMouseEvent(e);
+
+    }
+
+    /**
+     *
+     */
+    @Override
+    public void mousePressed(final MouseEvent e) {
+
+        queueMouseEvent(e);
+    }
+
+    /**
+     *
+     */
+    @Override
+    public void mouseReleased(final MouseEvent e) {
+
+        queueMouseEvent(e);
+    }
+
+    /**
+     *
+     */
+    @Override
+    public void mouseWheelMoved(final MouseEvent e) {
+
+        queueMouseEvent(e);
+    }
+
+    /**
+     *
+     */
+    @Override
+    public void keyPressed(final KeyEvent event) {
+
+        queueKeyEvent(event);
+    }
+
+    /**
+     *
+     */
+    @Override
+    public void keyReleased(final KeyEvent event) {
+
+        queueKeyEvent(event);
+    }
 
 }

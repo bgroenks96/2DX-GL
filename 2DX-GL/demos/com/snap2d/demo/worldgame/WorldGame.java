@@ -12,247 +12,265 @@
 
 package com.snap2d.demo.worldgame;
 
-import java.awt.*;
-import java.awt.event.*;
+import java.awt.Color;
+import java.awt.Dimension;
+import java.awt.Graphics2D;
+import java.awt.event.KeyEvent;
 
-import bg.x2d.gen.*;
-import bg.x2d.geo.*;
+import bg.x2d.gen.PointGenerator;
+import bg.x2d.geo.PointUD;
+import bg.x2d.geo.Vector2d;
 
-import com.snap2d.gl.*;
+import com.snap2d.gl.Display;
 import com.snap2d.gl.Display.Type;
-import com.snap2d.input.*;
-import com.snap2d.world.*;
-import com.snap2d.world.event.*;
+import com.snap2d.gl.GraphicsConfig;
+import com.snap2d.gl.RenderControl;
+import com.snap2d.gl.Renderable;
+import com.snap2d.input.InputDispatch;
+import com.snap2d.input.KeyEventClient;
+import com.snap2d.world.EntityListener;
+import com.snap2d.world.event.AddEvent;
+import com.snap2d.world.event.CollisionEvent;
+import com.snap2d.world.event.RemoveEvent;
 
 /**
- * Demo "game" for showing how to manage world and world scrolling with character movement
- * effectively.
+ * Demo "game" for showing how to manage world and world scrolling with
+ * character movement effectively.
  * 
  * @author Brian Groenke
  * 
  */
 public class WorldGame {
 
-	public static final int WORLD_MIN_X = -5000, WORLD_MAX_Y = 5000,
-			WORLD_WT = 10000, WORLD_HT = 10000, ENTITY_NUMBER = 1800,
-			SCROLL_TICK = 16;
+    public static final int WORLD_MIN_X = -5000, WORLD_MAX_Y = 5000, WORLD_WT = 10000, WORLD_HT = 10000,
+            ENTITY_NUMBER = 1800, SCROLL_TICK = 16;
 
-	Display disp;
-	RenderControl rc;
-	ScrollWorld world;
-	PlayerEntity player;
+    Display disp;
+    RenderControl rc;
+    ScrollWorld world;
+    PlayerEntity player;
 
-	InputDispatch input;
+    InputDispatch input;
 
-	boolean up, down, left, right;
+    boolean up, down, left, right;
 
-	private WorldGame() {
-		input = new InputDispatch(true);
-		input.registerKeyClient(new InputListener());
-	}
+    private WorldGame() {
 
-	public void init() {
-		disp = new Display(800, 600, Type.FULLSCREEN,
-				GraphicsConfig.getDefaultSystemConfig());
-		disp.setTitle("Snap2D: Game World Demo");
+        input = new InputDispatch(true);
+        input.registerKeyClient(new InputListener());
+    }
 
-		rc = disp.getRenderControl(2);
-		rc.addRenderable(new StaticBackground(), 0);
+    public void init() {
 
-		world = new ScrollWorld(-disp.getSize().width / 2, disp.getSize().height / 2, disp.getSize().width,
-				disp.getSize().height, 2);
-		generateRandomEntities();
-		rc.addRenderable(new WorldUpdater(), RenderControl.POSITION_LAST);
-		
-		PointUD center = world.screenToWorld(disp.getSize().width / 2, disp.getSize().height / 2);
-		player = new PlayerEntity(new PointUD(center.ux - PlayerEntity.SIZE / 2, center.uy - PlayerEntity.SIZE / 2), world);
-		world.addEntity(player);
-		world.getManager().addEntityListener(new PlayerCollisionListener(), player);
+        disp = new Display(800, 600, Type.FULLSCREEN, GraphicsConfig.getDefaultSystemConfig());
+        disp.setTitle("Snap2D: Game World Demo");
 
-		disp.show();
-		rc.startRenderLoop();
-	}
+        rc = disp.getRenderControl(2);
+        rc.addRenderable(new StaticBackground(), 0);
 
-	private void generateRandomEntities() {
-		PointGenerator rand = new PointGenerator(WORLD_MIN_X, WORLD_MAX_Y
-				- WORLD_HT, WORLD_MIN_X + WORLD_WT, WORLD_MAX_Y);
-		for (int i = 0; i < ENTITY_NUMBER; i++) {
-			PointUD pos = rand.generate();
-			GenericEntity ge = new GenericEntity(pos, world);
-			world.addEntity(ge);
-		}
-	}
+        world = new ScrollWorld(-disp.getSize().width / 2, disp.getSize().height / 2, disp.getSize().width,
+                disp.getSize().height, 2);
+        generateRandomEntities();
+        rc.addRenderable(new WorldUpdater(), RenderControl.POSITION_LAST);
 
-	private class WorldUpdater implements Renderable {
+        PointUD center = world.screenToWorld(disp.getSize().width / 2, disp.getSize().height / 2);
+        player = new PlayerEntity(new PointUD(center.ux - PlayerEntity.SIZE / 2, center.uy - PlayerEntity.SIZE / 2),
+                world);
+        world.addEntity(player);
+        world.getManager().addEntityListener(new PlayerCollisionListener(), player);
 
-		/**
-		 *
-		 */
-		@Override
-		public void render(Graphics2D g, float interpolation) {
-			world.render(g, interpolation);
-		}
-		
-		/*
-		 * one vector can be applied to player entity for vertical movement, the other for horizontal.
-		 */
-		Vector2d vec1 = new Vector2d(SCROLL_TICK, 0), vec2 = new Vector2d(0, SCROLL_TICK);
+        disp.show();
+        rc.startRenderLoop();
+    }
 
-		/**
-		 *
-		 */
-		@Override
-		public void update(long nanoTimeNow, long nanosSinceLastUpdate) {
-			if (up) {
-				world.moveViewport(0, SCROLL_TICK);
-				player.applyVector(vec2, 1);
-			} else if (down) {
-				world.moveViewport(0, -SCROLL_TICK);
-				player.applyVector(vec2.negateNew(), 1);
-			}
+    private void generateRandomEntities() {
 
-			if (right) {
-				world.moveViewport(SCROLL_TICK, 0);
-				player.applyVector(vec1, 1);
-			} else if (left) {
-				world.moveViewport(-SCROLL_TICK, 0);
-				player.applyVector(vec1.negateNew(), 1);
-			}
+        PointGenerator rand = new PointGenerator(WORLD_MIN_X, WORLD_MAX_Y - WORLD_HT, WORLD_MIN_X + WORLD_WT,
+                WORLD_MAX_Y);
+        for (int i = 0; i < ENTITY_NUMBER; i++ ) {
+            PointUD pos = rand.generate();
+            GenericEntity ge = new GenericEntity(pos, world);
+            world.addEntity(ge);
+        }
+    }
 
-			if (world.getX() < WORLD_MIN_X) {
-				world.setViewport(WORLD_MIN_X, world.getY(),
-						world.getViewWidth(), world.getViewHeight());
-			}
-			if (world.getX() > WORLD_MIN_X + WORLD_HT) {
-				world.setViewport(WORLD_MIN_X + WORLD_WT, world.getY(),
-						world.getViewWidth(), world.getViewHeight());
-			}
-			if (world.getY() > WORLD_MAX_Y) {
-				world.setViewport(world.getX(), WORLD_MAX_Y,
-						world.getViewWidth(), world.getViewHeight());
-			}
-			if (world.getY() < WORLD_MAX_Y - WORLD_HT) {
-				world.setViewport(world.getX(), WORLD_MAX_Y - WORLD_HT,
-						world.getViewWidth(), world.getViewHeight());
-			}
+    private class WorldUpdater implements Renderable {
 
-			world.update(nanoTimeNow, nanosSinceLastUpdate);
-		}
+        /**
+         *
+         */
+        @Override
+        public void render(final Graphics2D g, final float interpolation) {
 
-		/**
-		 *
-		 */
-		@Override
-		public void onResize(Dimension oldSize, Dimension newSize) {
-			world.onResize(oldSize, newSize);
-		}
+            world.render(g, interpolation);
+        }
 
-	}
-	
-	private class PlayerCollisionListener implements EntityListener {
+        /*
+         * one vector can be applied to player entity for vertical movement, the
+         * other for horizontal.
+         */
+        Vector2d vec1 = new Vector2d(SCROLL_TICK, 0), vec2 = new Vector2d(0, SCROLL_TICK);
 
-		/**
-		 *
-		 */
-		@Override
-		public void onCollision(CollisionEvent collEvt) {
-			System.out.println("hello");
-		}
+        /**
+         *
+         */
+        @Override
+        public void update(final long nanoTimeNow, final long nanosSinceLastUpdate) {
 
-		/**
-		 *
-		 */
-		@Override
-		public void onAdd(AddEvent addEvt) {
-			
-		}
+            if (up) {
+                world.moveViewport(0, SCROLL_TICK);
+                player.applyVector(vec2, 1);
+            } else if (down) {
+                world.moveViewport(0, -SCROLL_TICK);
+                player.applyVector(vec2.negateNew(), 1);
+            }
 
-		/**
-		 *
-		 */
-		@Override
-		public void onRemove(RemoveEvent remEvt) {
-			
-		}
-	}
+            if (right) {
+                world.moveViewport(SCROLL_TICK, 0);
+                player.applyVector(vec1, 1);
+            } else if (left) {
+                world.moveViewport(-SCROLL_TICK, 0);
+                player.applyVector(vec1.negateNew(), 1);
+            }
 
-	private class StaticBackground implements Renderable {
+            if (world.getX() < WORLD_MIN_X) {
+                world.setViewport(WORLD_MIN_X, world.getY(), world.getViewWidth(), world.getViewHeight());
+            }
+            if (world.getX() > WORLD_MIN_X + WORLD_HT) {
+                world.setViewport(WORLD_MIN_X + WORLD_WT, world.getY(), world.getViewWidth(), world.getViewHeight());
+            }
+            if (world.getY() > WORLD_MAX_Y) {
+                world.setViewport(world.getX(), WORLD_MAX_Y, world.getViewWidth(), world.getViewHeight());
+            }
+            if (world.getY() < WORLD_MAX_Y - WORLD_HT) {
+                world.setViewport(world.getX(), WORLD_MAX_Y - WORLD_HT, world.getViewWidth(), world.getViewHeight());
+            }
 
-		/**
-		 *
-		 */
-		@Override
-		public void render(Graphics2D g, float interpolation) {
-			g.setColor(Color.GRAY);
-			g.fillRect(0, 0, disp.getSize().width, disp.getSize().height);
-		}
+            world.update(nanoTimeNow, nanosSinceLastUpdate);
+        }
 
-		/**
-		 *
-		 */
-		@Override
-		public void update(long nanoTimeNow, long nanosSinceLastUpdate) {
-			//
-		}
+        /**
+         *
+         */
+        @Override
+        public void onResize(final Dimension oldSize, final Dimension newSize) {
 
-		/**
-		 *
-		 */
-		@Override
-		public void onResize(Dimension oldSize, Dimension newSize) {
-			//
-		}
+            world.onResize(oldSize, newSize);
+        }
 
-	}
+    }
 
-	private class InputListener implements KeyEventClient {
+    private class PlayerCollisionListener implements EntityListener {
 
-		/**
-		 *
-		 */
-		@Override
-		public void processKeyEvent(KeyEvent e) {
-			switch (e.getKeyCode()) {
-			case KeyEvent.VK_W:
-				if (e.getID() == KeyEvent.KEY_PRESSED) {
-					up = true;
-				} else if (e.getID() == KeyEvent.KEY_RELEASED) {
-					up = false;
-				}
-				break;
-			case KeyEvent.VK_S:
-				if (e.getID() == KeyEvent.KEY_PRESSED) {
-					down = true;
-				} else if (e.getID() == KeyEvent.KEY_RELEASED) {
-					down = false;
-				}
-				break;
-			case KeyEvent.VK_A:
-				if (e.getID() == KeyEvent.KEY_PRESSED) {
-					left = true;
-				} else if (e.getID() == KeyEvent.KEY_RELEASED) {
-					left = false;
-				}
-				break;
-			case KeyEvent.VK_D:
-				if (e.getID() == KeyEvent.KEY_PRESSED) {
-					right = true;
-				} else if (e.getID() == KeyEvent.KEY_RELEASED) {
-					right = false;
-				}
-				break;
-			case KeyEvent.VK_ESCAPE:
-				if (e.getID() == KeyEvent.KEY_PRESSED) {
-					disp.dispose(); // fully dispose of the Display before exiting
-					System.exit(0);
-				}
-			}
-		}
+        /**
+         *
+         */
+        @Override
+        public void onCollision(final CollisionEvent collEvt) {
 
-	}
+            System.out.println("hello");
+        }
 
-	public static void main(String[] args) {
-		WorldGame game = new WorldGame();
-		game.init();
-	}
+        /**
+         *
+         */
+        @Override
+        public void onAdd(final AddEvent addEvt) {
+
+        }
+
+        /**
+         *
+         */
+        @Override
+        public void onRemove(final RemoveEvent remEvt) {
+
+        }
+    }
+
+    private class StaticBackground implements Renderable {
+
+        /**
+         *
+         */
+        @Override
+        public void render(final Graphics2D g, final float interpolation) {
+
+            g.setColor(Color.GRAY);
+            g.fillRect(0, 0, disp.getSize().width, disp.getSize().height);
+        }
+
+        /**
+         *
+         */
+        @Override
+        public void update(final long nanoTimeNow, final long nanosSinceLastUpdate) {
+
+            //
+        }
+
+        /**
+         *
+         */
+        @Override
+        public void onResize(final Dimension oldSize, final Dimension newSize) {
+
+            //
+        }
+
+    }
+
+    private class InputListener implements KeyEventClient {
+
+        /**
+         *
+         */
+        @Override
+        public void processKeyEvent(final KeyEvent e) {
+
+            switch (e.getKeyCode()) {
+            case KeyEvent.VK_W:
+                if (e.getID() == KeyEvent.KEY_PRESSED) {
+                    up = true;
+                } else if (e.getID() == KeyEvent.KEY_RELEASED) {
+                    up = false;
+                }
+                break;
+            case KeyEvent.VK_S:
+                if (e.getID() == KeyEvent.KEY_PRESSED) {
+                    down = true;
+                } else if (e.getID() == KeyEvent.KEY_RELEASED) {
+                    down = false;
+                }
+                break;
+            case KeyEvent.VK_A:
+                if (e.getID() == KeyEvent.KEY_PRESSED) {
+                    left = true;
+                } else if (e.getID() == KeyEvent.KEY_RELEASED) {
+                    left = false;
+                }
+                break;
+            case KeyEvent.VK_D:
+                if (e.getID() == KeyEvent.KEY_PRESSED) {
+                    right = true;
+                } else if (e.getID() == KeyEvent.KEY_RELEASED) {
+                    right = false;
+                }
+                break;
+            case KeyEvent.VK_ESCAPE:
+                if (e.getID() == KeyEvent.KEY_PRESSED) {
+                    disp.dispose(); // fully dispose of the Display before
+                    // exiting
+                    System.exit(0);
+                }
+            }
+        }
+
+    }
+
+    public static void main(final String[] args) {
+
+        WorldGame game = new WorldGame();
+        game.init();
+    }
 }

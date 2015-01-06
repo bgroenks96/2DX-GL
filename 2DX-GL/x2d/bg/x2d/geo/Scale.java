@@ -18,25 +18,29 @@ package bg.x2d.geo;
  */
 public class Scale {
 
-	double ratio;
+    double ratio;
 
-	/**
-	 * 
-	 */
-	public Scale(double ratio) {
-		this.ratio = ratio;
-	}
+    /**
+     * 
+     */
+    public Scale(final double ratio) {
 
-	public double scale(double num) {
-		return num * ratio;
-	}
+        this.ratio = ratio;
+    }
 
-	public int scale(int num) {
-		return (int) Math.round(num * ratio);
-	}
+    public double scale(final double num) {
 
-	public double getRatio() {
-		return ratio;
-	}
+        return num * ratio;
+    }
+
+    public int scale(final int num) {
+
+        return (int) Math.round(num * ratio);
+    }
+
+    public double getRatio() {
+
+        return ratio;
+    }
 
 }

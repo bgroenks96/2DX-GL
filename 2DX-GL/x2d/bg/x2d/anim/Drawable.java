@@ -12,15 +12,16 @@
 
 package bg.x2d.anim;
 
-import java.awt.*;
+import java.awt.Graphics2D;
 
 /**
- * A Drawable is an object that defines a specific image to be drawn with each call to its
- * <code>draw(Graphics2D)</code> method. <br>
- * Drawable is used by the Background object (bg.tdx.Background) to set an image that can be
- * continuously redrawn on screen. This functionality makes Drawable<br>
- * a good standard to use for animation. This is why it is also used by the 2DX animation package to
- * define Graphics related tasks that can be repeatedly called upon. <br>
+ * A Drawable is an object that defines a specific image to be drawn with each
+ * call to its <code>draw(Graphics2D)</code> method. <br>
+ * Drawable is used by the Background object (bg.tdx.Background) to set an image
+ * that can be continuously redrawn on screen. This functionality makes Drawable<br>
+ * a good standard to use for animation. This is why it is also used by the 2DX
+ * animation package to define Graphics related tasks that can be repeatedly
+ * called upon. <br>
  * <br>
  * Drawable is often best used with anonymous classes:<br>
  * <code>
@@ -37,5 +38,5 @@ import java.awt.*;
 
 public interface Drawable {
 
-	public abstract void draw(Graphics2D g2);
+    public abstract void draw(Graphics2D g2);
 }

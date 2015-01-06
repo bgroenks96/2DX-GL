@@ -12,43 +12,48 @@
 
 package com.snap2d.script;
 
-import java.util.*;
+import java.util.Arrays;
 
 import com.snap2d.script.ScriptCompiler.Variable;
 
 /**
- * Initializer block for constants - executed similarly to a function in Bytecode, but
- * does not have parameters or any explicitly given name.
+ * Initializer block for constants - executed similarly to a function in
+ * Bytecode, but does not have parameters or any explicitly given name.
+ * 
  * @author Brian Groenke
  *
  */
 class ConstantInitializer extends Function {
-	
-	private static volatile int id=0;
-	
-	private Variable[] vars;
 
-	/**
-	 * @param name
-	 * @param returnType
-	 * @param params
-	 * @param paramNames
-	 * @param src
-	 * @param srcOffs
-	 */
-	ConstantInitializer(String src, int srcOffs) {
-		super("consts"+id++, Keyword.VOID, new Keyword[0], new String[0], src, srcOffs);
-	}
-	
-	void setConstantVars(Variable...vars) {
-		this.vars = vars;
-	}
-	
-	Variable[] getConstantVars() {
-		return Arrays.copyOf(this.vars, this.vars.length);
-	}
-	
-	int getConstantVarCount() {
-		return this.vars.length;
-	}
+    private static volatile int id = 0;
+
+    private Variable[] vars;
+
+    /**
+     * @param name
+     * @param returnType
+     * @param params
+     * @param paramNames
+     * @param src
+     * @param srcOffs
+     */
+    ConstantInitializer(final String src, final int srcOffs) {
+
+        super("consts" + id++ , Keyword.VOID, new Keyword[0], new String[0], src, srcOffs);
+    }
+
+    void setConstantVars(final Variable... vars) {
+
+        this.vars = vars;
+    }
+
+    Variable[] getConstantVars() {
+
+        return Arrays.copyOf(this.vars, this.vars.length);
+    }
+
+    int getConstantVarCount() {
+
+        return this.vars.length;
+    }
 }

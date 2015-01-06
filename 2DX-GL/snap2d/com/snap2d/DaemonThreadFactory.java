@@ -12,7 +12,7 @@
 
 package com.snap2d;
 
-import java.util.concurrent.*;
+import java.util.concurrent.ThreadFactory;
 
 /**
  * Creates new daemon threads.
@@ -22,10 +22,11 @@ import java.util.concurrent.*;
  */
 public class DaemonThreadFactory implements ThreadFactory {
 
-	@Override
-	public Thread newThread(Runnable r) {
-		Thread t = new Thread(r);
-		t.setDaemon(true);
-		return t;
-	}
+    @Override
+    public Thread newThread(final Runnable r) {
+
+        Thread t = new Thread(r);
+        t.setDaemon(true);
+        return t;
+    }
 }

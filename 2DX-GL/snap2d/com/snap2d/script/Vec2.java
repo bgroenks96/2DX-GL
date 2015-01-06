@@ -16,31 +16,36 @@ import bg.x2d.geo.Vector2d;
 
 public class Vec2 implements Operand {
 
-	Vector2d vec;
+    Vector2d vec;
 
-	Vec2(double x, double y) {
-		vec = new Vector2d(x, y);
-	}
+    Vec2(final double x, final double y) {
 
-	Vec2(Vector2d vec) {
-		this(vec.x, vec.y);
-	}
+        vec = new Vector2d(x, y);
+    }
 
-	@Override
-	public Vector2d getValue() {
-		return vec;
-	}
+    Vec2(final Vector2d vec) {
 
-	/**
-	 *
-	 */
-	 @Override
-	 public boolean isVector() {
-		 return true;
-	 }
+        this(vec.x, vec.y);
+    }
 
-	 @Override
-	 public String toString() {
-		 return "["+vec.x+", "+vec.y+"]";
-	 }
+    @Override
+    public Vector2d getValue() {
+
+        return vec;
+    }
+
+    /**
+     *
+     */
+    @Override
+    public boolean isVector() {
+
+        return true;
+    }
+
+    @Override
+    public String toString() {
+
+        return "[" + vec.x + ", " + vec.y + "]";
+    }
 }

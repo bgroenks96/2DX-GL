@@ -12,21 +12,25 @@
 
 package com.snap2d;
 
-import java.awt.*;
-import java.awt.image.*;
-import java.io.*;
-import java.net.*;
+import java.awt.Dimension;
+import java.awt.Toolkit;
+import java.awt.image.BufferedImage;
+import java.io.IOException;
+import java.io.InputStream;
+import java.net.URL;
 
-import javax.imageio.*;
-import javax.media.opengl.*;
+import javax.imageio.ImageIO;
+import javax.media.opengl.GLException;
+import javax.media.opengl.GLProfile;
 
-import bg.x2d.*;
+import bg.x2d.ImageUtils;
 import bg.x2d.ImageUtils.ScaleQuality;
-import bg.x2d.utils.*;
+import bg.x2d.utils.Utils;
 
-import com.jogamp.opengl.util.texture.*;
-import com.jogamp.opengl.util.texture.awt.*;
-import com.snap2d.gl.opengl.*;
+import com.jogamp.opengl.util.texture.Texture;
+import com.jogamp.opengl.util.texture.TextureIO;
+import com.jogamp.opengl.util.texture.awt.AWTTextureIO;
+import com.snap2d.gl.opengl.Texture2D;
 
 /**
  * Provides static utility methods for loading and scaling image resources.
@@ -35,123 +39,130 @@ import com.snap2d.gl.opengl.*;
  * 
  */
 public class ImageLoader {
-	
-	/*
-	 * File type wrappings for JOGL TextureIO constants.
-	 */
-	public static final String JPG = TextureIO.JPG, PNG = TextureIO.PNG, GIF = TextureIO.GIF,
-			TIFF = TextureIO.TIFF, PAM = TextureIO.PAM, PPM = TextureIO.PPM, DDS = TextureIO.DDS;
 
-	private ImageLoader() {
-	}
+    /*
+     * File type wrappings for JOGL TextureIO constants.
+     */
+    public static final String JPG = TextureIO.JPG, PNG = TextureIO.PNG, GIF = TextureIO.GIF, TIFF = TextureIO.TIFF,
+            PAM = TextureIO.PAM, PPM = TextureIO.PPM, DDS = TextureIO.DDS;
 
-	/**
-	 * Loads a BufferedImage from the given InputStream. The caller is responsible for closing the
-	 * stream.
-	 * 
-	 * @param stream
-	 * @return the loaded BufferedImage, or null if an error occurred.
-	 */
-	public static BufferedImage load(InputStream stream) {
-		if (stream == null) {
-			return null;
-		}
-		BufferedImage img = null;
-		try {
-			img = ImageIO.read(stream);
-		} catch (IOException e) {
-			e.printStackTrace();
-		}
-		return img;
-	}
+    private ImageLoader() {
 
-	/**
-	 * Loads a BufferedImage from the given URL.
-	 * 
-	 * @param location
-	 * @return
-	 */
-	public static BufferedImage load(URL location) {
-		if (location == null) {
-			return null;
-		}
-		BufferedImage img = null;
-		InputStream in = null;
-		try {
-			in = location.openStream();
-			img = load(in);
-		} catch (IOException e) {
-			e.printStackTrace();
-		} finally {
-			Utils.closeStream(in);
-		}
+    }
 
-		return img;
-	}
+    /**
+     * Loads a BufferedImage from the given InputStream. The caller is
+     * responsible for closing the stream.
+     * 
+     * @param stream
+     * @return the loaded BufferedImage, or null if an error occurred.
+     */
+    public static BufferedImage load(final InputStream stream) {
 
-	/**
-	 * Scales the given BufferedImage based on display size. The Dimensions <code>prevDisp</code>
-	 * represents the screen dimensions <code>img</code> is sized for by default.
-	 * 
-	 * @param img
-	 *            the BufferedImage to scale
-	 * @param prevDisp
-	 *            display size <code>img</code> is sized to be viewed on.
-	 * @param quality
-	 *            quality of the scaling operation
-	 * @param aspectRatio
-	 *            true if the image's aspect ratio should be maintained, false otherwise
-	 * @return the scaled BufferedImage
-	 */
-	public static BufferedImage scaleFrom(BufferedImage img,
-			Dimension prevDisp, ScaleQuality quality, boolean aspectRatio) {
-		Dimension screen = Toolkit.getDefaultToolkit().getScreenSize();
-		Dimension newSize = new Dimension();
-		if (aspectRatio) {
-			if (img.getWidth() >= img.getHeight()) {
-				double ratio = screen.getWidth() / prevDisp.getWidth();
-				newSize.setSize(img.getWidth() * ratio, img.getHeight() * ratio);
-			} else {
-				double ratio = screen.getHeight() / prevDisp.getHeight();
-				newSize.setSize(img.getWidth() * ratio, img.getHeight() * ratio);
-			}
-		} else {
-			newSize.setSize(
-					img.getWidth() * (screen.getWidth() / prevDisp.getWidth()),
-					img.getHeight()
-					* (screen.getHeight() / prevDisp.getHeight()));
-		}
-		return ImageUtils.scaleImage(img, newSize, img.getType(), quality);
-	}
+        if (stream == null) {
+            return null;
+        }
+        BufferedImage img = null;
+        try {
+            img = ImageIO.read(stream);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        return img;
+    }
 
-	/**
-	 * Loads a Texture directly from the given URL
-	 * @param url
-	 * @param fileType
-	 * @param mipmap
-	 * @return
-	 * @throws IOException
-	 */
-	public static Texture2D loadTexture(URL url, String fileType, boolean mipmap) throws IOException {
-		Texture tex = null;
-		try {
-			tex = TextureIO.newTexture(url, mipmap, fileType);
-			System.out.println(tex.getImageTexCoords() + " " + tex.getMustFlipVertically());
-		} catch(GLException gl) {
-			System.err.println("[Snap2D] OpenGL error in loading texture:");
-			gl.printStackTrace();
-		}
-		return new Texture2D(tex);
-	}
-	
-	public static Texture2D loadTexture(BufferedImage bimg, boolean mipmap) {
-		Texture tex = null;
-		try {
-			tex = AWTTextureIO.newTexture(GLProfile.get(GLProfile.GL2), bimg, mipmap);
-		} catch(GLException gl) {
-			System.err.println("[Snap2D] OpenGL error in loading texture:");
-			gl.printStackTrace();
-		}
-		return new Texture2D(tex);
-	}
+    /**
+     * Loads a BufferedImage from the given URL.
+     * 
+     * @param location
+     * @return
+     */
+    public static BufferedImage load(final URL location) {
+
+        if (location == null) {
+            return null;
+        }
+        BufferedImage img = null;
+        InputStream in = null;
+        try {
+            in = location.openStream();
+            img = load(in);
+        } catch (IOException e) {
+            e.printStackTrace();
+        } finally {
+            Utils.closeStream(in);
+        }
+
+        return img;
+    }
+
+    /**
+     * Scales the given BufferedImage based on display size. The Dimensions
+     * <code>prevDisp</code> represents the screen dimensions <code>img</code>
+     * is sized for by default.
+     * 
+     * @param img
+     *            the BufferedImage to scale
+     * @param prevDisp
+     *            display size <code>img</code> is sized to be viewed on.
+     * @param quality
+     *            quality of the scaling operation
+     * @param aspectRatio
+     *            true if the image's aspect ratio should be maintained, false
+     *            otherwise
+     * @return the scaled BufferedImage
+     */
+    public static BufferedImage scaleFrom(final BufferedImage img, final Dimension prevDisp,
+            final ScaleQuality quality, final boolean aspectRatio) {
+
+        Dimension screen = Toolkit.getDefaultToolkit().getScreenSize();
+        Dimension newSize = new Dimension();
+        if (aspectRatio) {
+            if (img.getWidth() >= img.getHeight()) {
+                double ratio = screen.getWidth() / prevDisp.getWidth();
+                newSize.setSize(img.getWidth() * ratio, img.getHeight() * ratio);
+            } else {
+                double ratio = screen.getHeight() / prevDisp.getHeight();
+                newSize.setSize(img.getWidth() * ratio, img.getHeight() * ratio);
+            }
+        } else {
+            newSize.setSize(img.getWidth() * (screen.getWidth() / prevDisp.getWidth()),
+                    img.getHeight() * (screen.getHeight() / prevDisp.getHeight()));
+        }
+        return ImageUtils.scaleImage(img, newSize, img.getType(), quality);
+    }
+
+    /**
+     * Loads a Texture directly from the given URL
+     * 
+     * @param url
+     * @param fileType
+     * @param mipmap
+     * @return
+     * @throws IOException
+     */
+    public static Texture2D loadTexture(final URL url, final String fileType, final boolean mipmap) throws IOException {
+
+        Texture tex = null;
+        try {
+            tex = TextureIO.newTexture(url, mipmap, fileType);
+            System.out.println(tex.getImageTexCoords() + " " + tex.getMustFlipVertically());
+        } catch (GLException gl) {
+            System.err.println("[Snap2D] OpenGL error in loading texture:");
+            gl.printStackTrace();
+        }
+        return new Texture2D(tex);
+    }
+
+    public static Texture2D loadTexture(final BufferedImage bimg, final boolean mipmap) {
+
+        Texture tex = null;
+        try {
+            tex = AWTTextureIO.newTexture(GLProfile.get(GLProfile.GL2), bimg, mipmap);
+        } catch (GLException gl) {
+            System.err.println("[Snap2D] OpenGL error in loading texture:");
+            gl.printStackTrace();
+        }
+        return new Texture2D(tex);
+    }
 }

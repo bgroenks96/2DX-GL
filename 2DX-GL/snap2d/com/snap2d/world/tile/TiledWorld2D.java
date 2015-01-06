@@ -20,16 +20,16 @@ import com.snap2d.world.World2D;
  */
 public class TiledWorld2D extends World2D {
 
-	/**
-	 * @param minX
-	 * @param maxY
-	 * @param viewWidth
-	 * @param viewHeight
-	 * @param ppu
-	 */
-	public TiledWorld2D(double minX, double maxY, int viewWidth,
-			int viewHeight, float ppu) {
-		super(minX, maxY, viewWidth, viewHeight, ppu);
-	}
+    /**
+     * @param minX
+     * @param maxY
+     * @param viewWidth
+     * @param viewHeight
+     * @param ppu
+     */
+    public TiledWorld2D(final double minX, final double maxY, final int viewWidth, final int viewHeight, final float ppu) {
+
+        super(minX, maxY, viewWidth, viewHeight, ppu);
+    }
 
 }

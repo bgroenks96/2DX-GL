@@ -12,12 +12,16 @@
 
 package com.snap2d.demo.render;
 
-import java.awt.*;
+import java.awt.Color;
+import java.awt.Dimension;
+import java.awt.Graphics2D;
 
-import bg.x2d.geo.*;
+import bg.x2d.geo.Hexagon2D;
 
-import com.snap2d.gl.*;
+import com.snap2d.gl.Display;
 import com.snap2d.gl.Display.Type;
+import com.snap2d.gl.RenderControl;
+import com.snap2d.gl.Renderable;
 
 /**
  * @author Brian Groenke
@@ -25,49 +29,51 @@ import com.snap2d.gl.Display.Type;
  */
 public class DrawStuff {
 
-	public static void main(String[] args) {
+    public static void main(final String[] args) {
 
-		// create the Display; note that Type is an inner-type of Display
-		// you will need to import com.snap2d.gl.Display.Type for this to work
-		Display disp = new Display(800, 600, Type.WINDOWED);
-		final RenderControl rc = disp.getRenderControl(2);
+        // create the Display; note that Type is an inner-type of Display
+        // you will need to import com.snap2d.gl.Display.Type for this to work
+        Display disp = new Display(800, 600, Type.WINDOWED);
+        final RenderControl rc = disp.getRenderControl(2);
 
-		Renderable obj = new Renderable() {
+        Renderable obj = new Renderable() {
 
-			@Override
-			public void render(Graphics2D g, float interpolation) {
-				g.setColor(Color.BLACK);
-				g.drawString("Hello Snap2D!", 50, 50);
-				g.setColor(Color.RED);
-				g.fillOval(100, 100, 100, 100);
+            @Override
+            public void render(final Graphics2D g, final float interpolation) {
 
-				Hexagon2D hex = new Hexagon2D(300, 100, 100, Color.BLUE, true);
-				hex.draw(g);
-			}
+                g.setColor(Color.BLACK);
+                g.drawString("Hello Snap2D!", 50, 50);
+                g.setColor(Color.RED);
+                g.fillOval(100, 100, 100, 100);
 
-			@Override
-			public void update(long nanoTimeNow, long nanosSinceLastUpdate) {
+                Hexagon2D hex = new Hexagon2D(300, 100, 100, Color.BLUE, true);
+                hex.draw(g);
+            }
 
-			}
+            @Override
+            public void update(final long nanoTimeNow, final long nanosSinceLastUpdate) {
 
-			@Override
-			public void onResize(Dimension oldSize, Dimension newSize) {
+            }
 
-			}
+            @Override
+            public void onResize(final Dimension oldSize, final Dimension newSize) {
 
-		};
-		rc.addRenderable(obj, RenderControl.POSITION_LAST);
+            }
 
-		disp.show();
-		rc.startRenderLoop();
+        };
+        rc.addRenderable(obj, RenderControl.POSITION_LAST);
 
-		// quick and dirty example of shutting down the system cleanly on exit
-		Runtime.getRuntime().addShutdownHook(new Thread(new Runnable() {
+        disp.show();
+        rc.startRenderLoop();
 
-			@Override
-			public void run() {
-				rc.dispose();
-			}
-		}));
-	}
+        // quick and dirty example of shutting down the system cleanly on exit
+        Runtime.getRuntime().addShutdownHook(new Thread(new Runnable() {
+
+            @Override
+            public void run() {
+
+                rc.dispose();
+            }
+        }));
+    }
 }

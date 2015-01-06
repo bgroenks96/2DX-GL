@@ -12,7 +12,10 @@
 
 package com.snap2d.script;
 
-import java.lang.annotation.*;
+import java.lang.annotation.ElementType;
+import java.lang.annotation.Retention;
+import java.lang.annotation.RetentionPolicy;
+import java.lang.annotation.Target;
 
 /**
  * @author Brian Groenke
@@ -21,9 +24,12 @@ import java.lang.annotation.*;
 @Target(ElementType.METHOD)
 @Retention(RetentionPolicy.RUNTIME)
 public @interface ScriptLink {
-	/**
-	 * Determines whether or not the annotated method should be linked with the ScriptProgram
-	 * @return true if linked, false otherwise
-	 */
-	public boolean value() default true;
+
+    /**
+     * Determines whether or not the annotated method should be linked with the
+     * ScriptProgram
+     * 
+     * @return true if linked, false otherwise
+     */
+    public boolean value() default true;
 }

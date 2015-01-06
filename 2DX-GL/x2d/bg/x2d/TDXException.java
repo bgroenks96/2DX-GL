@@ -13,29 +13,34 @@
 package bg.x2d;
 
 /**
- * Generic exception thrown by classes in the 2DX software when internal errors occur. This class
- * should not be extended, nor thrown by objects outside of the 2DX API itself.
+ * Generic exception thrown by classes in the 2DX software when internal errors
+ * occur. This class should not be extended, nor thrown by objects outside of
+ * the 2DX API itself.
  * 
  * @author Brian Groenke
  * @since 2DX 1.0 (1st Edition)
  */
 public class TDXException extends Exception {
 
-	private static final long serialVersionUID = 975059383220158740L;
+    private static final long serialVersionUID = 975059383220158740L;
 
-	public TDXException() {
-	}
+    public TDXException() {
 
-	public TDXException(String arg0) {
-		super(arg0);
-	}
+    }
 
-	public TDXException(Throwable arg0) {
-		super(arg0);
-	}
+    public TDXException(final String arg0) {
 
-	public TDXException(String arg0, Throwable arg1) {
-		super(arg0, arg1);
-	}
+        super(arg0);
+    }
+
+    public TDXException(final Throwable arg0) {
+
+        super(arg0);
+    }
+
+    public TDXException(final String arg0, final Throwable arg1) {
+
+        super(arg0, arg1);
+    }
 
 }

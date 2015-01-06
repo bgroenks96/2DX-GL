@@ -12,31 +12,37 @@
 
 package bg.x2d.geo;
 
-import bg.x2d.*;
+import bg.x2d.TDXException;
 
 public class GeoException extends TDXException {
 
-	/**
-	 * The standard exception thrown by all classes in the bg.tdx.geo package when a Geometric error
-	 * occurs (often caused by invalid arguments passed to a geometry method).<br>
-	 * This class does nothing but subclass type TDXException and slap its own name onto it.
-	 */
-	private static final long serialVersionUID = 975059383220158740L;
+    /**
+     * The standard exception thrown by all classes in the bg.tdx.geo package
+     * when a Geometric error occurs (often caused by invalid arguments passed
+     * to a geometry method).<br>
+     * This class does nothing but subclass type TDXException and slap its own
+     * name onto it.
+     */
+    private static final long serialVersionUID = 975059383220158740L;
 
-	public GeoException() {
-		super("Geometric error");
-	}
+    public GeoException() {
 
-	public GeoException(String arg0) {
-		super(arg0);
-	}
+        super("Geometric error");
+    }
 
-	public GeoException(Throwable arg0) {
-		super(arg0);
-	}
+    public GeoException(final String arg0) {
 
-	public GeoException(String arg0, Throwable arg1) {
-		super(arg0, arg1);
-	}
+        super(arg0);
+    }
+
+    public GeoException(final Throwable arg0) {
+
+        super(arg0);
+    }
+
+    public GeoException(final String arg0, final Throwable arg1) {
+
+        super(arg0, arg1);
+    }
 
 }

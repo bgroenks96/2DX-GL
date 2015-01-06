@@ -12,7 +12,7 @@
 
 package com.snap2d.world.event;
 
-import com.snap2d.world.*;
+import com.snap2d.world.Entity;
 
 /**
  * @author Brian Groenke
@@ -20,16 +20,17 @@ import com.snap2d.world.*;
  */
 public class AddEvent extends EntityEvent {
 
-	/**
-	 * 
-	 */
-	private static final long serialVersionUID = -1694513481944059518L;
+    /**
+     * 
+     */
+    private static final long serialVersionUID = -1694513481944059518L;
 
-	/**
-	 * @param source
-	 */
-	public AddEvent(Entity source) {
-		super(source);
-	}
+    /**
+     * @param source
+     */
+    public AddEvent(final Entity source) {
+
+        super(source);
+    }
 
 }

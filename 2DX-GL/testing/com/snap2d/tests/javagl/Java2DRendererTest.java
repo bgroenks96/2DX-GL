@@ -32,147 +32,163 @@ import com.snap2d.gl.opengl.GLConfig.Property;
  */
 public class Java2DRendererTest {
 
-	/**
-	 * @param args
-	 */
-	public static void main(String[] args) {
-		GLConfig glConfig = GLConfig.getDefaultSystemConfig();
-		glConfig.set(Property.GL_RENDER_MSAA, "8");
-		glConfig.set(Property.GL_PROFILE, "GL2");
-		GLDisplay disp = new GLDisplay(1200, 768, Type.WINDOWED, glConfig);
-		GLRenderControl rc = disp.getRenderControl();
-		rc.addRenderable(new BasicGLRenderable(), GLRenderControl.POSITION_LAST);
-		//rc.addRenderable(new QuadGradientTestRenderable(), 0);
-		disp.show();
-		rc.startRenderLoop();
-		rc.setTargetFPS(1000);
-	}
-	
-	static class BasicGLRenderable implements GLRenderable {
-		
-		ColorGenerator colorGen = ColorGenerator.createRGBA();
-		Random r = new Random();
-		int dx=4,dy=2,wt,ht;
-		Color color = colorGen.generate();
-		
-		long lastColorUpdate = 0;
+    /**
+     * @param args
+     */
+    public static void main(final String[] args) {
 
-		PointUD[] pts;
-		int buffId;
-		/**
-		 *
-		 */
-		@Override
-		public void init(GLHandle handle) {
-			buffId = handle.createQuadBuffer2f(BufferUsage.DYNAMIC_DRAW, 10, false);
-			PointGenerator ptGen = new PointGenerator(0, 0, 600, 500);
-			pts = new PointUD[30];
-			for (int i=0; i < pts.length; i++) {
-				pts[i] = ptGen.generate();
-			}
-		}
+        GLConfig glConfig = GLConfig.getDefaultSystemConfig();
+        glConfig.set(Property.GL_RENDER_MSAA, "8");
+        glConfig.set(Property.GL_PROFILE, "GL2");
+        GLDisplay disp = new GLDisplay(1200, 768, Type.WINDOWED, glConfig);
+        GLRenderControl rc = disp.getRenderControl();
+        rc.addRenderable(new BasicGLRenderable(), GLRenderControl.POSITION_LAST);
+        // rc.addRenderable(new QuadGradientTestRenderable(), 0);
+        disp.show();
+        rc.startRenderLoop();
+        rc.setTargetFPS(1000);
+    }
 
-		/**
-		 *
-		 */
-		@Override
-		public void dispose(GLHandle handle) {
-			handle.destroyBuff(buffId);
-		}
+    static class BasicGLRenderable implements GLRenderable {
 
-		/**
-		 *
-		 */
-		@Override
-		public void render(GLHandle handle, float interpolation) {
-			float[] rgba = GLUtils.convertColorAwtToGL(color);
-			handle.setEnabled(GLFeature.BLENDING, true);
-			handle.setBlendFunc(AlphaFunc.SRC_OVER);
-			handle.setColor4f(rgba[0], rgba[1], rgba[2], rgba[3]);
-			for (PointUD p : pts) {
-				handle.putQuad2f(buffId, p.getFloatX(), p.getFloatY(), 200, 200, null);
-			}
-			handle.draw2f(buffId);
-			handle.resetBuff(buffId);
-		}
+        ColorGenerator colorGen = ColorGenerator.createRGBA();
+        Random r = new Random();
+        int dx = 4, dy = 2, wt, ht;
+        Color color = colorGen.generate();
 
-		/**
-		 *
-		 */
-		@Override
-		public void update(long nanoTimeNow, long nanoTimeLast) {
-			for (int i=0; i < pts.length; i++) {
-				float x = pts[i].getFloatX(); float y = pts[i].getFloatY();
-				if (x+200 > wt || x < 0)
-					dx = -dx;
-				if (y+200 > ht || y < 0)
-					dy = -dy;
-				pts[i].setLocation(x + dx, y + dy);
-			}
-			
-			if (nanoTimeNow / 1000000 - lastColorUpdate > 500) {
-				color = colorGen.generate();
-				lastColorUpdate = nanoTimeNow / 1000000;
-			}
-		}
+        long lastColorUpdate = 0;
 
-		/**
-		 *
-		 */
-		@Override
-		public void resize(GLHandle handle, int wt, int ht) {
-			this.wt = wt; this.ht = ht;
-			handle.setViewport(0, 0, wt, ht, 1);
-		}
-		
-	}
-	
-	static class TypicalRenderable implements Renderable {
-		
-		ColorGenerator colorGen = ColorGenerator.createRGBA();
-		Random r = new Random();
-		int x=r.nextInt(1000),y=r.nextInt(600),lx,ly,dx=4,dy=2,wt,ht;
-		Color color = colorGen.generate();
-		
-		long lastColorUpdate = 0;
+        PointUD[] pts;
+        int buffId;
 
-		/**
-		 *
-		 */
-		@Override
-		public void render(Graphics2D g, float interpolation) {
-			g.setColor(color);
-			g.fillRect((int)(lx + (x-lx)*interpolation), (int)(ly + (y-ly)*interpolation), 200, 200);
-		}
+        /**
+         *
+         */
+        @Override
+        public void init(final GLHandle handle) {
 
-		/**
-		 *
-		 */
-		@Override
-		public void update(long nanoTimeNow, long nanoTimeLast) {
-			if (x+200 > wt || x < 0)
-				dx = -dx;
-			if (y+200 > ht || y < 0)
-				dy = -dy;
-			lx = x;
-			ly = y;
-			x+=dx;
-			y+=dy;
-			
-			if (nanoTimeNow / 1000000 - lastColorUpdate > 500) {
-				color = colorGen.generate();
-				lastColorUpdate = nanoTimeNow / 1000000;
-			}
-		}
+            buffId = handle.createQuadBuffer2f(BufferUsage.DYNAMIC_DRAW, 10, false);
+            PointGenerator ptGen = new PointGenerator(0, 0, 600, 500);
+            pts = new PointUD[30];
+            for (int i = 0; i < pts.length; i++ ) {
+                pts[i] = ptGen.generate();
+            }
+        }
 
-		/**
-		 *
-		 */
-		@Override
-		public void onResize(Dimension oldSize, Dimension newSize) {
-			this.wt = (int) newSize.getWidth();
-			this.ht = (int) newSize.getHeight();
-		}
-		
-	}
+        /**
+         *
+         */
+        @Override
+        public void dispose(final GLHandle handle) {
+
+            handle.destroyBuff(buffId);
+        }
+
+        /**
+         *
+         */
+        @Override
+        public void render(final GLHandle handle, final float interpolation) {
+
+            float[] rgba = GLUtils.convertColorAwtToGL(color);
+            handle.setEnabled(GLFeature.BLENDING, true);
+            handle.setBlendFunc(AlphaFunc.SRC_OVER);
+            handle.setColor4f(rgba[0], rgba[1], rgba[2], rgba[3]);
+            for (PointUD p : pts) {
+                handle.putQuad2f(buffId, p.getFloatX(), p.getFloatY(), 200, 200, null);
+            }
+            handle.draw2f(buffId);
+            handle.resetBuff(buffId);
+        }
+
+        /**
+         *
+         */
+        @Override
+        public void update(final long nanoTimeNow, final long nanoTimeLast) {
+
+            for (int i = 0; i < pts.length; i++ ) {
+                float x = pts[i].getFloatX();
+                float y = pts[i].getFloatY();
+                if (x + 200 > wt || x < 0) {
+                    dx = -dx;
+                }
+                if (y + 200 > ht || y < 0) {
+                    dy = -dy;
+                }
+                pts[i].setLocation(x + dx, y + dy);
+            }
+
+            if (nanoTimeNow / 1000000 - lastColorUpdate > 500) {
+                color = colorGen.generate();
+                lastColorUpdate = nanoTimeNow / 1000000;
+            }
+        }
+
+        /**
+         *
+         */
+        @Override
+        public void resize(final GLHandle handle, final int wt, final int ht) {
+
+            this.wt = wt;
+            this.ht = ht;
+            handle.setViewport(0, 0, wt, ht, 1);
+        }
+
+    }
+
+    static class TypicalRenderable implements Renderable {
+
+        ColorGenerator colorGen = ColorGenerator.createRGBA();
+        Random r = new Random();
+        int x = r.nextInt(1000), y = r.nextInt(600), lx, ly, dx = 4, dy = 2, wt, ht;
+        Color color = colorGen.generate();
+
+        long lastColorUpdate = 0;
+
+        /**
+         *
+         */
+        @Override
+        public void render(final Graphics2D g, final float interpolation) {
+
+            g.setColor(color);
+            g.fillRect((int) (lx + (x - lx) * interpolation), (int) (ly + (y - ly) * interpolation), 200, 200);
+        }
+
+        /**
+         *
+         */
+        @Override
+        public void update(final long nanoTimeNow, final long nanoTimeLast) {
+
+            if (x + 200 > wt || x < 0) {
+                dx = -dx;
+            }
+            if (y + 200 > ht || y < 0) {
+                dy = -dy;
+            }
+            lx = x;
+            ly = y;
+            x += dx;
+            y += dy;
+
+            if (nanoTimeNow / 1000000 - lastColorUpdate > 500) {
+                color = colorGen.generate();
+                lastColorUpdate = nanoTimeNow / 1000000;
+            }
+        }
+
+        /**
+         *
+         */
+        @Override
+        public void onResize(final Dimension oldSize, final Dimension newSize) {
+
+            this.wt = (int) newSize.getWidth();
+            this.ht = (int) newSize.getHeight();
+        }
+
+    }
 }

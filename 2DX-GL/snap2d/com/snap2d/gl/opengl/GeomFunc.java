@@ -16,25 +16,24 @@ import javax.media.opengl.GL;
 
 /**
  * Represents a set number of supported OpenGL geometry drawing functions.
+ * 
  * @author Brian Groenke
  *
  */
 public enum GeomFunc {
 
-	POINTS(GL.GL_POINTS), 
-	LINES(GL.GL_LINES), 
-	LINE_STRIP(GL.GL_LINE_STRIP), 
-	TRIANGLES(GL.GL_TRIANGLES),
-	TRIANGLE_STRIP(GL.GL_TRIANGLE_STRIP), 
-	TRIANGLE_FAN(GL.GL_TRIANGLE_FAN);
+    POINTS(GL.GL_POINTS), LINES(GL.GL_LINES), LINE_STRIP(GL.GL_LINE_STRIP), TRIANGLES(GL.GL_TRIANGLES), TRIANGLE_STRIP(
+            GL.GL_TRIANGLE_STRIP), TRIANGLE_FAN(GL.GL_TRIANGLE_FAN);
 
-	private int glcmd;
+    private int glcmd;
 
-	GeomFunc(int glCommand) {
-		this.glcmd = glCommand;
-	}
+    GeomFunc(final int glCommand) {
 
-	public int getGLCommand() {
-		return glcmd;
-	}
+        this.glcmd = glCommand;
+    }
+
+    public int getGLCommand() {
+
+        return glcmd;
+    }
 }

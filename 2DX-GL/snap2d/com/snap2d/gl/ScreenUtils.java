@@ -12,38 +12,43 @@
 
 package com.snap2d.gl;
 
-import java.awt.*;
+import java.awt.Dimension;
+import java.awt.Toolkit;
 
 /**
  * @author Brian Groenke
  *
  */
 public class ScreenUtils {
-	
-	public static final Dimension HI_RES_1080 = new Dimension(1920, 1080);
-	
-	
-	/**
-	 * Get the screen resolution of the the primary display device in
-	 * pixel dimensions.
-	 * @return
-	 */
-	public static final Dimension getScreenResolution() {
-		return Toolkit.getDefaultToolkit().getScreenSize();
-	}
-	
-	/**
-	 * Get the pixels-per-inch aka "dots-per-inch" of the primary display
-	 * device.
-	 * @return number of dots per inch in screen space
-	 */
-	public static final int getScreenDpi() {
-		return Toolkit.getDefaultToolkit().getScreenResolution();
-	}
-	
-	public static final Dimension convertDimension(Dimension baseScreenSize, Dimension toConvert, 
-			boolean keepAspectRatio) {
-		Dimension screenSize = getScreenResolution();
-		return toConvert;
-	}
+
+    public static final Dimension HI_RES_1080 = new Dimension(1920, 1080);
+
+    /**
+     * Get the screen resolution of the the primary display device in pixel
+     * dimensions.
+     * 
+     * @return
+     */
+    public static final Dimension getScreenResolution() {
+
+        return Toolkit.getDefaultToolkit().getScreenSize();
+    }
+
+    /**
+     * Get the pixels-per-inch aka "dots-per-inch" of the primary display
+     * device.
+     * 
+     * @return number of dots per inch in screen space
+     */
+    public static final int getScreenDpi() {
+
+        return Toolkit.getDefaultToolkit().getScreenResolution();
+    }
+
+    public static final Dimension convertDimension(final Dimension baseScreenSize, final Dimension toConvert,
+            final boolean keepAspectRatio) {
+
+        Dimension screenSize = getScreenResolution();
+        return toConvert;
+    }
 }

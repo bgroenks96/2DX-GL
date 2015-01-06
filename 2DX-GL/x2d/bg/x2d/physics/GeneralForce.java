@@ -12,7 +12,8 @@
 
 package bg.x2d.physics;
 
-import bg.x2d.geo.*;
+import bg.x2d.geo.Vector2d;
+import bg.x2d.geo.Vector2f;
 
 /**
  * 
@@ -21,93 +22,101 @@ import bg.x2d.geo.*;
  */
 public class GeneralForce extends Force {
 
-	/**
-	 * 
-	 * @param vec
-	 */
-	public GeneralForce(Vector2f vec) {
-		setForceVector(vec);
-	}
+    /**
+     * 
+     * @param vec
+     */
+    public GeneralForce(final Vector2f vec) {
 
-	/**
-	 * 
-	 * @param vec
-	 */
-	public GeneralForce(Vector2d vec) {
-		setForceVector(vec);
-	}
+        setForceVector(vec);
+    }
 
-	@Override
-	public void setForceVector(Vector2f vec) {
-		if (vec != null) {
-			vecd = null;
-			vecf = vec;
-		}
-	}
+    /**
+     * 
+     * @param vec
+     */
+    public GeneralForce(final Vector2d vec) {
 
-	@Override
-	public void setForceVector(Vector2d vec) {
-		if (vec != null) {
-			vecf = null;
-			vecd = vec;
-		}
-	}
+        setForceVector(vec);
+    }
 
-	@Override
-	public Vector2f getVec2f() {
-		return vecf;
-	}
+    @Override
+    public void setForceVector(final Vector2f vec) {
 
-	@Override
-	public Vector2d getVec2d() {
-		return vecd;
-	}
+        if (vec != null) {
+            vecd = null;
+            vecf = vec;
+        }
+    }
 
-	@Override
-	public double getNewtonForce(double mass) {
-		return (vecf != null) ? vecf.getMagnitude() : vecd.getMagnitude();
-	}
+    @Override
+    public void setForceVector(final Vector2d vec) {
 
-	@Override
-	/**
-	 * Applies this force to the given Vector2f.  The resulting acceleration
-	 * amount is determined by the equation a = F/m (such that a is acceleration, 
-	 * F is Newton force, and m is mass in grams.
-	 * @param time seconds to accelerate the given vector
-	 * @param mass of the object in Kg
-	 * @param forceSum unused in general force
-	 * @param vec velocity vector to be accelerated by force.
-	 * @return the modified Vector2f object (allows for chain calls).
-	 */
-	public Vector2f applyTo(float time, float mass, Vector2f forceSum,
-			Vector2f vec) {
-		Vector2f vecf = this.vecf.divNew(mass);
-		vec.add(vecf.multNew(time));
-		return vec;
-	}
+        if (vec != null) {
+            vecf = null;
+            vecd = vec;
+        }
+    }
 
-	@Override
-	/**
-	 * Applies this force to the given Vector2d.
-	 * @param time seconds to accelerate the given vector
-	 * @param mass of the object in Kg
-	 * @param forceSum unused in GeneralForce
-	 * @param vec velocity vector to be accelerated by force.
-	 * @return the modified Vector2f object (allows for chain calls).
-	 */
-	public Vector2d applyTo(double time, double mass, Vector2d forceSum,
-			Vector2d vec) {
-		Vector2d vecd = this.vecd.divNew(mass);
-		vec.add(vecd.multNew(time));
-		return vec;
-	}
+    @Override
+    public Vector2f getVec2f() {
 
-	/**
-	 *
-	 */
-	@Override
-	public double getAcceleration(double mass) {
-		return getNewtonForce(mass) / mass;
-	}
+        return vecf;
+    }
+
+    @Override
+    public Vector2d getVec2d() {
+
+        return vecd;
+    }
+
+    @Override
+    public double getNewtonForce(final double mass) {
+
+        return (vecf != null) ? vecf.getMagnitude() : vecd.getMagnitude();
+    }
+
+    @Override
+    /**
+     * Applies this force to the given Vector2f.  The resulting acceleration
+     * amount is determined by the equation a = F/m (such that a is acceleration, 
+     * F is Newton force, and m is mass in grams.
+     * @param time seconds to accelerate the given vector
+     * @param mass of the object in Kg
+     * @param forceSum unused in general force
+     * @param vec velocity vector to be accelerated by force.
+     * @return the modified Vector2f object (allows for chain calls).
+     */
+    public Vector2f applyTo(final float time, final float mass, final Vector2f forceSum, final Vector2f vec) {
+
+        Vector2f vecf = this.vecf.divNew(mass);
+        vec.add(vecf.multNew(time));
+        return vec;
+    }
+
+    @Override
+    /**
+     * Applies this force to the given Vector2d.
+     * @param time seconds to accelerate the given vector
+     * @param mass of the object in Kg
+     * @param forceSum unused in GeneralForce
+     * @param vec velocity vector to be accelerated by force.
+     * @return the modified Vector2f object (allows for chain calls).
+     */
+    public Vector2d applyTo(final double time, final double mass, final Vector2d forceSum, final Vector2d vec) {
+
+        Vector2d vecd = this.vecd.divNew(mass);
+        vec.add(vecd.multNew(time));
+        return vec;
+    }
+
+    /**
+     *
+     */
+    @Override
+    public double getAcceleration(final double mass) {
+
+        return getNewtonForce(mass) / mass;
+    }
 
 }

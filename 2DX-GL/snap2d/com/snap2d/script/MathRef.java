@@ -16,480 +16,557 @@ import java.util.HashMap;
 
 class MathRef {
 
-	private static HashMap<Character, Integer> pmap = new HashMap<Character, Integer>();
-	private static HashMap<Character, Assoc> amap = new HashMap<Character, Assoc>();
-	private static HashMap<Character, MathOp> opMap = new HashMap<Character, MathOp>();
+    private static HashMap <Character, Integer> pmap = new HashMap <Character, Integer>();
+    private static HashMap <Character, Assoc> amap = new HashMap <Character, Assoc>();
+    private static HashMap <Character, MathOp> opMap = new HashMap <Character, MathOp>();
 
-	public static final char AND_BOOL = '@', OR_BOOL = '$', EQUALS = '=', NOT_EQUALS = '\u00AC', LESS_EQUALS = '\u00AB', GREAT_EQUALS = '\u00BB';
-	protected static final char[] OPERATORS = new char[] { '+', '-', '*', '/',
-		'|', '&', '~', '%', '^', EQUALS, '>', '<', NOT_EQUALS, LESS_EQUALS, GREAT_EQUALS, AND_BOOL, OR_BOOL};
-	protected static final char[] NUM_CHARS = new char[] { 'E' };
-	protected static final char MULTIPLY = OPERATORS[2];
+    public static final char AND_BOOL = '@', OR_BOOL = '$', EQUALS = '=', NOT_EQUALS = '\u00AC',
+            LESS_EQUALS = '\u00AB', GREAT_EQUALS = '\u00BB';
+    protected static final char[] OPERATORS = new char[] { '+', '-', '*', '/', '|', '&', '~', '%', '^', EQUALS, '>',
+        '<', NOT_EQUALS, LESS_EQUALS, GREAT_EQUALS, AND_BOOL, OR_BOOL };
+    protected static final char[] NUM_CHARS = new char[] { 'E' };
+    protected static final char MULTIPLY = OPERATORS[2];
 
-	public static int floatNum = 6;
+    public static int floatNum = 6;
 
-	// init the built in operations/functions
-	static {
-		for (int i = 0; i < OPERATORS.length; i++) {
-			int p = 0;
-			MathOp mathOp = null;
-			Assoc assc = Assoc.LEFT;
-			switch (i) {
-			case 0:
-				mathOp = new AdditionOp();
-			case 1:
-				if (mathOp == null) {
-					mathOp = new SubtractionOp();
-				}
-				p = 1;
-				break;
-			case 2:
-				if (mathOp == null) {
-					mathOp = new MultiplicationOp();
-				}
-			case 3:
-				if (mathOp == null) {
-					mathOp = new DivisionOp();
-				}
-			case 4:
-				if (mathOp == null) {
-					mathOp = new BitorOp();
-				}
-			case 5:
-				if (mathOp == null) {
-					mathOp = new BitandOp();
-				}
-			case 6:
-				if (mathOp == null) {
-					mathOp = new BitxorOp();
-				}
-			case 7:
-				if (mathOp == null) {
-					mathOp = new RemainderOp();
-				}
-				p = 2;
-				break;
-			case 8:
-				if (mathOp == null) {
-					mathOp = new PowerOp();
-				}
-				p = 3;
-				assc = Assoc.RIGHT;
-				break;
-			case 9:
-				if (mathOp == null) {
-					mathOp = new EqualityOp();
-				}
-			case 10:
-				if (mathOp == null) {
-					mathOp = new GreaterOp();
-				}
-			case 11:
-				if (mathOp == null) {
-					mathOp = new LesserOp();
-				}
-			case 12:
-				if(mathOp == null) {
-					mathOp = new NotEqualsOp();
-				}
-			case 13:
-				if(mathOp == null) {
-					mathOp = new LessEqualsOp();
-				}
-			case 14:
-				if(mathOp == null) {
-					mathOp = new GreatEqualsOp();
-				}
-				p = 0;
-				assc = Assoc.UNDEF;
-				break;
-			case 15:
-				if(mathOp == null) {
-					mathOp = new AndOp();
-				}
-			case 16:
-				if(mathOp == null) {
-					mathOp =  new OrOp();
-				}
-				p = -1;
-				assc = Assoc.UNDEF;
-				break;
-			}
-			pmap.put(OPERATORS[i], p);
-			opMap.put(OPERATORS[i], mathOp);
-			amap.put(OPERATORS[i], assc);
-		}
-	}
+    // init the built in operations/functions
+    static {
+        for (int i = 0; i < OPERATORS.length; i++ ) {
+            int p = 0;
+            MathOp mathOp = null;
+            Assoc assc = Assoc.LEFT;
+            switch (i) {
+            case 0:
+                mathOp = new AdditionOp();
+            case 1:
+                if (mathOp == null) {
+                    mathOp = new SubtractionOp();
+                }
+                p = 1;
+                break;
+            case 2:
+                if (mathOp == null) {
+                    mathOp = new MultiplicationOp();
+                }
+            case 3:
+                if (mathOp == null) {
+                    mathOp = new DivisionOp();
+                }
+            case 4:
+                if (mathOp == null) {
+                    mathOp = new BitorOp();
+                }
+            case 5:
+                if (mathOp == null) {
+                    mathOp = new BitandOp();
+                }
+            case 6:
+                if (mathOp == null) {
+                    mathOp = new BitxorOp();
+                }
+            case 7:
+                if (mathOp == null) {
+                    mathOp = new RemainderOp();
+                }
+                p = 2;
+                break;
+            case 8:
+                if (mathOp == null) {
+                    mathOp = new PowerOp();
+                }
+                p = 3;
+                assc = Assoc.RIGHT;
+                break;
+            case 9:
+                if (mathOp == null) {
+                    mathOp = new EqualityOp();
+                }
+            case 10:
+                if (mathOp == null) {
+                    mathOp = new GreaterOp();
+                }
+            case 11:
+                if (mathOp == null) {
+                    mathOp = new LesserOp();
+                }
+            case 12:
+                if (mathOp == null) {
+                    mathOp = new NotEqualsOp();
+                }
+            case 13:
+                if (mathOp == null) {
+                    mathOp = new LessEqualsOp();
+                }
+            case 14:
+                if (mathOp == null) {
+                    mathOp = new GreatEqualsOp();
+                }
+                p = 0;
+                assc = Assoc.UNDEF;
+                break;
+            case 15:
+                if (mathOp == null) {
+                    mathOp = new AndOp();
+                }
+            case 16:
+                if (mathOp == null) {
+                    mathOp = new OrOp();
+                }
+                p = -1;
+                assc = Assoc.UNDEF;
+                break;
+            }
+            pmap.put(OPERATORS[i], p);
+            opMap.put(OPERATORS[i], mathOp);
+            amap.put(OPERATORS[i], assc);
+        }
+    }
 
-	/* Definitions of operator associativity */
-	public static enum Assoc {
-		LEFT, RIGHT, UNDEF;
-	}
+    /* Definitions of operator associativity */
+    public static enum Assoc {
+        LEFT, RIGHT, UNDEF;
+    }
 
-	public static void putOperator(char c, int precedence, MathOp operation) {
-		opMap.put(c, operation);
-		pmap.put(c, precedence);
-	}
+    public static void putOperator(final char c, final int precedence, final MathOp operation) {
 
-	public static char getDefaultMultiplyOp() {
-		return MULTIPLY;
-	}
+        opMap.put(c, operation);
+        pmap.put(c, precedence);
+    }
 
-	public static boolean isOperator(char c) {
-		return opMap.containsKey(c);
-	}
+    public static char getDefaultMultiplyOp() {
 
-	/*
-	 * Fetches operator precedence value
-	 */
-	public static int getOpPreced(char c) {
-		return pmap.get(c);
-	}
+        return MULTIPLY;
+    }
 
-	/*
-	 * Checks to see if the operator precedes the other based both on precedence
-	 * AND associativity.
-	 */
-	public static boolean opPreceeds(char o1, char o2)
-			throws MathParseException {
-		int o1p = pmap.get(o1);
-		int o2p = pmap.get(o2);
-		boolean rightAssoc = false;
-		if (o1 == o2) {
-			Assoc assc = amap.get(o1);
-			if (assc.equals(Assoc.RIGHT)) {
-				rightAssoc = true;
-			} else if (assc.equals(Assoc.UNDEF)) {
-				throw (new MathParseException("syntax: operator " + o1
-						+ " has undefined associativity"));
-			}
-		}
+    public static boolean isOperator(final char c) {
 
-		return rightAssoc ? o2p < o1p : o2p <= o1p;
-	}
+        return opMap.containsKey(c);
+    }
 
-	public static double doOperator(char op, double a, double b) {
-		double ans;
-		MathOp mathOp = opMap.get(op);
-		if(mathOp == null)
-			return 0.0f;
-		else
-			ans = mathOp.eval(a, b);
-		return ans;
-	}
+    /*
+     * Fetches operator precedence value
+     */
+    public static int getOpPreced(final char c) {
 
-	public static MathOp getOperatorOp(char op) {
-		return opMap.get(op);
-	}
-	
-	public static char matchBytecode(byte b) {
-		switch(b) {
-		case Bytecodes.ADD:
-			return OPERATORS[0];
-		case Bytecodes.SUBTRACT:
-			return OPERATORS[1];
-		case Bytecodes.MULTIPLY:
-			return OPERATORS[2];
-		case Bytecodes.DIVIDE:
-			return OPERATORS[3];
-		case Bytecodes.BITOR:
-			return OPERATORS[4];
-		case Bytecodes.BITAND:
-			return OPERATORS[5];
-		case Bytecodes.BITXOR:
-			return OPERATORS[6];
-		case Bytecodes.MODULO:
-			return OPERATORS[7];
-		case Bytecodes.POW:
-			return OPERATORS[8];
-		case Bytecodes.EQUALS:
-			return OPERATORS[9];
-		case Bytecodes.GREATER:
-			return OPERATORS[10];
-		case Bytecodes.LESSER:
-			return OPERATORS[11];
-		case Bytecodes.NOT_EQUALS:
-			return OPERATORS[12];
-		case Bytecodes.LESS_EQUALS:
-			return OPERATORS[13];
-		case Bytecodes.GREAT_EQUALS:
-			return OPERATORS[14];
-		case Bytecodes.AND:
-			return OPERATORS[15];
-		case Bytecodes.OR:
-			return OPERATORS[16];
-		default:
-			return 0;
-		}
-	}
+        return pmap.get(c);
+    }
 
-	public static boolean isNumChar(char c) {
-		for (char nc : NUM_CHARS) {
-			if (c == nc) {
-				return true;
-			}
-		}
-		return false;
-	}
+    /*
+     * Checks to see if the operator precedes the other based both on precedence
+     * AND associativity.
+     */
+    public static boolean opPreceeds(final char o1, final char o2) throws MathParseException {
 
+        int o1p = pmap.get(o1);
+        int o2p = pmap.get(o2);
+        boolean rightAssoc = false;
+        if (o1 == o2) {
+            Assoc assc = amap.get(o1);
+            if (assc.equals(Assoc.RIGHT)) {
+                rightAssoc = true;
+            } else if (assc.equals(Assoc.UNDEF)) {
+                throw (new MathParseException("syntax: operator " + o1 + " has undefined associativity"));
+            }
+        }
 
-	
-	protected interface MathOp {
+        return rightAssoc ? o2p < o1p : o2p <= o1p;
+    }
 
-		public double eval(double... args);
+    public static double doOperator(final char op, final double a, final double b) {
 
-		public int argCount();
-	}
-	
-	// ----Built in operator functions-------//
+        double ans;
+        MathOp mathOp = opMap.get(op);
+        if (mathOp == null) {
+            return 0.0f;
+        } else {
+            ans = mathOp.eval(a, b);
+        }
+        return ans;
+    }
 
-	private static class AdditionOp implements MathOp {
-		@Override
-		public double eval(double... args) {
-			return args[0] + args[1];
-		}
+    public static MathOp getOperatorOp(final char op) {
 
-		@Override
-		public int argCount() {
-			return 2;
-		}
-	}
+        return opMap.get(op);
+    }
 
-	public static class SubtractionOp implements MathOp {
-		@Override
-		public double eval(double... args) {
-			return args[0] - args[1];
-		}
+    public static char matchBytecode(final byte b) {
 
-		@Override
-		public int argCount() {
-			return 2;
-		}
-	}
+        switch (b) {
+        case Bytecodes.ADD:
+            return OPERATORS[0];
+        case Bytecodes.SUBTRACT:
+            return OPERATORS[1];
+        case Bytecodes.MULTIPLY:
+            return OPERATORS[2];
+        case Bytecodes.DIVIDE:
+            return OPERATORS[3];
+        case Bytecodes.BITOR:
+            return OPERATORS[4];
+        case Bytecodes.BITAND:
+            return OPERATORS[5];
+        case Bytecodes.BITXOR:
+            return OPERATORS[6];
+        case Bytecodes.MODULO:
+            return OPERATORS[7];
+        case Bytecodes.POW:
+            return OPERATORS[8];
+        case Bytecodes.EQUALS:
+            return OPERATORS[9];
+        case Bytecodes.GREATER:
+            return OPERATORS[10];
+        case Bytecodes.LESSER:
+            return OPERATORS[11];
+        case Bytecodes.NOT_EQUALS:
+            return OPERATORS[12];
+        case Bytecodes.LESS_EQUALS:
+            return OPERATORS[13];
+        case Bytecodes.GREAT_EQUALS:
+            return OPERATORS[14];
+        case Bytecodes.AND:
+            return OPERATORS[15];
+        case Bytecodes.OR:
+            return OPERATORS[16];
+        default:
+            return 0;
+        }
+    }
 
-	public static class MultiplicationOp implements MathOp {
-		@Override
-		public double eval(double... args) {
-			return args[0] * args[1];
-		}
+    public static String matchPlaceholderKeyword(final char c) {
 
-		@Override
-		public int argCount() {
-			return 2;
-		}
-	}
+        switch (c) {
+        case AND_BOOL:
+            return Keyword.AND.sym;
+        case OR_BOOL:
+            return Keyword.OR.sym;
+        case EQUALS:
+            return Keyword.EQUALS.sym;
+        case NOT_EQUALS:
+            return Keyword.NOT_EQUALS.sym;
+        case LESS_EQUALS:
+            return Keyword.LESS_EQUALS.sym;
+        case GREAT_EQUALS:
+            return Keyword.GREAT_EQUALS.sym;
+        default:
+            return null;
+        }
+    }
 
-	public static class DivisionOp implements MathOp {
-		@Override
-		public double eval(double... args) {
-			return args[0] / args[1];
-		}
+    public static boolean isNumChar(final char c) {
 
-		@Override
-		public int argCount() {
-			return 2;
-		}
-	}
+        for (char nc : NUM_CHARS) {
+            if (c == nc) {
+                return true;
+            }
+        }
+        return false;
+    }
 
-	public static class BitorOp implements MathOp {
-		@Override
-		public double eval(double... args) {
-			return (int) args[0] | (int) args[1];
-		}
+    protected interface MathOp {
 
-		@Override
-		public int argCount() {
-			return 2;
-		}
-	}
+        public double eval(double... args);
 
-	public static class BitandOp implements MathOp {
-		@Override
-		public double eval(double... args) {
-			return (int) args[0] & (int) args[1];
-		}
+        public int argCount();
+    }
 
-		@Override
-		public int argCount() {
-			return 2;
-		}
-	}
+    // ----Built in operator functions-------//
 
-	public static class BitxorOp implements MathOp {
-		@Override
-		public double eval(double... args) {
-			return (int) args[0] ^ (int) args[1];
-		}
+    private static class AdditionOp implements MathOp {
 
-		@Override
-		public int argCount() {
-			return 2;
-		}
-	}
+        @Override
+        public double eval(final double... args) {
 
-	public static class RemainderOp implements MathOp {
-		@Override
-		public double eval(double... args) {
-			return args[0] % args[1];
-		}
+            return args[0] + args[1];
+        }
 
-		@Override
-		public int argCount() {
-			return 2;
-		}
-	}
+        @Override
+        public int argCount() {
 
-	public static class PowerOp implements MathOp {
-		@Override
-		public double eval(double... args) {
-			return (float) Math.pow(args[0], args[1]);
-		}
+            return 2;
+        }
+    }
 
-		@Override
-		public int argCount() {
-			return 2;
-		}
-	}
+    public static class SubtractionOp implements MathOp {
 
-	public static class EqualityOp implements MathOp {
-		@Override
-		public double eval(double... args) {
-			return (args[0] == args[1]) ? 1:0;
-		}
+        @Override
+        public double eval(final double... args) {
 
-		@Override
-		public int argCount() {
-			return 2;
-		}
-	}
-	
-	public static class GreaterOp implements MathOp {
-		@Override
-		public double eval(double... args) {
-			return (args[0] > args[1]) ? 1:0;
-		}
-		
-		@Override
-		public int argCount() {
-			return 2;
-		}
-	}
-	
-	public static class LesserOp implements MathOp {
-		@Override
-		public double eval(double... args) {
-			return (args[0] < args[1]) ? 1:0;
-		}
-		
-		@Override
-		public int argCount() {
-			return 2;
-		}
-	}
-	
-	public static class AndOp implements MathOp {
+            return args[0] - args[1];
+        }
 
-		/**
-		 *
-		 */
-		@Override
-		public double eval(double... args) {
-			return (args[0] != 0 && args[1] != 0) ? 1:0;
-		}
+        @Override
+        public int argCount() {
 
-		/**
-		 *
-		 */
-		@Override
-		public int argCount() {
-			return 2;
-		}
-	}
-	
-	public static class OrOp implements MathOp {
-		
-		/**
-		 *
-		 */
-		@Override
-		public double eval(double... args) {
-			return (args[0] != 0|| args[1] != 0) ? 1:0;
-		}
-		
-		/**
-		 *
-		 */
-		@Override
-		public int argCount() {
-			return 2;
-		}
-	}
-	
-	public static class NotEqualsOp implements MathOp {
-		@Override
-		public double eval(double... args) {
-			return (args[0] != args[1]) ? 1:0;
-		}
-		
-		@Override
-		public int argCount() {
-			return 1;
-		}
-	}
-	
-	public static class NotOp implements MathOp {
-		
-		@Override
-		public double eval(double... args) {
-			if(args[0] == 0)
-				return 1;
-			else
-				return 0;
-		}
-		
-		@Override
-		public int argCount() {
-			return 1;
-		}
-	}
-	
-	public static class LessEqualsOp implements MathOp {
+            return 2;
+        }
+    }
 
-		/**
-		 *
-		 */
-		@Override
-		public double eval(double... args) {
-			return (args[0] <= args[1]) ? 1:0;
-		}
+    public static class MultiplicationOp implements MathOp {
 
-		/**
-		 *
-		 */
-		@Override
-		public int argCount() {
-			return 2;
-		}
-		
-	}
-	
-	public static class GreatEqualsOp implements MathOp {
-		
-		/**
-		 *
-		 */
-		@Override
-		public double eval(double... args) {
-			return (args[0] >= args[1]) ? 1:0;
-		}
-		
-		/**
-		 *
-		 */
-		@Override
-		public int argCount() {
-			return 2;
-		}
-		
-	}
+        @Override
+        public double eval(final double... args) {
+
+            return args[0] * args[1];
+        }
+
+        @Override
+        public int argCount() {
+
+            return 2;
+        }
+    }
+
+    public static class DivisionOp implements MathOp {
+
+        @Override
+        public double eval(final double... args) {
+
+            return args[0] / args[1];
+        }
+
+        @Override
+        public int argCount() {
+
+            return 2;
+        }
+    }
+
+    public static class BitorOp implements MathOp {
+
+        @Override
+        public double eval(final double... args) {
+
+            return (int) args[0] | (int) args[1];
+        }
+
+        @Override
+        public int argCount() {
+
+            return 2;
+        }
+    }
+
+    public static class BitandOp implements MathOp {
+
+        @Override
+        public double eval(final double... args) {
+
+            return (int) args[0] & (int) args[1];
+        }
+
+        @Override
+        public int argCount() {
+
+            return 2;
+        }
+    }
+
+    public static class BitxorOp implements MathOp {
+
+        @Override
+        public double eval(final double... args) {
+
+            return (int) args[0] ^ (int) args[1];
+        }
+
+        @Override
+        public int argCount() {
+
+            return 2;
+        }
+    }
+
+    public static class RemainderOp implements MathOp {
+
+        @Override
+        public double eval(final double... args) {
+
+            return args[0] % args[1];
+        }
+
+        @Override
+        public int argCount() {
+
+            return 2;
+        }
+    }
+
+    public static class PowerOp implements MathOp {
+
+        @Override
+        public double eval(final double... args) {
+
+            return (float) Math.pow(args[0], args[1]);
+        }
+
+        @Override
+        public int argCount() {
+
+            return 2;
+        }
+    }
+
+    public static class EqualityOp implements MathOp {
+
+        @Override
+        public double eval(final double... args) {
+
+            return (args[0] == args[1]) ? 1 : 0;
+        }
+
+        @Override
+        public int argCount() {
+
+            return 2;
+        }
+    }
+
+    public static class GreaterOp implements MathOp {
+
+        @Override
+        public double eval(final double... args) {
+
+            return (args[0] > args[1]) ? 1 : 0;
+        }
+
+        @Override
+        public int argCount() {
+
+            return 2;
+        }
+    }
+
+    public static class LesserOp implements MathOp {
+
+        @Override
+        public double eval(final double... args) {
+
+            return (args[0] < args[1]) ? 1 : 0;
+        }
+
+        @Override
+        public int argCount() {
+
+            return 2;
+        }
+    }
+
+    public static class AndOp implements MathOp {
+
+        /**
+         *
+         */
+        @Override
+        public double eval(final double... args) {
+
+            return (args[0] != 0 && args[1] != 0) ? 1 : 0;
+        }
+
+        /**
+         *
+         */
+        @Override
+        public int argCount() {
+
+            return 2;
+        }
+    }
+
+    public static class OrOp implements MathOp {
+
+        /**
+         *
+         */
+        @Override
+        public double eval(final double... args) {
+
+            return (args[0] != 0 || args[1] != 0) ? 1 : 0;
+        }
+
+        /**
+         *
+         */
+        @Override
+        public int argCount() {
+
+            return 2;
+        }
+    }
+
+    public static class NotEqualsOp implements MathOp {
+
+        @Override
+        public double eval(final double... args) {
+
+            return (args[0] != args[1]) ? 1 : 0;
+        }
+
+        @Override
+        public int argCount() {
+
+            return 1;
+        }
+    }
+
+    public static class NotOp implements MathOp {
+
+        @Override
+        public double eval(final double... args) {
+
+            if (args[0] == 0) {
+                return 1;
+            } else {
+                return 0;
+            }
+        }
+
+        @Override
+        public int argCount() {
+
+            return 1;
+        }
+    }
+
+    public static class LessEqualsOp implements MathOp {
+
+        /**
+         *
+         */
+        @Override
+        public double eval(final double... args) {
+
+            return (args[0] <= args[1]) ? 1 : 0;
+        }
+
+        /**
+         *
+         */
+        @Override
+        public int argCount() {
+
+            return 2;
+        }
+
+    }
+
+    public static class GreatEqualsOp implements MathOp {
+
+        /**
+         *
+         */
+        @Override
+        public double eval(final double... args) {
+
+            return (args[0] >= args[1]) ? 1 : 0;
+        }
+
+        /**
+         *
+         */
+        @Override
+        public int argCount() {
+
+            return 2;
+        }
+
+    }
 }

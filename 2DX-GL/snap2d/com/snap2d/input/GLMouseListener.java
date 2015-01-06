@@ -12,18 +12,25 @@
 
 package com.snap2d.input;
 
-
 /**
  * @author Brian Groenke
  *
  */
 public interface GLMouseListener {
-	public void mouseClicked(GLMouseEvent e) ;
-	public void mouseDragged(GLMouseEvent e) ;
-	public void mouseEntered(GLMouseEvent e);
-	public void mouseExited(GLMouseEvent e);
-	public void mouseMoved(GLMouseEvent e) ;
-	public void mousePressed(GLMouseEvent e) ;
-	public void mouseReleased(GLMouseEvent e) ;
-	public void mouseWheelMoved(GLMouseEvent e);
+
+    public void mouseClicked(GLMouseEvent e);
+
+    public void mouseDragged(GLMouseEvent e);
+
+    public void mouseEntered(GLMouseEvent e);
+
+    public void mouseExited(GLMouseEvent e);
+
+    public void mouseMoved(GLMouseEvent e);
+
+    public void mousePressed(GLMouseEvent e);
+
+    public void mouseReleased(GLMouseEvent e);
+
+    public void mouseWheelMoved(GLMouseEvent e);
 }

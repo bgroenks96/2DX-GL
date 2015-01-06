@@ -12,8 +12,11 @@
 
 package com.snap2d.script;
 
-import java.io.*;
-import java.net.*;
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.net.URL;
 
 /**
  * @author Brian Groenke
@@ -21,32 +24,38 @@ import java.net.*;
  */
 public class ScriptSource {
 
-	private String src;
-	
-	public ScriptSource(URL url) throws IOException {
-		setSourceFrom(url);
-	}
-	
-	public ScriptSource(String src) {
-		setSourceFrom(src);
-	}
-	
-	public String getSource() {
-		return src;
-	}
-	
-	public void setSourceFrom(String src) {
-		this.src = src;
-	}
-	
-	public void setSourceFrom(URL url) throws IOException {
-		InputStream in = url.openStream();
-		BufferedReader br = new BufferedReader(new InputStreamReader(in));
-		StringBuilder src = new StringBuilder();
-		String next = null;
-		while((next=br.readLine()) != null)
-			src.append(next + "\n");
-		br.close();
-		this.src = src.toString();
-	}
+    private String src;
+
+    public ScriptSource(final URL url) throws IOException {
+
+        setSourceFrom(url);
+    }
+
+    public ScriptSource(final String src) {
+
+        setSourceFrom(src);
+    }
+
+    public String getSource() {
+
+        return src;
+    }
+
+    public void setSourceFrom(final String src) {
+
+        this.src = src;
+    }
+
+    public void setSourceFrom(final URL url) throws IOException {
+
+        InputStream in = url.openStream();
+        BufferedReader br = new BufferedReader(new InputStreamReader(in));
+        StringBuilder src = new StringBuilder();
+        String next = null;
+        while ( (next = br.readLine()) != null) {
+            src.append(next + "\n");
+        }
+        br.close();
+        this.src = src.toString();
+    }
 }

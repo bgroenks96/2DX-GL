@@ -15,21 +15,25 @@ package com.snap2d.gl.opengl;
 import javax.media.opengl.GL;
 
 /**
- * Mappings to selected OpenGL features that may be enabled/disabled by the caller.
+ * Mappings to selected OpenGL features that may be enabled/disabled by the
+ * caller.
+ * 
  * @author Brian Groenke
  *
  */
 public enum GLFeature {
 
-	BLENDING(GL.GL_BLEND);
+    BLENDING(GL.GL_BLEND);
 
-	private int mapping;
+    private int mapping;
 
-	GLFeature(int glMapping) {
-		this.mapping = glMapping;
-	}
+    GLFeature(final int glMapping) {
 
-	public int getGLCommand() {
-		return mapping;
-	}
+        this.mapping = glMapping;
+    }
+
+    public int getGLCommand() {
+
+        return mapping;
+    }
 }

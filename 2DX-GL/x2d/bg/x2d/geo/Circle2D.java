@@ -12,38 +12,43 @@
 
 package bg.x2d.geo;
 
-import java.awt.*;
+import java.awt.Graphics2D;
+import java.awt.Paint;
 
 public class Circle2D extends Shapes2D {
 
-	public Circle2D(int x, int y, int size, Paint p, boolean fill) {
-		super(x, y, size, p, fill);
-	}
+    public Circle2D(final int x, final int y, final int size, final Paint p, final boolean fill) {
 
-	/**
-	 * Currently does nothing.
-	 */
-	@Override
-	public void rotate(double degrees, Rotation type) {
-		// Do nothing
-	}
+        super(x, y, size, p, fill);
+    }
 
-	@Override
-	public void setProperties(int x, int y, int size, Paint p, boolean fill) {
-		locx = x;
-		locy = y;
-		polySize = size;
-		paint = p;
-		filled = fill;
-	}
+    /**
+     * Currently does nothing.
+     */
+    @Override
+    public void rotate(final double degrees, final Rotation type) {
 
-	@Override
-	public void draw(Graphics2D g) {
-		g.setPaint(paint);
-		if (filled) {
-			g.fillOval(locx, locy, polySize, polySize);
-		} else {
-			g.drawOval(locx, locy, polySize, polySize);
-		}
-	}
+        // Do nothing
+    }
+
+    @Override
+    public void setProperties(final int x, final int y, final int size, final Paint p, final boolean fill) {
+
+        locx = x;
+        locy = y;
+        polySize = size;
+        paint = p;
+        filled = fill;
+    }
+
+    @Override
+    public void draw(final Graphics2D g) {
+
+        g.setPaint(paint);
+        if (filled) {
+            g.fillOval(locx, locy, polySize, polySize);
+        } else {
+            g.drawOval(locx, locy, polySize, polySize);
+        }
+    }
 }

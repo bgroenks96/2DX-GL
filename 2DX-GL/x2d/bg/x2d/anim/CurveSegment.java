@@ -12,7 +12,7 @@
 
 package bg.x2d.anim;
 
-import java.awt.geom.*;
+import java.awt.geom.AffineTransform;
 
 /**
  * 
@@ -21,95 +21,107 @@ import java.awt.geom.*;
  */
 public class CurveSegment implements Segment {
 
-	int xs, ys, cx1, cy1, cx2, cy2, xe, ye, lx, ly;
+    int xs, ys, cx1, cy1, cx2, cy2, xe, ye, lx, ly;
 
-	private long duration, start = -1, last;
-	private double t = 0.01, inc;
+    private final long duration;
 
-	public CurveSegment(int x0, int y0, int x1, int y1, int x2, int y2, int x3,
-			int y3, long duration) {
-		this.xs = x0;
-		this.ys = y0;
-		this.lx = xs;
-		this.ly = ys;
-		this.cx1 = x1;
-		this.cy1 = y1;
-		this.cx2 = x2;
-		this.cy2 = y2;
-		this.xe = x3;
-		this.ye = y3;
-		this.duration = duration;
+    private long start = -1;
 
-		inc = 1.0 / duration;
-	}
+    private long last;
+    private double t = 0.01;
 
-	@Override
-	public long getDuration() {
-		return duration;
-	}
+    private final double inc;
 
-	/**
-	 * Bezier curves are neither linear nor a function. Thus, update intervals are undefined.
-	 * 
-	 * @return {@link Segment.INTERVAL_UNDEF}
-	 */
-	@Override
-	public double getUpdateInterval() {
-		return INTERVAL_UNDEF; // update interval is undefined for a bezier
-								// curve (it's non-linear and not a function)
-	}
+    public CurveSegment(final int x0, final int y0, final int x1, final int y1, final int x2, final int y2,
+            final int x3, final int y3, final long duration) {
 
-	@Override
-	public void transform(AffineTransform affine) {
-		if (start >= 0 && !isValid()) {
-			throw (new IllegalArgumentException("reset() was not called."));
-		} else if (start < 0) {
-			start = System.currentTimeMillis();
-			last = start;
-		}
-		long curr = System.currentTimeMillis();
-		long diff = 0;
-		if (isValid() && (diff = curr - last) > 0) {
-			double tinc = diff * inc;
-			t += tinc;
-			int nx = (int) Math.round(Math.pow(1 - t, 3) * xs + 3
-					* Math.pow(1 - t, 2) * t * cx1 + 3 * (1 - t)
-					* Math.pow(t, 2) * cx2 + Math.pow(t, 3) * xe);
-			int ny = (int) Math.round(Math.pow(1 - t, 3) * ys + 3
-					* Math.pow(1 - t, 2) * t * cy1 + 3 * (1 - t)
-					* Math.pow(t, 2) * cy2 + Math.pow(t, 3) * ye);
-			int dx = nx - lx;
-			int dy = ny - ly;
-			affine.translate(dx, dy);
-			lx = nx;
-			ly = ny;
-			last = curr;
-		}
-	}
+        this.xs = x0;
+        this.ys = y0;
+        this.lx = xs;
+        this.ly = ys;
+        this.cx1 = x1;
+        this.cy1 = y1;
+        this.cx2 = x2;
+        this.cy2 = y2;
+        this.xe = x3;
+        this.ye = y3;
+        this.duration = duration;
 
-	@Override
-	public boolean isValid() {
-		if (System.currentTimeMillis() - start > duration) {
-			return false;
-		} else {
-			return true;
-		}
-	}
+        inc = 1.0 / duration;
+    }
 
-	@Override
-	public boolean isStarted() {
-		if (start < 0) {
-			return false;
-		} else {
-			return true;
-		}
-	}
+    @Override
+    public long getDuration() {
 
-	@Override
-	public void reset() {
-		start = -1;
-		t = 0.01;
-		lx = xs;
-		ly = ys;
-	}
+        return duration;
+    }
+
+    /**
+     * Bezier curves are neither linear nor a function. Thus, update intervals
+     * are undefined.
+     * 
+     * @return {@link Segment.INTERVAL_UNDEF}
+     */
+    @Override
+    public double getUpdateInterval() {
+
+        return INTERVAL_UNDEF; // update interval is undefined for a bezier
+        // curve (it's non-linear and not a function)
+    }
+
+    @Override
+    public void transform(final AffineTransform affine) {
+
+        if (start >= 0 && !isValid()) {
+            throw (new IllegalArgumentException("reset() was not called."));
+        } else if (start < 0) {
+            start = System.currentTimeMillis();
+            last = start;
+        }
+        long curr = System.currentTimeMillis();
+        long diff = 0;
+        if (isValid() && (diff = curr - last) > 0) {
+            double tinc = diff * inc;
+            t += tinc;
+            int nx = (int) Math.round(Math.pow(1 - t, 3) * xs + 3 * Math.pow(1 - t, 2) * t * cx1 + 3 * (1 - t)
+                    * Math.pow(t, 2) * cx2 + Math.pow(t, 3) * xe);
+            int ny = (int) Math.round(Math.pow(1 - t, 3) * ys + 3 * Math.pow(1 - t, 2) * t * cy1 + 3 * (1 - t)
+                    * Math.pow(t, 2) * cy2 + Math.pow(t, 3) * ye);
+            int dx = nx - lx;
+            int dy = ny - ly;
+            affine.translate(dx, dy);
+            lx = nx;
+            ly = ny;
+            last = curr;
+        }
+    }
+
+    @Override
+    public boolean isValid() {
+
+        if (System.currentTimeMillis() - start > duration) {
+            return false;
+        } else {
+            return true;
+        }
+    }
+
+    @Override
+    public boolean isStarted() {
+
+        if (start < 0) {
+            return false;
+        } else {
+            return true;
+        }
+    }
+
+    @Override
+    public void reset() {
+
+        start = -1;
+        t = 0.01;
+        lx = xs;
+        ly = ys;
+    }
 }

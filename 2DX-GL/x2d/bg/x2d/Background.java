@@ -12,71 +12,83 @@
 
 package bg.x2d;
 
-import java.awt.*;
+import java.awt.Graphics;
+import java.awt.Graphics2D;
+import java.awt.Paint;
 
-import bg.x2d.anim.*;
+import bg.x2d.anim.Drawable;
 
 /**
- * Background defines an object of type Drawable or Paint to be used as a static background for each frame. 
- * If no Drawable object is specified, the default Paint object will be used instead.
+ * Background defines an object of type Drawable or Paint to be used as a static
+ * background for each frame. If no Drawable object is specified, the default
+ * Paint object will be used instead.
  * 
  * @since 2DX 1.0 (1st Edition)
  */
 
 public class Background {
 
-	private Paint color;
-	private int width, height;
-	private Drawable redraw;
+    private Paint color;
+    private int width, height;
+    private Drawable redraw;
 
-	public Background(int w, int h, Paint p) {
-		if (p != null) {
-			color = p;
-			width = w;
-			height = h;
-		} else {
-			throw (new NullPointerException("Paint object cannot be null"));
-		}
-	}
+    public Background(final int w, final int h, final Paint p) {
 
-	public Background(Drawable task) {
-		redraw = task;
-	}
+        if (p != null) {
+            color = p;
+            width = w;
+            height = h;
+        } else {
+            throw (new NullPointerException("Paint object cannot be null"));
+        }
+    }
 
-	public Paint getPaint() {
-		return color;
-	}
+    public Background(final Drawable task) {
 
-	public void setPaint(Paint p) {
-		color = p;
-	}
+        redraw = task;
+    }
 
-	public void setSize(int w, int h) {
-		width = w;
-		height = h;
-	}
+    public Paint getPaint() {
 
-	public int[] getSize() {
-		int[] ints = { width, height };
-		return ints;
-	}
+        return color;
+    }
 
-	public void redraw(Graphics2D g2) {
-		if (redraw != null) {
-			redraw.draw(g2);
-		} else if(color != null) {
-			g2.setPaint(color);
-			g2.fillRect(0, 0, width, height);
-		}
-	}
+    public void setPaint(final Paint p) {
 
-	public void redraw(Graphics g) {
-		redraw((Graphics2D) g);
-	}
+        color = p;
+    }
 
-	public void dispose() {
-		color = null;
-		width = 0;
-		height = 0;
-	}
+    public void setSize(final int w, final int h) {
+
+        width = w;
+        height = h;
+    }
+
+    public int[] getSize() {
+
+        int[] ints = { width, height };
+        return ints;
+    }
+
+    public void redraw(final Graphics2D g2) {
+
+        if (redraw != null) {
+            redraw.draw(g2);
+        } else if (color != null) {
+            g2.setPaint(color);
+            g2.fillRect(0, 0, width, height);
+        }
+    }
+
+    public void redraw(final Graphics g) {
+
+        redraw((Graphics2D) g);
+    }
+
+    public void dispose() {
+
+        color = null;
+        width = 0;
+        height = 0;
+    }
 }

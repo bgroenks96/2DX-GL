@@ -17,28 +17,31 @@ package com.snap2d.script;
  *
  */
 public class ScriptInvocationException extends Exception {
-	
-	/**
-	 * 
-	 */
-	private static final long serialVersionUID = 2687331964728629451L;
-	
-	String msg;
-	Function func;
-	
-	public ScriptInvocationException(String message, Function f) {
-		super(message);
-		this.func = f;
-		msg = "error executing function '"+f.getName()+"' [fid="+f.getID()+"]";
-	}
-	
-	public Function getTargetFunction() {
-		return func;
-	}
-	
-	@Override
-	public void printStackTrace() {
-		System.err.println(msg);
-		super.printStackTrace();
-	}
+
+    /**
+     * 
+     */
+    private static final long serialVersionUID = 2687331964728629451L;
+
+    String msg;
+    Function func;
+
+    public ScriptInvocationException(final String message, final Function f) {
+
+        super(message);
+        this.func = f;
+        msg = "error executing function '" + f.getName() + "' [fid=" + f.getID() + "]";
+    }
+
+    public Function getTargetFunction() {
+
+        return func;
+    }
+
+    @Override
+    public void printStackTrace() {
+
+        System.err.println(msg);
+        super.printStackTrace();
+    }
 }

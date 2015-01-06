@@ -12,12 +12,13 @@
 
 package com.snap2d.input;
 
-
 /**
  * @author Brian Groenke
  *
  */
 public interface GLKeyListener {
-	public void keyPressed(GLKeyEvent event);
-	public void keyReleased(GLKeyEvent event);
+
+    public void keyPressed(GLKeyEvent event);
+
+    public void keyReleased(GLKeyEvent event);
 }

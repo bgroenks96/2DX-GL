@@ -13,36 +13,40 @@
 package com.snap2d.script;
 
 /**
- * SnapScript language info constants.  All members have a human-readable string
- * identifier and an associated code.  The implementation and use of the code
+ * SnapScript language info constants. All members have a human-readable string
+ * identifier and an associated code. The implementation and use of the code
  * depends on the use of the info member.
+ * 
  * @author Brian Groenke
  *
  */
 public enum ScriptInfo {
-	
-	/**
-	 * The language specification version.
-	 */
-	SCRIPT_VERSION("1.1.2", 0x0003),
-	/**
-	 * The bytecode specification version.
-	 */
-	BYTECODE_SPEC("0.2a", 0x1003);
-	
-	String str;
-	int code;
-	
-	ScriptInfo(String str, int code) {
-		this.str = str;
-		this.code = code;
-	}
-	
-	public String getString() {
-		return str;
-	}
-	
-	public int getCode() {
-		return code;
-	}
+
+    /**
+     * The language specification version.
+     */
+    SCRIPT_VERSION("1.1.2", 0x0003),
+    /**
+     * The bytecode specification version.
+     */
+    BYTECODE_SPEC("0.2a", 0x1003);
+
+    String str;
+    int code;
+
+    ScriptInfo(final String str, final int code) {
+
+        this.str = str;
+        this.code = code;
+    }
+
+    public String getString() {
+
+        return str;
+    }
+
+    public int getCode() {
+
+        return code;
+    }
 }

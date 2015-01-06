@@ -12,12 +12,13 @@
 
 package com.snap2d.physics;
 
-import bg.x2d.geo.*;
-import bg.x2d.physics.*;
+import bg.x2d.geo.Vector2d;
+import bg.x2d.geo.Vector2f;
+import bg.x2d.physics.PhysicsNode;
 
 /**
- * Extends the PhysicsNode interface to provide a framework for more complex physics calculations
- * suitable for game programming. <br/>
+ * Extends the PhysicsNode interface to provide a framework for more complex
+ * physics calculations suitable for game programming. <br/>
  * <br/>
  * <b>This interface is subject to change! The Snap2D Physics API is still under
  * development.</b>
@@ -27,18 +28,20 @@ import bg.x2d.physics.*;
  */
 public interface GamePhysics extends PhysicsNode {
 
-	/**
-	 * Collides this node with the given node.  This method will apply
-	 * the collision to the nodes' velocity vectors as well as return
-	 * the resultant vector for this node as convenience.
-	 * @param node the other GamePhysics node to collide with
-	 * @return the resultant velocity vector of this node after collision
-	 */
-	public Vector2f collideWith2f(GamePhysics node);
+    /**
+     * Collides this node with the given node. This method will apply the
+     * collision to the nodes' velocity vectors as well as return the resultant
+     * vector for this node as convenience.
+     * 
+     * @param node
+     *            the other GamePhysics node to collide with
+     * @return the resultant velocity vector of this node after collision
+     */
+    public Vector2f collideWith2f(GamePhysics node);
 
-	public Vector2d collideWith2d(GamePhysics node);
-	
-	public void attachToPoint(float dx, float dy);
-	
-	public void attachToPoint(double dx, double dy);
+    public Vector2d collideWith2d(GamePhysics node);
+
+    public void attachToPoint(float dx, float dy);
+
+    public void attachToPoint(double dx, double dy);
 }

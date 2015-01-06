@@ -12,300 +12,350 @@
 
 package bg.x2d.geo;
 
-import static java.lang.Math.*;
+import static java.lang.Math.cos;
+import static java.lang.Math.pow;
+import static java.lang.Math.sin;
+import static java.lang.Math.sqrt;
+import static java.lang.Math.toDegrees;
 
-import java.awt.geom.*;
-import java.math.*;
+import java.awt.geom.Point2D;
+import java.math.BigDecimal;
+import java.math.RoundingMode;
 
 /**
- * Implementation of a double precision vector in 2-dimensional coordinate space.
+ * Implementation of a double precision vector in 2-dimensional coordinate
+ * space.
  * 
  * @author Brian Groenke
  * @since 2DX 1.0 (1st Edition)
  */
 public class Vector2d {
 
-	private static int defaultPrecision = 5;
+    private static int defaultPrecision = 5;
 
-	public volatile double x, y;
+    public volatile double x, y;
 
-	private volatile double mag, angle;
+    private volatile double mag, angle;
 
-	public volatile int precision = defaultPrecision;
+    public volatile int precision = defaultPrecision;
 
-	/**
-	 * 
-	 * @param x
-	 * @param y
-	 */
-	public Vector2d(double x, double y) {
-		this.x = x;
-		this.y = y;
+    /**
+     * 
+     * @param x
+     * @param y
+     */
+    public Vector2d(final double x, final double y) {
 
-		init();
-	}
+        this.x = x;
+        this.y = y;
 
-	public Vector2d(Vector2d copy) {
-		x = copy.x;
-		y = copy.y;
-		checkPrecision();
-		mag = copy.mag;
-		angle = copy.angle;
-	}
+        init();
+    }
 
-	public static Vector2d fromPolar(double mag, double angle) {
-		return new Vector2d(0, 0).setFromPolar(mag, angle);
-	}
+    public Vector2d(final Vector2d copy) {
 
-	/**
-	 * Sets the number of decimal places to the right where vector math should be rounded. All
-	 * Vector2f objects will be initialized to this value.
-	 * 
-	 * @param precision
-	 */
-	public static void setDefaultPrecision(int precision) {
-		if (precision >= 0) {
-			defaultPrecision = precision;
-		}
-	}
+        x = copy.x;
+        y = copy.y;
+        checkPrecision();
+        mag = copy.mag;
+        angle = copy.angle;
+    }
 
-	/**
-	 * Returns the current decimal precision value for vector math. Default is 5 (i.e. x.#####).
-	 * 
-	 * @return
-	 */
-	public static int getDecimalPrecision() {
-		return defaultPrecision;
-	}
+    public static Vector2d fromPolar(final double mag, final double angle) {
 
-	private void init() {
-		angle = (float) GeoUtils.terminal(x, y);
-		mag = (float) sqrt(pow(x, 2) + pow(y, 2));
-	}
+        return new Vector2d(0, 0).setFromPolar(mag, angle);
+    }
 
-	private void checkPrecision() {
-		BigDecimal bd = BigDecimal.valueOf(x).setScale(precision,
-				RoundingMode.HALF_UP);
-		x = bd.doubleValue();
-		bd = BigDecimal.valueOf(y).setScale(precision, RoundingMode.HALF_UP);
-		y = bd.doubleValue();
-		init();
-	}
-	
-	public Vector2f toFloatVec() {
-		return new Vector2f((float)x, (float)y);
-	}
+    /**
+     * Sets the number of decimal places to the right where vector math should
+     * be rounded. All Vector2f objects will be initialized to this value.
+     * 
+     * @param precision
+     */
+    public static void setDefaultPrecision(final int precision) {
 
-	public double degs() {
-		checkPrecision();
-		return toDegrees(angle);
-	}
+        if (precision >= 0) {
+            defaultPrecision = precision;
+        }
+    }
 
-	public double rads() {
-		checkPrecision();
-		return angle;
-	}
+    /**
+     * Returns the current decimal precision value for vector math. Default is 5
+     * (i.e. x.#####).
+     * 
+     * @return
+     */
+    public static int getDecimalPrecision() {
 
-	public double getMagnitude() {
-		checkPrecision();
-		return mag;
-	}
-	
-	public Vector2d setXY(double x, double y) {
-		this.x = x; this.y = y;
-		return this;
-	}
+        return defaultPrecision;
+    }
 
-	public Vector2d setFromPolar(double mag, double angle) {
-		if (mag < 0) {
-			mag = -mag;
-		}
-		x = mag * cos(angle);
-		y = mag * sin(angle);
-		this.mag = mag;
-		this.angle = angle;
-		checkPrecision();
-		return this;
-	}
+    private void init() {
 
-	/**
-	 * 
-	 * @param arg
-	 * @return
-	 */
-	public Vector2d add(Vector2d arg) {
-		x += arg.x;
-		y += arg.y;
-		checkPrecision();
-		return this;
-	}
+        angle = (float) GeoUtils.terminal(x, y);
+        mag = (float) sqrt(pow(x, 2) + pow(y, 2));
+    }
 
-	/**
-	 * 
-	 * @param arg
-	 * @return
-	 */
-	public Vector2d sub(Vector2d arg) {
-		x -= arg.x;
-		y -= arg.y;
-		checkPrecision();
-		return this;
-	}
+    private void checkPrecision() {
 
-	public Vector2d mult(double factor) {
-		x *= factor;
-		y *= factor;
-		init();
-		return this;
-	}
+        BigDecimal bd = BigDecimal.valueOf(x).setScale(precision, RoundingMode.HALF_UP);
+        x = bd.doubleValue();
+        bd = BigDecimal.valueOf(y).setScale(precision, RoundingMode.HALF_UP);
+        y = bd.doubleValue();
+        init();
+    }
 
-	public Vector2d div(double factor) {
-		x /= factor;
-		y /= factor;
-		checkPrecision();
-		return this;
-	}
+    public Vector2f toFloatVec() {
 
-	public Vector2d addNew(Vector2d arg) {
-		return new Vector2d(x += arg.x, y += arg.y);
-	}
+        return new Vector2f((float) x, (float) y);
+    }
 
-	public Vector2d subNew(Vector2d arg) {
-		return new Vector2d(x -= arg.x, y -= arg.y);
-	}
+    public double degs() {
 
-	public Vector2d multNew(double factor) {
-		return new Vector2d(this).mult(factor);
-	}
+        checkPrecision();
+        return toDegrees(angle);
+    }
 
-	public Vector2d divNew(double factor) {
-		return new Vector2d(this).div(factor);
-	}
+    public double rads() {
 
-	/**
-	 * 
-	 * @param arg
-	 * @return
-	 */
-	public double dot(Vector2d arg) {
-		checkPrecision();
-		return x * arg.x + y * arg.y;
-	}
+        checkPrecision();
+        return angle;
+    }
 
-	public double det(Vector2d arg) {
-		return (x * arg.y - y * arg.x);
-	}
+    public double getMagnitude() {
 
-	public double cross(Vector2d arg) {
-		return det(arg);
-	}
+        checkPrecision();
+        return mag;
+    }
 
-	public final void normalize() {
-		double norm;
-		norm = (1.0 / Math.sqrt(this.x * this.x + this.y * this.y));
-		this.x *= norm;
-		this.y *= norm;
-		checkPrecision();
-	}
+    public Vector2d setXY(final double x, final double y) {
 
-	public double angleBetween(Vector2d vec) {
-		return Math.acos(dot(vec) / (mag * vec.mag));
-	}
+        this.x = x;
+        this.y = y;
+        return this;
+    }
 
-	public Vector2d interpolate(Vector2d vec, double alpha) {
-		return this.mult(1 - alpha).add(vec.multNew(alpha));
-	}
+    public Vector2d setFromPolar(double mag, final double angle) {
 
-	/**
-	 * Rotates this vector by given radians.
-	 * 
-	 * @param angle
-	 *            rotation value IN RADIANS
-	 * @return this vector for chain calls.
-	 */
-	public Vector2d rotate(double rads) {
-		double[] coord = GeoUtils.rotatePoint(x, y, 0, 0, rads);
-		this.x = coord[0];
-		this.y = coord[1];
-		checkPrecision();
-		return this;
-	}
+        if (mag < 0) {
+            mag = -mag;
+        }
+        x = mag * cos(angle);
+        y = mag * sin(angle);
+        this.mag = mag;
+        this.angle = angle;
+        checkPrecision();
+        return this;
+    }
 
-	/**
-	 * 
-	 * @param theta
-	 * @return
-	 */
-	public Vector2d rotateNew(double rads) {
-		return new Vector2d(x, y).rotate(rads);
-	}
+    /**
+     * 
+     * @param arg
+     * @return
+     */
+    public Vector2d add(final Vector2d arg) {
 
-	public Vector2d negate() {
-		x = -x;
-		y = -y;
-		checkPrecision();
-		return this;
-	}
+        x += arg.x;
+        y += arg.y;
+        checkPrecision();
+        return this;
+    }
 
-	public Vector2d negateNew() {
-		double x = -this.x;
-		double y = -this.y;
-		return new Vector2d(x, y);
-	}
+    /**
+     * 
+     * @param arg
+     * @return
+     */
+    public Vector2d sub(final Vector2d arg) {
 
-	public Vector2d negateX() {
-		x = -x;
-		checkPrecision();
-		return this;
-	}
+        x -= arg.x;
+        y -= arg.y;
+        checkPrecision();
+        return this;
+    }
 
-	public Vector2d negateY() {
-		y = -y;
-		checkPrecision();
-		return this;
-	}
-	
-	public Vector2d clamp(double min, double max) {
-		double mag = getMagnitude();
-		if(mag < min)
-			setFromPolar(min, angle);
-		if(mag > max)
-			setFromPolar(max, angle);
-		return this;
-	}
-	
-	public Vector2d clampNew(double min, double max) {
-		Vector2d copy = new Vector2d(this);
-		double mag = getMagnitude();
-		if(mag < min)
-			copy.setFromPolar(min, angle);
-		if(mag > max)
-			copy.setFromPolar(max, angle);
-		return copy;
-	}
+    public Vector2d mult(final double factor) {
 
-	public Point2D.Double applyTo(Point2D.Double p, double multiplier) {
-		p.setLocation(p.x + (x * multiplier), p.y + (y * multiplier));
-		return p;
-	}
-	
-	public Point2D.Double applyToNew(Point2D.Double p, double multiplier) {
-		return new Point2D.Double(p.x + (x * multiplier), p.y + (y * multiplier));
-	}
-	
-	public PointUD applyTo(PointUD p, double multiplier) {
-		p.setLocation(p.ux + (x * multiplier), p.uy + (y * multiplier));
-		return p;
-	}
-	
-	public PointUD applyToNew(PointUD p, double multiplier) {
-		return new PointUD(p.ux + (x * multiplier), p.uy + (y * multiplier));
-	}
+        x *= factor;
+        y *= factor;
+        init();
+        return this;
+    }
 
-	@Override
-	public String toString() {
-		checkPrecision();
-		return "mag=" + mag + " theta=" + Math.toDegrees(angle) + " [" + x
-				+ ", " + y + "]";
-	}
+    public Vector2d div(final double factor) {
+
+        x /= factor;
+        y /= factor;
+        checkPrecision();
+        return this;
+    }
+
+    public Vector2d addNew(final Vector2d arg) {
+
+        return new Vector2d(x += arg.x, y += arg.y);
+    }
+
+    public Vector2d subNew(final Vector2d arg) {
+
+        return new Vector2d(x -= arg.x, y -= arg.y);
+    }
+
+    public Vector2d multNew(final double factor) {
+
+        return new Vector2d(this).mult(factor);
+    }
+
+    public Vector2d divNew(final double factor) {
+
+        return new Vector2d(this).div(factor);
+    }
+
+    /**
+     * 
+     * @param arg
+     * @return
+     */
+    public double dot(final Vector2d arg) {
+
+        checkPrecision();
+        return x * arg.x + y * arg.y;
+    }
+
+    public double det(final Vector2d arg) {
+
+        return (x * arg.y - y * arg.x);
+    }
+
+    public double cross(final Vector2d arg) {
+
+        return det(arg);
+    }
+
+    public final void normalize() {
+
+        double norm;
+        norm = (1.0 / Math.sqrt(this.x * this.x + this.y * this.y));
+        this.x *= norm;
+        this.y *= norm;
+        checkPrecision();
+    }
+
+    public double angleBetween(final Vector2d vec) {
+
+        return Math.acos(dot(vec) / (mag * vec.mag));
+    }
+
+    public Vector2d interpolate(final Vector2d vec, final double alpha) {
+
+        return this.mult(1 - alpha).add(vec.multNew(alpha));
+    }
+
+    /**
+     * Rotates this vector by given radians.
+     * 
+     * @param angle
+     *            rotation value IN RADIANS
+     * @return this vector for chain calls.
+     */
+    public Vector2d rotate(final double rads) {
+
+        double[] coord = GeoUtils.rotatePoint(x, y, 0, 0, rads);
+        this.x = coord[0];
+        this.y = coord[1];
+        checkPrecision();
+        return this;
+    }
+
+    /**
+     * 
+     * @param theta
+     * @return
+     */
+    public Vector2d rotateNew(final double rads) {
+
+        return new Vector2d(x, y).rotate(rads);
+    }
+
+    public Vector2d negate() {
+
+        x = -x;
+        y = -y;
+        checkPrecision();
+        return this;
+    }
+
+    public Vector2d negateNew() {
+
+        double x = -this.x;
+        double y = -this.y;
+        return new Vector2d(x, y);
+    }
+
+    public Vector2d negateX() {
+
+        x = -x;
+        checkPrecision();
+        return this;
+    }
+
+    public Vector2d negateY() {
+
+        y = -y;
+        checkPrecision();
+        return this;
+    }
+
+    public Vector2d clamp(final double min, final double max) {
+
+        double mag = getMagnitude();
+        if (mag < min) {
+            setFromPolar(min, angle);
+        }
+        if (mag > max) {
+            setFromPolar(max, angle);
+        }
+        return this;
+    }
+
+    public Vector2d clampNew(final double min, final double max) {
+
+        Vector2d copy = new Vector2d(this);
+        double mag = getMagnitude();
+        if (mag < min) {
+            copy.setFromPolar(min, angle);
+        }
+        if (mag > max) {
+            copy.setFromPolar(max, angle);
+        }
+        return copy;
+    }
+
+    public Point2D.Double applyTo(final Point2D.Double p, final double multiplier) {
+
+        p.setLocation(p.x + (x * multiplier), p.y + (y * multiplier));
+        return p;
+    }
+
+    public Point2D.Double applyToNew(final Point2D.Double p, final double multiplier) {
+
+        return new Point2D.Double(p.x + (x * multiplier), p.y + (y * multiplier));
+    }
+
+    public PointUD applyTo(final PointUD p, final double multiplier) {
+
+        p.setLocation(p.ux + (x * multiplier), p.uy + (y * multiplier));
+        return p;
+    }
+
+    public PointUD applyToNew(final PointUD p, final double multiplier) {
+
+        return new PointUD(p.ux + (x * multiplier), p.uy + (y * multiplier));
+    }
+
+    @Override
+    public String toString() {
+
+        checkPrecision();
+        return "mag=" + mag + " theta=" + Math.toDegrees(angle) + " [" + x + ", " + y + "]";
+    }
 }

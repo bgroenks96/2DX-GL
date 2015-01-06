@@ -12,75 +12,74 @@
 
 package com.snap2d.input;
 
-
 /**
  * @author Brian Groenke
  *
  */
 public class GLMouseAdapter implements GLMouseListener {
 
-	/**
-	 *
-	 */
-	@Override
-	public void mouseClicked(GLMouseEvent e) {
-		
-	}
+    /**
+     *
+     */
+    @Override
+    public void mouseClicked(final GLMouseEvent e) {
 
-	/**
-	 *
-	 */
-	@Override
-	public void mouseDragged(GLMouseEvent e) {
-		
-	}
+    }
 
-	/**
-	 *
-	 */
-	@Override
-	public void mouseEntered(GLMouseEvent e) {
-		
-	}
+    /**
+     *
+     */
+    @Override
+    public void mouseDragged(final GLMouseEvent e) {
 
-	/**
-	 *
-	 */
-	@Override
-	public void mouseExited(GLMouseEvent e) {
-		
-	}
+    }
 
-	/**
-	 *
-	 */
-	@Override
-	public void mouseMoved(GLMouseEvent e) {
-		
-	}
+    /**
+     *
+     */
+    @Override
+    public void mouseEntered(final GLMouseEvent e) {
 
-	/**
-	 *
-	 */
-	@Override
-	public void mousePressed(GLMouseEvent e) {
-		
-	}
+    }
 
-	/**
-	 *
-	 */
-	@Override
-	public void mouseReleased(GLMouseEvent e) {
-		
-	}
+    /**
+     *
+     */
+    @Override
+    public void mouseExited(final GLMouseEvent e) {
 
-	/**
-	 *
-	 */
-	@Override
-	public void mouseWheelMoved(GLMouseEvent e) {
-		
-	}
+    }
+
+    /**
+     *
+     */
+    @Override
+    public void mouseMoved(final GLMouseEvent e) {
+
+    }
+
+    /**
+     *
+     */
+    @Override
+    public void mousePressed(final GLMouseEvent e) {
+
+    }
+
+    /**
+     *
+     */
+    @Override
+    public void mouseReleased(final GLMouseEvent e) {
+
+    }
+
+    /**
+     *
+     */
+    @Override
+    public void mouseWheelMoved(final GLMouseEvent e) {
+
+    }
 
 }

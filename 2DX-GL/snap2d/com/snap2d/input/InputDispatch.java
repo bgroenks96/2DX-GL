@@ -12,120 +12,125 @@
 
 package com.snap2d.input;
 
-import java.awt.*;
-import java.awt.event.*;
-import java.util.*;
+import java.awt.AWTEvent;
+import java.awt.KeyEventDispatcher;
+import java.awt.KeyboardFocusManager;
+import java.awt.Toolkit;
+import java.awt.event.AWTEventListener;
+import java.awt.event.KeyEvent;
+import java.awt.event.MouseEvent;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Iterator;
 import java.util.List;
 
-import com.snap2d.*;
+import com.snap2d.ThreadManager;
 
 /**
- * Receives input events directly from Java's Abstract Windowing Toolkit and dispatches them to
- * registered listeners.  This class will only work with AWT/Swing windows and components.
- * Applications using the OpenGL rendering system must use the NEWT input interfaces also
- * provided in this package.
+ * Receives input events directly from Java's Abstract Windowing Toolkit and
+ * dispatches them to registered listeners. This class will only work with
+ * AWT/Swing windows and components. Applications using the OpenGL rendering
+ * system must use the NEWT input interfaces also provided in this package.
  * 
  * @author Brian Groenke
  * 
  */
 public class InputDispatch {
 
-	private boolean running, consume;
-	private KeyboardFocusManager manager;
-	private List<KeyEventClient> keyClients;
-	private List<MouseEventClient> mouseClients;
-	
-	private ThreadManager exec = new ThreadManager();
+    private final boolean running;
+    private boolean consume;
+    private KeyboardFocusManager manager;
+    private final List <KeyEventClient> keyClients;
+    private final List <MouseEventClient> mouseClients;
 
-	private static final long MOUSE_INPUT_MASK = AWTEvent.MOUSE_EVENT_MASK
-			+ AWTEvent.MOUSE_MOTION_EVENT_MASK
-			+ AWTEvent.MOUSE_WHEEL_EVENT_MASK;
+    private final ThreadManager exec = new ThreadManager();
 
-	public InputDispatch(boolean consume) {
-		running = true;
-		keyClients = Collections
-				.synchronizedList(new ArrayList<KeyEventClient>());
-		mouseClients = Collections
-				.synchronizedList(new ArrayList<MouseEventClient>());
-		manager = KeyboardFocusManager.getCurrentKeyboardFocusManager();
-		manager.addKeyEventDispatcher(new KeyDispatcher());
-		Toolkit.getDefaultToolkit().addAWTEventListener(new MouseDispatcher(),
-				MOUSE_INPUT_MASK);
-		exec.newDaemon(new CheckManager());
-	}
+    private static final long MOUSE_INPUT_MASK = AWTEvent.MOUSE_EVENT_MASK + AWTEvent.MOUSE_MOTION_EVENT_MASK
+            + AWTEvent.MOUSE_WHEEL_EVENT_MASK;
 
-	public synchronized void registerKeyClient(KeyEventClient client) {
+    public InputDispatch(final boolean consume) {
 
-		keyClients.add(client);
-	}
+        running = true;
+        keyClients = Collections.synchronizedList(new ArrayList <KeyEventClient>());
+        mouseClients = Collections.synchronizedList(new ArrayList <MouseEventClient>());
+        manager = KeyboardFocusManager.getCurrentKeyboardFocusManager();
+        manager.addKeyEventDispatcher(new KeyDispatcher());
+        Toolkit.getDefaultToolkit().addAWTEventListener(new MouseDispatcher(), MOUSE_INPUT_MASK);
+        exec.newDaemon(new CheckManager());
+    }
 
-	public synchronized void registerMouseClient(MouseEventClient client) {
+    public synchronized void registerKeyClient(final KeyEventClient client) {
 
-		mouseClients.add(client);
-	}
+        keyClients.add(client);
+    }
 
-	public synchronized void removeKeyClient(KeyEventClient client) {
+    public synchronized void registerMouseClient(final MouseEventClient client) {
 
-		keyClients.remove(client);
-	}
+        mouseClients.add(client);
+    }
 
-	public synchronized void removeMouseClient(MouseEventClient client) {
+    public synchronized void removeKeyClient(final KeyEventClient client) {
 
-		mouseClients.remove(client);
-	}
+        keyClients.remove(client);
+    }
 
-	private class KeyDispatcher implements KeyEventDispatcher {
+    public synchronized void removeMouseClient(final MouseEventClient client) {
 
-		@Override
-		public boolean dispatchKeyEvent(KeyEvent e) {
+        mouseClients.remove(client);
+    }
 
-			synchronized (keyClients) {
-				Iterator<KeyEventClient> i = keyClients.iterator();
-				while (i.hasNext()) {
-					KeyEventClient client = i.next();
-					client.processKeyEvent(e);
-				}
-			}
-			return consume;
-		}
+    private class KeyDispatcher implements KeyEventDispatcher {
 
-	}
+        @Override
+        public boolean dispatchKeyEvent(final KeyEvent e) {
 
-	private class MouseDispatcher implements AWTEventListener {
+            synchronized (keyClients) {
+                Iterator <KeyEventClient> i = keyClients.iterator();
+                while (i.hasNext()) {
+                    KeyEventClient client = i.next();
+                    client.processKeyEvent(e);
+                }
+            }
+            return consume;
+        }
 
-		@Override
-		public void eventDispatched(AWTEvent event) {
+    }
 
-			MouseEvent me = (MouseEvent) event;
+    private class MouseDispatcher implements AWTEventListener {
 
-			synchronized (mouseClients) {
-				Iterator<MouseEventClient> i = mouseClients.iterator();
-				while (i.hasNext()) {
-					MouseEventClient client = i.next();
-					client.processMouseEvent(me);
-				}
-			}
-		}
-	}
+        @Override
+        public void eventDispatched(final AWTEvent event) {
 
-	private class CheckManager implements Runnable {
+            MouseEvent me = (MouseEvent) event;
 
-		@Override
-		public void run() {
-			Thread.currentThread().setName("snap2d-verify_dispatch");
-			while (running && manager != null) {
-				KeyboardFocusManager current = KeyboardFocusManager
-						.getCurrentKeyboardFocusManager();
-				if (!manager.equals(current)) {
-					manager = current;
-				}
-				try {
-					Thread.sleep(200);
-					Thread.yield();
-				} catch (InterruptedException e) {
-					e.printStackTrace();
-				}
-			}
-		}
-	}
+            synchronized (mouseClients) {
+                Iterator <MouseEventClient> i = mouseClients.iterator();
+                while (i.hasNext()) {
+                    MouseEventClient client = i.next();
+                    client.processMouseEvent(me);
+                }
+            }
+        }
+    }
+
+    private class CheckManager implements Runnable {
+
+        @Override
+        public void run() {
+
+            Thread.currentThread().setName("snap2d-verify_dispatch");
+            while (running && manager != null) {
+                KeyboardFocusManager current = KeyboardFocusManager.getCurrentKeyboardFocusManager();
+                if (!manager.equals(current)) {
+                    manager = current;
+                }
+                try {
+                    Thread.sleep(200);
+                    Thread.yield();
+                } catch (InterruptedException e) {
+                    e.printStackTrace();
+                }
+            }
+        }
+    }
 }

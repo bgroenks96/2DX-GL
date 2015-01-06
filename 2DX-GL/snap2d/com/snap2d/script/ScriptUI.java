@@ -12,9 +12,21 @@
 
 package com.snap2d.script;
 
-import java.awt.*;
-import java.awt.event.*;
-import java.io.*;
+import java.awt.BorderLayout;
+import java.awt.Dimension;
+import java.awt.Font;
+import java.awt.Frame;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.awt.event.KeyAdapter;
+import java.awt.event.KeyEvent;
+import java.awt.event.WindowAdapter;
+import java.awt.event.WindowEvent;
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.IOException;
+import java.io.OutputStream;
+import java.io.PrintStream;
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
 
@@ -24,387 +36,433 @@ import javax.swing.border.EmptyBorder;
 import bg.x2d.utils.Utils;
 
 /**
- * A graphical interface utility that allows for live script compilation/execution.
+ * A graphical interface utility that allows for live script
+ * compilation/execution.
+ * 
  * @author Brian Groenke
  *
  */
 public class ScriptUI extends JFrame {
 
-	/**
-	 * 
-	 */
-	private static final long serialVersionUID = -7280184562521580572L;
+    /**
+     * 
+     */
+    private static final long serialVersionUID = -7280184562521580572L;
 
-	private static final int WIDTH = 1100, HEIGHT = 750;
-	private static final String TEMP_FILE = "snap2d_scriptui_tmpstr.txt";
-	
-	private static final PrintStream STD_OUT = System.out;
-	
-	private final OutStream printOut = new OutStream(System.out);
+    private static final int WIDTH = 1100, HEIGHT = 750;
+    private static final String TEMP_FILE = "snap2d_scriptui_tmpstr.txt";
 
-	JFrame parent = this;
-	JSplitPane rootPane;
-	JTextArea input, output;
-	JMenu file, script;
-	JMenuItem exit, save, open, compile, run, clear;
+    private static final PrintStream STD_OUT = System.out;
 
-	ScriptProgram prog;
-	ScriptSource src;
-	Function[] funcs = new Function[0];
+    private final OutStream printOut = new OutStream(System.out);
 
-	Function lastRun;
-	Object[] lastRunArgs;
+    JFrame parent = this;
+    JSplitPane rootPane;
+    JTextArea input, output;
+    JMenu file, script;
+    JMenuItem exit, save, open, compile, run, clear;
 
-	public ScriptUI(int exitOp) {
-		super("SnapScript Editor Interface");
-		input = new JTextArea();
-		input.setMinimumSize(new Dimension(1, 200));
-		input.addKeyListener(new KeyEventListener());
-		input.setFont(new Font("Verdana", Font.PLAIN, 13));
-		output = new JTextArea();
-		output.setMinimumSize(new Dimension(1, 200));
-		output.setEditable(false);
-		output.setLineWrap(true);
-		output.setWrapStyleWord(true);
-		output.setFont(new Font("Courier", Font.PLAIN, 13));
-		rootPane = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT, new JScrollPane(input), new JScrollPane(output));
-		rootPane.setBorder(new EmptyBorder(0,5,0,5));
-		rootPane.setOneTouchExpandable(true);
-		rootPane.setDividerLocation(WIDTH / 2);
-		add(BorderLayout.CENTER, rootPane);
-		JPanel north = new JPanel(new BorderLayout());
-		north.setBorder(new EmptyBorder(0,20,0,20));
-		north.add(BorderLayout.WEST, new JLabel("<html><font size=3> Script: </font></html>"));
-		north.add(BorderLayout.EAST, new JLabel("<html><font size=3> Output: </font></html>"));
-		add(BorderLayout.NORTH, north);
-		setJMenuBar(initMenuBar());
-		setSize(WIDTH, HEIGHT);
-		setLocationRelativeTo(null);
-		setDefaultCloseOperation(exitOp);
-		addWindowListener(new WindowMonitor());
-		readTempFile();
-		validate();
-		src = new ScriptSource(input.getText() + "\n");
-		prog = new ScriptProgram(true, src);
-	}
-	
-	public ScriptProgram getScriptProgram() {
-		return prog;
-	}
+    ScriptProgram prog;
+    ScriptSource src;
+    Function[] funcs = new Function[0];
 
-	private JMenuBar initMenuBar() {
-		JMenuBar jmb = new JMenuBar();
-		file = new JMenu("File");
-		script = new JMenu("Script");
-		jmb.add(file);
-		jmb.add(script);
-		exit = new JMenuItem("Exit");
-		exit.addActionListener(new ActionListener() {
-			@Override
-			public void actionPerformed(ActionEvent e) {
-				System.exit(0);;
-			}
-		});
-		compile = new JMenuItem("Compile");
-		compile.addActionListener(new ActionListener() {
+    Function lastRun;
+    Object[] lastRunArgs;
 
-			@Override
-			public void actionPerformed(ActionEvent e) {
-				runCompiler();
-			}
+    public ScriptUI(final int exitOp) {
 
-		});
-		run = new JMenuItem("Run");
-		run.addActionListener(new ActionListener() {
+        super("SnapScript Editor Interface");
+        input = new JTextArea();
+        input.setMinimumSize(new Dimension(1, 200));
+        input.addKeyListener(new KeyEventListener());
+        input.setFont(new Font("Verdana", Font.PLAIN, 13));
+        output = new JTextArea();
+        output.setMinimumSize(new Dimension(1, 200));
+        output.setEditable(false);
+        output.setLineWrap(true);
+        output.setWrapStyleWord(true);
+        output.setFont(new Font("Courier", Font.PLAIN, 13));
+        rootPane = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT, new JScrollPane(input), new JScrollPane(output));
+        rootPane.setBorder(new EmptyBorder(0, 5, 0, 5));
+        rootPane.setOneTouchExpandable(true);
+        rootPane.setDividerLocation(WIDTH / 2);
+        add(BorderLayout.CENTER, rootPane);
+        JPanel north = new JPanel(new BorderLayout());
+        north.setBorder(new EmptyBorder(0, 20, 0, 20));
+        north.add(BorderLayout.WEST, new JLabel("<html><font size=3> Script: </font></html>"));
+        north.add(BorderLayout.EAST, new JLabel("<html><font size=3> Output: </font></html>"));
+        add(BorderLayout.NORTH, north);
+        setJMenuBar(initMenuBar());
+        setSize(WIDTH, HEIGHT);
+        setLocationRelativeTo(null);
+        setDefaultCloseOperation(exitOp);
+        addWindowListener(new WindowMonitor());
+        readTempFile();
+        validate();
+        src = new ScriptSource(input.getText() + "\n");
+        prog = new ScriptProgram(true, src);
+    }
 
+    public ScriptProgram getScriptProgram() {
 
-			@Override
-			public void actionPerformed(ActionEvent e) {
-				runDialog();
-			}
+        return prog;
+    }
 
-		});
-		clear = new JMenuItem("Clear");
-		clear.addActionListener(new ActionListener() {
+    private JMenuBar initMenuBar() {
 
-			@Override
-			public void actionPerformed(ActionEvent e) {
-				input.setText("");
-				output.setText("");
-			}
-		});
-		file.add(exit);
-		script.add(compile);
-		script.add(run);
-		script.add(clear);
+        JMenuBar jmb = new JMenuBar();
+        file = new JMenu("File");
+        script = new JMenu("Script");
+        jmb.add(file);
+        jmb.add(script);
+        exit = new JMenuItem("Exit");
+        exit.addActionListener(new ActionListener() {
 
-		return jmb;
-	}
+            @Override
+            public void actionPerformed(final ActionEvent e) {
 
-	public void runCompiler(Class<?>... javaClasses) {
-		src.setSourceFrom(input.getText() + "\n");;
-		for(Class<?> c : javaClasses)
-			prog.link(c);
-		output.setText("");
-		boolean success = prog.compile();
-		if(success) {
-			try {
-				prog.initRuntime(true);
-				funcs = prog.getScriptFunctions();
-			} catch (ScriptInvocationException e) {
-				e.printStackTrace();
-				JOptionPane.showMessageDialog(parent, "Error initializing runtime: " + e.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
-			}
-		} else {
-			ScriptCompilationException e = prog.getLastCompileError();
-			String fname = (e.getFunction() != null) ? e.getFunction().getName() : "";
-			output.setText(output.getText() + "compilation error in function '" + fname + "'" + 
-					"\n" + prog.getLastCompileError().toString());
-		}
-	}
+                System.exit(0);
+                ;
+            }
+        });
+        compile = new JMenuItem("Compile");
+        compile.addActionListener(new ActionListener() {
 
-	RunDialog diag;
+            @Override
+            public void actionPerformed(final ActionEvent e) {
 
-	private void runDialog() {
-		if(diag == null || !diag.isDisplayable())
-			diag = new RunDialog(parent, "Run Script");
-		if(!diag.isVisible())
-			diag.setVisible(true);
-	}
+                runCompiler();
+            }
 
-	private void invokeScriptFunction(final Function f, final Object...args) {
-		new Thread(new Runnable() {
+        });
+        run = new JMenuItem("Run");
+        run.addActionListener(new ActionListener() {
 
-			@Override
-			public void run() {
-				try {
-					output.setText(new SimpleDateFormat("HH:mm:ss:SSS").format(Calendar.getInstance().getTime())
-							+"\n<Executing script function: invocation target -> fid="+f.getID()+">\n\n");
-					Object ret = prog.invoke(f, args);
-					lastRun = f;
-					lastRunArgs = args;
-					if(f.getReturnType() != Keyword.VOID)
-						System.out.print("return value = " + ret.toString() + "\n");
-				} catch (ScriptInvocationException e1) {
-					System.out.println(e1.toString());
-					e1.printStackTrace();
-				}
-			}
-			
-		}).start();
-	}
+            @Override
+            public void actionPerformed(final ActionEvent e) {
 
-	private class KeyEventListener extends KeyAdapter {
+                runDialog();
+            }
 
-		@Override
-		public void keyPressed(KeyEvent ke) {
-			if(ke.getKeyCode() == KeyEvent.VK_ENTER && ke.isShiftDown())
-				runCompiler();
-			else if(ke.getKeyCode() == KeyEvent.VK_ENTER && ke.isControlDown())
-				runDialog();
-			else if(ke.getKeyCode() == KeyEvent.VK_R && ke.isControlDown())
-				if(lastRun != null)
-					invokeScriptFunction(lastRun, lastRunArgs);
-		}
-	}
+        });
+        clear = new JMenuItem("Clear");
+        clear.addActionListener(new ActionListener() {
 
-	private String lastArgs, lastItem;
+            @Override
+            public void actionPerformed(final ActionEvent e) {
 
-	private class RunDialog extends JDialog {
+                input.setText("");
+                output.setText("");
+            }
+        });
+        file.add(exit);
+        script.add(compile);
+        script.add(run);
+        script.add(clear);
 
-		/**
-		 * 
-		 */
-		private static final long serialVersionUID = -473771619157816946L;
+        return jmb;
+    }
 
-		JComboBox chooseFunc;
-		JTextField argField;
+    public void runCompiler(final Class <?>... javaClasses) {
 
-		@SuppressWarnings("serial")
-		public RunDialog(Frame parent, String title) {
-			super(parent, title);
-			JPanel panel = new JPanel();
-			String[] funcStrs = new String[funcs.length];
-			for(int i=0; i < funcStrs.length; i++) {
-				StringBuilder sb = new StringBuilder();
-				Keyword[] params = funcs[i].getParamTypes();
-				for(int ii=0; ii < funcs[i].getParamCount(); ii++) {
-					sb.append(params[ii].sym + ((ii < funcs[i].getParamCount() - 1) ? ", ":""));
-				}
-				funcStrs[i] = funcs[i].getName() + " ("+sb.toString()+")";
-			}
-			chooseFunc = new JComboBox(funcStrs);
-			chooseFunc.setPreferredSize(new Dimension(150, chooseFunc.getPreferredSize().height));
-			argField = new JTextField(15);
-			if(lastArgs != null && lastItem != null) {
-				argField.setText(lastArgs);
-				chooseFunc.setSelectedItem(lastItem);
-			}
-			panel.add(new JLabel("Choose function: "));
-			panel.add(Box.createHorizontalStrut(10));
-			panel.add(chooseFunc);
-			panel.add(argField);
-			JPanel btnPanel = new JPanel();
-			JButton run = new JButton("Invoke");
-			final ActionListener invoke = new ActionListener() {
+        src.setSourceFrom(input.getText() + "\n");
+        ;
+        for (Class <?> c : javaClasses) {
+            prog.link(c);
+        }
+        output.setText("");
+        boolean success = prog.compile();
+        if (success) {
+            try {
+                prog.initRuntime(true);
+                funcs = prog.getScriptFunctions();
+            } catch (ScriptInvocationException e) {
+                e.printStackTrace();
+                JOptionPane.showMessageDialog(parent, "Error initializing runtime: " + e.getMessage(), "Error",
+                        JOptionPane.ERROR_MESSAGE);
+            }
+        } else {
+            ScriptCompilationException e = prog.getLastCompileError();
+            String fname = (e.getFunction() != null) ? e.getFunction().getName() : "";
+            output.setText(output.getText() + "compilation error in function '" + fname + "'" + "\n"
+                    + prog.getLastCompileError().toString());
+        }
+    }
 
-				@Override
-				public void actionPerformed(ActionEvent e) {
-					if(chooseFunc.getSelectedIndex() < 0)
-						return;
-					lastItem = (String) chooseFunc.getSelectedItem();
-					lastArgs = argField.getText();
-					Function f = funcs[chooseFunc.getSelectedIndex()];
-					dispose();
-					Keyword[] params = f.getParamTypes();
-					String[] argStrs = argField.getText().split(",");
-					int len = (argStrs[0].isEmpty()) ? 0:argStrs.length;
-					Object[] args = new Object[argStrs.length];
-					for(int i=0; i < params.length; i++) {
-						String arg = argStrs[i].trim();
-						try {
-							if(len != params.length)
-								throw(new ScriptInvocationException("invalid argument count", f));
-							switch(params[i]) {
-							case INT:
-								args[i] = Integer.parseInt(arg);
-								break;
-							case FLOAT:
-								args[i] = Double.parseDouble(arg);
-								break;
-							case BOOL:
-								args[i] = Boolean.parseBoolean(arg);
-								break;
-							case STRING:
-								if(arg.startsWith("\"") && arg.endsWith("\"")) {
-									args[i] = arg.substring(1, arg.length() - 1);
-								} else
-									throw(new ScriptInvocationException("illegal string argument: " + arg, f));
-								break;
-							default:
-							}
-						} catch (Exception err) {
-							System.out.println("error parsing function arguments: \n" + err.toString());
-							err.printStackTrace();
-							return;
-						}
-					}
+    RunDialog diag;
 
-					invokeScriptFunction(f, args);
-				}
-			};
-			run.addActionListener(invoke);
-			panel.getInputMap().put(KeyStroke.getKeyStroke(KeyEvent.VK_ENTER, 0, true), "invokeOnEnter");
-			panel.getActionMap().put("invokeOnEnter", new AbstractAction() {
+    private void runDialog() {
 
-				@Override
-				public void actionPerformed(ActionEvent e) {
-					invoke.actionPerformed(e);
-				}
+        if (diag == null || !diag.isDisplayable()) {
+            diag = new RunDialog(parent, "Run Script");
+        }
+        if (!diag.isVisible()) {
+            diag.setVisible(true);
+        }
+    }
 
-			});
-			btnPanel.add(run);
-			add(BorderLayout.CENTER, panel);
-			add(BorderLayout.SOUTH, btnPanel);
-			pack();
-			setLocationRelativeTo(null);
-			setDefaultCloseOperation(JDialog.DISPOSE_ON_CLOSE);
-			chooseFunc.requestFocus();
-		}
-	}
+    private void invokeScriptFunction(final Function f, final Object... args) {
 
-	private class WindowMonitor extends WindowAdapter {
+        new Thread(new Runnable() {
 
-		@Override
-		public void windowClosing(WindowEvent e) {
-			System.setOut(STD_OUT);
-			try {
-				Utils.writeToTempStorage(input.getText(), TEMP_FILE, true);
-			} catch (IOException e1) {
-				e1.printStackTrace();
-			}
-		}
-		
-		@Override
-		public void windowActivated(WindowEvent e) {
-			System.setOut(printOut);
-		}
-	}
+            @Override
+            public void run() {
 
-	private void readTempFile() {
-		String text;
-		try {
-			text = Utils.readText(Utils.getFileURL(new File(System.getProperty("java.io.tmpdir") + File.separator + TEMP_FILE)));
-			input.setText(text);
-		} catch (IOException e) {
-			System.out.println("ScriptUI: no tmp file - initializing new input data...");
-		}
-	}
+                try {
+                    output.setText(new SimpleDateFormat("HH:mm:ss:SSS").format(Calendar.getInstance().getTime())
+                            + "\n<Executing script function: invocation target -> fid=" + f.getID() + ">\n\n");
+                    Object ret = prog.invoke(f, args);
+                    lastRun = f;
+                    lastRunArgs = args;
+                    if (f.getReturnType() != Keyword.VOID) {
+                        System.out.print("return value = " + ret.toString() + "\n");
+                    }
+                } catch (ScriptInvocationException e1) {
+                    System.out.println(e1.toString());
+                    e1.printStackTrace();
+                }
+            }
 
-	private class OutStream extends PrintStream {
+        }).start();
+    }
 
-		/**
-		 * @param out
-		 */
-		public OutStream(OutputStream out) {
-			super(out);
-		}
+    private class KeyEventListener extends KeyAdapter {
 
-		@Override
-		public void println(String s) {
-			output.setText(output.getText() + s.toString() + "\r\n");
-		}
+        @Override
+        public void keyPressed(final KeyEvent ke) {
 
-		@Override
-		public void print(String s) {
-			output.setText(output.getText() + s);
-		}
+            if (ke.getKeyCode() == KeyEvent.VK_ENTER && ke.isShiftDown()) {
+                runCompiler();
+            } else if (ke.getKeyCode() == KeyEvent.VK_ENTER && ke.isControlDown()) {
+                runDialog();
+            } else if (ke.getKeyCode() == KeyEvent.VK_R && ke.isControlDown()) {
+                if (lastRun != null) {
+                    invokeScriptFunction(lastRun, lastRunArgs);
+                }
+            }
+        }
+    }
 
-		@Override
-		public void println(int arg) {
-			println(String.valueOf(arg));
-		}
+    private String lastArgs, lastItem;
 
-		@Override
-		public void print(int arg) {
-			print(String.valueOf(arg));
-		}
+    private class RunDialog extends JDialog {
 
-		@Override
-		public void println(double arg) {
-			println(String.valueOf(arg));
-		}
-		@Override
-		public void print(double arg) {
-			print(String.valueOf(arg));
-		}
-		@Override
-		public void println(boolean arg) {
-			println(String.valueOf(arg));
-		}
-		@Override
-		public void print(boolean arg) {
-			print(String.valueOf(arg));
-		}
-	}
+        /**
+         * 
+         */
+        private static final long serialVersionUID = -473771619157816946L;
 
-	/**
-	 * @param args
-	 * @throws FileNotFoundException 
-	 */
-	public static void main(String[] args) throws FileNotFoundException {
-		try {
-			UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
-		} catch (ClassNotFoundException e) {
-			e.printStackTrace();
-		} catch (InstantiationException e) {
-			e.printStackTrace();
-		} catch (IllegalAccessException e) {
-			e.printStackTrace();
-		} catch (UnsupportedLookAndFeelException e) {
-			e.printStackTrace();
-		}
-		ScriptUI sui = new ScriptUI(EXIT_ON_CLOSE);
-		sui.setVisible(true);
-	}
+        JComboBox chooseFunc;
+        JTextField argField;
+
+        @SuppressWarnings("serial")
+        public RunDialog(final Frame parent, final String title) {
+
+            super(parent, title);
+            JPanel panel = new JPanel();
+            String[] funcStrs = new String[funcs.length];
+            for (int i = 0; i < funcStrs.length; i++ ) {
+                StringBuilder sb = new StringBuilder();
+                Keyword[] params = funcs[i].getParamTypes();
+                for (int ii = 0; ii < funcs[i].getParamCount(); ii++ ) {
+                    sb.append(params[ii].sym + ( (ii < funcs[i].getParamCount() - 1) ? ", " : ""));
+                }
+                funcStrs[i] = funcs[i].getName() + " (" + sb.toString() + ")";
+            }
+            chooseFunc = new JComboBox(funcStrs);
+            chooseFunc.setPreferredSize(new Dimension(150, chooseFunc.getPreferredSize().height));
+            argField = new JTextField(15);
+            if (lastArgs != null && lastItem != null) {
+                argField.setText(lastArgs);
+                chooseFunc.setSelectedItem(lastItem);
+            }
+            panel.add(new JLabel("Choose function: "));
+            panel.add(Box.createHorizontalStrut(10));
+            panel.add(chooseFunc);
+            panel.add(argField);
+            JPanel btnPanel = new JPanel();
+            JButton run = new JButton("Invoke");
+            final ActionListener invoke = new ActionListener() {
+
+                @Override
+                public void actionPerformed(final ActionEvent e) {
+
+                    if (chooseFunc.getSelectedIndex() < 0) {
+                        return;
+                    }
+                    lastItem = (String) chooseFunc.getSelectedItem();
+                    lastArgs = argField.getText();
+                    Function f = funcs[chooseFunc.getSelectedIndex()];
+                    dispose();
+                    Keyword[] params = f.getParamTypes();
+                    String[] argStrs = argField.getText().split(",");
+                    int len = (argStrs[0].isEmpty()) ? 0 : argStrs.length;
+                    Object[] args = new Object[argStrs.length];
+                    for (int i = 0; i < params.length; i++ ) {
+                        String arg = argStrs[i].trim();
+                        try {
+                            if (len != params.length) {
+                                throw (new ScriptInvocationException("invalid argument count", f));
+                            }
+                            switch (params[i]) {
+                            case INT:
+                                args[i] = Integer.parseInt(arg);
+                                break;
+                            case FLOAT:
+                                args[i] = Double.parseDouble(arg);
+                                break;
+                            case BOOL:
+                                args[i] = Boolean.parseBoolean(arg);
+                                break;
+                            case STRING:
+                                if (arg.startsWith("\"") && arg.endsWith("\"")) {
+                                    args[i] = arg.substring(1, arg.length() - 1);
+                                } else {
+                                    throw (new ScriptInvocationException("illegal string argument: " + arg, f));
+                                }
+                                break;
+                            default:
+                            }
+                        } catch (Exception err) {
+                            System.out.println("error parsing function arguments: \n" + err.toString());
+                            err.printStackTrace();
+                            return;
+                        }
+                    }
+
+                    invokeScriptFunction(f, args);
+                }
+            };
+            run.addActionListener(invoke);
+            panel.getInputMap().put(KeyStroke.getKeyStroke(KeyEvent.VK_ENTER, 0, true), "invokeOnEnter");
+            panel.getActionMap().put("invokeOnEnter", new AbstractAction() {
+
+                @Override
+                public void actionPerformed(final ActionEvent e) {
+
+                    invoke.actionPerformed(e);
+                }
+
+            });
+            btnPanel.add(run);
+            add(BorderLayout.CENTER, panel);
+            add(BorderLayout.SOUTH, btnPanel);
+            pack();
+            setLocationRelativeTo(null);
+            setDefaultCloseOperation(WindowConstants.DISPOSE_ON_CLOSE);
+            chooseFunc.requestFocus();
+        }
+    }
+
+    private class WindowMonitor extends WindowAdapter {
+
+        @Override
+        public void windowClosing(final WindowEvent e) {
+
+            System.setOut(STD_OUT);
+            try {
+                Utils.writeToTempStorage(input.getText(), TEMP_FILE, true);
+            } catch (IOException e1) {
+                e1.printStackTrace();
+            }
+        }
+
+        @Override
+        public void windowActivated(final WindowEvent e) {
+
+            System.setOut(printOut);
+        }
+    }
+
+    private void readTempFile() {
+
+        String text;
+        try {
+            text = Utils.readText(Utils.getFileURL(new File(System.getProperty("java.io.tmpdir") + File.separator
+                    + TEMP_FILE)));
+            input.setText(text);
+        } catch (IOException e) {
+            System.out.println("ScriptUI: no tmp file - initializing new input data...");
+        }
+    }
+
+    private class OutStream extends PrintStream {
+
+        /**
+         * @param out
+         */
+        public OutStream(final OutputStream out) {
+
+            super(out);
+        }
+
+        @Override
+        public void println(final String s) {
+
+            output.setText(output.getText() + s.toString() + "\r\n");
+        }
+
+        @Override
+        public void print(final String s) {
+
+            output.setText(output.getText() + s);
+        }
+
+        @Override
+        public void println(final int arg) {
+
+            println(String.valueOf(arg));
+        }
+
+        @Override
+        public void print(final int arg) {
+
+            print(String.valueOf(arg));
+        }
+
+        @Override
+        public void println(final double arg) {
+
+            println(String.valueOf(arg));
+        }
+
+        @Override
+        public void print(final double arg) {
+
+            print(String.valueOf(arg));
+        }
+
+        @Override
+        public void println(final boolean arg) {
+
+            println(String.valueOf(arg));
+        }
+
+        @Override
+        public void print(final boolean arg) {
+
+            print(String.valueOf(arg));
+        }
+    }
+
+    /**
+     * @param args
+     * @throws FileNotFoundException
+     */
+    public static void main(final String[] args) throws FileNotFoundException {
+
+        try {
+            UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
+        } catch (ClassNotFoundException e) {
+            e.printStackTrace();
+        } catch (InstantiationException e) {
+            e.printStackTrace();
+        } catch (IllegalAccessException e) {
+            e.printStackTrace();
+        } catch (UnsupportedLookAndFeelException e) {
+            e.printStackTrace();
+        }
+        ScriptUI sui = new ScriptUI(EXIT_ON_CLOSE);
+        sui.setVisible(true);
+    }
 }

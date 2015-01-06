@@ -12,85 +12,122 @@
 
 package com.snap2d.script.lib;
 
-import com.snap2d.script.*;
+import com.snap2d.script.ScriptLink;
+import com.snap2d.script.Vec2;
 
 /**
  * @author Brian Groenke
  *
  */
 public class ScriptUtils {
-	
-	@ScriptLink
-	public static void print(String str) {
-		System.out.print(str);
-	}
-	
-	@ScriptLink
-	public static void print(int i) {
-		System.out.print(i);
-	}
-	
-	@ScriptLink
-	public static void print(double d) {
-		System.out.print(d);
-	}
-	
-	@ScriptLink
-	public static void print(boolean b) {
-		System.out.print(b);
-	}
-	
-	@ScriptLink
-	public static void print(Vec2 vec) {
-		System.out.print(vec);
-	}
-	
-	@ScriptLink
-	public static void println(String str) {
-		System.out.println(str);;
-	}
-	
-	@ScriptLink
-	public static void println(int i) {
-		System.out.println(i);;
-	}
-	
-	@ScriptLink
-	public static void println(double d) {
-		System.out.println(d);;
-	}
-	
-	@ScriptLink
-	public static void println(boolean b) {
-		System.out.println(b);;
-	}
-	
-	@ScriptLink
-	public static void println(Vec2 vec) {
-		System.out.println(vec.toString());
-	}
-	
-	@ScriptLink
-	public static int strToInt(String str) {
-		return Integer.parseInt(str);
-	}
-	
-	@ScriptLink
-	public static double strToFloat(String str) {
-		return Double.parseDouble(str);
-	}
-	
-	@ScriptLink
-	public static void sysExit(int exitStatus) {
-		System.exit(exitStatus);
-	}
-	
-	@ScriptLink
-	public static void sleep(int millis) {
-		try {
-			Thread.sleep(millis);
-		} catch (InterruptedException e) {
-			e.printStackTrace();
-		}
-	}
+
+    @ScriptLink
+    public static void print(final String str) {
+
+        System.out.print(str);
+    }
+
+    @ScriptLink
+    public static void print(final int i) {
+
+        System.out.print(i);
+    }
+
+    @ScriptLink
+    public static void print(final double d) {
+
+        System.out.print(d);
+    }
+
+    @ScriptLink
+    public static void print(final boolean b) {
+
+        System.out.print(b);
+    }
+
+    @ScriptLink
+    public static void print(final Vec2 vec) {
+
+        System.out.print(vec);
+    }
+
+    @ScriptLink
+    public static void println(final String str) {
+
+        System.out.println(str);
+        ;
+    }
+
+    @ScriptLink
+    public static void println(final int i) {
+
+        System.out.println(i);
+        ;
+    }
+
+    @ScriptLink
+    public static void println(final double d) {
+
+        System.out.println(d);
+        ;
+    }
+
+    @ScriptLink
+    public static void println(final boolean b) {
+
+        System.out.println(b);
+        ;
+    }
+
+    @ScriptLink
+    public static void println(final Vec2 vec) {
+
+        System.out.println(vec.toString());
+    }
+
+    @ScriptLink
+    public static void println() {
+
+        System.out.println();
+    }
+
+    @ScriptLink
+    public static int strToInt(final String str) {
+
+        return Integer.parseInt(str);
+    }
+
+    @ScriptLink
+    public static double strToFloat(final String str) {
+
+        return Double.parseDouble(str);
+    }
+
+    @ScriptLink
+    public static void sysExit(final int exitStatus) {
+
+        System.exit(exitStatus);
+    }
+
+    @ScriptLink
+    public static void sleep(final int millis) {
+
+        try {
+            Thread.sleep(millis);
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
+    }
+
+    @ScriptLink
+    public static double milliTime() {
+
+        return System.currentTimeMillis();
+    }
+
+    @ScriptLink
+    public static double nanoTime() {
+
+        return System.nanoTime();
+    }
 }

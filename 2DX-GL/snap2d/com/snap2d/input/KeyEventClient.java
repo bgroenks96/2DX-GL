@@ -12,14 +12,15 @@
 
 package com.snap2d.input;
 
-import java.awt.event.*;
+import java.awt.event.KeyEvent;
 
 /**
  * Key event client interface for InputDispatch
+ * 
  * @author Brian Groenke
  *
  */
 public interface KeyEventClient {
 
-	public void processKeyEvent(KeyEvent e);
+    public void processKeyEvent(KeyEvent e);
 }

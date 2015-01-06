@@ -12,9 +12,9 @@
 
 package com.snap2d.world.event;
 
-import java.util.*;
+import java.util.EventObject;
 
-import com.snap2d.world.*;
+import com.snap2d.world.Entity;
 
 /**
  * @author Brian Groenke
@@ -22,16 +22,17 @@ import com.snap2d.world.*;
  */
 public class EntityEvent extends EventObject {
 
-	/**
-	 * 
-	 */
-	private static final long serialVersionUID = 8003284877529027936L;
+    /**
+     * 
+     */
+    private static final long serialVersionUID = 8003284877529027936L;
 
-	/**
-	 * @param source
-	 */
-	public EntityEvent(Entity source) {
-		super(source);
-	}
+    /**
+     * @param source
+     */
+    public EntityEvent(final Entity source) {
+
+        super(source);
+    }
 
 }

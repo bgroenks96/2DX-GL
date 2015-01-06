@@ -12,9 +12,9 @@
 
 package bg.x2d.gen;
 
-import java.awt.*;
+import java.awt.Point;
 
-import bg.x2d.geo.*;
+import bg.x2d.geo.PointUD;
 
 /**
  * Generates a random point using the given x and y bounds.
@@ -22,28 +22,31 @@ import bg.x2d.geo.*;
  * @author Brian Groenke
  * @since 2DX 1.0 (1st Edition)
  */
-public class PointGenerator implements Generator<Point> {
+public class PointGenerator implements Generator <Point> {
 
-	private double x1, x2, y1, y2;
+    private double x1, x2, y1, y2;
 
-	public PointGenerator(double x1, double y1, double x2, double y2) {
-		setBounds(x1, y1, x2, y2);
-	}
+    public PointGenerator(final double x1, final double y1, final double x2, final double y2) {
 
-	@Override
-	public PointUD generate() {
-		NumberGenerator<Double> gen = new NumberGenerator<Double>(x1, x2);
-		double x = gen.generate();
-		gen.setBounds(y1, y2);
-		double y = gen.generate();
-		return new PointUD(x, y);
-	}
+        setBounds(x1, y1, x2, y2);
+    }
 
-	public void setBounds(double x1, double y1, double x2, double y2) {
-		this.x1 = x1;
-		this.y1 = y1;
-		this.x2 = x2;
-		this.y2 = y2;
-	}
+    @Override
+    public PointUD generate() {
+
+        NumberGenerator <Double> gen = new NumberGenerator <Double>(x1, x2);
+        double x = gen.generate();
+        gen.setBounds(y1, y2);
+        double y = gen.generate();
+        return new PointUD(x, y);
+    }
+
+    public void setBounds(final double x1, final double y1, final double x2, final double y2) {
+
+        this.x1 = x1;
+        this.y1 = y1;
+        this.x2 = x2;
+        this.y2 = y2;
+    }
 
 }
