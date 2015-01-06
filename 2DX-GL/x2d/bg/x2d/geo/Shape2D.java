@@ -15,49 +15,30 @@
  */
 package bg.x2d.geo;
 
-import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.awt.Paint;
 import java.awt.Point;
 import java.awt.Polygon;
 
-import bg.x2d.Background;
-
 /**
- * The superclass class for all generic 2-Dimensional figures. Subclasses of
- * Shapes2D in the geometry package are generally pre-defined, regular shapes
- * (drawn using rotations). The shape and all of its attributes are created when
- * the constructor is invoked but not drawn until <code>draw(Graphics2D)</code>
- * is called.
+ * The superclass class for all uniform, 2-dimensional, geometric figures. All
+ * x/y coordinates specify the upper-left hand corner of the figure's
+ * rectangular bounds. Sizes are defined by the subclass. The shape and all of
+ * its attributes are created when the constructor is invoked but not drawn
+ * until <code>draw(Graphics2D)</code> is called.
  * 
  * @author Brian Groenke
  * @since 2DX 1.0 (1st Edition)
  */
-public abstract class Shapes2D {
+public abstract class Shape2D {
 
-    int locx, locy, polySize;
-    Paint paint;
-    Polygon shape;
-    boolean filled;
-
-    @Deprecated
-    /**
-     * Replaced with a more logical and OO-friendly constructor.
-     * Note: This deprecated constructor currently does nothing.
-     * @param g
-     * @param b
-     */
-    public Shapes2D(final Graphics g, final Background b) {
-
-    }
-
-    @Deprecated
-    public Shapes2D(final Background b) {
-
-    }
+    protected int locx, locy, polySize;
+    protected Paint paint;
+    protected Polygon shape;
+    protected boolean filled;
 
     /**
-     * Create this Shapes2D with all of the given attributes. This
+     * Create this Shape2D with all of the given attributes. This
      * implementation just calls setProperties
      * 
      * @param x
@@ -66,15 +47,42 @@ public abstract class Shapes2D {
      * @param p
      * @param fill
      */
-    public Shapes2D(final int x, final int y, final int size, final Paint p, final boolean fill) {
+    public Shape2D(final int x, final int y, final int size, final Paint p, final boolean fill) {
 
         setProperties(x, y, size, p, fill);
     }
 
+    /**
+     * Updates the properties of this Shapes2D type
+     * 
+     * @param x
+     *            x location of bounds
+     * @param y
+     *            y location of bounds
+     * @param size
+     *            uniform radius from center
+     * @param p
+     *            Paint to be used in drawing
+     * @param fill
+     *            true to fill in drawing, false otherwise
+     */
     public abstract void setProperties(int x, int y, int size, Paint p, boolean fill);
 
+    /**
+     * Rotate number of <code>degress</code> in the direction specified by
+     * <code>type</code>
+     * 
+     * @param degrees
+     * @param type
+     */
     public abstract void rotate(double degrees, Rotation type);
 
+    
+    /**
+     * Set this Shape2D's location
+     * @param x the x coordinate for the bounding quad's upper left hand corner
+     * @param y the y coordinate for the bounding quad's upper left hand corner
+     */
     public void setLocation(final int x, final int y) {
 
         locx = x;
@@ -100,6 +108,9 @@ public abstract class Shapes2D {
         g.translate(-locx, -locy);
     }
 
+    /**
+     * @return this Shape2D represented as a java.awt.Polygon
+     */
     public Polygon getShape() {
 
         return shape;
@@ -194,5 +205,19 @@ public abstract class Shapes2D {
         Point origin = new Point(locx + (polySize / 2), locy + (polySize / 2));
         start = rotatePolyPoint(start, origin, degrees);
         shape = drawRegularPolygon(new Point(locx, locy), start, polySize, paint, filled, true, sides);
+    }
+
+    public enum Rotation {
+
+        /**
+         * Specifies a clockwise rotation of a shape.
+         */
+        CLOCKWISE,
+
+        /**
+         * Specifies a counter clockwise rotation of a shape.
+         */
+        COUNTER_CLOCKWISE,
+
     }
 }

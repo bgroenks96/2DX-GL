@@ -15,7 +15,7 @@ package bg.x2d.geo;
 import java.awt.Graphics2D;
 import java.awt.Paint;
 
-public class Circle2D extends Shapes2D {
+public class Circle2D extends Shape2D {
 
     public Circle2D(final int x, final int y, final int size, final Paint p, final boolean fill) {
 

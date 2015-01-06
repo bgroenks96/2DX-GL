@@ -20,25 +20,25 @@ package bg.x2d;
  * @author Brian Groenke
  * @since 2DX 1.0 (1st Edition)
  */
-public class TDXException extends Exception {
+public class X2DException extends Exception {
 
     private static final long serialVersionUID = 975059383220158740L;
 
-    public TDXException() {
+    public X2DException() {
 
     }
 
-    public TDXException(final String arg0) {
+    public X2DException(final String arg0) {
 
         super(arg0);
     }
 
-    public TDXException(final Throwable arg0) {
+    public X2DException(final Throwable arg0) {
 
         super(arg0);
     }
 
-    public TDXException(final String arg0, final Throwable arg1) {
+    public X2DException(final String arg0, final Throwable arg1) {
 
         super(arg0, arg1);
     }

@@ -16,7 +16,8 @@ import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.Graphics2D;
 
-import bg.x2d.geo.Hexagon2D;
+import bg.x2d.geo.Shape2D;
+import bg.x2d.geo.UniformPolygon2D;
 
 import com.snap2d.gl.Display;
 import com.snap2d.gl.Display.Type;
@@ -44,9 +45,10 @@ public class DrawStuff {
                 g.setColor(Color.BLACK);
                 g.drawString("Hello Snap2D!", 50, 50);
                 g.setColor(Color.RED);
-                g.fillOval(100, 100, 100, 100);
+                g.fillOval(100, 100, 200, 200);
 
-                Hexagon2D hex = new Hexagon2D(300, 100, 100, Color.BLUE, true);
+                // create regular hexagon and store it as its supertype, Shape2D
+                Shape2D hex = new UniformPolygon2D(6, 300, 100, 200, Color.BLUE, true);
                 hex.draw(g);
             }
 

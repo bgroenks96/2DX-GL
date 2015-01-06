@@ -19,7 +19,8 @@ import java.awt.Point;
 import java.awt.Polygon;
 import java.awt.geom.Point2D;
 
-import bg.x2d.geo.Triangle2D;
+import bg.x2d.geo.Shape2D;
+import bg.x2d.geo.UniformPolygon2D;
 
 import com.snap2d.physics.GamePhysics;
 import com.snap2d.world.CollisionModel;
@@ -39,7 +40,8 @@ public class PlayerEntity extends WorldGameEntity {
     public static final int SIZE = 50;
 
     private static CollisionModel model;
-    private static final Triangle2D shape = new Triangle2D(0, 0, SIZE, Color.BLUE, true);
+    // triangle shape for player
+    private static final Shape2D shape = new UniformPolygon2D(3, 0, 0, SIZE, Color.BLUE, true);
 
     int cwt, cht;
 

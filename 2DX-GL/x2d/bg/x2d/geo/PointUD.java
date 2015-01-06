@@ -21,10 +21,8 @@ import java.awt.geom.Point2D;
  * polymorphically as a Point or Point2D, so it can often be passed to Java2D
  * functions (including AWT/Swing). <br/>
  * <br/>
- * The coordinates can be accessed directly via fields <code>ux</code> and
- * <code>uy</code>, although changes to the data should be made ideally through
- * <code>setLocation</code> to ensure that the changes are also reflected in all
- * of PointUD's inherited methods/fields.
+ * Changes to the data should be made through <code>setLocation</code> to ensure
+ * that the changes are also reflected in all of methods/fields inherited by PointUD.
  * 
  * @author Brian Groenke
  * @since 2DX 1.0 (1st Edition)

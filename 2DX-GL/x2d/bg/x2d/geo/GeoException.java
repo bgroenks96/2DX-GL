@@ -12,9 +12,9 @@
 
 package bg.x2d.geo;
 
-import bg.x2d.TDXException;
+import bg.x2d.X2DException;
 
-public class GeoException extends TDXException {
+public class GeoException extends X2DException {
 
     /**
      * The standard exception thrown by all classes in the bg.tdx.geo package
