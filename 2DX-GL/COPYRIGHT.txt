@@ -1,4 +1,4 @@
-Copyright © 2011-2014 Brian Groenke
-Part of the 2DX-GL Open Source Project
+Copyright (c) 2011-2014 Brian Groenke
+Part of the 2DX Open Source Project
 Software licensed under the Mozilla Public License v.2.0 (see LICENSE.txt).
 All rights reserved.

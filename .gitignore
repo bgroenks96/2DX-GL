@@ -11,4 +11,4 @@ buildtracker.jar
 build_id.log
 SnapdragonTestLauncher.java
 TestLauncher.java
-/target
+target/
