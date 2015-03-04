@@ -1,4 +1,4 @@
-package com.snap2d.tests.javagl;
+package com.snap2d.testing.javagl;
 
 import java.awt.Color;
 import java.awt.Paint;

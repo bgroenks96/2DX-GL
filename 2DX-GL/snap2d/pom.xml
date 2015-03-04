@@ -34,10 +34,10 @@
 			<url>http://www.jogamp.org/deployment/maven/</url>
 			<layout>default</layout>
 		</repository>
-    <repository>
-      <id>project</id>
-      <url>file://${project.basedir}/repo</url>
-    </repository>
+		<repository>
+			<id>project</id>
+			<url>file://${project.basedir}/repo</url>
+		</repository>
 	</repositories>
 	<dependencies>
 		<dependency>
@@ -75,13 +75,11 @@
 			<groupId>org.jogamp.jogl</groupId>
 			<artifactId>jogl-all-main</artifactId>
 			<version>${jogamp.version}</version>
-			<scope>provided</scope>
 		</dependency>
 		<dependency>
 			<groupId>org.jogamp.gluegen</groupId>
 			<artifactId>gluegen-rt-main</artifactId>
 			<version>${jogamp.version}</version>
-			<scope>provided</scope>
 		</dependency>
 		<dependency>
 			<groupId>com.paulscode.soundsystem</groupId>

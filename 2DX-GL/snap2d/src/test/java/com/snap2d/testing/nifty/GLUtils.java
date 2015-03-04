@@ -10,7 +10,7 @@
  *  http://mozilla.org/MPL/2.0/.
  */
 
-package com.snap2d.tests.nifty;
+package com.snap2d.testing.nifty;
 
 import java.awt.Color;
 import java.nio.ByteBuffer;

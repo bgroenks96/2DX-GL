@@ -10,7 +10,7 @@
  *  http://mozilla.org/MPL/2.0/.
  */
 
-package com.snap2d.physics.testing;
+package com.snap2d.testing.physics;
 
 import bg.x2d.geo.Vector2d;
 import bg.x2d.geo.Vector2f;
