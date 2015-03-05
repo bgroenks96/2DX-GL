@@ -1,12 +1,12 @@
 /*
  *  Copyright (C) 2011-2014 Brian Groenke
  *  All rights reserved.
- * 
+ *
  *  This file is part of the 2DX Graphics Library.
  *
  *  This Source Code Form is subject to the terms of the
- *  Mozilla Public License, v. 2.0. If a copy of the MPL 
- *  was not distributed with this file, You can obtain one at 
+ *  Mozilla Public License, v. 2.0. If a copy of the MPL
+ *  was not distributed with this file, You can obtain one at
  *  http://mozilla.org/MPL/2.0/.
  */
 
@@ -15,7 +15,7 @@ package com.snap2d.script;
 /**
  * Flags used by compiler and engine internally to represent types using
  * primitives.
- * 
+ *
  * @author Brian Groenke
  */
 public final class Flags {
@@ -67,7 +67,7 @@ public final class Flags {
      */
 
     // engine main execution completion status signals
-    public static final int RETURN = 0xFD000000, BREAK = 0xFD000001;
+    public static final int RETURN = 0xFD000000, BREAK = 0xFD000001, END = 0xFD000001;
 
     /*
      * Pre-compiler signals

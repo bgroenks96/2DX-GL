@@ -1,12 +1,12 @@
 /*
  *  Copyright (C) 2011-2014 Brian Groenke
  *  All rights reserved.
- * 
+ *
  *  This file is part of the 2DX Graphics Library.
  *
  *  This Source Code Form is subject to the terms of the
- *  Mozilla Public License, v. 2.0. If a copy of the MPL 
- *  was not distributed with this file, You can obtain one at 
+ *  Mozilla Public License, v. 2.0. If a copy of the MPL
+ *  was not distributed with this file, You can obtain one at
  *  http://mozilla.org/MPL/2.0/.
  */
 
@@ -33,19 +33,21 @@ import java.util.Calendar;
 import javax.swing.*;
 import javax.swing.border.EmptyBorder;
 
+import com.snap2d.gl.opengl.GLUtils;
+
 import bg.x2d.utils.Utils;
 
 /**
  * A graphical interface utility that allows for live script
  * compilation/execution.
- * 
+ *
  * @author Brian Groenke
  *
  */
 public class ScriptUI extends JFrame {
 
     /**
-     * 
+     *
      */
     private static final long serialVersionUID = -7280184562521580572L;
 
@@ -211,6 +213,7 @@ public class ScriptUI extends JFrame {
                 try {
                     output.setText(new SimpleDateFormat("HH:mm:ss:SSS").format(Calendar.getInstance().getTime())
                             + "\n<Executing script function: invocation target -> fid=" + f.getID() + ">\n\n");
+                    f.bytecode.rewind();
                     Object ret = prog.invoke(f, args);
                     lastRun = f;
                     lastRunArgs = args;
@@ -248,7 +251,7 @@ public class ScriptUI extends JFrame {
     private class RunDialog extends JDialog {
 
         /**
-         * 
+         *
          */
         private static final long serialVersionUID = -473771619157816946L;
 
