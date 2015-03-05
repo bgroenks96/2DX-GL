@@ -1,12 +1,12 @@
 /*
  *  Copyright (C) 2011-2014 Brian Groenke
  *  All rights reserved.
- * 
+ *
  *  This file is part of the 2DX Graphics Library.
  *
  *  This Source Code Form is subject to the terms of the
- *  Mozilla Public License, v. 2.0. If a copy of the MPL 
- *  was not distributed with this file, You can obtain one at 
+ *  Mozilla Public License, v. 2.0. If a copy of the MPL
+ *  was not distributed with this file, You can obtain one at
  *  http://mozilla.org/MPL/2.0/.
  */
 
@@ -73,7 +73,7 @@ import com.snap2d.script.lib.VarStore;
 
 /**
  * Class responsible for interpreting and executing script function bytecode.
- * 
+ *
  * @author Brian Groenke
  *
  */
@@ -90,7 +90,7 @@ class ScriptEngine {
 
     /**
      * Creates a new ScriptEngine with the given compiled Functions
-     * 
+     *
      * @param functions
      *            the array of Functions returned and fully compiled by
      *            ScriptCompiler
@@ -101,7 +101,7 @@ class ScriptEngine {
      *             if VarStore functions cannot be attached to the local object
      */
     ScriptEngine(final ScriptProgram prog, final Function[] functions, final ConstantInitializer[] constInits,
-            final boolean useDouble) throws ScriptInvocationException {
+                 final boolean useDouble) throws ScriptInvocationException {
 
         vars.setUseDouble(useDouble);
         this.useDouble = useDouble;
@@ -236,7 +236,7 @@ class ScriptEngine {
     }
 
     private Object invokeJavaFunction(final Function f, final Object javaObj, final Object... args)
-            throws ScriptInvocationException {
+                    throws ScriptInvocationException {
 
         if (!f.isJavaFunction()) {
             throw (new ScriptInvocationException("cannot invoke Java execution on a script function", f));
@@ -267,6 +267,7 @@ class ScriptEngine {
     private Object invokeFunction(final Function f, final Object... args) throws ScriptInvocationException {
 
         buff = f.bytecode;
+        buff.position(0);
         curr = f;
         ret = null;
         stacks = new LinkedList <VarStack>();
@@ -278,7 +279,7 @@ class ScriptEngine {
             for (int i = 0; i < f.getParamCount(); i++ ) {
                 if (buff.get() != Bytecodes.PARAM_VAR) {
                     throw (new ScriptInvocationException("found unexpected bytecode instruction: "
-                            + Integer.toHexString(init), f));
+                                    + Integer.toHexString(init), f));
                 }
                 int id = buff.getInt();
                 putVar(id, Keyword.typeKeyToFlag(f.getParamTypes()[i]) /*
@@ -294,7 +295,7 @@ class ScriptEngine {
             break;
         default:
             throw (new ScriptInvocationException("found unexpected bytecode instruction: " + Integer.toHexString(init),
-                    f));
+                                                 f));
         }
 
         for (VarStack stack : stacks) {
@@ -369,10 +370,14 @@ class ScriptEngine {
                 execStoreVar(true);
                 break;
             case IF:
-                execConditional();
+                // if 'return'  is called from a conditional or loop block, we need to pass
+                // that call back up the execution chain until the function returns the value
+                int condResult = execConditional();
+                if (condResult == Flags.RETURN) return condResult;
                 break;
             case FOR_VAR:
-                execForLoop();
+                int forResult = execForLoop();
+                if (forResult == Flags.RETURN) return forResult;
                 break;
             case RETURN:
                 this.ret = execExpression();
@@ -394,7 +399,7 @@ class ScriptEngine {
                 return Flags.BREAK;
             default:
                 throw (new ScriptInvocationException("found unexpected bytecode instruction: "
-                        + Integer.toHexString(next), curr));
+                                + Integer.toHexString(next), curr));
             }
         }
 
@@ -458,7 +463,7 @@ class ScriptEngine {
 
         if ( (next = buff.get()) != END_CMD) {
             throw (new ScriptInvocationException("expected END_CMD for STORE_VAR: found=" + Integer.toHexString(next),
-                    curr));
+                                                 curr));
         }
     }
 
@@ -576,7 +581,7 @@ class ScriptEngine {
         while (next == Bytecodes.STR_VAR) {
             if (buff.get() != Bytecodes.REF_VAR) {
                 throw (new ScriptInvocationException("expected REF_VAR after STR_VAR: found="
-                        + Integer.toHexString(next), curr));
+                                + Integer.toHexString(next), curr));
             }
             Variable var = execRefVar();
             int pos = buff.getInt();
@@ -586,14 +591,14 @@ class ScriptEngine {
 
         if (next != Bytecodes.STR_START) {
             throw (new ScriptInvocationException("found unexpected bytecode instruction in READ_STR: 0x"
-                    + Integer.toHexString(next), curr));
+                            + Integer.toHexString(next), curr));
         }
         int len = buff.getInt();
         byte[] bytes = new byte[len];
         buff.get(bytes);
         if ( (next = buff.get()) != Bytecodes.END_CMD) {
             throw (new ScriptInvocationException("expected END_CMD for READ_STR: found=" + Integer.toHexString(next),
-                    curr));
+                                                 curr));
         }
         StringBuilder s = new StringBuilder(new String(bytes));
 
@@ -621,7 +626,7 @@ class ScriptEngine {
         byte next;
         if ( (next = buff.get()) != Bytecodes.END_CMD) {
             throw (new ScriptInvocationException("expected END_CMD for INVOKE_JAVA_FUNC: found="
-                    + Integer.toHexString(next), curr));
+                            + Integer.toHexString(next), curr));
         }
 
         return invokeJavaFunction(f, javaObjs.get(f), args);
@@ -640,11 +645,12 @@ class ScriptEngine {
         byte next;
         if ( (next = buff.get()) != Bytecodes.END_CMD) {
             throw (new ScriptInvocationException(
-                    "expected END_CMD for INVOKE_FUNC: found=" + Integer.toHexString(next), curr));
+                                                 "expected END_CMD for INVOKE_FUNC: found=" + Integer.toHexString(next), curr));
         }
 
         Object ret = this.ret;
         ByteBuffer buff = this.buff;
+        int buffPos = this.buff.position();
         Function curr = this.curr;
         LinkedList <VarStack> stacks = this.stacks;
         Object robj = invokeFunction(f, args);
@@ -653,6 +659,7 @@ class ScriptEngine {
         }
         this.ret = ret;
         this.buff = buff;
+        this.buff.position(buffPos);
         this.curr = curr;
         this.stacks = stacks;
         return robj;
@@ -676,7 +683,7 @@ class ScriptEngine {
         return args;
     }
 
-    private void execConditional() throws ScriptInvocationException {
+    private int execConditional() throws ScriptInvocationException {
 
         int iflen = buff.getInt();
         int init = buff.position();
@@ -684,8 +691,11 @@ class ScriptEngine {
         byte next = buff.get();
         if (next != EVAL) {
             throw (new ScriptInvocationException("found unexpected bytecode instruction in IF cond: 0x"
-                    + Integer.toHexString(next), curr));
+                            + Integer.toHexString(next), curr));
         }
+        // Executes loop logic until END_CMD or return is reached. In hindsight, relying on break/return
+        // here was probably a bad decision. Should be a TODO to refactor this at some point.
+        int ret = -1;
         while (true) {
             Operand val = execEvaluation();
             if (val.isVector()) {
@@ -695,11 +705,11 @@ class ScriptEngine {
             next = buff.get();
             if (next != END_COND) {
                 throw (new ScriptInvocationException("found unexpected bytecode instruction in IF cond: 0x"
-                        + Integer.toHexString(next), curr));
+                                + Integer.toHexString(next), curr));
             }
             int blockLen = buff.getInt();
             if (cond) {
-                execMain(buff.position());
+                ret = execMain(buff.position());
                 break;
             } else {
                 buff.position(buff.position() + blockLen + 1);
@@ -708,10 +718,10 @@ class ScriptEngine {
                     continue;
                 } else if (next == ELSE) {
                     blockLen = buff.getInt();
-                    execMain(buff.position());
+                    ret = execMain(buff.position());
                     break;
                 } else if (next == END_CMD) {
-                    return;
+                    return Flags.END;
                 }
             }
         }
@@ -723,29 +733,30 @@ class ScriptEngine {
         if ( (next = buff.get()) != END_CMD) {
             throw (new ScriptInvocationException("expected END_CMD for IF: found=" + Integer.toHexString(next), curr));
         }
+        return ret;
     }
 
-    private void execForLoop() throws ScriptInvocationException {
+    private int execForLoop() throws ScriptInvocationException {
 
         // for loop variable declaration
         byte next = buff.get();
         if (next != STORE_VAR) {
             throw (new ScriptInvocationException("expected loop variable evaluation: found="
-                    + Integer.toHexString(next), curr));
+                            + Integer.toHexString(next), curr));
         }
         execStoreVar(false);
         // for loop condition evaluation
         next = buff.get();
         if (next != FOR_COND) {
             throw (new ScriptInvocationException("expected loop condition evaluation: found="
-                    + Integer.toHexString(next), curr));
+                            + Integer.toHexString(next), curr));
         }
         int cst = buff.position();
 
         // we need to parse first to find the command's proper endpoint
         boolean chk = ( ((Scalar) execExpression()).getValue() != 0) ? true : false;
         if (!chk) {
-            return;
+            return Flags.END;
         }
         int cen = buff.position();
         ByteBuffer cond = ByteBuffer.allocate(cen - cst); // allocate a separate
@@ -764,12 +775,12 @@ class ScriptEngine {
         next = buff.get();
         if (next != FOR_OP) {
             throw (new ScriptInvocationException("expected loop iteration instruction: found="
-                    + Integer.toHexString(next), curr));
+                            + Integer.toHexString(next), curr));
         }
         next = buff.get();
         if (next != REF_VAR) {
             throw (new ScriptInvocationException("expected loop variable reference instruction: found="
-                    + Integer.toHexString(next), curr));
+                            + Integer.toHexString(next), curr));
         }
         Variable opvar = execRefVar();
         if (opvar.type != Flags.TYPE_FLOAT && opvar.type != Flags.TYPE_INT) {
@@ -802,13 +813,15 @@ class ScriptEngine {
         next = buff.get();
         if (next != FOR_START) {
             throw (new ScriptInvocationException("expected loop body declaration: found=" + Integer.toHexString(next),
-                    curr));
+                                                 curr));
         }
-        int st = buff.position();
+        int st = buff.position(), stat = Flags.END;
         while (checkLoopCondition(cond)) {
             inLoop = true;
-            int stat = execMain(st);
+            stat = execMain(st);
             if (stat == Flags.BREAK) {
+                break;
+            } else if (stat == Flags.RETURN) {
                 break;
             }
 
@@ -827,8 +840,9 @@ class ScriptEngine {
         next = buff.get();
         if (next != END_CMD) {
             throw (new ScriptInvocationException("expected END_CMD in loop evaluation: found="
-                    + Integer.toHexString(next), curr));
+                            + Integer.toHexString(next), curr));
         }
+        return stat;
     }
 
     /*
@@ -1033,15 +1047,6 @@ class ScriptEngine {
             }
             val.rewind();
             return value;
-        }
-    }
-
-    private static <T> T castVariable(final Variable var, final Function context, final Class <T> type) {
-
-        if (Keyword.isValidDataType(type)) {
-            return type.cast(var.getValue());
-        } else {
-            return null;
         }
     }
 }

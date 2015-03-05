@@ -1,12 +1,12 @@
 /*
  *  Copyright (C) 2011-2014 Brian Groenke
  *  All rights reserved.
- * 
+ *
  *  This file is part of the 2DX Graphics Library.
  *
  *  This Source Code Form is subject to the terms of the
- *  Mozilla Public License, v. 2.0. If a copy of the MPL 
- *  was not distributed with this file, You can obtain one at 
+ *  Mozilla Public License, v. 2.0. If a copy of the MPL
+ *  was not distributed with this file, You can obtain one at
  *  http://mozilla.org/MPL/2.0/.
  */
 
@@ -30,7 +30,7 @@ import com.snap2d.world.World2D;
  * Provides common utility methods for interfacing with OpenGL libraries. Some
  * members of this class simply act as forward-wrappers for JOGL/Gluegen
  * utilities.
- * 
+ *
  * @author Brian Groenke
  *
  */
@@ -83,7 +83,7 @@ public class GLUtils {
     /**
      * Writes the RGBA components of the given Color to a FloatBuffer as OpenGL
      * color values (0.0f - 1.0f).
-     * 
+     *
      * @param color
      *            the java.awt.Color to convert
      * @param colorBuff
@@ -102,7 +102,7 @@ public class GLUtils {
     /**
      * Calls {@link #writeColorToBuffer(Color, FloatBuffer)} with a newly
      * allocated FloatBuffer.
-     * 
+     *
      * @param color
      * @return
      */
@@ -114,7 +114,7 @@ public class GLUtils {
     /**
      * Converts an AWT Color (0f - 255f) linearly to GL color space (0.0f -
      * 1.0f).
-     * 
+     *
      * @param color
      *            the AWT color to convert
      * @return an array of GL color channels
@@ -132,6 +132,19 @@ public class GLUtils {
 
         System.out.print("[");
         for (int i = 0; i < buff.limit(); i++ ) {
+            System.out.print(buff.get(i));
+            if (i < buff.limit() - 1) {
+                System.out.print(", ");
+            }
+        }
+        System.out.println("]");
+    }
+
+    public static final void printBuffer(final ByteBuffer buff, boolean printPosLabels) {
+
+        System.out.print("[");
+        for (int i = 0; i < buff.limit(); i++ ) {
+            if (printPosLabels) System.out.print(i + ": ");
             System.out.print(buff.get(i));
             if (i < buff.limit() - 1) {
                 System.out.print(", ");
