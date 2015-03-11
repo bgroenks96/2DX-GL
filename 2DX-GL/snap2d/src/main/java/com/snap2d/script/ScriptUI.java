@@ -181,13 +181,13 @@ public class ScriptUI extends JFrame {
             } catch (ScriptInvocationException e) {
                 e.printStackTrace();
                 JOptionPane.showMessageDialog(parent, "Error initializing runtime: " + e.getMessage(), "Error",
-                        JOptionPane.ERROR_MESSAGE);
+                                              JOptionPane.ERROR_MESSAGE);
             }
         } else {
             ScriptCompilationException e = prog.getLastCompileError();
             String fname = (e.getFunction() != null) ? e.getFunction().getName() : "";
             output.setText(output.getText() + "compilation error in function '" + fname + "'" + "\n"
-                    + prog.getLastCompileError().toString());
+                            + prog.getLastCompileError().toString());
         }
     }
 
@@ -203,6 +203,8 @@ public class ScriptUI extends JFrame {
         }
     }
 
+    private static int threadCount = 0;
+
     private void invokeScriptFunction(final Function f, final Object... args) {
 
         new Thread(new Runnable() {
@@ -210,20 +212,29 @@ public class ScriptUI extends JFrame {
             @Override
             public void run() {
 
-                try {
-                    output.setText(new SimpleDateFormat("HH:mm:ss:SSS").format(Calendar.getInstance().getTime())
-                            + "\n<Executing script function: invocation target -> fid=" + f.getID() + ">\n\n");
-                    f.bytecode.rewind();
-                    Object ret = prog.invoke(f, args);
-                    lastRun = f;
-                    lastRunArgs = args;
-                    if (f.getReturnType() != Keyword.VOID) {
-                        System.out.print("return value = " + ret.toString() + "\n");
+                output.setText(new SimpleDateFormat("HH:mm:ss:SSS").format(Calendar.getInstance().getTime())
+                               + "\n<Executing script function: invocation target -> fid=" + f.getID() + ">\n\n");
+                f.bytecode.rewind();
+                Runnable r = new Runnable() {
+                    public void run() {
+                        Object ret;
+                        try {
+                            ret = prog.invoke(f, args);
+                            lastRun = f;
+                            lastRunArgs = args;
+                            if (f.getReturnType() != Keyword.VOID) {
+                                System.out.print("return value = " + ret.toString() + "\n");
+                            }
+                        }
+                        catch (ScriptInvocationException e) {
+                            System.out.println(e.toString());
+                            e.printStackTrace();
+                        }
                     }
-                } catch (ScriptInvocationException e1) {
-                    System.out.println(e1.toString());
-                    e1.printStackTrace();
-                }
+                };
+                Thread scriptThread = new Thread(r);
+                scriptThread.setName("scriptui"+threadCount+"-invoke [fid="+f.getID()+"]");
+                scriptThread.start();
             }
 
         }).start();
@@ -382,7 +393,7 @@ public class ScriptUI extends JFrame {
         String text;
         try {
             text = Utils.readText(Utils.getFileURL(new File(System.getProperty("java.io.tmpdir") + File.separator
-                    + TEMP_FILE)));
+                                                            + TEMP_FILE)));
             input.setText(text);
         } catch (IOException e) {
             System.out.println("ScriptUI: no tmp file - initializing new input data...");

@@ -159,6 +159,13 @@ class ScriptEngine {
         return var.getValue();
     }
 
+    public void dispose() {
+        funcMap.clear();
+        javaObjs.clear();
+        vars = null;
+        timers.dispose();
+    }
+
     // >>>>>> SCRIPT EXECUTION ENGINE >>>>>> //
 
     /*
@@ -386,11 +393,12 @@ class ScriptEngine {
                 } else if (curr.getReturnType() == Keyword.BOOL && !Function.isBool(ret.getClass())) {
                     ret = ( ((Double) ret).byteValue() == 1) ? true : false;
                 }
+                return Flags.RETURN;
             case CONTINUE:
                 if (!inLoop && next == CONTINUE) {
                     throw (new ScriptInvocationException("found continue instruction outside of loop execution", curr));
                 }
-                return Flags.RETURN;
+                return Flags.END;
             case BREAK:
                 // if(!inLoop)
                 // throw(new
@@ -403,7 +411,7 @@ class ScriptEngine {
             }
         }
 
-        return Flags.RETURN;
+        return Flags.END;
     }
 
     private void execStoreVar(final boolean constant) throws ScriptInvocationException {
@@ -816,6 +824,7 @@ class ScriptEngine {
                                                  curr));
         }
         int st = buff.position(), stat = Flags.END;
+        boolean currInLoop = inLoop;
         while (checkLoopCondition(cond)) {
             inLoop = true;
             stat = execMain(st);
@@ -825,7 +834,8 @@ class ScriptEngine {
                 break;
             }
 
-            double val = ((Number) opvar.getValue()).doubleValue();
+            Object opVarValue = opvar.getValue();
+            double val = ((Number) opVarValue).doubleValue();
             if (modOp == ADD_MOD) {
                 val += mod;
             } else if (modOp == MULT_MOD) {
@@ -835,7 +845,7 @@ class ScriptEngine {
             }
             opvar.setValue(val);
         }
-        inLoop = false;
+        inLoop = currInLoop;
 
         next = buff.get();
         if (next != END_CMD) {

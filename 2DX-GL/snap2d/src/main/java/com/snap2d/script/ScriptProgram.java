@@ -1,12 +1,12 @@
 /*
  *  Copyright (C) 2011-2014 Brian Groenke
  *  All rights reserved.
- * 
+ *
  *  This file is part of the 2DX Graphics Library.
  *
  *  This Source Code Form is subject to the terms of the
- *  Mozilla Public License, v. 2.0. If a copy of the MPL 
- *  was not distributed with this file, You can obtain one at 
+ *  Mozilla Public License, v. 2.0. If a copy of the MPL
+ *  was not distributed with this file, You can obtain one at
  *  http://mozilla.org/MPL/2.0/.
  */
 
@@ -46,7 +46,7 @@ public class ScriptProgram {
     /**
      * Create a new ScriptProgram with the given sources. The program is not
      * compiled or executable until the <code>compile</code> method is called.
-     * 
+     *
      * @param linkLibs
      *            whether or not the standard SnapScript libraries should be
      *            automatically linked (usually should be true)
@@ -167,7 +167,7 @@ public class ScriptProgram {
 
     /**
      * Initializes the script engine runtime after successful compilation.
-     * 
+     *
      * @param useDoubleStore
      *            if true, the script engine will store 'float' data types as
      *            Java doubles, otherwise they will be stored as Java floats
@@ -180,12 +180,13 @@ public class ScriptProgram {
             throw (new IllegalStateException("cannot initialize runtime before compilation"));
         }
 
+        disposeRuntime();
         engine = new ScriptEngine(this, funcs.values().toArray(new Function[funcs.size()]), initConsts, useDoubleStore);
         log.info("SnapScript runtime successfully initialized!\n");
     }
 
-    public void disposeRuntime() {
-
+    private void disposeRuntime() {
+        if (engine != null) engine.dispose();
     }
 
     public void attachToJavaFunction(final Object o, final Function func) throws ScriptInvocationException {
@@ -291,7 +292,7 @@ public class ScriptProgram {
 
     /**
      * Invokes the script function with the given arguments.
-     * 
+     *
      * @param f
      * @param args
      * @return
@@ -309,7 +310,7 @@ public class ScriptProgram {
      * Invokes the first matching script Function object with the given
      * arguments. This method is equivalent to:
      * <code>invoke(findFunction(funcName), args)</code>
-     * 
+     *
      * @param funcName
      * @param args
      * @return

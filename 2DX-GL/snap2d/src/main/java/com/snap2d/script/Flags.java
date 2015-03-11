@@ -67,7 +67,7 @@ public final class Flags {
      */
 
     // engine main execution completion status signals
-    public static final int RETURN = 0xFD000000, BREAK = 0xFD000001, END = 0xFD000001;
+    public static final int RETURN = 0xFD000000, BREAK = 0xFD000001, END = 0xFD000002;
 
     /*
      * Pre-compiler signals

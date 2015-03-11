@@ -1,12 +1,12 @@
 /*
  *  Copyright (C) 2011-2014 Brian Groenke
  *  All rights reserved.
- * 
+ *
  *  This file is part of the 2DX Graphics Library.
  *
  *  This Source Code Form is subject to the terms of the
- *  Mozilla Public License, v. 2.0. If a copy of the MPL 
- *  was not distributed with this file, You can obtain one at 
+ *  Mozilla Public License, v. 2.0. If a copy of the MPL
+ *  was not distributed with this file, You can obtain one at
  *  http://mozilla.org/MPL/2.0/.
  */
 
@@ -26,7 +26,7 @@ import bg.x2d.utils.Utils;
 
 /**
  * Parses and compiles script source code to bytecode form.
- * 
+ *
  * @author Brian Groenke
  *
  */
@@ -272,7 +272,7 @@ class ScriptCompiler {
      * Compiles the Functions in the given Multimap obtained from precompile
      * method. The method will return normally if successful, otherwise an
      * exception will be thrown.
-     * 
+     *
      * @param functions
      * @param constList
      *            a list of constant initializers to compile and initialize
