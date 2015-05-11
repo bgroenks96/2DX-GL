@@ -648,23 +648,23 @@ class ScriptCompiler {
 
         buff.put(Bytecodes.FOR_VAR);
         String arg = forpts[0];
-        StringBuilder sb = new StringBuilder();
+        StringBuilder forVar = new StringBuilder();
         char[] chars = arg.toCharArray();
         for (int i = 0; i < chars.length; i++ ) {
             char c = chars[i];
-            if (Character.isWhitespace(c) && sb.length() == 0) {
+            if (Character.isWhitespace(c) && forVar.length() == 0) {
                 continue;
             } else if (Character.isWhitespace(c) || Keyword.getFromSymbol(String.valueOf(c)) != null) {
-                Keyword keyw = Keyword.getFromSymbol(sb.toString());
+                Keyword keyw = Keyword.getFromSymbol(forVar.toString());
                 if (keyw != null) {
-                    parseVarFromType(keyw, src, pos + sb.length() + 1);
+                    parseVarFromType(keyw, src, pos + forVar.length() + 1);
                 } else {
-                    Variable var = stackVars.get(sb.toString());
-                    parseVarAssign(var.varType, sb.toString(), src, false, false, pos + 1);
+                    Variable var = stackVars.get(forVar.toString());
+                    parseVarAssign(var.varType, forVar.toString(), src, false, false, pos + 1);
                 }
                 break;
             } else {
-                sb.append(c);
+                forVar.append(c);
             }
         }
 
@@ -675,14 +675,14 @@ class ScriptCompiler {
         buff.put(Bytecodes.FOR_OP);
         String varop = forpts[2].replaceAll("\\s+", "");
         chars = varop.toCharArray();
-        sb = new StringBuilder();
+        forVar = new StringBuilder();
         for (int i = 0; i < chars.length - 1; i++ ) {
             char c = chars[i];
             String nx = String.valueOf(c) + chars[i + 1];
             Keyword kw = Keyword.getFromSymbol(nx);
             if (kw != null && isForOperator(kw)) {
 
-                putVarRef(sb.toString(), buff, src, npos + forpts[1].length(), Flags.TYPE_FLOAT | Flags.TYPE_INT);
+                putVarRef(forVar.toString(), buff, src, npos + forpts[1].length(), Flags.TYPE_FLOAT | Flags.TYPE_INT);
 
                 boolean code = true;
                 switch (kw) {
@@ -716,14 +716,14 @@ class ScriptCompiler {
                     npos = npos + forpts[1].length() + 1;
                     // System.out.println(varop.substring(varop.indexOf(nx) +
                     // 2));
-                    parseEvaluation(varop.substring(varop.indexOf(nx) + 2), src, npos + sb.length() + 3,
+                    parseEvaluation(varop.substring(varop.indexOf(nx) + 2), src, npos + forVar.length() + 3,
                             Flags.TYPE_FLOAT);
                     break;
                 default:
                     throw (new ScriptCompilationException("found unexpected symbol as for operator: " + nx, src, pos));
                 }
             } else {
-                sb.append(c);
+                forVar.append(c);
             }
         }
         buff.put(Bytecodes.FOR_START);
@@ -742,6 +742,7 @@ class ScriptCompiler {
         buff.put(Bytecodes.CONTINUE);
 
         buff.put(Bytecodes.END_CMD);
+        stackVars.remove(forVar.toString());
         return endPos + 1;
     }
 
