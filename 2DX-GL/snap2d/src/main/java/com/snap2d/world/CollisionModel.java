@@ -59,7 +59,7 @@ public class CollisionModel {
         }
         poly = new PolySeg[pts.length];
         PointUD last = null;
-        ArrayList <PolySeg> lazyList = new ArrayList <PolySeg>();
+        ArrayList<PolySeg> lazyList = new ArrayList<PolySeg>();
         for (PointUD p : wpts) {
             if (last == null) {
                 last = p;
@@ -94,13 +94,19 @@ public class CollisionModel {
     public boolean contains(final PointUD p, final PointUD modelLoc) {
 
         double tx = (modelLoc != null) ? modelLoc.ux : 0, ty = (modelLoc != null) ? modelLoc.uy : 0;
-        PointUD basePoint = new PointUD(-1, -1);
+        PointUD basePoint = new PointUD( -1, -1);
         PointUD testPoint = new PointUD(p.ux - tx, p.uy - ty);
         int crossCount = 0;
         for (PolySeg seg : poly) {
             PolySeg testSeg = new PolySeg(basePoint, testPoint);
-            PointUD intrsec = GeoUtils.lineIntersection(testSeg.x1, testSeg.y1, testSeg.x2, testSeg.y2, seg.x1, seg.y1,
-                    seg.x2, seg.y2);
+            PointUD intrsec = GeoUtils.lineIntersection(testSeg.x1,
+                                                        testSeg.y1,
+                                                        testSeg.x2,
+                                                        testSeg.y2,
+                                                        seg.x1,
+                                                        seg.y1,
+                                                        seg.x2,
+                                                        seg.y2);
             if (intrsec == null) {
                 continue;
             }
@@ -113,8 +119,11 @@ public class CollisionModel {
         return crossCount % 2 != 0;
     }
 
-    public boolean collidesWith(final double x, final double y, final double cx, final double cy,
-            final CollisionModel coll) {
+    public boolean collidesWith(final double x,
+                                final double y,
+                                final double cx,
+                                final double cy,
+                                final CollisionModel coll) {
 
         return testCollision(x, y, cx, cy, coll) || coll.testCollision(cx, cy, x, y, this);
     }
@@ -144,8 +153,13 @@ public class CollisionModel {
      *            could be lower if 1 world unit < 1 screen unit or simply if
      *            more accuracy is desired relative to +-1 pixel.
      */
-    public void resolve(final PointUD loc, final PointUD cloc, final CollisionModel coll, Vector2d vel, Vector2d cvel,
-            final double velFactor, final double resolutionThreshold) {
+    public void resolve(final PointUD loc,
+                        final PointUD cloc,
+                        final CollisionModel coll,
+                        Vector2d vel,
+                        Vector2d cvel,
+                        final double velFactor,
+                        final double resolutionThreshold) {
 
         if (resolutionThreshold <= 0) {
             throw (new IllegalArgumentException("resolution thershold must be > 0"));
@@ -153,7 +167,7 @@ public class CollisionModel {
         vel = vel.negateNew().mult(0.5);
         cvel = cvel.negateNew().mult(0.5);
         boolean resolved = false, colliding = true;
-        while (!resolved) {
+        while ( !resolved) {
             vel.applyTo(loc, velFactor);
             cvel.applyTo(cloc, velFactor);
             // if collision test status changes, negate and half testing vectors
@@ -162,7 +176,7 @@ public class CollisionModel {
             // while both vectors have a magnitude of <= resolutionThreshold
             if (testCollision(loc.ux, loc.uy, cloc.ux, cloc.uy, coll) != colliding) {
                 if (colliding && vel.getMagnitude() <= resolutionThreshold
-                        && cvel.getMagnitude() <= resolutionThreshold) {
+                                && cvel.getMagnitude() <= resolutionThreshold) {
                     resolved = true;
                 } else {
                     vel.negate();
@@ -200,8 +214,11 @@ public class CollisionModel {
      * cvel.getMagnitude() * velFactor); }
      */
 
-    private boolean testCollision(final double x, final double y, final double cx, final double cy,
-            final CollisionModel coll) {
+    private boolean testCollision(final double x,
+                                  final double y,
+                                  final double cx,
+                                  final double cy,
+                                  final CollisionModel coll) {
 
         double minx = Double.MAX_VALUE;
         for (PointUD p : wpts) {
@@ -215,7 +232,7 @@ public class CollisionModel {
             int crossCount = 0;
             for (PolySeg seg : poly) {
                 PointUD intrsec = GeoUtils.lineIntersection(lx, py, px, py, seg.x1 + x, seg.y1 + y, seg.x2 + x, seg.y2
-                        + y);
+                                + y);
                 if (intrsec == null) {
                     continue;
                 }
@@ -289,7 +306,7 @@ public class CollisionModel {
         }
 
         int radius = size / 2;
-        ArrayList <Point> ptlist = new ArrayList <Point>();
+        ArrayList<Point> ptlist = new ArrayList<Point>();
         ptlist.add(new Point(radius * 2, radius));
         for (double angle = angleIncrem; angle < Math.PI * 2; angle += angleIncrem) {
             double x = radius * Math.cos(angle);

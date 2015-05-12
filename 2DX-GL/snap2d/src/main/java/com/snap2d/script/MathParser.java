@@ -32,7 +32,7 @@ public class MathParser {
 
     private static final String[] CONSTANT_NAMES = new String[] { "pi", "e" };
     private static final double[] CONSTANT_VALS = new double[] { Math.PI, Math.E };
-    private static final HashMap <String, Double> constMap = new HashMap <String, Double>();
+    private static final HashMap<String, Double> constMap = new HashMap<String, Double>();
 
     public int roundTo = 6;
 
@@ -128,7 +128,7 @@ public class MathParser {
     protected String shuntingYard(final String input) throws MathParseException {
 
         StringBuilder output = new StringBuilder();
-        ArrayDeque <Character> stack = new ArrayDeque <Character>();
+        ArrayDeque<Character> stack = new ArrayDeque<Character>();
         char[] chars = input.toCharArray();
 
         char last = '0';
@@ -208,15 +208,15 @@ public class MathParser {
     protected Operand calculate(final String input) throws MathParseException {
 
         StringBuilder num = new StringBuilder();
-        Vector <Operand> numStack = new Vector <Operand>(); // Vector collection
+        Vector<Operand> numStack = new Vector<Operand>(); // Vector collection
         // NOT VecMath.Vec
         // ....
         char[] chars = input.toCharArray();
         for (int i = 0; i < chars.length; i++ ) {
             if (isNumber(chars[i]) || isDelimiter(chars[i]) || chars[i] == '-'
-                    && (i + 1 < chars.length && isNumber(chars[i + 1]))) // check
-                // for
-                // negatives
+                            && (i + 1 < chars.length && isNumber(chars[i + 1]))) // check
+            // for
+            // negatives
             {
                 num.append(chars[i]);
             } else if (Character.toString(chars[i]).equals(SEP)) {
@@ -297,14 +297,14 @@ public class MathParser {
         int rt = 0;
         int lt = 0;
         char[] chars = input.toCharArray();
-        ArrayList <Integer> mInserts = new ArrayList <Integer>();
+        ArrayList<Integer> mInserts = new ArrayList<Integer>();
         for (int i = 0; i < chars.length; i++ ) {
             if (chars[i] == '(') {
                 lt++ ;
             } else if (chars[i] == ')') {
                 rt++ ;
                 if (i + 1 < chars.length && !MathRef.isOperator(chars[i + 1])
-                        && (isOpeningDelimiter(chars[i + 1]) || isNumber(chars[i + 1]))) {
+                                && (isOpeningDelimiter(chars[i + 1]) || isNumber(chars[i + 1]))) {
                     mInserts.add(i + 1);
                 }
             }
@@ -401,7 +401,7 @@ public class MathParser {
     protected double calculateScalars(final String input) throws MathParseException {
 
         StringBuilder num = new StringBuilder();
-        Vector <Double> numStack = new Vector <Double>(1, 1);
+        Vector<Double> numStack = new Vector<Double>(1, 1);
         char[] chars = input.toCharArray();
         for (int i = 0; i < chars.length; i++ ) {
             if (isNumber(chars[i]) || chars[i] == '-' && (i + 1 < chars.length && isNumber(chars[i + 1]))) { // check

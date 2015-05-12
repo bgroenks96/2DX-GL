@@ -91,6 +91,18 @@ public class ScriptUtils {
         System.out.println();
     }
 
+    public static int strlen(final String str) {
+        return str.length();
+    }
+
+    public static String substring(final String str, int st) {
+        return str.substring(st);
+    }
+
+    public static String substring(final String str, int st, int en) {
+        return str.substring(st, en);
+    }
+
     @ScriptLink
     public static int strToInt(final String str) {
 

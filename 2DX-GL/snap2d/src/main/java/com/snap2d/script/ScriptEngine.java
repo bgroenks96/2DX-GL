@@ -81,8 +81,8 @@ class ScriptEngine {
 
     private static final Logger log = Logger.getLogger(ScriptEngine.class.getCanonicalName());
 
-    HashMap <Long, Function> funcMap = new HashMap <Long, Function>();
-    HashMap <Function, Object> javaObjs = new HashMap <Function, Object>();
+    HashMap<Long, Function> funcMap = new HashMap<Long, Function>();
+    HashMap<Function, Object> javaObjs = new HashMap<Function, Object>();
     VarStore vars = new VarStore();
     ScriptTimer timers;
 
@@ -100,14 +100,16 @@ class ScriptEngine {
      * @throws ScriptInvocationException
      *             if VarStore functions cannot be attached to the local object
      */
-    ScriptEngine(final ScriptProgram prog, final Function[] functions, final ConstantInitializer[] constInits,
+    ScriptEngine(final ScriptProgram prog,
+                 final Function[] functions,
+                 final ConstantInitializer[] constInits,
                  final boolean useDouble) throws ScriptInvocationException {
 
         vars.setUseDouble(useDouble);
         this.useDouble = useDouble;
         this.timers = new ScriptTimer(prog);
-        List <Method> varFuncs = Arrays.asList(VarStore.class.getMethods());
-        List <Method> timerFuncs = Arrays.asList(ScriptTimer.class.getMethods());
+        List<Method> varFuncs = Arrays.asList(VarStore.class.getMethods());
+        List<Method> timerFuncs = Arrays.asList(ScriptTimer.class.getMethods());
 
         for (Function f : functions) {
             funcMap.put(f.getID(), f);
@@ -132,7 +134,7 @@ class ScriptEngine {
         if (f == null) {
             return;
         }
-        if (!f.isJavaFunction()) {
+        if ( !f.isJavaFunction()) {
             throw (new ScriptInvocationException("cannot attach Object to non-Java function", f));
         }
         javaObjs.put(f, obj);
@@ -179,7 +181,7 @@ class ScriptEngine {
     Object ret;
     ByteBuffer buff;
     Function curr;
-    LinkedList <VarStack> stacks;
+    LinkedList<VarStack> stacks;
     VarStack consts;
 
     int varGC = 0; // used to track released Variable objects
@@ -245,7 +247,7 @@ class ScriptEngine {
     private Object invokeJavaFunction(final Function f, final Object javaObj, final Object... args)
                     throws ScriptInvocationException {
 
-        if (!f.isJavaFunction()) {
+        if ( !f.isJavaFunction()) {
             throw (new ScriptInvocationException("cannot invoke Java execution on a script function", f));
         }
         Method m = f.getJavaMethod();
@@ -277,7 +279,7 @@ class ScriptEngine {
         buff.position(0);
         curr = f;
         ret = null;
-        stacks = new LinkedList <VarStack>();
+        stacks = new LinkedList<VarStack>();
         stacks.add(new VarStack());
 
         byte init = buff.get();
@@ -290,19 +292,19 @@ class ScriptEngine {
                 }
                 int id = buff.getInt();
                 putVar(id, Keyword.typeKeyToFlag(f.getParamTypes()[i]) /*
-                 * Get
-                 * flag
-                 * value
-                 * for
-                 * type
-                 */, args[i]);
+                                                                        * Get
+                                                                        * flag
+                                                                        * value
+                                                                        * for
+                                                                        * type
+                                                                        */, args[i]);
             }
         case NO_PARAMS:
             execMain(buff.position());
             break;
         default:
             throw (new ScriptInvocationException("found unexpected bytecode instruction: " + Integer.toHexString(init),
-                                                 f));
+                            f));
         }
 
         for (VarStack stack : stacks) {
@@ -377,8 +379,10 @@ class ScriptEngine {
                 execStoreVar(true);
                 break;
             case IF:
-                // if 'return'  is called from a conditional or loop block, we need to pass
-                // that call back up the execution chain until the function returns the value
+                // if 'return' is called from a conditional or loop block, we
+                // need to pass
+                // that call back up the execution chain until the function
+                // returns the value
                 int condResult = execConditional();
                 if (condResult == Flags.RETURN) return condResult;
                 break;
@@ -395,7 +399,7 @@ class ScriptEngine {
                 }
                 return Flags.RETURN;
             case CONTINUE:
-                if (!inLoop && next == CONTINUE) {
+                if ( !inLoop && next == CONTINUE) {
                     throw (new ScriptInvocationException("found continue instruction outside of loop execution", curr));
                 }
                 return Flags.END;
@@ -471,7 +475,7 @@ class ScriptEngine {
 
         if ( (next = buff.get()) != END_CMD) {
             throw (new ScriptInvocationException("expected END_CMD for STORE_VAR: found=" + Integer.toHexString(next),
-                                                 curr));
+                            curr));
         }
     }
 
@@ -585,7 +589,7 @@ class ScriptEngine {
     private String execStringLiteral() throws ScriptInvocationException {
 
         byte next = buff.get();
-        Multimap <Integer, Variable> inVars = new Multimap <Integer, Variable>();
+        Multimap<Integer, Variable> inVars = new Multimap<Integer, Variable>();
         while (next == Bytecodes.STR_VAR) {
             if (buff.get() != Bytecodes.REF_VAR) {
                 throw (new ScriptInvocationException("expected REF_VAR after STR_VAR: found="
@@ -606,7 +610,7 @@ class ScriptEngine {
         buff.get(bytes);
         if ( (next = buff.get()) != Bytecodes.END_CMD) {
             throw (new ScriptInvocationException("expected END_CMD for READ_STR: found=" + Integer.toHexString(next),
-                                                 curr));
+                            curr));
         }
         StringBuilder s = new StringBuilder(new String(bytes));
 
@@ -625,7 +629,7 @@ class ScriptEngine {
 
         long fid = buff.getLong();
         Function f = funcMap.get(fid);
-        if (!f.isJavaFunction()) {
+        if ( !f.isJavaFunction()) {
             throw (new ScriptInvocationException("invalid command for non-Java function", curr));
         }
 
@@ -653,14 +657,14 @@ class ScriptEngine {
         byte next;
         if ( (next = buff.get()) != Bytecodes.END_CMD) {
             throw (new ScriptInvocationException(
-                                                 "expected END_CMD for INVOKE_FUNC: found=" + Integer.toHexString(next), curr));
+                            "expected END_CMD for INVOKE_FUNC: found=" + Integer.toHexString(next), curr));
         }
 
         Object ret = this.ret;
         ByteBuffer buff = this.buff;
         int buffPos = this.buff.position();
         Function curr = this.curr;
-        LinkedList <VarStack> stacks = this.stacks;
+        LinkedList<VarStack> stacks = this.stacks;
         Object robj = invokeFunction(f, args);
         if (robj instanceof Operand) {
             robj = ((Operand) robj).getValue();
@@ -701,8 +705,10 @@ class ScriptEngine {
             throw (new ScriptInvocationException("found unexpected bytecode instruction in IF cond: 0x"
                             + Integer.toHexString(next), curr));
         }
-        // Executes loop logic until END_CMD or return is reached. In hindsight, relying on break/return
-        // here was probably a bad decision. Should be a TODO to refactor this at some point.
+        // Executes loop logic until END_CMD or return is reached. In hindsight,
+        // relying on break/return
+        // here was probably a bad decision. Should be a TODO to refactor this
+        // at some point.
         int ret = -1;
         while (true) {
             Operand val = execEvaluation();
@@ -763,7 +769,7 @@ class ScriptEngine {
 
         // we need to parse first to find the command's proper endpoint
         boolean chk = ( ((Scalar) execExpression()).getValue() != 0) ? true : false;
-        if (!chk) {
+        if ( !chk) {
             return Flags.END;
         }
         int cen = buff.position();
@@ -772,7 +778,7 @@ class ScriptEngine {
         // the condition
         // checking
         // instructions
-        buff.position(cst);  // reset the main buffer to the start of the
+        buff.position(cst); // reset the main buffer to the start of the
         // condition evaluation so we can re-read the
         // instruction set
         while (buff.position() < cen) {
@@ -821,7 +827,7 @@ class ScriptEngine {
         next = buff.get();
         if (next != FOR_START) {
             throw (new ScriptInvocationException("expected loop body declaration: found=" + Integer.toHexString(next),
-                                                 curr));
+                            curr));
         }
         int st = buff.position(), stat = Flags.END;
         boolean currInLoop = inLoop;
@@ -899,7 +905,7 @@ class ScriptEngine {
 
     private class VarStack {
 
-        HashMap <Integer, Variable> varmap = new HashMap <Integer, Variable>();
+        HashMap<Integer, Variable> varmap = new HashMap<Integer, Variable>();
 
         public void put(final int id, final Variable var) {
 
@@ -969,10 +975,10 @@ class ScriptEngine {
                     val.putInt((Integer) value);
                 }
                 break;
-                // for float variables, we have to check whether or not to store
-                // them as a Java Float or Double.
+            // for float variables, we have to check whether or not to store
+            // them as a Java Float or Double.
             case Flags.TYPE_FLOAT:
-                if (!doubleStore) {
+                if ( !doubleStore) {
                     if (val == null) {
                         val = ByteBuffer.allocateDirect((int) Utils.FLOAT_SIZE);
                     }
@@ -1006,7 +1012,7 @@ class ScriptEngine {
                 Vector2d vec;
                 if (value instanceof Operand) {
                     Operand opn = (Operand) value;
-                    if (!opn.isVector()) {
+                    if ( !opn.isVector()) {
                         throw (new ScriptInvocationException("cannot assign non-vector value to vector type", curr));
                     }
                     vec = (Vector2d) opn.getValue();
@@ -1036,7 +1042,7 @@ class ScriptEngine {
                 value = val.getInt();
                 break;
             case Flags.TYPE_FLOAT:
-                if (!doubleStore) {
+                if ( !doubleStore) {
                     value = val.getFloat();
                 } else {
                     value = val.getDouble();

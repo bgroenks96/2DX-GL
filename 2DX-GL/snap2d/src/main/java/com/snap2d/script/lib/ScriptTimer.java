@@ -51,7 +51,7 @@ public class ScriptTimer {
         timerThread.start();
     }
 
-    private final TreeSet <ScheduledTimerTask> tasks = new TreeSet <ScheduledTimerTask>();
+    private final TreeSet<ScheduledTimerTask> tasks = new TreeSet<ScheduledTimerTask>();
 
     @ScriptLink
     public void timerAdd(final String id, final int delay, final String scriptFunc) {
@@ -209,12 +209,12 @@ public class ScriptTimer {
 
                     try {
                         Thread.sleep(sleepTime);
-                        Class <?>[] types = getArgClasses(nextTask.args);
+                        Class<?>[] types = getArgClasses(nextTask.args);
                         Function f = program.findFunction(nextTask.scriptFunc, types);
                         try {
                             if (f == null) {
                                 log.warning("task '" + nextTask.id + "' aborted - function '" + nextTask.scriptFunc
-                                        + "' not found");
+                                                + "' not found");
                             } else {
                                 program.invoke(f, nextTask.args);
                             }
@@ -224,15 +224,15 @@ public class ScriptTimer {
                         tasks.pollFirst();
                     } catch (InterruptedException e) {
                         log.warning("timer-thread" + id + ": interrupted while waiting for task: " + nextTask.id
-                                + " func=" + nextTask.scriptFunc);
+                                        + " func=" + nextTask.scriptFunc);
                     }
                 }
             }
         }
 
-        private Class <?>[] getArgClasses(final Object[] args) {
+        private Class<?>[] getArgClasses(final Object[] args) {
 
-            Class <?>[] classes = new Class <?>[args.length];
+            Class<?>[] classes = new Class<?>[args.length];
             for (int i = 0; i < args.length; i++ ) {
                 classes[i] = args[i].getClass();
             }
@@ -240,7 +240,7 @@ public class ScriptTimer {
         }
     }
 
-    private class ScheduledTimerTask implements Comparable <ScheduledTimerTask> {
+    private class ScheduledTimerTask implements Comparable<ScheduledTimerTask> {
 
         String id;
         String scriptFunc;

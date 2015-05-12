@@ -30,7 +30,7 @@ import com.snap2d.script.lib.VarStore;
  */
 public class TestNode extends StandardPhysics implements GamePhysics {
 
-    public static final Gravity ANTI_GRAV = new Gravity(-Gravity.STANDARD);
+    public static final Gravity ANTI_GRAV = new Gravity( -Gravity.STANDARD);
     public static final String COLL_FUNC_NAME = "OnCollide";
 
     private static String[] varNames;

@@ -39,7 +39,7 @@ public class GLProgram {
     private static GLProgram defaultShaderProg, currentShaderProg;
 
     private final int progId;
-    private final ArrayList <GLShader> shaders = new ArrayList <GLShader>();
+    private final ArrayList<GLShader> shaders = new ArrayList<GLShader>();
 
     private boolean defaultProg;
 
@@ -228,7 +228,7 @@ public class GLProgram {
 
         final GL2ES2 gl = getGL();
         gl.glUseProgram(0);
-        if (!defaultProg) {
+        if ( !defaultProg) {
             defaultShaderProg.enable();
         }
     }
@@ -343,7 +343,7 @@ public class GLProgram {
                 break;
             default:
                 throw (new IllegalArgumentException("illegal number of values supplied to " + "setUniform"
-                        + type.suffix));
+                                + type.suffix));
             }
         } catch (NoSuchMethodException e) {
             throw (new IllegalArgumentException("failed to locate set uniform method: " + method));
@@ -480,13 +480,14 @@ public class GLProgram {
     }
 
     private enum UniformType {
-        INT("i", int.class, IntBuffer.class), FLOAT("f", float.class, FloatBuffer.class), DOUBLE("d", double.class,
-                DoubleBuffer.class);
+        INT("i", int.class, IntBuffer.class), FLOAT("f", float.class, FloatBuffer.class), DOUBLE("d",
+                                                                                                 double.class,
+                                                                                                 DoubleBuffer.class);
 
         String suffix;
-        Class <?> value, buffer;
+        Class<?> value, buffer;
 
-        UniformType(final String suffix, final Class <?> value, final Class <?> buffer) {
+        UniformType(final String suffix, final Class<?> value, final Class<?> buffer) {
 
             this.suffix = suffix;
             this.buffer = buffer;

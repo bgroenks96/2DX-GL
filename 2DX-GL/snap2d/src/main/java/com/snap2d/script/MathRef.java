@@ -16,14 +16,14 @@ import java.util.HashMap;
 
 class MathRef {
 
-    private static HashMap <Character, Integer> pmap = new HashMap <Character, Integer>();
-    private static HashMap <Character, Assoc> amap = new HashMap <Character, Assoc>();
-    private static HashMap <Character, MathOp> opMap = new HashMap <Character, MathOp>();
+    private static HashMap<Character, Integer> pmap = new HashMap<Character, Integer>();
+    private static HashMap<Character, Assoc> amap = new HashMap<Character, Assoc>();
+    private static HashMap<Character, MathOp> opMap = new HashMap<Character, MathOp>();
 
     public static final char AND_BOOL = '@', OR_BOOL = '$', EQUALS = '=', NOT_EQUALS = '\u00AC',
-            LESS_EQUALS = '\u00AB', GREAT_EQUALS = '\u00BB';
+                    LESS_EQUALS = '\u00AB', GREAT_EQUALS = '\u00BB';
     protected static final char[] OPERATORS = new char[] { '+', '-', '*', '/', '|', '&', '~', '%', '^', EQUALS, '>',
-        '<', NOT_EQUALS, LESS_EQUALS, GREAT_EQUALS, AND_BOOL, OR_BOOL };
+            '<', NOT_EQUALS, LESS_EQUALS, GREAT_EQUALS, AND_BOOL, OR_BOOL };
     protected static final char[] NUM_CHARS = new char[] { 'E' };
     protected static final char MULTIPLY = OPERATORS[2];
 

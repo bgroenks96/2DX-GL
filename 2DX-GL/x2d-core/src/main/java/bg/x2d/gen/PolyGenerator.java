@@ -22,10 +22,10 @@ import java.awt.Rectangle;
  * @author Brian
  * @since 2DX 1.0 (1st Edition)
  */
-public class PolyGenerator implements Generator <Polygon> {
+public class PolyGenerator implements Generator<Polygon> {
 
     private int x, y, width, height, n;
-    private NumberGenerator <Integer> xgen, ygen;
+    private NumberGenerator<Integer> xgen, ygen;
 
     public PolyGenerator(final Rectangle bounds, final int nsides) {
 
@@ -46,8 +46,8 @@ public class PolyGenerator implements Generator <Polygon> {
             height = 10;
         }
         n = nsides;
-        xgen = new NumberGenerator <Integer>(x, x + width);
-        ygen = new NumberGenerator <Integer>(y, y + height);
+        xgen = new NumberGenerator<Integer>(x, x + width);
+        ygen = new NumberGenerator<Integer>(y, y + height);
     }
 
     @Override

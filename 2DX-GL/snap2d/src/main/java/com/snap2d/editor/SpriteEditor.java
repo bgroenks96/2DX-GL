@@ -113,12 +113,14 @@ public class SpriteEditor extends JFrame {
 
         int resp = JOptionPane.YES_OPTION;
         if (canvas.fileStatus == EditPanel.CHANGED) {
-            resp = JOptionPane.showConfirmDialog(frame, "Exit without saving?", "Confirm Exit",
-                    JOptionPane.YES_NO_CANCEL_OPTION);
+            resp = JOptionPane.showConfirmDialog(frame,
+                                                 "Exit without saving?",
+                                                 "Confirm Exit",
+                                                 JOptionPane.YES_NO_CANCEL_OPTION);
             switch (resp) {
             case JOptionPane.NO_OPTION:
                 boolean chk = canvas.save();
-                if (!chk) {
+                if ( !chk) {
                     return;
                 }
             case JOptionPane.YES_OPTION:

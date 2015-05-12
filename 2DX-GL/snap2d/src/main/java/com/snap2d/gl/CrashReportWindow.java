@@ -44,9 +44,9 @@ public class CrashReportWindow extends JFrame {
     private static final long serialVersionUID = 7604174524459267051L;
 
     private static final File CRASH_LOG = new File(System.getProperty("java.io.tmpdir") + File.separator
-            + "snap2d_crash_report.log");
+                    + "snap2d_crash_report.log");
     private static final String CRASH_MSG = "A fatal error has occurred that caused unexpected program termination.\nA dump file "
-            + "has been created with this crash information at the following location: " + CRASH_LOG.getPath();
+                    + "has been created with this crash information at the following location: " + CRASH_LOG.getPath();
     private static final Dimension FRAME_SIZE = new Dimension(1000, 600);
 
     JTextPane disp;

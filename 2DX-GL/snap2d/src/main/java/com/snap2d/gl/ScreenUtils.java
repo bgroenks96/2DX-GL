@@ -45,8 +45,9 @@ public class ScreenUtils {
         return Toolkit.getDefaultToolkit().getScreenResolution();
     }
 
-    public static final Dimension convertDimension(final Dimension baseScreenSize, final Dimension toConvert,
-            final boolean keepAspectRatio) {
+    public static final Dimension convertDimension(final Dimension baseScreenSize,
+                                                   final Dimension toConvert,
+                                                   final boolean keepAspectRatio) {
 
         Dimension screenSize = getScreenResolution();
         return toConvert;

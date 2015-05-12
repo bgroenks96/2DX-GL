@@ -25,7 +25,7 @@ import bg.x2d.Local;
  */
 public class GraphicsConfig {
 
-    HashMap <Property, String> configMap = new HashMap <Property, String>();
+    HashMap<Property, String> configMap = new HashMap<Property, String>();
 
     public GraphicsConfig() {
 
@@ -176,7 +176,7 @@ public class GraphicsConfig {
             this.defValue = defValue;
         }
 
-        private void applyProperty(final HashMap <Property, String> config) {
+        private void applyProperty(final HashMap<Property, String> config) {
 
             String value = config.get(this);
             if (value != null) {

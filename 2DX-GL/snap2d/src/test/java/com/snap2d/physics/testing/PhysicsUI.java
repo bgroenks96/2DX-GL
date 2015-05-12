@@ -63,7 +63,7 @@ import com.snap2d.world.event.RemoveEvent;
 public class PhysicsUI {
 
     public static final int FLOAT = 0xFFF001, BOOLEAN = 0xFFF002, STRING = 0xFFF003, VECTOR = 0xFFF004,
-            OPTION = 0xFFF005;
+                    OPTION = 0xFFF005;
 
     static ScriptUI scriptUI = new ScriptUI(ScriptUI.DISPOSE_ON_CLOSE);
 
@@ -71,15 +71,15 @@ public class PhysicsUI {
     RenderControl rc;
     InputDispatch input = new InputDispatch(false);
 
-    ArrayList <PhysicsEntity> entities = new ArrayList <PhysicsEntity>();
+    ArrayList<PhysicsEntity> entities = new ArrayList<PhysicsEntity>();
     EntityManager manager = new EntityManager();
     PhysicsEntityEventListener collListener = new PhysicsEntityEventListener();
 
     JMenuBar menuBar = new JMenuBar();
     JMenu control = new JMenu("Control"), worldMenu = new JMenu("World");
     JMenuItem addEntity = new JMenuItem("Add Entity"), viewEntity = new JMenuItem("View Entities"),
-            addForce = new JMenuItem("Add Forces"), modifyView = new JMenuItem("Set viewport"),
-            editScript = new JMenuItem("Edit Script");
+                    addForce = new JMenuItem("Add Forces"), modifyView = new JMenuItem("Set viewport"),
+                    editScript = new JMenuItem("Edit Script");
 
     boolean isDialogShowing;
 
@@ -136,7 +136,7 @@ public class PhysicsUI {
             return;
         }
 
-        if (!isDialogShowing) {
+        if ( !isDialogShowing) {
             rc.setRenderActive(false);
             new AddEntityUI().setVisible(true);
             isDialogShowing = true;
@@ -145,7 +145,7 @@ public class PhysicsUI {
 
     public void showViewUI() {
 
-        if (!isDialogShowing) {
+        if ( !isDialogShowing) {
             rc.setRenderActive(false);
             new ViewEntityUI(new PUICallback(), entities).setVisible(true);
             isDialogShowing = true;
@@ -337,17 +337,16 @@ public class PhysicsUI {
                             break;
                         }
                     } catch (PropertyFormatException err) {
-                        JOptionPane.showMessageDialog(
-                                parent,
-                                "Parsing error: invalid format or characters in one or more property inputs\n"
-                                        + err.toString());
+                        JOptionPane.showMessageDialog(parent,
+                                                      "Parsing error: invalid format or characters in one or more property inputs\n"
+                                                                      + err.toString());
                         return;
                     }
                 }
 
                 TestNode physNode = new TestNode(vel, mass, nograv);
                 PhysicsEntity entity = new PhysicsEntity(0, 0, size.x, size.y, computeVertices(0, 0, size), physNode,
-                        world);
+                                world);
                 entity.collFactor = coll;
                 addEntity(entity, RenderControl.POSITION_LAST);
                 close(parent);
@@ -523,7 +522,7 @@ public class PhysicsUI {
 
             if (me.getID() == MouseEvent.MOUSE_PRESSED && me.getButton() == MouseEvent.BUTTON1) {
                 PointUD pt = world.screenToWorld(me.getX(), me.getY());
-                if (!rc.isUpdating()) {
+                if ( !rc.isUpdating()) {
                     for (PhysicsEntity pe : entities) {
                         if (pe.getWorldBounds().contains(pt.ux, pt.uy)) {
                             last = pt;
@@ -569,9 +568,14 @@ public class PhysicsUI {
             GamePhysics phys0 = e0.getPhysics();
             GamePhysics phys1 = e1.getPhysics();
             PointUD e0loc = new PointUD(e0.getWorldX(), e0.getWorldY()), e1loc = new PointUD(e1.getWorldX(),
-                    e1.getWorldY());
-            e0.getCollisionModel().resolve(e0loc, e1loc, e1.getCollisionModel(), phys0.getVelocity2d(),
-                    phys1.getVelocity2d(), 1, 0.5);
+                            e1.getWorldY());
+            e0.getCollisionModel().resolve(e0loc,
+                                           e1loc,
+                                           e1.getCollisionModel(),
+                                           phys0.getVelocity2d(),
+                                           phys1.getVelocity2d(),
+                                           1,
+                                           0.5);
             e0.setWorldLoc(e0loc.ux, e0loc.uy);
             e1.setWorldLoc(e1loc.ux, e1loc.uy);
             phys0.collideWith2d(phys1);

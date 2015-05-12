@@ -21,7 +21,7 @@ import java.awt.Color;
  * @author Brian Groenke
  *
  */
-public class ColorGenerator implements Generator <Color> {
+public class ColorGenerator implements Generator<Color> {
 
     public static final int RED = 0x01, GREEN = 0x02, BLUE = 0x04, ALPHA = 0x08;
 
@@ -29,7 +29,7 @@ public class ColorGenerator implements Generator <Color> {
 
     private int r = 255, g = 255, b = 255, a = 255;
 
-    private final NumberGenerator <Integer> numGen = new NumberGenerator <Integer>(0, 255);
+    private final NumberGenerator<Integer> numGen = new NumberGenerator<Integer>(0, 255);
 
     /**
      * Creates a ColorGenerator that will randomly generate the components

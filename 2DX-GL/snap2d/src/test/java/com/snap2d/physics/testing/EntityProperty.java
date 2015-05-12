@@ -23,8 +23,11 @@ import bg.x2d.geo.Vector2d;
  */
 public enum EntityProperty {
 
-    MASS("Mass", FLOAT), VELOCITY("Velocity", VECTOR), COLL_FACTOR("Collision Factor", FLOAT), SIZE("Size", VECTOR), NO_GRAVITY(
-            "Disable Gravity", BOOLEAN);
+    MASS("Mass", FLOAT),
+    VELOCITY("Velocity", VECTOR),
+    COLL_FACTOR("Collision Factor", FLOAT),
+    SIZE("Size", VECTOR),
+    NO_GRAVITY("Disable Gravity", BOOLEAN);
 
     final String label;
     final int type;

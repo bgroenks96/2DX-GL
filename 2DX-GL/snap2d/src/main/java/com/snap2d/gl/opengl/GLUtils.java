@@ -37,15 +37,19 @@ import com.snap2d.world.World2D;
 public class GLUtils {
 
     public static final int SIZEOF_BYTE = Buffers.SIZEOF_BYTE, SIZEOF_INT = Buffers.SIZEOF_INT,
-            SIZEOF_FLOAT = Buffers.SIZEOF_FLOAT, SIZEOF_DOUBLE = Buffers.SIZEOF_DOUBLE,
-            SIZEOF_LONG = Buffers.SIZEOF_LONG, SIZEOF_CHAR = Buffers.SIZEOF_CHAR, SIZEOF_SHORT = Buffers.SIZEOF_SHORT;
+                    SIZEOF_FLOAT = Buffers.SIZEOF_FLOAT, SIZEOF_DOUBLE = Buffers.SIZEOF_DOUBLE,
+                    SIZEOF_LONG = Buffers.SIZEOF_LONG, SIZEOF_CHAR = Buffers.SIZEOF_CHAR,
+                    SIZEOF_SHORT = Buffers.SIZEOF_SHORT;
 
     private GLUtils() {
 
     }
 
-    public static final World2D createGLWorldSystem(final double minx, final double miny, final int viewWt,
-            final int viewHt, final float ppu) {
+    public static final World2D createGLWorldSystem(final double minx,
+                                                    final double miny,
+                                                    final int viewWt,
+                                                    final int viewHt,
+                                                    final float ppu) {
 
         return new GLWorld2D(minx, miny, viewWt, viewHt, ppu);
     }
@@ -159,8 +163,12 @@ public class GLUtils {
         return dest;
     }
 
-    static FloatBuffer createOrthoMatrix(final float left, final float right, final float bottom, final float top,
-            final float zNear, final float zFar) {
+    static FloatBuffer createOrthoMatrix(final float left,
+                                         final float right,
+                                         final float bottom,
+                                         final float top,
+                                         final float zNear,
+                                         final float zFar) {
 
         float m00 = 1, m01 = 0, m02 = 0, m03 = 0, m10 = 0, m11 = 1, m12 = 0, m13 = 0, m20 = 0, m21 = 0, m22 = 1, m23 = 0, m30 = 0, m31 = 0, m32 = 0, m33 = 1;
         m00 = 2 / (right - left);

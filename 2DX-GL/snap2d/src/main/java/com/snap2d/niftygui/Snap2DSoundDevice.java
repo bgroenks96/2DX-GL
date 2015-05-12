@@ -47,7 +47,7 @@ public class Snap2DSoundDevice implements SoundDevice {
     @Override
     public SoundHandle loadMusic(final SoundSystem arg0, final String arg1) {
 
-        if (!sound.isInitialized()) {
+        if ( !sound.isInitialized()) {
             log.warning("failed to load sound: Sound2D is uninitialized");
             return null;
         }
@@ -65,7 +65,7 @@ public class Snap2DSoundDevice implements SoundDevice {
     @Override
     public SoundHandle loadSound(final SoundSystem arg0, final String arg1) {
 
-        if (!sound.isInitialized()) {
+        if ( !sound.isInitialized()) {
             log.warning("failed to load sound: Sound2D is uninitialized");
             return null;
         }

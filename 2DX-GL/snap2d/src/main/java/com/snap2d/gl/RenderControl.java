@@ -90,18 +90,18 @@ public class RenderControl implements RenderController {
     protected volatile long lastResizeFinish;
     protected volatile boolean applyGamma, updateGamma, scheduledResize;
 
-    protected List <Renderable> rtasks = new ArrayList <Renderable>(), delQueue = new Vector <Renderable>();
-    protected List <QueuedRenderable> addQueue = new Vector <QueuedRenderable>();
+    protected List<Renderable> rtasks = new ArrayList<Renderable>(), delQueue = new Vector<Renderable>();
+    protected List<QueuedRenderable> addQueue = new Vector<QueuedRenderable>();
     protected RenderLoop loop;
     protected ThreadManager exec = new ThreadManager();
     protected AutoResize autoResize;
-    protected Future <?> taskCallback;
+    protected Future<?> taskCallback;
     protected Dimension initSize;
     protected int buffs;
     protected float gamma = 1.0f;
 
     protected GammaTable gammaTable = new GammaTable(gamma);
-    protected Map <RenderingHints.Key, Object> renderOps;
+    protected Map<RenderingHints.Key, Object> renderOps;
 
     private final Semaphore loopChk = new Semaphore(1, true);
     private final GraphicsConfig config;
@@ -123,7 +123,7 @@ public class RenderControl implements RenderController {
         this.canvas = new Canvas();
         this.buffs = buffs;
 
-        renderOps = new HashMap <RenderingHints.Key, Object>();
+        renderOps = new HashMap<RenderingHints.Key, Object>();
         loop = new RenderLoop();
         autoResize = new AutoResize();
 
@@ -160,7 +160,7 @@ public class RenderControl implements RenderController {
         loop.active = false;
 
         long st = System.currentTimeMillis();
-        while (!taskCallback.isDone()) {
+        while ( !taskCallback.isDone()) {
             if (System.currentTimeMillis() - st > stopTimeout) {
                 taskCallback.cancel(true);
                 break;
@@ -466,7 +466,7 @@ public class RenderControl implements RenderController {
         renderOps.put(key, value);
     }
 
-    public void setRenderOps(final Map <Key, ?> hints) {
+    public void setRenderOps(final Map<Key, ?> hints) {
 
         renderOps.putAll(hints);
     }
@@ -509,8 +509,8 @@ public class RenderControl implements RenderController {
     }
 
     ExecutorService renderPool = Executors.newFixedThreadPool(Runtime.getRuntime().availableProcessors(),
-            new RenderThreadFactory());
-    ArrayList <RenderRow> rowCache = new ArrayList <RenderRow>();
+                                                              new RenderThreadFactory());
+    ArrayList<RenderRow> rowCache = new ArrayList<RenderRow>();
 
     /**
      * Internal method that is called by RenderLoop to draw rendered data to the
@@ -569,7 +569,7 @@ public class RenderControl implements RenderController {
             g.dispose();
         }
 
-        if (!bs.contentsLost() && canvas.getParent() != null) {
+        if ( !bs.contentsLost() && canvas.getParent() != null) {
             bs.show();
         }
     }
@@ -610,18 +610,18 @@ public class RenderControl implements RenderController {
                 int b = srcValue & 0xFF;
                 int g = srcValue >> 8 & 0xFF;
                 int r = srcValue >> 16 & 0xFF;
-        int a = srcValue >> 24 & 0xFF;
-        if (applyGamma) {
-            a = gammaTable.applyGamma(a);
-            r = gammaTable.applyGamma(r);
-            g = gammaTable.applyGamma(g);
-            b = gammaTable.applyGamma(b);
-        }
-        srcValue = a;
-        srcValue = (srcValue << 8) + r;
-        srcValue = (srcValue << 8) + g;
-        srcValue = (srcValue << 8) + b;
-        pixelData[pos] = srcValue;
+                int a = srcValue >> 24 & 0xFF;
+                if (applyGamma) {
+                    a = gammaTable.applyGamma(a);
+                    r = gammaTable.applyGamma(r);
+                    g = gammaTable.applyGamma(g);
+                    b = gammaTable.applyGamma(b);
+                }
+                srcValue = a;
+                srcValue = (srcValue << 8) + r;
+                srcValue = (srcValue << 8) + g;
+                srcValue = (srcValue << 8) + b;
+                pixelData[pos] = srcValue;
             }
         }
 
@@ -658,13 +658,13 @@ public class RenderControl implements RenderController {
 
         // Default values
         private final double TARGET_FPS = 60, TARGET_TIME_BETWEEN_RENDERS = 1000000000.0 / TARGET_FPS, TICK_HERTZ = 30,
-                TIME_BETWEEN_UPDATES = 1000000000.0 / TICK_HERTZ, MAX_UPDATES_BEFORE_RENDER = 3;
+                        TIME_BETWEEN_UPDATES = 1000000000.0 / TICK_HERTZ, MAX_UPDATES_BEFORE_RENDER = 3;
 
         private final long SLEEP_WHILE_INACTIVE = 100;
 
         private double targetFPS = TARGET_FPS, targetTimeBetweenRenders = TARGET_TIME_BETWEEN_RENDERS,
-                tickHertz = TICK_HERTZ, timeBetweenUpdates = TIME_BETWEEN_UPDATES,
-                maxUpdates = MAX_UPDATES_BEFORE_RENDER;
+                        tickHertz = TICK_HERTZ, timeBetweenUpdates = TIME_BETWEEN_UPDATES,
+                        maxUpdates = MAX_UPDATES_BEFORE_RENDER;
 
         volatile int fps, tps;
         volatile boolean running, active, noUpdate, printFrames;
@@ -682,7 +682,7 @@ public class RenderControl implements RenderController {
                     Thread.currentThread().setName("snap2d-sleeper_thread");
                     try {
                         if (Local.getPlatform().toLowerCase().contains("windows")
-                                && Boolean.getBoolean(Property.SNAP2D_WINDOWS_HIGH_RES_TIMER.getProperty())) {
+                                        && Boolean.getBoolean(Property.SNAP2D_WINDOWS_HIGH_RES_TIMER.getProperty())) {
                             System.out.println("[Snap2D] started windows sleeper daemon");
                             Thread.sleep(Long.MAX_VALUE);
                         }
@@ -702,7 +702,7 @@ public class RenderControl implements RenderController {
                         try {
                             Thread.sleep(800);
                             boolean print = Boolean.getBoolean(Property.SNAP2D_PRINT_RENDER_STAT.getProperty());
-                            while (!printFrames) {
+                            while ( !printFrames) {
                                 ;
                             }
                             String printStr = fps + " fps " + tps + " ticks";
@@ -806,7 +806,7 @@ public class RenderControl implements RenderController {
                         }
                     }
 
-                    if (!active) {
+                    if ( !active) {
                         fps = 0;
                         tps = 0;
                         printFrames = true;
@@ -814,13 +814,13 @@ public class RenderControl implements RenderController {
 
                     loopChk.release();
                     while (now - lastRenderTime < targetTimeBetweenRenders
-                            && (now - lastUpdateTime < timeBetweenUpdates || noUpdate)) {
+                                    && (now - lastUpdateTime < timeBetweenUpdates || noUpdate)) {
                         Thread.yield();
                         now = System.nanoTime();
                     }
                     loopChk.acquire();
 
-                    if (!active) {
+                    if ( !active) {
                         // preserve CPU if loop is currently is currently
                         // inactive.
                         // the constant can be lowered to reduce latency when
@@ -829,7 +829,7 @@ public class RenderControl implements RenderController {
                     }
                 } catch (Exception e) {
                     System.err.println("Snap2D: error in rendering loop: " + e.toString()
-                            + "\nTerminating loop execution...");
+                                    + "\nTerminating loop execution...");
                     CrashReportWindow crashDisp = new CrashReportWindow();
                     crashDisp.dumpToLog("Unhandled error detected in rendering loop - aborting execution", e);
                     crashDisp.setVisible(true);
@@ -893,7 +893,7 @@ public class RenderControl implements RenderController {
             }
 
             if (auto) {
-                Iterator <Renderable> itr = rtasks.listIterator();
+                Iterator<Renderable> itr = rtasks.listIterator();
                 while (itr.hasNext()) {
                     Renderable r = itr.next();
                     r.onResize(initSize, new Dimension(wt, ht));
@@ -930,7 +930,7 @@ public class RenderControl implements RenderController {
 
     private void printInitReport() {
 
-        if (!Boolean.getBoolean(Property.SNAP2D_PRINT_J2D_CONFIG.getProperty())) {
+        if ( !Boolean.getBoolean(Property.SNAP2D_PRINT_J2D_CONFIG.getProperty())) {
             return;
         }
         log.info("initialized Java2D graphics pipeline");

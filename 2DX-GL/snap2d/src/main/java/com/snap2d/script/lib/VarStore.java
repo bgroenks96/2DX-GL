@@ -1,18 +1,20 @@
 /*
  *  Copyright (C) 2011-2014 Brian Groenke
  *  All rights reserved.
- * 
+ *
  *  This file is part of the 2DX Graphics Library.
  *
  *  This Source Code Form is subject to the terms of the
- *  Mozilla Public License, v. 2.0. If a copy of the MPL 
- *  was not distributed with this file, You can obtain one at 
+ *  Mozilla Public License, v. 2.0. If a copy of the MPL
+ *  was not distributed with this file, You can obtain one at
  *  http://mozilla.org/MPL/2.0/.
  */
 
 package com.snap2d.script.lib;
 
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 
 import com.snap2d.script.ScriptLink;
 import com.snap2d.script.Vec2;
@@ -23,10 +25,14 @@ import com.snap2d.script.Vec2;
  */
 public class VarStore {
 
-    private static final int INT = 0x10, FLOAT = 0x11, BOOL = 0x12, STRING = 0x13, VEC2 = 0x14;
+    private final HashMap<String, Object> globals = new HashMap<String, Object>();
+    private final HashMap<Integer, List<Integer>> intLists = new HashMap<Integer, List<Integer>>();
+    private final HashMap<Integer, List<Float>> floatLists = new HashMap<Integer, List<Float>>();
+    private final HashMap<Integer, List<String>> stringLists = new HashMap<Integer, List<String>>();
+    private final HashMap<Integer, List<Boolean>> boolLists = new HashMap<Integer, List<Boolean>>();
+    private final HashMap<Integer, List<Vec2>> vecLists = new HashMap<Integer, List<Vec2>>();
 
-    private final HashMap <String, Object> globals = new HashMap <String, Object>();
-    private final HashMap <String, Array <?>> arrays = new HashMap <String, Array <?>>();
+    private static volatile int listID = Integer.MIN_VALUE;
 
     boolean useDouble = false;
 
@@ -108,151 +114,145 @@ public class VarStore {
     }
 
     @ScriptLink
-    public void newIntArray(final String name, final int length) {
-
-        arrays.put(name, new IntArray(length));
+    public int newIntList() {
+        List<Integer> newList = new ArrayList<Integer>();
+        int id = listID++ ;
+        intLists.put(id, newList);
+        return id;
     }
 
     @ScriptLink
-    public void newFloatArray(final String name, final int length) {
-
-        arrays.put(name, new FloatArray(length));
+    public void addToList(int value, int id) {
+        intLists.get(id).add(value);
     }
 
     @ScriptLink
-    public void newBoolArray(final String name, final int length) {
-
-        arrays.put(name, new BoolArray(length));
+    public void addToList(int value, int pos, int id) {
+        intLists.get(id).add(pos, value);
     }
 
     @ScriptLink
-    public void newStringArray(final String name, final int length) {
-
-        arrays.put(name, new StringArray(length));
+    public int intAt(int pos, int id) {
+        return intLists.get(id).get(pos);
     }
 
     @ScriptLink
-    public void deleteArray(final String name) {
-
-        arrays.remove(name);
+    public int newFloatList() {
+        List<Float> newList = new ArrayList<Float>();
+        int id = listID++ ;
+        floatLists.put(id, newList);
+        return id;
     }
 
     @ScriptLink
-    public int accessInt(final String name, final int pos) {
-
-        Array <?> arr = arrays.get(name);
-        if (arr == null) {
-            throw (new NullPointerException("unable to locate array referenced by " + name));
-        }
-        return arr.intArray().array[pos];
+    public void addToList(float value, int id) {
+        floatLists.get(id).add(value);
     }
 
     @ScriptLink
-    public float accessFloat(final String name, final int pos) {
-
-        Array <?> arr = arrays.get(name);
-        if (arr == null) {
-            throw (new NullPointerException("unable to locate array referenced by " + name));
-        }
-        return arr.floatArray().array[pos];
+    public void addToList(float value, int pos, int id) {
+        floatLists.get(id).add(pos, value);
     }
 
     @ScriptLink
-    public boolean accessBool(final String name, final int pos) {
-
-        Array <?> arr = arrays.get(name);
-        if (arr == null) {
-            throw (new NullPointerException("unable to locate array referenced by " + name));
-        }
-        return arr.boolArray().array[pos];
+    public float floatAt(int pos, int id) {
+        return floatLists.get(id).get(pos);
     }
 
     @ScriptLink
-    public String accessStr(final String name, final int pos) {
-
-        Array <?> arr = arrays.get(name);
-        if (arr == null) {
-            throw (new NullPointerException("unable to locate array referenced by " + name));
-        }
-        return arr.strArray().array[pos];
+    public int newBoolList() {
+        List<Boolean> newList = new ArrayList<Boolean>();
+        int id = listID++ ;
+        boolLists.put(id, newList);
+        return id;
     }
 
-    private class IntArray extends Array <Integer> {
+    @ScriptLink
+    public void addToList(boolean value, int id) {
+        boolLists.get(id).add(value);
+    }
 
-        int[] array;
+    @ScriptLink
+    public void addToList(boolean value, int pos, int id) {
+        boolLists.get(id).add(pos, value);
+    }
 
-        IntArray(final int length) {
+    @ScriptLink
+    public boolean boolAt(int pos, int id) {
+        return boolLists.get(id).get(pos);
+    }
 
-            super(INT);
-            array = new int[length];
+    @ScriptLink
+    public int newStringList() {
+        List<String> newList = new ArrayList<String>();
+        int id = listID++ ;
+        stringLists.put(id, newList);
+        return id;
+    }
+
+    @ScriptLink
+    public void addToList(String value, int id) {
+        stringLists.get(id).add(value);
+    }
+
+    @ScriptLink
+    public void addToList(String value, int pos, int id) {
+        stringLists.get(id).add(pos, value);
+    }
+
+    @ScriptLink
+    public String stringAt(int pos, int id) {
+        return stringLists.get(id).get(pos);
+    }
+
+    @ScriptLink
+    public int newVecList() {
+        List<Vec2> newList = new ArrayList<Vec2>();
+        int id = listID++ ;
+        vecLists.put(id, newList);
+        return id;
+    }
+
+    @ScriptLink
+    public void addToList(Vec2 value, int id) {
+        vecLists.get(id).add(value);
+    }
+
+    @ScriptLink
+    public void addToList(Vec2 value, int pos, int id) {
+        vecLists.get(id).add(pos, value);
+    }
+
+    @ScriptLink
+    public Vec2 vecAt(int pos, int id) {
+        return vecLists.get(id).get(pos);
+    }
+
+    @ScriptLink
+    public boolean listExists(int listId) {
+        for (List<?> nextList : queryLists(listId)) {
+            if (nextList != null) return true;
+        }
+        return false;
+    }
+
+    @ScriptLink
+    public void printList(int listId) {
+        for (List<?> nextList : queryLists(listId)) {
+            if (nextList != null) ScriptUtils.println(nextList.toString());
         }
     }
 
-    private class FloatArray extends Array <Float> {
-
-        float[] array;
-
-        FloatArray(final int length) {
-
-            super(FLOAT);
-            array = new float[length];
+    @ScriptLink
+    public int size(int listId) {
+        for (List<?> nextList : queryLists(listId)) {
+            if (nextList != null) return nextList.size();
         }
+        return -1;
     }
 
-    private class BoolArray extends Array <Boolean> {
-
-        boolean[] array;
-
-        BoolArray(final int length) {
-
-            super(BOOL);
-            array = new boolean[length];
-        }
-    }
-
-    private class StringArray extends Array <String> {
-
-        String[] array;
-
-        StringArray(final int length) {
-
-            super(STRING);
-            array = new String[length];
-        }
-    }
-
-    private class Array<T> {
-
-        private final int type;
-
-        Array(final int type) {
-
-            this.type = type;
-        }
-
-        IntArray intArray() {
-
-            return (IntArray) this;
-        }
-
-        FloatArray floatArray() {
-
-            return (FloatArray) this;
-        }
-
-        BoolArray boolArray() {
-
-            return (BoolArray) this;
-        }
-
-        StringArray strArray() {
-
-            return (StringArray) this;
-        }
-
-        int getType() {
-
-            return type;
-        }
+    private final List<?>[] queryLists(int listId) {
+        return new List<?>[] { intLists.get(listId), floatLists.get(listId), stringLists.get(listId),
+                boolLists.get(listId), vecLists.get(listId) };
     }
 }

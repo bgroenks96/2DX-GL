@@ -52,7 +52,7 @@ public abstract class GTDAnimator implements Animator {
      * The current ArrayList that represents the engine's registered Drawable
      * tasks.
      */
-    protected final List <Drawable> tasks = Collections.synchronizedList(new ArrayList <Drawable>());
+    protected final List<Drawable> tasks = Collections.synchronizedList(new ArrayList<Drawable>());
     /**
      * The boolean value that represents this engine's current blocking
      * configuration.
@@ -141,10 +141,10 @@ public abstract class GTDAnimator implements Animator {
      * 
      * @return the ArrayList<Drawable> containing the registered Drawables.
      */
-    public synchronized List <Drawable> getTasks() {
+    public synchronized List<Drawable> getTasks() {
 
         synchronized (tasks) {
-            return Collections.synchronizedList(new ArrayList <Drawable>(tasks));
+            return Collections.synchronizedList(new ArrayList<Drawable>(tasks));
         }
     }
 
@@ -158,7 +158,7 @@ public abstract class GTDAnimator implements Animator {
     protected final void runTasks(final Graphics2D g2) {
 
         synchronized (tasks) {
-            Iterator <Drawable> itr = tasks.iterator();
+            Iterator<Drawable> itr = tasks.iterator();
             while (itr.hasNext()) {
                 final Drawable d = itr.next();
                 SwingUtilities.invokeLater(new Runnable() {
@@ -171,7 +171,7 @@ public abstract class GTDAnimator implements Animator {
                 });
             }
         }
-        if (!EventQueue.isDispatchThread() && wait) {
+        if ( !EventQueue.isDispatchThread() && wait) {
             try {
                 SwingUtilities.invokeAndWait(new Runnable() {
 

@@ -58,9 +58,9 @@ public abstract class Local {
      * Field value="x86"
      */
     JVM_X86 = "x86", NATIVE_WIN32 = "/win32", NATIVE_WIN64 = "/win64", NATIVE_LINUX32 = "/linux32",
-    NATIVE_LINUX64 = "/linux64", NATIVE_BSD32 = "/freebsd32", NATIVE_BSD64 = "/freebsd64",
-    NATIVE_MAC32 = "/mac32", NATIVE_MAC64 = "/mac64", NATIVE_SOLARIS32 = "/solaris32",
-    NATIVE_SOLARIS64 = "/solaris64";
+                    NATIVE_LINUX64 = "/linux64", NATIVE_BSD32 = "/freebsd32", NATIVE_BSD64 = "/freebsd64",
+                    NATIVE_MAC32 = "/mac32", NATIVE_MAC64 = "/mac64", NATIVE_SOLARIS32 = "/solaris32",
+                    NATIVE_SOLARIS64 = "/solaris64";
 
     private static String[] nativeSupported;
 
@@ -340,7 +340,7 @@ public abstract class Local {
      */
     public static boolean loadNative(String name) {
 
-        if (!isNativeCodeSupported()) {
+        if ( !isNativeCodeSupported()) {
             return false;
         }
         name = name + '.' + getNativeLibrarySuffix();
@@ -367,7 +367,7 @@ public abstract class Local {
         final int SYS_COUNT = 10; // this must be changed if platforms are
         // added/removed.
 
-        HashSet <String> supported = new HashSet <String>();
+        HashSet<String> supported = new HashSet<String>();
         for (int i = 0; i < SYS_COUNT; i++ ) {
             String platform = null;
             switch (i) {

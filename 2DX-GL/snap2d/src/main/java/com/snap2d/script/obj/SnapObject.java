@@ -56,12 +56,12 @@ public class SnapObject {
 
     public final String name;
 
-    private final Map <String, String> propMap;
+    private final Map<String, String> propMap;
 
     SnapObject(final String name) {
 
         this.name = name;
-        propMap = new HashMap <String, String>();
+        propMap = new HashMap<String, String>();
     }
 
     void put(final String k, final String v) {
