@@ -40,19 +40,19 @@ public class InputDispatch {
     private final boolean running;
     private boolean consume;
     private KeyboardFocusManager manager;
-    private final List <KeyEventClient> keyClients;
-    private final List <MouseEventClient> mouseClients;
+    private final List<KeyEventClient> keyClients;
+    private final List<MouseEventClient> mouseClients;
 
     private final ThreadManager exec = new ThreadManager();
 
     private static final long MOUSE_INPUT_MASK = AWTEvent.MOUSE_EVENT_MASK + AWTEvent.MOUSE_MOTION_EVENT_MASK
-            + AWTEvent.MOUSE_WHEEL_EVENT_MASK;
+                    + AWTEvent.MOUSE_WHEEL_EVENT_MASK;
 
     public InputDispatch(final boolean consume) {
 
         running = true;
-        keyClients = Collections.synchronizedList(new ArrayList <KeyEventClient>());
-        mouseClients = Collections.synchronizedList(new ArrayList <MouseEventClient>());
+        keyClients = Collections.synchronizedList(new ArrayList<KeyEventClient>());
+        mouseClients = Collections.synchronizedList(new ArrayList<MouseEventClient>());
         manager = KeyboardFocusManager.getCurrentKeyboardFocusManager();
         manager.addKeyEventDispatcher(new KeyDispatcher());
         Toolkit.getDefaultToolkit().addAWTEventListener(new MouseDispatcher(), MOUSE_INPUT_MASK);
@@ -85,7 +85,7 @@ public class InputDispatch {
         public boolean dispatchKeyEvent(final KeyEvent e) {
 
             synchronized (keyClients) {
-                Iterator <KeyEventClient> i = keyClients.iterator();
+                Iterator<KeyEventClient> i = keyClients.iterator();
                 while (i.hasNext()) {
                     KeyEventClient client = i.next();
                     client.processKeyEvent(e);
@@ -104,7 +104,7 @@ public class InputDispatch {
             MouseEvent me = (MouseEvent) event;
 
             synchronized (mouseClients) {
-                Iterator <MouseEventClient> i = mouseClients.iterator();
+                Iterator<MouseEventClient> i = mouseClients.iterator();
                 while (i.hasNext()) {
                     MouseEventClient client = i.next();
                     client.processMouseEvent(me);
@@ -121,7 +121,7 @@ public class InputDispatch {
             Thread.currentThread().setName("snap2d-verify_dispatch");
             while (running && manager != null) {
                 KeyboardFocusManager current = KeyboardFocusManager.getCurrentKeyboardFocusManager();
-                if (!manager.equals(current)) {
+                if ( !manager.equals(current)) {
                     manager = current;
                 }
                 try {

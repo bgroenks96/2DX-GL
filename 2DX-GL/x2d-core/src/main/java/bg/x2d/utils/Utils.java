@@ -33,8 +33,8 @@ public class Utils {
     public static final File TEMP_DIR = new File(System.getProperty("java.io.tmpdir") + File.separator + ".com_x2d_tmp");
 
     public static final long INT_SIZE = Integer.SIZE / Byte.SIZE, LONG_SIZE = Long.SIZE / Byte.SIZE,
-            FLOAT_SIZE = Float.SIZE / Byte.SIZE, DOUBLE_SIZE = Double.SIZE / Byte.SIZE, SHORT_SIZE = Short.SIZE
-            / Byte.SIZE;
+                    FLOAT_SIZE = Float.SIZE / Byte.SIZE, DOUBLE_SIZE = Double.SIZE / Byte.SIZE, SHORT_SIZE = Short.SIZE
+                                    / Byte.SIZE;
 
     /**
      * If true, the 2DX-GL temp-dir won't be deleted on program exit.
@@ -56,7 +56,7 @@ public class Utils {
                 break;
             }
         }
-        if (!chk) {
+        if ( !chk) {
             System.err.println("WARNING: error creating temp-dir");
         } else {
             Runtime.getRuntime().addShutdownHook(new Thread(new Runnable() {
@@ -65,7 +65,7 @@ public class Utils {
                 public void run() {
 
                     try {
-                        if (!keepTempDir) {
+                        if ( !keepTempDir) {
                             removeDirectory(TEMP_DIR, true);
                         } else {
                             System.out.println("keepTempDir=true - skipping temp-dir removal");
@@ -167,7 +167,7 @@ public class Utils {
      * @return a File object representing the newly created temp-file.
      */
     public static File writeToTempStorage(final InputStream in, final String fileName, final boolean useSystem)
-            throws IOException {
+                    throws IOException {
 
         BufferedInputStream buffIn = new BufferedInputStream(in);
         String tmpdir = (useSystem) ? System.getProperty("java.io.tmpdir") : TEMP_DIR.getPath();
@@ -197,7 +197,7 @@ public class Utils {
      * @throws IOException
      */
     public static File writeToTempStorage(final String text, final String fileName, final boolean useSystem)
-            throws IOException {
+                    throws IOException {
 
         String tmpdir = (useSystem) ? System.getProperty("java.io.tmpdir") : TEMP_DIR.getPath();
         File outFile = new File(tmpdir + File.separator + fileName);
@@ -275,7 +275,7 @@ public class Utils {
                 if (sub.isDirectory()) {
                     removeDirectory(sub, delete);
                 } else {
-                    if (!sub.delete()) {
+                    if ( !sub.delete()) {
                         deleted = false;
                     }
                     ;
@@ -498,7 +498,7 @@ public class Utils {
             throw (new NullPointerException("passed array is of null value"));
         }
         T[] copy = Arrays.copyOf(array, array.length);
-        List <Integer> track = new ArrayList <Integer>();
+        List<Integer> track = new ArrayList<Integer>();
         for (int i = 0; i < array.length; i++ ) {
             int rand = -1;
             do {

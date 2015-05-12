@@ -1,12 +1,12 @@
 /*
  *  Copyright (C) 2011-2014 Brian Groenke
  *  All rights reserved.
- * 
+ *
  *  This file is part of the 2DX Graphics Library.
  *
  *  This Source Code Form is subject to the terms of the
- *  Mozilla Public License, v. 2.0. If a copy of the MPL 
- *  was not distributed with this file, You can obtain one at 
+ *  Mozilla Public License, v. 2.0. If a copy of the MPL
+ *  was not distributed with this file, You can obtain one at
  *  http://mozilla.org/MPL/2.0/.
  */
 
@@ -20,18 +20,20 @@ import java.util.concurrent.TimeUnit;
 
 /**
  * Manages standard and daemon thread pools for the Snap2D Engine.
- * 
+ *
  * @author Brian Groenke
- * 
+ *
  */
 public final class ThreadManager {
 
     private int n = 6;
+
     private final DaemonThreadFactory dtf = new DaemonThreadFactory();
-    private ExecutorService threadPool = Executors.newFixedThreadPool(n);
     private final ExecutorService daemons = Executors.newCachedThreadPool(dtf);
 
-    public synchronized Future <?> submitJob(final Runnable r) {
+    private ExecutorService threadPool = Executors.newFixedThreadPool(n);
+
+    public synchronized Future<?> submitJob(final Runnable r) {
 
         return threadPool.submit(r);
     }
@@ -41,21 +43,21 @@ public final class ThreadManager {
         daemons.execute(r);
     }
 
-    public <T> Future <T> newDaemonTask(final Callable <T> task) {
+    public <T> Future<T> newDaemonTask(final Callable<T> task) {
 
         return daemons.submit(task);
     }
 
     public void shutdown() {
 
-        if (!threadPool.isShutdown() && !threadPool.isTerminated()) {
+        if ( !threadPool.isShutdown() && !threadPool.isTerminated()) {
             threadPool.shutdown();
         }
     }
 
     public void forceShutdown() {
 
-        if (!threadPool.isTerminated()) {
+        if ( !threadPool.isTerminated()) {
             threadPool.shutdownNow();
         }
     }
@@ -63,7 +65,7 @@ public final class ThreadManager {
     /**
      * Blocks the current thread until this ThreadManager's thread pool has
      * fully shutdown.
-     * 
+     *
      * @param timeout
      *            time in milliseconds to timeout
      * @throws InterruptedException
@@ -81,7 +83,7 @@ public final class ThreadManager {
      */
     public void reboot() {
 
-        if (!threadPool.isShutdown()) {
+        if ( !threadPool.isShutdown()) {
             forceShutdown();
         }
         threadPool = null;
@@ -101,7 +103,7 @@ public final class ThreadManager {
      * number of threads specified. Make sure to call this method either a)
      * before launching any thread jobs or b) when you are sure the threads in
      * the current pool can be shutdown.
-     * 
+     *
      * @param nthreads
      *            The number of threads in the new thread pool. If n < 1, a
      *            cached thread pool will be created.
@@ -123,11 +125,10 @@ public final class ThreadManager {
     /**
      * The number of threads in the current thread pool, or zero if the current
      * pool is cached.
-     * 
+     *
      * @return
      */
     public int getThreadCount() {
-
         return n;
     }
 }

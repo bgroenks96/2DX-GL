@@ -50,9 +50,9 @@ public class LineSeg {
     boolean hasPoint(final double x, final double y) {
 
         boolean inBounds = x <= Math.max(x1, x2) && x >= Math.min(x1, x2) && y <= Math.max(y1, y2)
-                && y >= Math.min(y1, y2);
-                boolean inLine = y - y1 == ( (y2 - y1) / (x2 - x1)) * (x - x1);
-                return inBounds && inLine;
+                        && y >= Math.min(y1, y2);
+        boolean inLine = y - y1 == ( (y2 - y1) / (x2 - x1)) * (x - x1);
+        return inBounds && inLine;
     }
 
     @Override

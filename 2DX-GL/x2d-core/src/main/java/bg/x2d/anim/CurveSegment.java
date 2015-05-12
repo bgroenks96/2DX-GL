@@ -32,8 +32,15 @@ public class CurveSegment implements Segment {
 
     private final double inc;
 
-    public CurveSegment(final int x0, final int y0, final int x1, final int y1, final int x2, final int y2,
-            final int x3, final int y3, final long duration) {
+    public CurveSegment(final int x0,
+                        final int y0,
+                        final int x1,
+                        final int y1,
+                        final int x2,
+                        final int y2,
+                        final int x3,
+                        final int y3,
+                        final long duration) {
 
         this.xs = x0;
         this.ys = y0;
@@ -84,9 +91,9 @@ public class CurveSegment implements Segment {
             double tinc = diff * inc;
             t += tinc;
             int nx = (int) Math.round(Math.pow(1 - t, 3) * xs + 3 * Math.pow(1 - t, 2) * t * cx1 + 3 * (1 - t)
-                    * Math.pow(t, 2) * cx2 + Math.pow(t, 3) * xe);
+                            * Math.pow(t, 2) * cx2 + Math.pow(t, 3) * xe);
             int ny = (int) Math.round(Math.pow(1 - t, 3) * ys + 3 * Math.pow(1 - t, 2) * t * cy1 + 3 * (1 - t)
-                    * Math.pow(t, 2) * cy2 + Math.pow(t, 3) * ye);
+                            * Math.pow(t, 2) * cy2 + Math.pow(t, 3) * ye);
             int dx = nx - lx;
             int dy = ny - ly;
             affine.translate(dx, dy);

@@ -33,9 +33,9 @@ public class ScriptProgram {
 
     private static final Logger log = Logger.getLogger(ScriptProgram.class.getCanonicalName());
 
-    ArrayList <ScriptSource> scripts = new ArrayList <ScriptSource>();
-    ArrayList <Class <?>> classes = new ArrayList <Class <?>>();
-    Multimap <String, Function> funcs;
+    ArrayList<ScriptSource> scripts = new ArrayList<ScriptSource>();
+    ArrayList<Class<?>> classes = new ArrayList<Class<?>>();
+    Multimap<String, Function> funcs;
     ConstantInitializer[] initConsts;
     ScriptEngine engine;
 
@@ -83,7 +83,7 @@ public class ScriptProgram {
         scripts.add(script);
     }
 
-    public void link(final Class <?> javaClass) {
+    public void link(final Class<?> javaClass) {
 
         classes.add(javaClass);
     }
@@ -93,7 +93,7 @@ public class ScriptProgram {
         scripts.remove(script);
     }
 
-    public void unlink(final Class <?> javaClass) {
+    public void unlink(final Class<?> javaClass) {
 
         classes.remove(javaClass);
     }
@@ -101,7 +101,7 @@ public class ScriptProgram {
     public boolean compile() {
 
         log.info("Initializing SnapScript " + ScriptInfo.SCRIPT_VERSION.str + " [BCS." + ScriptInfo.BYTECODE_SPEC.str
-                + "]");
+                        + "]");
         ScriptCompiler compiler = new ScriptCompiler();
         boolean chk;
         try {
@@ -109,7 +109,7 @@ public class ScriptProgram {
             for (int i = 0; i < scripts.size(); i++ ) {
                 srcs[i] = scripts.get(i).getSource();
             }
-            ArrayList <ConstantInitializer> constList = new ArrayList <ConstantInitializer>();
+            ArrayList<ConstantInitializer> constList = new ArrayList<ConstantInitializer>();
             log.info("Running precompiler...");
             System.out.println("Running precompiler...");
             funcs = compiler.precompile(constList, srcs);
@@ -117,7 +117,7 @@ public class ScriptProgram {
             funcs.values().toArray(scriptFuncs);
             log.info("Linking Java functions...");
             // register methods from linked classes
-            for (Class <?> c : classes) {
+            for (Class<?> c : classes) {
                 Method[] methods = c.getDeclaredMethods();
                 for (Method m : methods) {
                     ScriptLink link = m.getAnnotation(ScriptLink.class);
@@ -130,7 +130,7 @@ public class ScriptProgram {
                         for (Function f : other) {
                             if (Arrays.equals(func.getParamTypes(), f.getParamTypes())) {
                                 throw (new ScriptCompilationException("found duplicate linked method '" + f.getName()
-                                        + "' in class " + c.getName()));
+                                                + "' in class " + c.getName()));
                             }
                         }
                     }
@@ -191,7 +191,7 @@ public class ScriptProgram {
 
     public void attachToJavaFunction(final Object o, final Function func) throws ScriptInvocationException {
 
-        if (!func.isJavaFunction()) {
+        if ( !func.isJavaFunction()) {
             throw (new IllegalArgumentException("cannot attach objects to script functions"));
         }
         if (engine == null) {
@@ -200,28 +200,27 @@ public class ScriptProgram {
         engine.attachObjectToFunction(func.getID(), o);
     }
 
-    public Function findFunction(final String name, final Class <?>... params) {
+    public Function findFunction(final String name, final Class<?>... params) {
 
         Function[] matches = funcs.getAll(name);
         if (matches == null || matches.length == 0) {
             return null;
         }
 
-        funcLoop:
-            for (Function f : matches) {
-                Keyword[] ks = f.getParamTypes();
-                if (ks.length != params.length) {
-                    continue;
-                }
-                for (int i = 0; i < ks.length; i++ ) {
-                    Keyword pkw = getKeyword(params[i]);
-                    if (!ks[i].equals(pkw)) {
-                        continue funcLoop;
-                    }
-                }
-
-                return f;
+        funcLoop: for (Function f : matches) {
+            Keyword[] ks = f.getParamTypes();
+            if (ks.length != params.length) {
+                continue;
             }
+            for (int i = 0; i < ks.length; i++ ) {
+                Keyword pkw = getKeyword(params[i]);
+                if ( !ks[i].equals(pkw)) {
+                    continue funcLoop;
+                }
+            }
+
+            return f;
+        }
         return null;
     }
 
@@ -255,7 +254,7 @@ public class ScriptProgram {
         if (initConsts == null) {
             return null;
         }
-        ArrayList <String> constNames = new ArrayList <String>();
+        ArrayList<String> constNames = new ArrayList<String>();
         for (ConstantInitializer ci : initConsts) {
             Variable[] vars = ci.getConstantVars();
             for (Variable v : vars) {
@@ -321,7 +320,7 @@ public class ScriptProgram {
         return invoke(findFunction(funcName), args);
     }
 
-    private Keyword getKeyword(final Class <?> param) {
+    private Keyword getKeyword(final Class<?> param) {
 
         if (Function.isInt(param)) {
             return Keyword.INT;

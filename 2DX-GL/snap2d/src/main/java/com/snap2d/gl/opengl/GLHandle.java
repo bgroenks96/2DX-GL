@@ -34,7 +34,7 @@ import bg.x2d.geo.PointUD;
 public interface GLHandle {
 
     public static final float[] DEFAULT_RECT_TEX_COORDS = new float[] { 0, 0, 0, 1, 1, 0, 1, 1 },
-            INVERTED_RECT_TEX_COORDS = new float[] { 0, 1, 0, 0, 1, 1, 1, 0 };
+                    INVERTED_RECT_TEX_COORDS = new float[] { 0, 1, 0, 0, 1, 1, 1, 0 };
     public static final int FILTER_LINEAR = GL.GL_LINEAR, FILTER_NEAREST = GL.GL_NEAREST;
 
     /**

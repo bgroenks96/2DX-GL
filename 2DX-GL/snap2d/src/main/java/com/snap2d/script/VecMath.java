@@ -26,10 +26,10 @@ class VecMath {
 
     }
 
-    private static final HashMap <Character, VecOp> opMap;
+    private static final HashMap<Character, VecOp> opMap;
 
     static {
-        opMap = new HashMap <Character, VecOp>();
+        opMap = new HashMap<Character, VecOp>();
         for (int i = 0; i < 4; i++ ) {
             VecOp op = null;
             switch (i) {
@@ -73,7 +73,7 @@ class VecMath {
             if (args.length != argCount()) {
                 throw (new MathParseException("invalid number of arguments for vector add"));
             }
-            if (!args[0].isVector() || !args[1].isVector()) {
+            if ( !args[0].isVector() || !args[1].isVector()) {
                 throw (new MathParseException("invalid operands for vector add"));
             }
             Vector2d vec1 = ((Vec2) args[0]).getValue();
@@ -104,7 +104,7 @@ class VecMath {
             if (args.length != argCount()) {
                 throw (new MathParseException("invalid number of arguments for vector subtract"));
             }
-            if (!args[0].isVector() || !args[1].isVector()) {
+            if ( !args[0].isVector() || !args[1].isVector()) {
                 throw (new MathParseException("invalid operands for vector subtract"));
             }
             Vector2d vec1 = ((Vec2) args[0]).getValue();
@@ -131,11 +131,11 @@ class VecMath {
         public Operand eval(final Operand... args) throws MathParseException {
 
             checkArgCount(this, args);
-            if (!args[0].isVector() && !args[1].isVector()) {
+            if ( !args[0].isVector() && !args[1].isVector()) {
                 throw (new MathParseException("at least one argument must be a vector for mult op"));
-            } else if (!args[1].isVector()) {
+            } else if ( !args[1].isVector()) {
                 return mult((Scalar) args[1], (Vec2) args[0]);
-            } else if (!args[0].isVector()) {
+            } else if ( !args[0].isVector()) {
                 return mult((Scalar) args[0], (Vec2) args[1]);
             } else {
                 return dot((Vec2) args[0], (Vec2) args[1]);

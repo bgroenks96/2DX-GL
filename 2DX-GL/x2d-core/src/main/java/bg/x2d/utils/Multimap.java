@@ -20,22 +20,22 @@ import java.util.Set;
  * @param <V>
  *            the type for values
  */
-public class Multimap<K, V> extends AbstractMap <K, V> {
+public class Multimap<K, V> extends AbstractMap<K, V> {
 
     private static final int KEY_INIT = 0, VAL_INIT = 0, IN_VAL_INIT = 1;
 
-    Hashtable <K, V[]> ktv;
+    Hashtable<K, V[]> ktv;
 
     @SuppressWarnings("unchecked")
     public Multimap() {
 
-        ktv = new Hashtable <K, V[]>();
+        ktv = new Hashtable<K, V[]>();
     }
 
     @SuppressWarnings("unchecked")
     @Override
     public synchronized V put(final K key, final V value) throws IllegalArgumentException,
-            ConcurrentModificationException {
+                    ConcurrentModificationException {
 
         if (key == null || value == null) {
             throw (new IllegalArgumentException("null values not accepted"));
@@ -130,9 +130,9 @@ public class Multimap<K, V> extends AbstractMap <K, V> {
      *         be reflected.
      */
     @Override
-    public synchronized Set <V> values() {
+    public synchronized Set<V> values() {
 
-        HashSet <V> vset = new HashSet <V>();
+        HashSet<V> vset = new HashSet<V>();
         for (V[] varr : ktv.values()) {
             for (V v : varr) {
                 vset.add(v);
@@ -146,9 +146,9 @@ public class Multimap<K, V> extends AbstractMap <K, V> {
      *         reflected.
      */
     @Override
-    public synchronized Set <K> keySet() {
+    public synchronized Set<K> keySet() {
 
-        HashSet <K> kset = new HashSet <K>();
+        HashSet<K> kset = new HashSet<K>();
         for (K k : ktv.keySet()) {
             kset.add(k);
         }
@@ -156,7 +156,7 @@ public class Multimap<K, V> extends AbstractMap <K, V> {
     }
 
     @Override
-    public synchronized Set <java.util.Map.Entry <K, V>> entrySet() {
+    public synchronized Set<java.util.Map.Entry<K, V>> entrySet() {
 
         return null;
     }
@@ -215,7 +215,7 @@ public class Multimap<K, V> extends AbstractMap <K, V> {
      * Copies the contents of the array into a new smaller array, omitting any
      * null values.
      */
-    private V[] trimArray(final V[] arr, final Class <?> type, final int newSize) {
+    private V[] trimArray(final V[] arr, final Class<?> type, final int newSize) {
 
         if (newSize >= arr.length) {
             throw (new IllegalArgumentException("new size must be less than previous"));

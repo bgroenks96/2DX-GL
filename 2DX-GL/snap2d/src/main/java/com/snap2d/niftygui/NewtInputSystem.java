@@ -39,7 +39,7 @@ public class NewtInputSystem implements InputSystem, KeyListener, MouseListener 
     NewtToNiftyKeyCodeConverter toNifty = new NewtToNiftyKeyCodeConverter();
     NiftyResourceLoader rscLoader;
 
-    ConcurrentLinkedQueue <InputEvent> eventQueue = new ConcurrentLinkedQueue <InputEvent>();
+    ConcurrentLinkedQueue<InputEvent> eventQueue = new ConcurrentLinkedQueue<InputEvent>();
 
     public NewtInputSystem(final Window inputWindow) {
 
@@ -59,14 +59,17 @@ public class NewtInputSystem implements InputSystem, KeyListener, MouseListener 
             if (next instanceof MouseEvent) {
                 MouseEvent mevt = (MouseEvent) next;
                 boolean pressed = mevt.getEventType() == MouseEvent.EVENT_MOUSE_PRESSED
-                        || mevt.getEventType() == MouseEvent.EVENT_MOUSE_DRAGGED;
-                arg0.processMouseEvent(mevt.getX(), mevt.getY(), (int) mevt.getRotationScale(), mevt.getButton() - 1,
-                        pressed);
+                                || mevt.getEventType() == MouseEvent.EVENT_MOUSE_DRAGGED;
+                arg0.processMouseEvent(mevt.getX(),
+                                       mevt.getY(),
+                                       (int) mevt.getRotationScale(),
+                                       mevt.getButton() - 1,
+                                       pressed);
             } else if (next instanceof KeyEvent) {
                 KeyEvent kevt = (KeyEvent) next;
                 arg0.processKeyboardEvent(new KeyboardInputEvent(toNifty.convertToNiftyKeyCode(kevt.getKeyCode()), kevt
-                        .getKeyChar(), kevt.getEventType() == KeyEvent.EVENT_KEY_PRESSED, kevt.isShiftDown(), kevt
-                        .isControlDown()));
+                                .getKeyChar(), kevt.getEventType() == KeyEvent.EVENT_KEY_PRESSED, kevt.isShiftDown(),
+                                kevt.isControlDown()));
             }
         }
     }

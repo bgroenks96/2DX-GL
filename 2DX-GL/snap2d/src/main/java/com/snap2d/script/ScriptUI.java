@@ -165,11 +165,11 @@ public class ScriptUI extends JFrame {
         return jmb;
     }
 
-    public void runCompiler(final Class <?>... javaClasses) {
+    public void runCompiler(final Class<?>... javaClasses) {
 
         src.setSourceFrom(input.getText() + "\n");
         ;
-        for (Class <?> c : javaClasses) {
+        for (Class<?> c : javaClasses) {
             prog.link(c);
         }
         output.setText("");
@@ -180,7 +180,9 @@ public class ScriptUI extends JFrame {
                 funcs = prog.getScriptFunctions();
             } catch (ScriptInvocationException e) {
                 e.printStackTrace();
-                JOptionPane.showMessageDialog(parent, "Error initializing runtime: " + e.getMessage(), "Error",
+                JOptionPane.showMessageDialog(parent,
+                                              "Error initializing runtime: " + e.getMessage(),
+                                              "Error",
                                               JOptionPane.ERROR_MESSAGE);
             }
         } else {
@@ -198,7 +200,7 @@ public class ScriptUI extends JFrame {
         if (diag == null || !diag.isDisplayable()) {
             diag = new RunDialog(parent, "Run Script");
         }
-        if (!diag.isVisible()) {
+        if ( !diag.isVisible()) {
             diag.setVisible(true);
         }
     }
@@ -213,7 +215,7 @@ public class ScriptUI extends JFrame {
             public void run() {
 
                 output.setText(new SimpleDateFormat("HH:mm:ss:SSS").format(Calendar.getInstance().getTime())
-                               + "\n<Executing script function: invocation target -> fid=" + f.getID() + ">\n\n");
+                                + "\n<Executing script function: invocation target -> fid=" + f.getID() + ">\n\n");
                 f.bytecode.rewind();
                 Runnable r = new Runnable() {
                     public void run() {
@@ -225,15 +227,14 @@ public class ScriptUI extends JFrame {
                             if (f.getReturnType() != Keyword.VOID) {
                                 System.out.print("return value = " + ret.toString() + "\n");
                             }
-                        }
-                        catch (ScriptInvocationException e) {
+                        } catch (ScriptInvocationException e) {
                             System.out.println(e.toString());
                             e.printStackTrace();
                         }
                     }
                 };
                 Thread scriptThread = new Thread(r);
-                scriptThread.setName("scriptui"+threadCount+"-invoke [fid="+f.getID()+"]");
+                scriptThread.setName("scriptui" + threadCount + "-invoke [fid=" + f.getID() + "]");
                 scriptThread.start();
             }
 
@@ -393,7 +394,7 @@ public class ScriptUI extends JFrame {
         String text;
         try {
             text = Utils.readText(Utils.getFileURL(new File(System.getProperty("java.io.tmpdir") + File.separator
-                                                            + TEMP_FILE)));
+                            + TEMP_FILE)));
             input.setText(text);
         } catch (IOException e) {
             System.out.println("ScriptUI: no tmp file - initializing new input data...");

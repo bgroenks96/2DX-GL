@@ -101,7 +101,7 @@ public class GLDisplay {
             glWin.setSize(width, height);
             break;
         case FULLSCREEN:
-            if (!type.isNativeFullscreen()) {
+            if ( !type.isNativeFullscreen()) {
                 glWin.setSize(SCREEN_WIDTH, SCREEN_HEIGHT);
             }
         }
@@ -394,7 +394,7 @@ public class GLDisplay {
 
         if (exitOnWindowClosed && !exitOnClose) {
             exitOnClose = true;
-        } else if (!exitOnWindowClosed && exitOnClose) {
+        } else if ( !exitOnWindowClosed && exitOnClose) {
             exitOnClose = false;
         }
     }

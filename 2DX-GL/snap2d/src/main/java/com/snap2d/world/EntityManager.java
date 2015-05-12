@@ -39,8 +39,8 @@ import com.snap2d.world.event.RemoveEvent;
  */
 public class EntityManager implements RenderableSpi {
 
-    ArrayList <Entity> entities = new ArrayList <Entity>();
-    HashMap <Entity, List <EntityListener>> listeners = new HashMap <Entity, List <EntityListener>>();
+    ArrayList<Entity> entities = new ArrayList<Entity>();
+    HashMap<Entity, List<EntityListener>> listeners = new HashMap<Entity, List<EntityListener>>();
 
     /**
      * @param e
@@ -98,14 +98,14 @@ public class EntityManager implements RenderableSpi {
     public void addEntityListener(final EntityListener listener, final Entity... entities) {
 
         for (Entity e : entities) {
-            List <EntityListener> reg = listeners.get(e);
+            List<EntityListener> reg = listeners.get(e);
             if (reg != null) {
-                if (!reg.contains(listener)) {
+                if ( !reg.contains(listener)) {
                     reg.add(listener);
                 }
                 listeners.put(e, reg);
             } else {
-                List <EntityListener> els = new ArrayList <EntityListener>();
+                List<EntityListener> els = new ArrayList<EntityListener>();
                 els.add(listener);
                 listeners.put(e, els);
             }
@@ -133,8 +133,8 @@ public class EntityManager implements RenderableSpi {
      * collided Entity during each iteration to be used for firing the collision
      * event.
      */
-    ArrayList <Entity> chkCache = new ArrayList <Entity>();
-    ArrayList <EntityCollision> collCache = new ArrayList <EntityCollision>();
+    ArrayList<Entity> chkCache = new ArrayList<Entity>();
+    ArrayList<EntityCollision> collCache = new ArrayList<EntityCollision>();
 
     /**
      * Dispatches the renderer's update request to all registered Entity objects
@@ -165,7 +165,7 @@ public class EntityManager implements RenderableSpi {
 
     protected void fireCollisionEvent(final Entity e, final EntityCollision... colls) {
 
-        List <EntityListener> queue = listeners.get(e);
+        List<EntityListener> queue = listeners.get(e);
         if (queue == null || queue.size() == 0) {
             return;
         }
@@ -177,7 +177,7 @@ public class EntityManager implements RenderableSpi {
 
     protected void fireAddEvent(final Entity e) {
 
-        List <EntityListener> queue = listeners.get(e);
+        List<EntityListener> queue = listeners.get(e);
         if (queue == null || queue.size() == 0) {
             return;
         }
@@ -189,7 +189,7 @@ public class EntityManager implements RenderableSpi {
 
     protected void fireRemoveEvent(final Entity e) {
 
-        List <EntityListener> queue = listeners.get(e);
+        List<EntityListener> queue = listeners.get(e);
         if (queue == null || queue.size() == 0) {
             return;
         }

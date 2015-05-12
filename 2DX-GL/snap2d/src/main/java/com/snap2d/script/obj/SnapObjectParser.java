@@ -50,7 +50,7 @@ public class SnapObjectParser {
     public SnapObject[] parseFromSource(String src) throws ScriptObjectParsingException {
 
         src = src.trim();
-        ArrayList <SnapObject> objList = new ArrayList <SnapObject>();
+        ArrayList<SnapObject> objList = new ArrayList<SnapObject>();
         for (int i = 0; i < src.length();) {
             int ind = src.indexOf("{", i);
             String dec = src.substring(i, ind);
@@ -60,7 +60,7 @@ public class SnapObjectParser {
             parseProperties(src.substring(ind + 1, end), snapObj);
             if (snapObj.get(TYPE_PROPERTY) == null) {
                 throw new ScriptObjectParsingException("error parsing object '" + snapObj.name
-                        + "' - all objects must declare the '" + TYPE_PROPERTY + "' property");
+                                + "' - all objects must declare the '" + TYPE_PROPERTY + "' property");
             }
             objList.add(snapObj);
             i = end + 1;
@@ -76,13 +76,13 @@ public class SnapObjectParser {
             String[] kv = s.split("=");
             if (kv.length != 2) {
                 throw new ScriptObjectParsingException("error parsing properties: invalid assignment syntax in: " + s
-                        + " [" + obj.name + "]");
+                                + " [" + obj.name + "]");
             }
             kv[0] = kv[0].trim();
             kv[1] = kv[1].trim();
-            if (!kv[1].startsWith("\"") || !kv[1].endsWith("\"")) {
+            if ( !kv[1].startsWith("\"") || !kv[1].endsWith("\"")) {
                 throw new ScriptObjectParsingException("error parsing properties: values must be delimited by quotes "
-                        + s);
+                                + s);
             }
             obj.put(kv[0], kv[1].substring(1, kv[1].length() - 1));
         }

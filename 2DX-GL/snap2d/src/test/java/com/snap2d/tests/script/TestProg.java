@@ -28,13 +28,13 @@ import com.snap2d.script.ScriptSource;
 public class TestProg {
 
     private static final String SRC1 = "void Init() { putInt(\"tick\",0);}\n"
-            + "void Tick() { int tick = getInt(\"tick\"); println(tick); sleep(1000);}";
+                    + "void Tick() { int tick = getInt(\"tick\"); println(tick); sleep(1000);}";
 
     @Test
     public void testLoop() {
 
         ScriptProgram prog = new ScriptProgram(true, new ScriptSource(SRC1));
-        if (!prog.compile()) {
+        if ( !prog.compile()) {
             throw new RuntimeException("compilation failed", prog.getLastCompileError());
         }
         try {

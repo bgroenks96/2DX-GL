@@ -67,18 +67,18 @@ import java.util.ArrayList;
 
 public class Paintbrush2D extends FreeDraw2D {
 
-    ArrayList <int[]> coords;
+    ArrayList<int[]> coords;
 
     public Paintbrush2D() {
 
-        coords = new ArrayList <int[]>();
+        coords = new ArrayList<int[]>();
     }
 
     @Deprecated
     public Paintbrush2D(final int width, final int height, final Graphics g) {
 
         // super(g);
-        coords = new ArrayList <int[]>();
+        coords = new ArrayList<int[]>();
     }
 
     @Deprecated
@@ -90,7 +90,7 @@ public class Paintbrush2D extends FreeDraw2D {
     public Paintbrush2D(final int width, final int height, final Graphics2D g) {
 
         // super(g);
-        coords = new ArrayList <int[]>();
+        coords = new ArrayList<int[]>();
     }
 
     /**
@@ -233,7 +233,7 @@ public class Paintbrush2D extends FreeDraw2D {
             throw (new GeoException("Illegal argument: index cannot be less than zero"));
         } else if (index > (coords.size() - 1)) {
             throw (new GeoException("Illegal argument: requested index exceeds the array capacity.  Size = "
-                    + coords.size()));
+                            + coords.size()));
         } else {
             return coords.get(index);
         }

@@ -15,24 +15,36 @@ package bg.x2d.geo;
 import java.awt.Paint;
 import java.awt.Point;
 
-
 /**
  * Shape2D implementation for a regular polygon with 3 or more vertices.
+ * 
  * @author Brian Groenke
  */
 public final class UniformPolygon2D extends Shape2D {
-    
+
     private int nverts;
-    
+
     /**
-     * @param nverts number of vertices (and sides) this UniformPolygon2D should be created with
-     * @param x x coordinate of the polygon
-     * @param y y coordinate of the polygon
-     * @param size radius from center to each vertex of the regular polygon
-     * @param p color of the polygon
-     * @param fill true if should be filled, false otherwise
+     * @param nverts
+     *            number of vertices (and sides) this UniformPolygon2D should be
+     *            created with
+     * @param x
+     *            x coordinate of the polygon
+     * @param y
+     *            y coordinate of the polygon
+     * @param size
+     *            radius from center to each vertex of the regular polygon
+     * @param p
+     *            color of the polygon
+     * @param fill
+     *            true if should be filled, false otherwise
      */
-    public UniformPolygon2D(final int nverts, final int x, final int y, final int size, final Paint p, final boolean fill) {
+    public UniformPolygon2D(final int nverts,
+                            final int x,
+                            final int y,
+                            final int size,
+                            final Paint p,
+                            final boolean fill) {
 
         super(x, y, size, p, fill);
         this.nverts = nverts;
@@ -43,7 +55,7 @@ public final class UniformPolygon2D extends Shape2D {
 
         if (degrees < 0) {
             throw (new IllegalArgumentException(
-                    "Illegal theta value: specify a positive integer for degree of rotation"));
+                            "Illegal theta value: specify a positive integer for degree of rotation"));
         }
         if (type == null) {
             throw (new IllegalArgumentException("passed Rotation type cannot be null"));
@@ -51,7 +63,7 @@ public final class UniformPolygon2D extends Shape2D {
         if (shape == null) {
             try {
                 throw (new GeoException(
-                        "shape must have been drawn or have set properties before a rotation can be performed"));
+                                "shape must have been drawn or have set properties before a rotation can be performed"));
             } catch (GeoException e) {
                 e.printStackTrace();
             }

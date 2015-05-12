@@ -70,13 +70,13 @@ public class Sound2D {
 
     private SoundSystem sound;
     private boolean useJOAL;
-    private Class <?> libJOAL;
+    private Class<?> libJOAL;
 
     public static final int Z = -10;
 
-    HashMap <String, SoundSource> sources = new HashMap <String, SoundSource>();
-    HashMap <String, SoundSource> staticSources = new HashMap <String, SoundSource>();
-    HashSet <String> playing = new HashSet <String>();
+    HashMap<String, SoundSource> sources = new HashMap<String, SoundSource>();
+    HashMap<String, SoundSource> staticSources = new HashMap<String, SoundSource>();
+    HashSet<String> playing = new HashSet<String>();
 
     /**
      * Blocks constructor access. Only one instance of Sound2D should exist. It
@@ -201,9 +201,15 @@ public class Sound2D {
      *            docs for information on setting the value
      * @throws IllegalArgumentException
      */
-    public void newSoundSource(final String id, final String filename, final boolean priority, final boolean stream,
-            final boolean loop, final float xpos, final float ypos, final int attValue, final float fade)
-            throws IllegalArgumentException {
+    public void newSoundSource(final String id,
+                               final String filename,
+                               final boolean priority,
+                               final boolean stream,
+                               final boolean loop,
+                               final float xpos,
+                               final float ypos,
+                               final int attValue,
+                               final float fade) throws IllegalArgumentException {
 
         if (attValue != ATTENUATION_ROLLOFF && attValue != ATTENUATION_LINEAR) {
             throw (new IllegalArgumentException("illegal attenuation value"));
@@ -236,9 +242,16 @@ public class Sound2D {
      * @param fade
      * @throws IllegalArgumentException
      */
-    public void newSoundSource(final String id, final URL url, final String filename, final boolean priority,
-            final boolean stream, final boolean loop, final float xpos, final float ypos, final int attValue,
-            final float fade) throws IllegalArgumentException {
+    public void newSoundSource(final String id,
+                               final URL url,
+                               final String filename,
+                               final boolean priority,
+                               final boolean stream,
+                               final boolean loop,
+                               final float xpos,
+                               final float ypos,
+                               final int attValue,
+                               final float fade) throws IllegalArgumentException {
 
         if (attValue != ATTENUATION_ROLLOFF && attValue != ATTENUATION_LINEAR) {
             throw (new IllegalArgumentException("illegal attenuation value"));
@@ -264,18 +277,40 @@ public class Sound2D {
      * @param priority
      * @param loop
      */
-    public void newStaticSoundSource(final String id, final String filename, final boolean priority, final boolean loop) {
+    public         void
+                    newStaticSoundSource(final String id,
+                                         final String filename,
+                                         final boolean priority,
+                                         final boolean loop) {
 
-        newSoundSource(id, filename, priority, false, loop, getListenerPos().x, getListenerPos().y,
-                ATTENUATION_ROLLOFF, 0);
+        newSoundSource(id,
+                       filename,
+                       priority,
+                       false,
+                       loop,
+                       getListenerPos().x,
+                       getListenerPos().y,
+                       ATTENUATION_ROLLOFF,
+                       0);
         staticSources.put(id, sources.get(id));
     }
 
-    public void newStaticSoundSource(final String id, final URL url, final String filename, final boolean priority,
-            final boolean loop) {
+    public void newStaticSoundSource(final String id,
+                                     final URL url,
+                                     final String filename,
+                                     final boolean priority,
+                                     final boolean loop) {
 
-        newSoundSource(id, url, filename, priority, false, loop, getListenerPos().x, getListenerPos().y,
-                ATTENUATION_ROLLOFF, 0);
+        newSoundSource(id,
+                       url,
+                       filename,
+                       priority,
+                       false,
+                       loop,
+                       getListenerPos().x,
+                       getListenerPos().y,
+                       ATTENUATION_ROLLOFF,
+                       0);
         staticSources.put(id, sources.get(id));
     }
 
@@ -309,8 +344,14 @@ public class Sound2D {
      * @param fade
      * @return the identifier for the new temporary source
      */
-    public String quickPlay(final String filename, final boolean priority, final boolean stream, final boolean loop,
-            final float xpos, final float ypos, final int attValue, final float fade) {
+    public String quickPlay(final String filename,
+                            final boolean priority,
+                            final boolean stream,
+                            final boolean loop,
+                            final float xpos,
+                            final float ypos,
+                            final int attValue,
+                            final float fade) {
 
         String tempID;
         if (stream) {
@@ -322,8 +363,15 @@ public class Sound2D {
         return tempID;
     }
 
-    public String quickPlay(final URL url, final String filename, final boolean priority, final boolean stream,
-            final boolean loop, final float xpos, final float ypos, final int attValue, final float fade) {
+    public String quickPlay(final URL url,
+                            final String filename,
+                            final boolean priority,
+                            final boolean stream,
+                            final boolean loop,
+                            final float xpos,
+                            final float ypos,
+                            final int attValue,
+                            final float fade) {
 
         String tempID;
         if (stream) {
@@ -653,7 +701,7 @@ public class Sound2D {
      * back to JavaSound, informing the user why the JOAL sound system was not
      * able to be used.
      */
-    private Class <?> loadJOALLibraryClass() {
+    private Class<?> loadJOALLibraryClass() {
 
         if (libJOAL == null) {
             try {
@@ -661,7 +709,7 @@ public class Sound2D {
                 // if LibraryJOAL is available, make sure it is compatible with
                 // the
                 // system
-                if (!SoundSystemConfig.libraryCompatible(libJOAL)) {
+                if ( !SoundSystemConfig.libraryCompatible(libJOAL)) {
                     log.warning("Sound2D: OpenAL not compatible");
                     libJOAL = null;
                 }

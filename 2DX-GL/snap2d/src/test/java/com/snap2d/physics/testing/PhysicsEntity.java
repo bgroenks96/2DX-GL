@@ -49,8 +49,8 @@ public class PhysicsEntity extends Entity implements Renderable {
     private static final Font LABEL_FONT = new Font("Verdana", Font.BOLD, 14);
 
     Color color = colorgen.generate(),
-            antiColor = (color.getRed() > 128 || color.getGreen() > 128 || color.getBlue() > 128) ? Color.BLACK
-                    : Color.WHITE;
+                    antiColor = (color.getRed() > 128 || color.getGreen() > 128 || color.getBlue() > 128) ? Color.BLACK
+                                    : Color.WHITE;
 
     TestNode node;
     PointUD[] wverts;
@@ -61,8 +61,13 @@ public class PhysicsEntity extends Entity implements Renderable {
 
     public double collFactor = 1.0, wt, ht;
 
-    public PhysicsEntity(final double wx, final double wy, final double wt, final double ht, final PointUD[] vertices,
-            final TestNode physics, final World2D world) {
+    public PhysicsEntity(final double wx,
+                         final double wy,
+                         final double wt,
+                         final double ht,
+                         final PointUD[] vertices,
+                         final TestNode physics,
+                         final World2D world) {
 
         super(new PointUD(wx, wy), world);
         this.wt = wt;
@@ -105,7 +110,7 @@ public class PhysicsEntity extends Entity implements Renderable {
         g.setFont(LABEL_FONT);
         Rectangle2D strBounds = g.getFontMetrics().getStringBounds(String.valueOf(id), g);
         g.drawString(String.valueOf(id), avgx - (float) strBounds.getWidth() / 2, avgy + (float) strBounds.getHeight()
-                / 4);
+                        / 4);
     }
 
     /**
@@ -123,7 +128,7 @@ public class PhysicsEntity extends Entity implements Renderable {
 
         node.getVelocity2d().applyTo(worldLoc, 1);
         worldBounds.setLocation(worldLoc.ux, worldLoc.uy);
-        if (!world.viewContains(worldBounds)) {
+        if ( !world.viewContains(worldBounds)) {
             Rect2D viewBounds = world.getBounds();
             Rect2D cbounds = world.checkCollision(worldBounds, viewBounds);
             if (cbounds == null) {

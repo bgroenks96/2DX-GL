@@ -30,7 +30,8 @@ public class ScriptInvocationException extends Exception {
 
         super(message);
         this.func = f;
-        msg = "error executing function '" + f.getName() + "' [fid=" + f.getID() + "] @ pos=" + (f.bytecode.position() - 1);
+        msg = "error executing function '" + f.getName() + "' [fid=" + f.getID() + "] @ pos="
+                        + (f.bytecode.position() - 1);
     }
 
     public Function getTargetFunction() {

@@ -20,8 +20,10 @@ public class QuadGradientPaint implements Paint {
 
     private final Color c0, c1, c2, c3;
 
-    public QuadGradientPaint(final de.lessvoid.nifty.tools.Color c0, final de.lessvoid.nifty.tools.Color c1,
-            final de.lessvoid.nifty.tools.Color c2, final de.lessvoid.nifty.tools.Color c3) {
+    public QuadGradientPaint(final de.lessvoid.nifty.tools.Color c0,
+                             final de.lessvoid.nifty.tools.Color c1,
+                             final de.lessvoid.nifty.tools.Color c2,
+                             final de.lessvoid.nifty.tools.Color c3) {
 
         this.c0 = convertNiftyColorToAwt(c0);
         this.c1 = convertNiftyColorToAwt(c1);
@@ -36,13 +38,16 @@ public class QuadGradientPaint implements Paint {
     }
 
     @Override
-    public PaintContext createContext(final ColorModel cm, final Rectangle deviceBounds, final Rectangle2D userBounds,
-            final AffineTransform xform, final RenderingHints hints) {
+    public PaintContext createContext(final ColorModel cm,
+                                      final Rectangle deviceBounds,
+                                      final Rectangle2D userBounds,
+                                      final AffineTransform xform,
+                                      final RenderingHints hints) {
 
         return new QuadGradientPaintContext(cm, deviceBounds, userBounds, xform, hints);
     }
 
-    private static WeakHashMap <ColorModel, Raster> rasterCache = new WeakHashMap <ColorModel, Raster>();
+    private static WeakHashMap<ColorModel, Raster> rasterCache = new WeakHashMap<ColorModel, Raster>();
 
     private class QuadGradientPaintContext implements PaintContext {
 
@@ -52,8 +57,11 @@ public class QuadGradientPaint implements Paint {
 
         Raster saved;
 
-        public QuadGradientPaintContext(final ColorModel cm, final Rectangle deviceBounds,
-                final Rectangle2D userBounds, final AffineTransform xform, final RenderingHints hints) {
+        public QuadGradientPaintContext(final ColorModel cm,
+                                        final Rectangle deviceBounds,
+                                        final Rectangle2D userBounds,
+                                        final AffineTransform xform,
+                                        final RenderingHints hints) {
 
             this.cm = cm;
             this.deviceBounds = deviceBounds;
@@ -124,8 +132,14 @@ public class QuadGradientPaint implements Paint {
             return raster;
         }
 
-        private float interpolateComponentHSB(final float c0, final float c1, final float c2, final float c3,
-                final float x, final float y, final float w, final float h) {
+        private float interpolateComponentHSB(final float c0,
+                                              final float c1,
+                                              final float c2,
+                                              final float c3,
+                                              final float x,
+                                              final float y,
+                                              final float w,
+                                              final float h) {
 
             return (c1 * y / h + c0 * (1 - y / h)) * (x / w) + (c2 * y / h + c3 * (1 - y / h)) * (1 - x / w);
         }

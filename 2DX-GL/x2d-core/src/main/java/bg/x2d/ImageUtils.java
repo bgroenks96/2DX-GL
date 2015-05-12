@@ -65,8 +65,10 @@ public class ImageUtils {
      *            The number of degrees to rotate
      * @return the rotated (and translated) AffineTransform
      */
-    public static AffineTransform rotateImage(final Image img, final Point location, final Graphics2D g2d,
-            final double degrees) {
+    public static AffineTransform rotateImage(final Image img,
+                                              final Point location,
+                                              final Graphics2D g2d,
+                                              final double degrees) {
 
         AffineTransform affine = new AffineTransform();
         affine.setToTranslation(location.getX(), location.getY());
@@ -90,8 +92,10 @@ public class ImageUtils {
      *            if theta should be interpreted as a degree value.
      * @return the rotated (and translated) AffineTransform
      */
-    public static AffineTransform rotateImage(final Image img, final Point location, final double theta,
-            final boolean radians) {
+    public static AffineTransform rotateImage(final Image img,
+                                              final Point location,
+                                              final double theta,
+                                              final boolean radians) {
 
         AffineTransform affine = new AffineTransform();
         affine.setToTranslation(location.getX(), location.getY());
@@ -120,8 +124,11 @@ public class ImageUtils {
      *            if theta should be interpreted as a degree value.
      * @return the rotated (and translated) AffineTransform
      */
-    public static AffineTransform rotateImage(final Image img, final Point location, final Graphics2D g2d,
-            final double theta, final boolean radians) {
+    public static AffineTransform rotateImage(final Image img,
+                                              final Point location,
+                                              final Graphics2D g2d,
+                                              final double theta,
+                                              final boolean radians) {
 
         AffineTransform affine = new AffineTransform();
         affine.setToTranslation(location.getX(), location.getY());
@@ -205,11 +212,13 @@ public class ImageUtils {
      *            The scaling quality of the newly rendered image.
      * @return the image scaled and drawn onto a BufferedImage
      */
-    public static BufferedImage scaleImage(final Image img, final Dimension newSize, final int imgType,
-            final ScaleQuality quality) {
+    public static BufferedImage scaleImage(final Image img,
+                                           final Dimension newSize,
+                                           final int imgType,
+                                           final ScaleQuality quality) {
 
         BufferedImage bi = new BufferedImage((int) newSize.getWidth(), (int) newSize.getHeight(),
-                BufferedImage.TYPE_INT_ARGB);
+                        BufferedImage.TYPE_INT_ARGB);
         Graphics2D g = bi.createGraphics();
         g.setRenderingHint(RenderingHints.KEY_INTERPOLATION, RenderingHints.VALUE_INTERPOLATION_BILINEAR);
         switch (quality) {
@@ -243,8 +252,10 @@ public class ImageUtils {
      * @return BufferedImage scaled using the preferred
      *         <code>scaleImage(Image,Dimension,int,ScaleQuality)</code> method.
      */
-    public static BufferedImage scaleBufferedImage(final BufferedImage img, final Dimension newSize, final int imgType,
-            final int scaleType) {
+    public static BufferedImage scaleBufferedImage(final BufferedImage img,
+                                                   final Dimension newSize,
+                                                   final int imgType,
+                                                   final int scaleType) {
 
         return scaleImage(img, newSize, imgType, ScaleQuality.NORM);
     }
@@ -304,7 +315,7 @@ public class ImageUtils {
     public static BufferedImage getNativeImage(final int wt, final int ht) {
 
         return GraphicsEnvironment.getLocalGraphicsEnvironment().getDefaultScreenDevice().getDefaultConfiguration()
-                .createCompatibleImage(wt, ht, Transparency.TRANSLUCENT);
+                        .createCompatibleImage(wt, ht, Transparency.TRANSLUCENT);
     }
 
     /**
@@ -323,8 +334,9 @@ public class ImageUtils {
 
         GraphicsDevice d = GraphicsEnvironment.getLocalGraphicsEnvironment().getDefaultScreenDevice();
         GraphicsConfiguration c = d.getDefaultConfiguration();
-        BufferedImage nimg = c.createCompatibleImage(orig.getWidth(null), orig.getHeight(null),
-                Transparency.TRANSLUCENT);
+        BufferedImage nimg = c.createCompatibleImage(orig.getWidth(null),
+                                                     orig.getHeight(null),
+                                                     Transparency.TRANSLUCENT);
         Graphics2D g2 = nimg.createGraphics();
         g2.drawImage(orig, 0, 0, null);
         g2.dispose();

@@ -22,11 +22,11 @@ import java.util.Set;
  */
 public class ComboSegment implements Segment {
 
-    Set <Segment> segSet;
+    Set<Segment> segSet;
 
     long duration, start, last;
 
-    public ComboSegment(final Set <Segment> segSet) {
+    public ComboSegment(final Set<Segment> segSet) {
 
         this.segSet = segSet;
         long max = 0;

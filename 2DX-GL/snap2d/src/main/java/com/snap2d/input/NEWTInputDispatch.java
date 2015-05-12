@@ -28,15 +28,15 @@ import com.jogamp.newt.event.MouseListener;
  */
 public class NEWTInputDispatch implements KeyListener, MouseListener {
 
-    private final HashSet <GLKeyListener> keyListeners;
-    private final HashSet <GLMouseListener> mouseListeners;
+    private final HashSet<GLKeyListener> keyListeners;
+    private final HashSet<GLMouseListener> mouseListeners;
     private final boolean consume;
 
     public NEWTInputDispatch(final boolean consumeEvents) {
 
         this.consume = consumeEvents;
-        keyListeners = new HashSet <GLKeyListener>();
-        mouseListeners = new HashSet <GLMouseListener>();
+        keyListeners = new HashSet<GLKeyListener>();
+        mouseListeners = new HashSet<GLMouseListener>();
     }
 
     public void registerKeyListener(final GLKeyListener listener) {

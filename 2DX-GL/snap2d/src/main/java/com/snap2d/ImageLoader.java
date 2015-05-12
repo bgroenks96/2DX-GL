@@ -44,7 +44,7 @@ public class ImageLoader {
      * File type wrappings for JOGL TextureIO constants.
      */
     public static final String JPG = TextureIO.JPG, PNG = TextureIO.PNG, GIF = TextureIO.GIF, TIFF = TextureIO.TIFF,
-            PAM = TextureIO.PAM, PPM = TextureIO.PPM, DDS = TextureIO.DDS;
+                    PAM = TextureIO.PAM, PPM = TextureIO.PPM, DDS = TextureIO.DDS;
 
     private ImageLoader() {
 
@@ -112,8 +112,10 @@ public class ImageLoader {
      *            otherwise
      * @return the scaled BufferedImage
      */
-    public static BufferedImage scaleFrom(final BufferedImage img, final Dimension prevDisp,
-            final ScaleQuality quality, final boolean aspectRatio) {
+    public static BufferedImage scaleFrom(final BufferedImage img,
+                                          final Dimension prevDisp,
+                                          final ScaleQuality quality,
+                                          final boolean aspectRatio) {
 
         Dimension screen = Toolkit.getDefaultToolkit().getScreenSize();
         Dimension newSize = new Dimension();
@@ -127,7 +129,7 @@ public class ImageLoader {
             }
         } else {
             newSize.setSize(img.getWidth() * (screen.getWidth() / prevDisp.getWidth()),
-                    img.getHeight() * (screen.getHeight() / prevDisp.getHeight()));
+                            img.getHeight() * (screen.getHeight() / prevDisp.getHeight()));
         }
         return ImageUtils.scaleImage(img, newSize, img.getType(), quality);
     }
