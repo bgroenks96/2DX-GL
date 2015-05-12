@@ -204,7 +204,7 @@ public abstract class Entity implements RenderableSpi, Serializable {
     public Rectangle2D getCompatibleBounds() {
 
         return new Rectangle2D.Double(worldBounds.getX(), worldBounds.getY() - worldBounds.getHeight(),
-                worldBounds.getWidth(), worldBounds.getHeight());
+                        worldBounds.getWidth(), worldBounds.getHeight());
     }
 
     public Rectangle getScreenBounds() {

@@ -30,14 +30,14 @@ import java.util.Map;
  * @author Brian Groenke
  * 
  */
-public class ReflexiveHashMap<V1, V2> extends HashMap <V1, V2> {
+public class ReflexiveHashMap<V1, V2> extends HashMap<V1, V2> {
 
     /**
      * 
      */
     private static final long serialVersionUID = -2719366762063798788L;
 
-    private final HashMap <V2, V1> reverse = new HashMap <V2, V1>();
+    private final HashMap<V2, V1> reverse = new HashMap<V2, V1>();
 
     @Override
     public V2 put(final V1 valA, final V2 valB) {
@@ -47,7 +47,7 @@ public class ReflexiveHashMap<V1, V2> extends HashMap <V1, V2> {
     }
 
     @Override
-    public void putAll(final Map <? extends V1, ? extends V2> map) {
+    public void putAll(final Map<? extends V1, ? extends V2> map) {
 
         for (V1 key : map.keySet()) {
             reverse.put(map.get(key), key);

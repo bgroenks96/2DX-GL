@@ -21,7 +21,7 @@ import com.jogamp.newt.event.KeyEvent;
 public class GLKeyEvent {
 
     public static final int EVENT_KEY_PRESSED = KeyEvent.EVENT_KEY_PRESSED,
-            EVENT_KEY_RELEASED = KeyEvent.EVENT_KEY_RELEASED;
+                    EVENT_KEY_RELEASED = KeyEvent.EVENT_KEY_RELEASED;
     public static final char NULL_CHAR = KeyEvent.NULL_CHAR;
 
     // ---- begin NEWT key code field binding ---- //

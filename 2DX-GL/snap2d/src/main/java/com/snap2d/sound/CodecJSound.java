@@ -128,7 +128,7 @@ public class CodecJSound implements ICodec {
             buff = new byte[SoundSystemConfig.getStreamingBufferSize()];
             int read = 0, tot = 0;
             boolean shouldBreak = false;
-            while (!endOfStream() && tot < buff.length) {
+            while ( !endOfStream() && tot < buff.length) {
                 sync.acquire();
                 try {
                     read = audioIn.read(buff, tot, buff.length - read);
@@ -181,7 +181,7 @@ public class CodecJSound implements ICodec {
                 fullBuffer = new byte[fileSize];
                 int read = 0, tot = 0;
                 while ( (read = audioIn.read(fullBuffer, tot, fullBuffer.length - tot)) != -1
-                        && tot < SoundSystemConfig.getMaxFileSize()) {
+                                && tot < SoundSystemConfig.getMaxFileSize()) {
                     tot += read;
                 }
             } else {

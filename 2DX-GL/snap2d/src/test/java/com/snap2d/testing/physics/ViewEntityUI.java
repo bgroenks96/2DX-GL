@@ -50,10 +50,10 @@ public class ViewEntityUI extends JDialog {
     JSplitPane root = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT, true);
     JList list = new JList();
     Box box;
-    HashMap <EntityProperty, JComponent> propFields = new HashMap <EntityProperty, JComponent>();
-    ArrayList <PhysicsEntity> entityList;
+    HashMap<EntityProperty, JComponent> propFields = new HashMap<EntityProperty, JComponent>();
+    ArrayList<PhysicsEntity> entityList;
 
-    public ViewEntityUI(final PUICallback callback, final ArrayList <PhysicsEntity> entities) {
+    public ViewEntityUI(final PUICallback callback, final ArrayList<PhysicsEntity> entities) {
 
         this.uiCallback = callback;
         this.entityList = entities;

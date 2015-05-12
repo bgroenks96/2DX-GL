@@ -39,8 +39,8 @@ import javax.media.opengl.GLContext;
 public class GLShader {
 
     public static final String DEFAULT_SHADER_PATH = "com/snap2d/gl/opengl/res/",
-            DEFAULT_TRANSFORM_UTIL = "snap2d-transform.vert", ATTRIB_VERT_COORD = "vert_coord",
-            ATTRIB_VERT_COLOR = "vert_color", ATTRIB_TEX_COORD = "tex_coord", DEFAULT_GLSL_VERSION = "150";
+                    DEFAULT_TRANSFORM_UTIL = "snap2d-transform.vert", ATTRIB_VERT_COORD = "vert_coord",
+                    ATTRIB_VERT_COLOR = "vert_color", ATTRIB_TEX_COORD = "tex_coord", DEFAULT_GLSL_VERSION = "150";
 
     public static final int TYPE_VERTEX = GL2.GL_VERTEX_SHADER, TYPE_FRAGMENT = GL2.GL_FRAGMENT_SHADER;
 
@@ -91,7 +91,7 @@ public class GLShader {
      * @throws IOException
      */
     public GLShader(final int type, final String version, final String... sources) throws GLShaderException,
-            IOException {
+                                                                                  IOException {
 
         compile(type, version, sources);
     }
@@ -110,7 +110,7 @@ public class GLShader {
      */
     public GLShader(final int type, final String version, final URL... sources) throws GLShaderException, IOException {
 
-        ArrayList <String> sourceStrs = new ArrayList <String>();
+        ArrayList<String> sourceStrs = new ArrayList<String>();
         for (URL source : sources) {
             if (source == null) {
                 continue;
@@ -133,7 +133,7 @@ public class GLShader {
     }
 
     private void compile(final int type, final String version, final String... sources) throws GLShaderException,
-            IOException {
+                    IOException {
 
         final GL2ES2 gl = getGL();
         sobj = gl.glCreateShader(type);
@@ -200,9 +200,9 @@ public class GLShader {
      * @throws IOException
      */
     public static GLShader loadLibraryShader(final int type, final String... shaderFiles) throws GLShaderException,
-            IOException {
+                    IOException {
 
-        ArrayList <URL> urls = new ArrayList <URL>();
+        ArrayList<URL> urls = new ArrayList<URL>();
         for (String s : shaderFiles) {
             URL url = ClassLoader.getSystemClassLoader().getResource(DEFAULT_SHADER_PATH + s);
             if (url == null) {

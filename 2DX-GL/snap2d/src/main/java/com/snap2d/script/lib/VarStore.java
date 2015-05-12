@@ -25,12 +25,12 @@ import com.snap2d.script.Vec2;
  */
 public class VarStore {
 
-    private final HashMap <String, Object> globals = new HashMap <String, Object>();
-    private final HashMap <Integer, List<Integer>> intLists = new HashMap<Integer, List<Integer>>();
-    private final HashMap <Integer, List<Float>> floatLists = new HashMap<Integer, List<Float>>();
-    private final HashMap <Integer, List<String>> stringLists = new HashMap<Integer, List<String>>();
-    private final HashMap <Integer, List<Boolean>> boolLists = new HashMap<Integer, List<Boolean>>();
-    private final HashMap <Integer, List<Vec2>> vecLists = new HashMap<Integer, List<Vec2>>();
+    private final HashMap<String, Object> globals = new HashMap<String, Object>();
+    private final HashMap<Integer, List<Integer>> intLists = new HashMap<Integer, List<Integer>>();
+    private final HashMap<Integer, List<Float>> floatLists = new HashMap<Integer, List<Float>>();
+    private final HashMap<Integer, List<String>> stringLists = new HashMap<Integer, List<String>>();
+    private final HashMap<Integer, List<Boolean>> boolLists = new HashMap<Integer, List<Boolean>>();
+    private final HashMap<Integer, List<Vec2>> vecLists = new HashMap<Integer, List<Vec2>>();
 
     private static volatile int listID = Integer.MIN_VALUE;
 
@@ -116,7 +116,7 @@ public class VarStore {
     @ScriptLink
     public int newIntList() {
         List<Integer> newList = new ArrayList<Integer>();
-        int id = listID++;
+        int id = listID++ ;
         intLists.put(id, newList);
         return id;
     }
@@ -139,7 +139,7 @@ public class VarStore {
     @ScriptLink
     public int newFloatList() {
         List<Float> newList = new ArrayList<Float>();
-        int id = listID++;
+        int id = listID++ ;
         floatLists.put(id, newList);
         return id;
     }
@@ -162,7 +162,7 @@ public class VarStore {
     @ScriptLink
     public int newBoolList() {
         List<Boolean> newList = new ArrayList<Boolean>();
-        int id = listID++;
+        int id = listID++ ;
         boolLists.put(id, newList);
         return id;
     }
@@ -185,7 +185,7 @@ public class VarStore {
     @ScriptLink
     public int newStringList() {
         List<String> newList = new ArrayList<String>();
-        int id = listID++;
+        int id = listID++ ;
         stringLists.put(id, newList);
         return id;
     }
@@ -208,7 +208,7 @@ public class VarStore {
     @ScriptLink
     public int newVecList() {
         List<Vec2> newList = new ArrayList<Vec2>();
-        int id = listID++;
+        int id = listID++ ;
         vecLists.put(id, newList);
         return id;
     }
@@ -252,6 +252,7 @@ public class VarStore {
     }
 
     private final List<?>[] queryLists(int listId) {
-        return new List<?>[] {intLists.get(listId), floatLists.get(listId), stringLists.get(listId), boolLists.get(listId), vecLists.get(listId)};
+        return new List<?>[] { intLists.get(listId), floatLists.get(listId), stringLists.get(listId),
+                boolLists.get(listId), vecLists.get(listId) };
     }
 }

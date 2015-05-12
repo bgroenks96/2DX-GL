@@ -47,7 +47,8 @@ public class NiftyRenderable implements GLRenderable {
     public void init(final GLHandle handle) {
 
         nifty = new Nifty(new BatchRenderDevice(JoglBatchRenderBackendCoreProfileFactory.create()),
-                new Snap2DSoundDevice(SoundAPI.getSound2D()), new JoglInputSystem(window), new AccurateTimeProvider());
+                        new Snap2DSoundDevice(SoundAPI.getSound2D()), new JoglInputSystem(window),
+                        new AccurateTimeProvider());
         fromXml("ui/map_screen_ui.xml", "screen0");
     }
 

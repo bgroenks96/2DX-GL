@@ -56,7 +56,7 @@ public class EditPanel extends JPanel {
     SpriteData data;
     BufferedImage bi;
     Rectangle imgBounds;
-    LinkedList <Point> vertices = new LinkedList <Point>();
+    LinkedList<Point> vertices = new LinkedList<Point>();
     int wt, ht;
     boolean finish;
 
@@ -182,8 +182,9 @@ public class EditPanel extends JPanel {
             parent.validate();
         } catch (IOException e) {
             JOptionPane.showMessageDialog(parent,
-                    "Error occurred when attempting to laod image data:" + e.getMessage(), "I/O Exception",
-                    JOptionPane.ERROR_MESSAGE);
+                                          "Error occurred when attempting to laod image data:" + e.getMessage(),
+                                          "I/O Exception",
+                                          JOptionPane.ERROR_MESSAGE);
         }
     }
 
@@ -193,7 +194,7 @@ public class EditPanel extends JPanel {
      */
     public boolean save() {
 
-        if (!finish) {
+        if ( !finish) {
             JOptionPane.showMessageDialog(parent, "Missing or incomplete data: unable to save");
             return false;
         }
@@ -310,15 +311,19 @@ public class EditPanel extends JPanel {
                     break;
                 case KeyEvent.VK_BACK_SPACE:
                     if (vertices.size() > 0) {
-                        int resp = JOptionPane.showConfirmDialog(parent, "Clear all drawn bounds?", "Confirm Clear",
-                                JOptionPane.OK_CANCEL_OPTION);
+                        int resp = JOptionPane.showConfirmDialog(parent,
+                                                                 "Clear all drawn bounds?",
+                                                                 "Confirm Clear",
+                                                                 JOptionPane.OK_CANCEL_OPTION);
                         if (resp == JOptionPane.OK_OPTION) {
                             finish = false;
                             vertices.clear();
                         }
                     } else {
-                        int resp = JOptionPane.showConfirmDialog(parent, "Clear canvas of loaded data?",
-                                "Confirm Clear", JOptionPane.OK_CANCEL_OPTION);
+                        int resp = JOptionPane.showConfirmDialog(parent,
+                                                                 "Clear canvas of loaded data?",
+                                                                 "Confirm Clear",
+                                                                 JOptionPane.OK_CANCEL_OPTION);
                         if (resp == JOptionPane.OK_OPTION) {
                             clear();
                         }

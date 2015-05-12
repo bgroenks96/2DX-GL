@@ -217,7 +217,7 @@ public class ScriptMath {
     @ScriptLink
     public static int randInt(final int min, final int max) {
 
-        NumberGenerator <Integer> gen = new NumberGenerator <Integer>(min, max);
+        NumberGenerator<Integer> gen = new NumberGenerator<Integer>(min, max);
         return gen.generate().intValue();
     }
 }

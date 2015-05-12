@@ -38,8 +38,8 @@ public abstract class Shape2D {
     protected boolean filled;
 
     /**
-     * Create this Shape2D with all of the given attributes. This
-     * implementation just calls setProperties
+     * Create this Shape2D with all of the given attributes. This implementation
+     * just calls setProperties
      * 
      * @param x
      * @param y
@@ -77,11 +77,15 @@ public abstract class Shape2D {
      */
     public abstract void rotate(double degrees, Rotation type);
 
-    
     /**
      * Set this Shape2D's location
-     * @param x the x coordinate for the bounding quad's upper left hand corner
-     * @param y the y coordinate for the bounding quad's upper left hand corner
+     * 
+     * @param x
+     *            the x coordinate for the bounding quad's upper left hand
+     *            corner
+     * @param y
+     *            the y coordinate for the bounding quad's upper left hand
+     *            corner
      */
     public void setLocation(final int x, final int y) {
 
@@ -105,7 +109,7 @@ public abstract class Shape2D {
         } else {
             g.drawPolygon(shape);
         }
-        g.translate(-locx, -locy);
+        g.translate( -locx, -locy);
     }
 
     /**
@@ -183,8 +187,13 @@ public abstract class Shape2D {
      * @param nsides
      * @return the Polygon that has been drawn.
      */
-    protected Polygon drawRegularPolygon(final Point loc, Point start, final int size, final Paint p,
-            final boolean fill, final boolean draw, final int nsides) {
+    protected Polygon drawRegularPolygon(final Point loc,
+                                         Point start,
+                                         final int size,
+                                         final Paint p,
+                                         final boolean fill,
+                                         final boolean draw,
+                                         final int nsides) {
 
         int x = (int) loc.getX();
         int y = (int) loc.getY();

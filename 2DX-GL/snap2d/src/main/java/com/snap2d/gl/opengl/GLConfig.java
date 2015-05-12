@@ -41,7 +41,7 @@ public class GLConfig {
 
     static {
         final String[] checkProfiles = new String[] { "GL4", "GL3", "GL2", "GL2ES2", "GL2ES1" };
-        List <String> avail = new ArrayList <String>();
+        List<String> avail = new ArrayList<String>();
         for (int i = 0; i < checkProfiles.length; i++ ) {
             if (GLProfile.isAvailable(checkProfiles[i])) {
                 avail.add(checkProfiles[i]);
@@ -51,7 +51,7 @@ public class GLConfig {
         avail.toArray(GL_AVAILABLE_PROFILES);
     }
 
-    HashMap <Property, String> configMap = new HashMap <Property, String>();
+    HashMap<Property, String> configMap = new HashMap<Property, String>();
 
     public GLConfig() {
 

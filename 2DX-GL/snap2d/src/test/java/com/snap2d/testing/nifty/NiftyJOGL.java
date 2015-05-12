@@ -55,7 +55,7 @@ import de.lessvoid.nifty.spi.time.impl.AccurateTimeProvider;
 public class NiftyJOGL {
 
     final static String DEFAULT_VS = "stupid-simple.vert", TRANSFORM_VS = "snap2d-transform.vert",
-            DEFAULT_FS = "stupid-simple.frag";
+                    DEFAULT_FS = "stupid-simple.frag";
 
     Display newtDisp;
     Screen newtScreen;
@@ -122,19 +122,19 @@ public class NiftyJOGL {
 
             wt = win.getWidth();
             ht = win.getHeight();
-            coords = new float[] { wt - wt / 4 - quadSize / 2, ht - ht / 4 - quadSize / 2,  // bottom
+            coords = new float[] { wt - wt / 4 - quadSize / 2, ht - ht / 4 - quadSize / 2, // bottom
                     // left
-                    wt - wt / 4 - quadSize / 2, ht - ht / 4 + quadSize / 2,  // top
+                    wt - wt / 4 - quadSize / 2, ht - ht / 4 + quadSize / 2, // top
                     // left
-                    wt - wt / 4 + quadSize / 2, ht - ht / 4 - quadSize / 2,  // bottom
+                    wt - wt / 4 + quadSize / 2, ht - ht / 4 - quadSize / 2, // bottom
                     // right
                     wt - wt / 4 + quadSize / 2, ht - ht / 4 + quadSize / 2 };// top
             // right
-            coords2 = new float[] { wt - wt / 4 - quadSize / 2, ht / 4 - quadSize / 2,  // bottom
+            coords2 = new float[] { wt - wt / 4 - quadSize / 2, ht / 4 - quadSize / 2, // bottom
                     // left
-                    wt - wt / 4 - quadSize / 2, ht / 4 + quadSize / 2,  // top
+                    wt - wt / 4 - quadSize / 2, ht / 4 + quadSize / 2, // top
                     // left
-                    wt - wt / 4 + quadSize / 2, ht / 4 - quadSize / 2,  // bottom
+                    wt - wt / 4 + quadSize / 2, ht / 4 - quadSize / 2, // bottom
                     // right
                     wt - wt / 4 + quadSize / 2, ht / 4 + quadSize / 2 };// top
             // right
@@ -237,7 +237,7 @@ public class NiftyJOGL {
 
             newtInput = new NewtInputSystem(glWin);
             nifty = new Nifty(new BatchRenderDevice(JoglBatchRenderBackendCoreProfileFactory.create()),
-                    new NullSoundDevice(), newtInput, new AccurateTimeProvider());
+                            new NullSoundDevice(), newtInput, new AccurateTimeProvider());
             nifty.fromXml("nifty_text_test_screen.xml", "screen0");
         }
 

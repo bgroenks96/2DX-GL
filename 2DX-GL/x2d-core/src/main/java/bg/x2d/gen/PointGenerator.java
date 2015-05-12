@@ -22,7 +22,7 @@ import bg.x2d.geo.PointUD;
  * @author Brian Groenke
  * @since 2DX 1.0 (1st Edition)
  */
-public class PointGenerator implements Generator <Point> {
+public class PointGenerator implements Generator<Point> {
 
     private double x1, x2, y1, y2;
 
@@ -34,7 +34,7 @@ public class PointGenerator implements Generator <Point> {
     @Override
     public PointUD generate() {
 
-        NumberGenerator <Double> gen = new NumberGenerator <Double>(x1, x2);
+        NumberGenerator<Double> gen = new NumberGenerator<Double>(x1, x2);
         double x = gen.generate();
         gen.setBounds(y1, y2);
         double y = gen.generate();

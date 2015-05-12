@@ -94,7 +94,7 @@ class JOGLTestLauncher {
 
         World2D world;
         int vwt, vht;
-        Rect2D bounds = new Rect2D(-500, -500, 100, 100);
+        Rect2D bounds = new Rect2D( -500, -500, 100, 100);
 
         int rectBuff, polyBuff;
 
@@ -104,7 +104,7 @@ class JOGLTestLauncher {
 
         final int N = 3, rwt = 200, rht = 200;
         float theta, sx = 1, sy = 1;
-        PointUD p0 = new PointUD(-400, -300), p1 = new PointUD(-150, -50);
+        PointUD p0 = new PointUD( -400, -300), p1 = new PointUD( -150, -50);
         Vector2f v0 = new Vector2f(2f, 1f), v1 = new Vector2f(2f, -1f);
         PointUD[] points = new PointUD[5];
         PointUD basePoint = new PointUD(200, 500), origin = new PointUD(basePoint.ux, basePoint.uy - 100);
@@ -157,7 +157,7 @@ class JOGLTestLauncher {
         public void update(final long nanoTimeNow, final long nanosSinceLastUpdate) {
 
             Rect2D r0 = new Rect2D(p0.ux, p0.uy, 200, 200), r1 = new Rect2D(p1.ux, p1.uy, rwt, rht);
-            if (!world.viewContains(r0)) {
+            if ( !world.viewContains(r0)) {
                 Rect2D bounds = world.checkCollision(world.getBounds(), r0);
                 if (bounds == null) {
                     bounds = world.getBounds();
@@ -169,7 +169,7 @@ class JOGLTestLauncher {
                     v0.negateX();
                 }
             }
-            if (!world.viewContains(r1)) {
+            if ( !world.viewContains(r1)) {
                 Rect2D bounds = world.checkCollision(world.getBounds(), r1);
                 if (bounds == null) {
                     bounds = world.getBounds();
@@ -197,7 +197,7 @@ class JOGLTestLauncher {
 
             vwt = wt;
             vht = ht;
-            world = GLUtils.createGLWorldSystem(-vwt / 2, -vht / 2, vwt, vht, ppu);
+            world = GLUtils.createGLWorldSystem( -vwt / 2, -vht / 2, vwt, vht, ppu);
             world.setViewSize(vwt, vht, ppu);
         }
 
@@ -208,8 +208,11 @@ class JOGLTestLauncher {
         public void init(final GLHandle handle) {
 
             rectBuff = handle.createQuadBuffer2f(BufferUsage.STREAM_DRAW, 2, false);
-            polyBuff = handle.createPolyBuffer2f(BufferUsage.STREAM_DRAW, GeomFunc.TRIANGLE_FAN, points.length, 5,
-                    false);
+            polyBuff = handle.createPolyBuffer2f(BufferUsage.STREAM_DRAW,
+                                                 GeomFunc.TRIANGLE_FAN,
+                                                 points.length,
+                                                 5,
+                                                 false);
             for (int i = 0; i < points.length; i++ ) {
                 points[i] = GeoUtils.rotatePoint(basePoint, origin, 2 * Math.PI / points.length * i);
             }
@@ -228,7 +231,7 @@ class JOGLTestLauncher {
     static class TestBack implements GLRenderable {
 
         int wt, ht, buffId;
-        ArrayList <PointLight> lights = new ArrayList <PointLight>();
+        ArrayList<PointLight> lights = new ArrayList<PointLight>();
 
         long last = System.currentTimeMillis();
 
@@ -290,7 +293,7 @@ class JOGLTestLauncher {
 
                 prog.attachShader(vert);
                 prog.attachShader(frag);
-                if (!prog.link()) {
+                if ( !prog.link()) {
                     prog.printLinkLog();
                 }
 
@@ -301,7 +304,7 @@ class JOGLTestLauncher {
                 ColorGenerator colorgen = ColorGenerator.createRGB();
                 for (int i = 0; i < 20; i++ ) {
                     PointLight ptlight = new PointLight(100 + 50 + rand.nextInt(800), 100 + 50 + rand.nextInt(600),
-                            colorgen.generate().getColorComponents(new float[4]), 3f, 50);
+                                    colorgen.generate().getColorComponents(new float[4]), 3f, 50);
                     handle.asGL3().addLightSource(ptlight);
                     lights.add(ptlight);
                 }

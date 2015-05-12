@@ -84,8 +84,10 @@ public class PhysicsTest extends JApplet {
         btns.add(settings);
         btns.setBackground(Color.GRAY);
         add(BorderLayout.SOUTH, btns);
-        panel.init( (-getWidth() / 2.0f), (-getHeight() / 2.0f), getWidth(),
-                (getHeight() - btns.getPreferredSize().height));
+        panel.init( ( -getWidth() / 2.0f),
+                   ( -getHeight() / 2.0f),
+                   getWidth(),
+                   (getHeight() - btns.getPreferredSize().height));
         updateComponents();
 
         shouldRender = true;
@@ -146,7 +148,7 @@ public class PhysicsTest extends JApplet {
         private static final long serialVersionUID = -2502921145279012663L;
 
         WorldView view;
-        Set <Entity> entities;
+        Set<Entity> entities;
 
         PhysicsPanel() {
 
@@ -158,7 +160,7 @@ public class PhysicsTest extends JApplet {
         public void init(final float minx, final float miny, final int width, final int height) {
 
             view = new WorldView(minx, miny, minx + width, miny + height);
-            entities = new HashSet <Entity>();
+            entities = new HashSet<Entity>();
         }
 
         public void attach(final Entity e) {
@@ -400,11 +402,11 @@ public class PhysicsTest extends JApplet {
 
             Rectangle2D.Float worldBounds = new Rectangle2D.Float(x1, y1, (x2 - x1), (y2 - y1));
             double xsig = Math.signum(Math.abs(r.getX()) - Math.abs(x1)), ysig = Math.signum(Math.abs(r.getY())
-                    - Math.abs(y1));
+                            - Math.abs(y1));
             return worldBounds.contains(r.getX(), r.getY())
-                    && worldBounds.contains(r.getX(), r.getY() + r.getHeight() * ysig)
-                    && worldBounds.contains(r.getX() + r.getWidth() * xsig, r.getY() + r.getHeight() * ysig)
-                    && worldBounds.contains(r.getX() + r.getWidth() * xsig, r.getY());
+                            && worldBounds.contains(r.getX(), r.getY() + r.getHeight() * ysig)
+                            && worldBounds.contains(r.getX() + r.getWidth() * xsig, r.getY() + r.getHeight() * ysig)
+                            && worldBounds.contains(r.getX() + r.getWidth() * xsig, r.getY());
         }
 
         public Rectangle2D.Double moveInBounds(final Rectangle2D r) {
@@ -428,12 +430,12 @@ public class PhysicsTest extends JApplet {
             }
             if (x + r.getWidth() > x2) {
                 inBounds.x = x2 - r.getWidth();
-            } else if (!minSet) {
+            } else if ( !minSet) {
                 inBounds.x = x;
             }
             if (y > y2) {
                 inBounds.y = y2;
-            } else if (!minSet) {
+            } else if ( !minSet) {
                 inBounds.y = y;
             }
             inBounds.width = r.getWidth();
@@ -444,8 +446,8 @@ public class PhysicsTest extends JApplet {
         public boolean screenContains(final Rectangle r) {
 
             return screenView.contains(r.getX(), r.getY()) && screenView.contains(r.getX(), r.getY() + r.getHeight())
-                    && screenView.contains(r.getX() + r.getWidth(), r.getY() + r.getHeight())
-                    && screenView.contains(r.getX(), r.getY() + r.getHeight());
+                            && screenView.contains(r.getX() + r.getWidth(), r.getY() + r.getHeight())
+                            && screenView.contains(r.getX(), r.getY() + r.getHeight());
         }
     }
 
@@ -571,8 +573,9 @@ public class PhysicsTest extends JApplet {
                         }
                     } catch (NumberFormatException nfe) {
                         JOptionPane.showMessageDialog(null,
-                                "Variable setting did not complete properly:\n" + nfe.toString(), "Parsing Error",
-                                JOptionPane.WARNING_MESSAGE);
+                                                      "Variable setting did not complete properly:\n" + nfe.toString(),
+                                                      "Parsing Error",
+                                                      JOptionPane.WARNING_MESSAGE);
                     }
                 }
 

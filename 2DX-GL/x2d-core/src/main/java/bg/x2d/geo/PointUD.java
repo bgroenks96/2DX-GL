@@ -22,7 +22,8 @@ import java.awt.geom.Point2D;
  * functions (including AWT/Swing). <br/>
  * <br/>
  * Changes to the data should be made through <code>setLocation</code> to ensure
- * that the changes are also reflected in all of methods/fields inherited by PointUD.
+ * that the changes are also reflected in all of methods/fields inherited by
+ * PointUD.
  * 
  * @author Brian Groenke
  * @since 2DX 1.0 (1st Edition)

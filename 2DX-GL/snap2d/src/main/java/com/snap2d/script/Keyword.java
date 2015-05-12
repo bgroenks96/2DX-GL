@@ -18,31 +18,59 @@ package com.snap2d.script;
  */
 public enum Keyword {
 
-    IF("if", Flags.STATEMENT, Flags.ARG_BOOL, 1), ELSE("else", Flags.STATEMENT, Flags.ARG_BOOL, 1), FOR("for",
-            Flags.STATEMENT, Flags.ARG_SPEC, 3), BREAK("break", Flags.STATEMENT), CONTINUE("continue", Flags.STATEMENT), END(
-                    ";", Flags.DELIMITER), PARAM_BEGIN("(", Flags.DELIMITER), PARAM_END(")", Flags.DELIMITER), BLOCK_BEGIN("{",
-                            Flags.DELIMITER), BLOCK_END("}", Flags.DELIMITER), SEPARATOR(",", Flags.DELIMITER), INT("int", Flags.TYPE), FLOAT(
-                                    "float", Flags.TYPE), BOOL("bool", Flags.TYPE), STRING("string", Flags.TYPE), VOID("void", Flags.TYPE), ADD(
-                                            "+", Flags.OP, Flags.ARG_NUM, 2, Flags.RETURN_MATCH_ARG), SUBTRACT("-", Flags.OP, Flags.ARG_NUM, 2,
-                                                    Flags.RETURN_MATCH_ARG), MULTIPLY("*", Flags.OP, Flags.ARG_NUM, 2, Flags.RETURN_MATCH_ARG), DIVIDE("/",
-                                                            Flags.OP, Flags.ARG_NUM, 2, Flags.RETURN_MATCH_ARG), POW("^", Flags.OP, Flags.ARG_NUM, 2,
-                                                                    Flags.RETURN_MATCH_ARG), ASSIGN("=", Flags.OP, Flags.ARG_ASSIGN, 2, Flags.RETURN_MATCH_ARG), EQUALS("==",
-                                                                            Flags.OP, Flags.ARG_MATCH, 2, Flags.RETURN_BOOL), NOT_EQUALS("!=", Flags.OP, Flags.ARG_MATCH, 2,
-                                                                                    Flags.RETURN_BOOL), NOT("!", Flags.OP, 1, Flags.RETURN_BOOL), GREATER(">", Flags.OP, Flags.ARG_NUM, 2,
-                                                                                            Flags.RETURN_BOOL), LESSER("<", Flags.OP, Flags.ARG_NUM, 2, Flags.RETURN_BOOL), STR_MARK("\"",
-                                                                                                    Flags.DELIMITER), OR("||", Flags.OP, Flags.ARG_BOOL, 2, Flags.RETURN_BOOL), AND("&&", Flags.OP,
-                                                                                                            Flags.ARG_BOOL, 2, Flags.RETURN_BOOL), BITOR("|", Flags.OP, Flags.ARG_INT, 2, Flags.RETURN_INT), BITAND(
-                                                                                                                    "&", Flags.OP, Flags.ARG_INT, 2, Flags.RETURN_INT), TRUE("true", Flags.STATEMENT), FALSE("false",
-                                                                                                                            Flags.STATEMENT), RETURN("return", Flags.STATEMENT, Flags.ARG_DEF, 1), INCREM("++", Flags.OP,
-                                                                                                                                    Flags.ARG_NUM, 1, Flags.RETURN_MATCH_ARG), ADD_MOD("+=", Flags.OP, Flags.ARG_NUM, 2, Flags.RETURN_MATCH_ARG), DECREM(
-                                                                                                                                            "--", Flags.OP, Flags.ARG_NUM, 1, Flags.RETURN_MATCH_ARG), MINUS_MOD("-=", Flags.OP, Flags.ARG_NUM, 2,
-                                                                                                                                                    Flags.RETURN_MATCH_ARG), MULT_MOD("*=", Flags.OP, Flags.ARG_NUM, 1, Flags.RETURN_MATCH_ARG), DIV_MOD("/=",
-                                                                                                                                                            Flags.OP, Flags.ARG_NUM, 2, Flags.RETURN_MATCH_ARG), REM_LINE("//", Flags.STATEMENT), REM_START("/*",
-                                                                                                                                                                    Flags.STATEMENT), REM_END("*/", Flags.STATEMENT), CAST_INT("#", Flags.OP, Flags.ARG_FLOAT, 1,
-                                                                                                                                                                            Flags.RETURN_INT), BITXOR("~", Flags.OP, Flags.ARG_INT, 2, Flags.RETURN_INT), MODULO("%", Flags.OP,
-                                                                                                                                                                                    Flags.ARG_INT, 2, Flags.RETURN_INT), GREAT_EQUALS(">=", Flags.OP, Flags.ARG_NUM, 2, Flags.RETURN_BOOL), LESS_EQUALS(
-                                                                                                                                                                                            "<=", Flags.OP, Flags.ARG_NUM, 2, Flags.RETURN_BOOL), CONST("const", Flags.STATEMENT), VEC2("vec2",
-                                                                                                                                                                                                    Flags.TYPE), ARRAY_BEGIN("[", Flags.DELIMITER), ARRAY_END("]", Flags.DELIMITER);
+    IF("if", Flags.STATEMENT, Flags.ARG_BOOL, 1),
+    ELSE("else", Flags.STATEMENT, Flags.ARG_BOOL, 1),
+    FOR("for", Flags.STATEMENT, Flags.ARG_SPEC, 3),
+    BREAK("break", Flags.STATEMENT),
+    CONTINUE("continue", Flags.STATEMENT),
+    END(";", Flags.DELIMITER),
+    PARAM_BEGIN("(", Flags.DELIMITER),
+    PARAM_END(")", Flags.DELIMITER),
+    BLOCK_BEGIN("{", Flags.DELIMITER),
+    BLOCK_END("}", Flags.DELIMITER),
+    SEPARATOR(",", Flags.DELIMITER),
+    INT("int", Flags.TYPE),
+    FLOAT("float", Flags.TYPE),
+    BOOL("bool", Flags.TYPE),
+    STRING("string", Flags.TYPE),
+    VOID("void", Flags.TYPE),
+    ADD("+", Flags.OP, Flags.ARG_NUM, 2, Flags.RETURN_MATCH_ARG),
+    SUBTRACT("-", Flags.OP, Flags.ARG_NUM, 2, Flags.RETURN_MATCH_ARG),
+    MULTIPLY("*", Flags.OP, Flags.ARG_NUM, 2, Flags.RETURN_MATCH_ARG),
+    DIVIDE("/", Flags.OP, Flags.ARG_NUM, 2, Flags.RETURN_MATCH_ARG),
+    POW("^", Flags.OP, Flags.ARG_NUM, 2, Flags.RETURN_MATCH_ARG),
+    ASSIGN("=", Flags.OP, Flags.ARG_ASSIGN, 2, Flags.RETURN_MATCH_ARG),
+    EQUALS("==", Flags.OP, Flags.ARG_MATCH, 2, Flags.RETURN_BOOL),
+    NOT_EQUALS("!=", Flags.OP, Flags.ARG_MATCH, 2, Flags.RETURN_BOOL),
+    NOT("!", Flags.OP, 1, Flags.RETURN_BOOL),
+    GREATER(">", Flags.OP, Flags.ARG_NUM, 2, Flags.RETURN_BOOL),
+    LESSER("<", Flags.OP, Flags.ARG_NUM, 2, Flags.RETURN_BOOL),
+    STR_MARK("\"", Flags.DELIMITER),
+    OR("||", Flags.OP, Flags.ARG_BOOL, 2, Flags.RETURN_BOOL),
+    AND("&&", Flags.OP, Flags.ARG_BOOL, 2, Flags.RETURN_BOOL),
+    BITOR("|", Flags.OP, Flags.ARG_INT, 2, Flags.RETURN_INT),
+    BITAND("&", Flags.OP, Flags.ARG_INT, 2, Flags.RETURN_INT),
+    TRUE("true", Flags.STATEMENT),
+    FALSE("false", Flags.STATEMENT),
+    RETURN("return", Flags.STATEMENT, Flags.ARG_DEF, 1),
+    INCREM("++", Flags.OP, Flags.ARG_NUM, 1, Flags.RETURN_MATCH_ARG),
+    ADD_MOD("+=", Flags.OP, Flags.ARG_NUM, 2, Flags.RETURN_MATCH_ARG),
+    DECREM("--", Flags.OP, Flags.ARG_NUM, 1, Flags.RETURN_MATCH_ARG),
+    MINUS_MOD("-=", Flags.OP, Flags.ARG_NUM, 2, Flags.RETURN_MATCH_ARG),
+    MULT_MOD("*=", Flags.OP, Flags.ARG_NUM, 1, Flags.RETURN_MATCH_ARG),
+    DIV_MOD("/=", Flags.OP, Flags.ARG_NUM, 2, Flags.RETURN_MATCH_ARG),
+    REM_LINE("//", Flags.STATEMENT),
+    REM_START("/*", Flags.STATEMENT),
+    REM_END("*/", Flags.STATEMENT),
+    CAST_INT("#", Flags.OP, Flags.ARG_FLOAT, 1, Flags.RETURN_INT),
+    BITXOR("~", Flags.OP, Flags.ARG_INT, 2, Flags.RETURN_INT),
+    MODULO("%", Flags.OP, Flags.ARG_INT, 2, Flags.RETURN_INT),
+    GREAT_EQUALS(">=", Flags.OP, Flags.ARG_NUM, 2, Flags.RETURN_BOOL),
+    LESS_EQUALS("<=", Flags.OP, Flags.ARG_NUM, 2, Flags.RETURN_BOOL),
+    CONST("const", Flags.STATEMENT),
+    VEC2("vec2", Flags.TYPE),
+    ARRAY_BEGIN("[", Flags.DELIMITER),
+    ARRAY_END("]", Flags.DELIMITER);
 
     private static final int TYPE_POS = 0, ARG_TYPE_POS = 1, ARG_COUNT_POS = 2, RETURN_POS = 3;
 
@@ -183,7 +211,7 @@ public enum Keyword {
         }
     }
 
-    public static boolean isValidDataType(final Class <?> type) {
+    public static boolean isValidDataType(final Class<?> type) {
 
         if (type == Integer.class || type == Float.class || type == Boolean.class || type == String.class) {
             return true;

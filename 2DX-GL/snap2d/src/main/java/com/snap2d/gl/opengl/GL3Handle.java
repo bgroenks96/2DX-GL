@@ -46,10 +46,10 @@ import com.snap2d.light.LightSource;
 public class GL3Handle implements GLHandle {
 
     public static final String UNIFORM_ORTHO_MATRIX = "mOrtho", UNIFORM_TRANSLATE = "vTranslate",
-            UNIFORM_ROTATE = "fRotate", UNIFORM_ROTATE_PIVOT = "vPivot", UNIFORM_SCALE = "vScale";
+                    UNIFORM_ROTATE = "fRotate", UNIFORM_ROTATE_PIVOT = "vPivot", UNIFORM_SCALE = "vScale";
 
     private static final String DEFAULT_VERTEX_SHADER = "snap2d-default.vert",
-            DEFAULT_FRAG_SHADER = "snap2d-default.frag";
+                    DEFAULT_FRAG_SHADER = "snap2d-default.frag";
 
     private static final Logger log = Logger.getLogger(GLHandle.class.getCanonicalName());
 
@@ -66,7 +66,7 @@ public class GL3Handle implements GLHandle {
 
     FloatBuffer defColorBuff, orthoMatrix;
 
-    HashSet <LightSource> lights = new HashSet <LightSource>();
+    HashSet<LightSource> lights = new HashSet<LightSource>();
 
     // transformation values
     float theta, rx, ry, tx, ty, sx = 1, sy = 1;
@@ -75,7 +75,7 @@ public class GL3Handle implements GLHandle {
 
         this.config = config;
         this.textRender = new TextRenderer(new Font("Arial", Font.PLAIN, 12), true, true, null,
-                config.getAsBool(Property.GL_RENDER_TEXT_MIPMAP));
+                        config.getAsBool(Property.GL_RENDER_TEXT_MIPMAP));
         this.defColorBuff = Buffers.newDirectFloatBuffer(new float[] { 1, 1, 1, 1 });
 
         // create default shader program
@@ -85,7 +85,7 @@ public class GL3Handle implements GLHandle {
             GLProgram prog = new GLProgram();
             prog.attachShader(vert);
             prog.attachShader(frag);
-            if (!prog.link()) {
+            if ( !prog.link()) {
                 log.warning("error linking default shaders: ");
                 prog.printLinkLog();
             }
@@ -137,7 +137,7 @@ public class GL3Handle implements GLHandle {
 
         orthoMatrix = GLUtils.createOrthoMatrix(x, x + vwt, y, y + vht, -1, 1);
         pushTransform();
-        if (!GLProgram.isDefaultProgEnabled()) {
+        if ( !GLProgram.isDefaultProgEnabled()) {
             GLProgram curr = GLProgram.getCurrentProgram();
             GLProgram.getDefaultProgram().enable();
             pushTransform();
@@ -186,7 +186,7 @@ public class GL3Handle implements GLHandle {
     public void bindTexture(final Texture2D tex) {
 
         final GL gl = getGL();
-        if (!texEnabled) {
+        if ( !texEnabled) {
             tex.enable(gl);
             texEnabled = true;
         }
@@ -212,11 +212,11 @@ public class GL3Handle implements GLHandle {
 
         if (filterType != FILTER_NEAREST && filterType != FILTER_LINEAR) {
             throw (new IllegalArgumentException(
-                    "illegal argument value for 'filterType': expected FILTER_NEAREST or FILTER_LINEAR"));
+                            "illegal argument value for 'filterType': expected FILTER_NEAREST or FILTER_LINEAR"));
         }
         if (mipmapType != FILTER_NEAREST && mipmapType != FILTER_LINEAR) {
             throw (new IllegalArgumentException(
-                    "illegal argument value for 'filterType': expected FILTER_NEAREST or FILTER_LINEAR"));
+                            "illegal argument value for 'filterType': expected FILTER_NEAREST or FILTER_LINEAR"));
         }
         if (mipmapType < 0) {
             minFilter = filterType;
@@ -245,7 +245,7 @@ public class GL3Handle implements GLHandle {
 
         if (filterType != FILTER_NEAREST && filterType != FILTER_LINEAR) {
             throw (new IllegalArgumentException(
-                    "illegal argument value for 'filterType': expected FILTER_NEAREST or FILTER_LINEAR"));
+                            "illegal argument value for 'filterType': expected FILTER_NEAREST or FILTER_LINEAR"));
         }
         magFilter = filterType;
     }
@@ -401,8 +401,8 @@ public class GL3Handle implements GLHandle {
 
     // lighting system string constants
     private static final String UNIFORM_LCOUNT = "light_count", UNIFORM_LCOORDS = "lights",
-            UNIFORM_LCOLORS = "light_colors", UNIFORM_LINTENSITY = "intensity", UNIFORM_LRADIUS = "radius",
-            UNIFORM_AMBIENT = "ambient", UNIFORM_AMBIENT_COLOR = "ambient_color";
+                    UNIFORM_LCOLORS = "light_colors", UNIFORM_LINTENSITY = "intensity", UNIFORM_LRADIUS = "radius",
+                    UNIFORM_AMBIENT = "ambient", UNIFORM_AMBIENT_COLOR = "ambient_color";
 
     public void updateLightData() throws IllegalStateException {
 
@@ -411,7 +411,7 @@ public class GL3Handle implements GLHandle {
         FloatBuffer radii = Buffers.newDirectFloatBuffer(lights.size());
         FloatBuffer intensity = Buffers.newDirectFloatBuffer(lights.size());
         for (LightSource light : lights) {
-            if (!light.isEnabled()) {
+            if ( !light.isEnabled()) {
                 continue;
             }
             PointUD loc = light.getLocation();
@@ -453,6 +453,7 @@ public class GL3Handle implements GLHandle {
     private BufferObject[] buffInfo;
 
     private final float[] color = new float[4]; // array that holds color data
+
     // for buffer I/O
 
     /**
@@ -486,8 +487,12 @@ public class GL3Handle implements GLHandle {
             checkGLError("glBufferSubData");
         }
 
-        gl.glMultiDrawArrays(buffObj.drawFunc.getGLCommand(), buffObj.vertIndices, 0, buffObj.vertNum, 0,
-                buffObj.objCount);
+        gl.glMultiDrawArrays(buffObj.drawFunc.getGLCommand(),
+                             buffObj.vertIndices,
+                             0,
+                             buffObj.vertNum,
+                             0,
+                             buffObj.objCount);
         checkGLError("glMultiDrawArrays");
 
         // disable vertex array
@@ -514,8 +519,12 @@ public class GL3Handle implements GLHandle {
             checkGLError("glBufferSubData");
         }
 
-        gl.glMultiDrawArrays(buffObj.drawFunc.getGLCommand(), buffObj.vertIndices, 0, buffObj.vertNum, 0,
-                buffObj.objCount);
+        gl.glMultiDrawArrays(buffObj.drawFunc.getGLCommand(),
+                             buffObj.vertIndices,
+                             0,
+                             buffObj.vertNum,
+                             0,
+                             buffObj.objCount);
         checkGLError("glMultiDrawArrays");
 
         // disable vertex array
@@ -554,8 +563,12 @@ public class GL3Handle implements GLHandle {
      *            {@link #setColor4f(float, float, float, float)}
      */
     @Override
-    public void putQuad2f(final int rectBuffId, final float x, final float y, final float wt, final float ht,
-            FloatBuffer colorBuffer) {
+    public void putQuad2f(final int rectBuffId,
+                          final float x,
+                          final float y,
+                          final float wt,
+                          final float ht,
+                          FloatBuffer colorBuffer) {
 
         if (buffInfo == null || buffInfo.length == 0) {
             throw (new GLException("can't write quad data: no allocated buffers"));
@@ -590,7 +603,7 @@ public class GL3Handle implements GLHandle {
 
             floatBuff.put(x);
             floatBuff.put(y);
-            if (!buffObj.textured) {
+            if ( !buffObj.textured) {
                 GLUtils.readAvailable(colorBuffer, color);
                 floatBuff.put(color);
             } else {
@@ -600,7 +613,7 @@ public class GL3Handle implements GLHandle {
 
             floatBuff.put(x);
             floatBuff.put(y + ht);
-            if (!buffObj.textured) {
+            if ( !buffObj.textured) {
                 GLUtils.readAvailable(colorBuffer, color);
                 floatBuff.put(color);
             } else {
@@ -610,7 +623,7 @@ public class GL3Handle implements GLHandle {
 
             floatBuff.put(x + wt);
             floatBuff.put(y);
-            if (!buffObj.textured) {
+            if ( !buffObj.textured) {
                 GLUtils.readAvailable(colorBuffer, color);
                 floatBuff.put(color);
             } else {
@@ -620,7 +633,7 @@ public class GL3Handle implements GLHandle {
 
             floatBuff.put(x + wt);
             floatBuff.put(y + ht);
-            if (!buffObj.textured) {
+            if ( !buffObj.textured) {
                 GLUtils.readAvailable(colorBuffer, color);
                 floatBuff.put(color);
             } else {
@@ -629,7 +642,7 @@ public class GL3Handle implements GLHandle {
             }
 
             buffObj.objCount++ ; // increment object count
-            if (!gl.glUnmapBuffer(GL.GL_ARRAY_BUFFER)) {
+            if ( !gl.glUnmapBuffer(GL.GL_ARRAY_BUFFER)) {
                 log.warning("putQuad2f: glUnmapBuffer returned false");
             }
             checkGLError("glUnmapBuffer");
@@ -640,7 +653,7 @@ public class GL3Handle implements GLHandle {
 
             floatBuff.put(x);
             floatBuff.put(y);
-            if (!buffObj.textured) {
+            if ( !buffObj.textured) {
                 GLUtils.readAvailable(colorBuffer, color);
                 floatBuff.put(color);
             } else {
@@ -650,7 +663,7 @@ public class GL3Handle implements GLHandle {
 
             floatBuff.put(x);
             floatBuff.put(y + ht);
-            if (!buffObj.textured) {
+            if ( !buffObj.textured) {
                 GLUtils.readAvailable(colorBuffer, color);
                 floatBuff.put(color);
             } else {
@@ -660,7 +673,7 @@ public class GL3Handle implements GLHandle {
 
             floatBuff.put(x + wt);
             floatBuff.put(y);
-            if (!buffObj.textured) {
+            if ( !buffObj.textured) {
                 GLUtils.readAvailable(colorBuffer, color);
                 floatBuff.put(color);
             } else {
@@ -670,7 +683,7 @@ public class GL3Handle implements GLHandle {
 
             floatBuff.put(x + wt);
             floatBuff.put(y + ht);
-            if (!buffObj.textured) {
+            if ( !buffObj.textured) {
                 GLUtils.readAvailable(colorBuffer, color);
                 floatBuff.put(color);
             } else {
@@ -685,8 +698,12 @@ public class GL3Handle implements GLHandle {
     }
 
     @Override
-    public void putQuad2d(final int rectBuffId, final double x, final double y, final double wt, final double ht,
-            FloatBuffer colorBuffer) {
+    public void putQuad2d(final int rectBuffId,
+                          final double x,
+                          final double y,
+                          final double wt,
+                          final double ht,
+                          FloatBuffer colorBuffer) {
 
         if (buffInfo == null || buffInfo.length == 0) {
             throw (new GLException("can't write quad data: no allocated buffers"));
@@ -716,7 +733,7 @@ public class GL3Handle implements GLHandle {
 
             doubleBuff.put(x);
             doubleBuff.put(y);
-            if (!buffObj.textured) {
+            if ( !buffObj.textured) {
                 GLUtils.readAvailable(colorBuffer, color);
                 doubleBuff.put(Buffers.getDoubleArray(color, 0, dcolor, 0, color.length));
             } else {
@@ -726,7 +743,7 @@ public class GL3Handle implements GLHandle {
 
             doubleBuff.put(x);
             doubleBuff.put(y + ht);
-            if (!buffObj.textured) {
+            if ( !buffObj.textured) {
                 GLUtils.readAvailable(colorBuffer, color);
                 doubleBuff.put(Buffers.getDoubleArray(color, 0, dcolor, 0, color.length));
             } else {
@@ -736,7 +753,7 @@ public class GL3Handle implements GLHandle {
 
             doubleBuff.put(x + wt);
             doubleBuff.put(y);
-            if (!buffObj.textured) {
+            if ( !buffObj.textured) {
                 GLUtils.readAvailable(colorBuffer, color);
                 doubleBuff.put(Buffers.getDoubleArray(color, 0, dcolor, 0, color.length));
             } else {
@@ -746,7 +763,7 @@ public class GL3Handle implements GLHandle {
 
             doubleBuff.put(x + wt);
             doubleBuff.put(y + ht);
-            if (!buffObj.textured) {
+            if ( !buffObj.textured) {
                 GLUtils.readAvailable(colorBuffer, color);
                 doubleBuff.put(Buffers.getDoubleArray(color, 0, dcolor, 0, color.length));
             } else {
@@ -770,7 +787,7 @@ public class GL3Handle implements GLHandle {
 
             doubleBuff.put(x);
             doubleBuff.put(y);
-            if (!buffObj.textured) {
+            if ( !buffObj.textured) {
                 GLUtils.readAvailable(colorBuffer, color);
                 doubleBuff.put(Buffers.getDoubleArray(color, 0, dcolor, 0, color.length));
             } else {
@@ -780,7 +797,7 @@ public class GL3Handle implements GLHandle {
 
             doubleBuff.put(x);
             doubleBuff.put(y + ht);
-            if (!buffObj.textured) {
+            if ( !buffObj.textured) {
                 GLUtils.readAvailable(colorBuffer, color);
                 doubleBuff.put(Buffers.getDoubleArray(color, 0, dcolor, 0, color.length));
             } else {
@@ -790,7 +807,7 @@ public class GL3Handle implements GLHandle {
 
             doubleBuff.put(x + wt);
             doubleBuff.put(y);
-            if (!buffObj.textured) {
+            if ( !buffObj.textured) {
                 GLUtils.readAvailable(colorBuffer, color);
                 doubleBuff.put(Buffers.getDoubleArray(color, 0, dcolor, 0, color.length));
             } else {
@@ -800,7 +817,7 @@ public class GL3Handle implements GLHandle {
 
             doubleBuff.put(x + wt);
             doubleBuff.put(y + ht);
-            if (!buffObj.textured) {
+            if ( !buffObj.textured) {
                 GLUtils.readAvailable(colorBuffer, color);
                 doubleBuff.put(Buffers.getDoubleArray(color, 0, dcolor, 0, color.length));
             } else {
@@ -1037,16 +1054,22 @@ public class GL3Handle implements GLHandle {
      * @return the id for the poly buffer
      */
     @Override
-    public int createPolyBuffer2f(final BufferUsage storeType, final GeomFunc drawFunc, final int verts,
-            final int nobjs, final boolean textured) {
+    public int createPolyBuffer2f(final BufferUsage storeType,
+                                  final GeomFunc drawFunc,
+                                  final int verts,
+                                  final int nobjs,
+                                  final boolean textured) {
 
         BufferObject buffObj = initVBO2f(storeType, drawFunc, verts, nobjs, textured);
         return buffObj.vbo;
     }
 
     @Override
-    public int createPolyBuffer2d(final BufferUsage storeType, final GeomFunc drawFunc, final int verts,
-            final int nobjs, final boolean textured) {
+    public int createPolyBuffer2d(final BufferUsage storeType,
+                                  final GeomFunc drawFunc,
+                                  final int verts,
+                                  final int nobjs,
+                                  final boolean textured) {
 
         BufferObject buffObj = initVBO2d(storeType, drawFunc, verts, nobjs, textured);
         return buffObj.vbo;
@@ -1079,8 +1102,11 @@ public class GL3Handle implements GLHandle {
      * appends the buffer index to 'buffIds' and returns the BufferObject for
      * the newly created buffer
      */
-    private BufferObject initVBO2f(final BufferUsage storeType, final GeomFunc drawFunc, final int nverts,
-            final int nobjs, final boolean textured) {
+    private BufferObject initVBO2f(final BufferUsage storeType,
+                                   final GeomFunc drawFunc,
+                                   final int nverts,
+                                   final int nobjs,
+                                   final boolean textured) {
 
         final GL2GL3 gl = getGL2GL3();
         GLProgram currProg = GLProgram.getCurrentProgram();
@@ -1115,8 +1141,12 @@ public class GL3Handle implements GLHandle {
             checkGLError("glVertexAttribPointer");
             gl.glEnableVertexAttribArray(texCoordPos);
             checkGLError("glEnableVertexAttribArray");
-            gl.glVertexAttribPointer(texCoordPos, 2, GL.GL_FLOAT, false, 4 * Buffers.SIZEOF_FLOAT,
-                    2 * Buffers.SIZEOF_FLOAT);
+            gl.glVertexAttribPointer(texCoordPos,
+                                     2,
+                                     GL.GL_FLOAT,
+                                     false,
+                                     4 * Buffers.SIZEOF_FLOAT,
+                                     2 * Buffers.SIZEOF_FLOAT);
             checkGLError("glVertexAttribPointer");
             buffSize = 4 * nobjs * nverts * Buffers.SIZEOF_FLOAT;
         } else {
@@ -1124,8 +1154,12 @@ public class GL3Handle implements GLHandle {
             checkGLError("glVertexAttribPointer");
             gl.glEnableVertexAttribArray(vertColorPos);
             checkGLError("glEnableVertexAttribArray");
-            gl.glVertexAttribPointer(vertColorPos, 4, GL.GL_FLOAT, false, 6 * Buffers.SIZEOF_FLOAT,
-                    2 * Buffers.SIZEOF_FLOAT);
+            gl.glVertexAttribPointer(vertColorPos,
+                                     4,
+                                     GL.GL_FLOAT,
+                                     false,
+                                     6 * Buffers.SIZEOF_FLOAT,
+                                     2 * Buffers.SIZEOF_FLOAT);
             checkGLError("glVertexAttribPointer");
             buffSize = 6 * nobjs * nverts * Buffers.SIZEOF_FLOAT;
         }
@@ -1136,7 +1170,7 @@ public class GL3Handle implements GLHandle {
         checkGLError("glBindVertexArray [unbind]");
 
         BufferObject buffObj = new BufferObject(vboId[0], vaoId[0], nverts, nobjs, Buffers.SIZEOF_FLOAT, buffSize,
-                textured, drawFunc, storeType);
+                        textured, drawFunc, storeType);
         if (buffObj.storeHint != BufferUsage.STATIC_DRAW) {
             buffObj.data = Buffers.newDirectFloatBuffer(buffSize / Buffers.SIZEOF_FLOAT);
         }
@@ -1148,8 +1182,11 @@ public class GL3Handle implements GLHandle {
      * appends the buffer index to 'buffIds' and returns the BufferObject for
      * the newly created buffer
      */
-    private BufferObject initVBO2d(final BufferUsage storeType, final GeomFunc drawFunc, final int nverts,
-            final int nobjs, final boolean textured) {
+    private BufferObject initVBO2d(final BufferUsage storeType,
+                                   final GeomFunc drawFunc,
+                                   final int nverts,
+                                   final int nobjs,
+                                   final boolean textured) {
 
         final GL2GL3 gl = getGL2GL3();
         GLProgram currProg = GLProgram.getCurrentProgram();
@@ -1184,8 +1221,12 @@ public class GL3Handle implements GLHandle {
             checkGLError("glVertexAttribPointer");
             gl.glEnableVertexAttribArray(texCoordPos);
             checkGLError("glEnableVertexAttribArray");
-            gl.glVertexAttribPointer(texCoordPos, 2, GL2GL3.GL_DOUBLE, false, 4 * Buffers.SIZEOF_DOUBLE,
-                    2 * Buffers.SIZEOF_DOUBLE);
+            gl.glVertexAttribPointer(texCoordPos,
+                                     2,
+                                     GL2GL3.GL_DOUBLE,
+                                     false,
+                                     4 * Buffers.SIZEOF_DOUBLE,
+                                     2 * Buffers.SIZEOF_DOUBLE);
             checkGLError("glVertexAttribPointer");
             buffSize = 4 * 3 * nobjs * nverts * Buffers.SIZEOF_DOUBLE;
         } else {
@@ -1193,8 +1234,12 @@ public class GL3Handle implements GLHandle {
             checkGLError("glVertexAttribPointer");
             gl.glEnableVertexAttribArray(vertColorPos);
             checkGLError("glEnableVertexAttribArray");
-            gl.glVertexAttribPointer(vertColorPos, 4, GL2GL3.GL_DOUBLE, false, 6 * Buffers.SIZEOF_DOUBLE,
-                    2 * Buffers.SIZEOF_DOUBLE);
+            gl.glVertexAttribPointer(vertColorPos,
+                                     4,
+                                     GL2GL3.GL_DOUBLE,
+                                     false,
+                                     6 * Buffers.SIZEOF_DOUBLE,
+                                     2 * Buffers.SIZEOF_DOUBLE);
             checkGLError("glVertexAttribPointer");
             buffSize = 2 * 3 * nobjs * nverts * Buffers.SIZEOF_DOUBLE;
         }
@@ -1204,7 +1249,7 @@ public class GL3Handle implements GLHandle {
         checkGLError("glBindVertexArray [unbind]");
 
         BufferObject buffObj = new BufferObject(vboId[0], vaoId[0], nverts, nobjs, Buffers.SIZEOF_DOUBLE, buffSize,
-                textured, drawFunc, storeType);
+                        textured, drawFunc, storeType);
         if (buffObj.storeHint != BufferUsage.STATIC_DRAW) {
             buffObj.data = Buffers.newDirectFloatBuffer(buffSize / Buffers.SIZEOF_DOUBLE);
         }
@@ -1253,8 +1298,15 @@ public class GL3Handle implements GLHandle {
 
         // constructor sets values and pre-computes arrays that are needed for
         // glMultiDrawArrays function
-        BufferObject(final int vboId, final int vaoId, final int nverts, final int nobjs, final int typeSize,
-                final int size, final boolean textured, final GeomFunc drawFunc, final BufferUsage usage) {
+        BufferObject(final int vboId,
+                     final int vaoId,
+                     final int nverts,
+                     final int nobjs,
+                     final int typeSize,
+                     final int size,
+                     final boolean textured,
+                     final GeomFunc drawFunc,
+                     final BufferUsage usage) {
 
             this.vbo = vboId;
             this.vao = vaoId;

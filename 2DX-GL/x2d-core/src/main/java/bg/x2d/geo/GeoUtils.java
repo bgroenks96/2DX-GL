@@ -60,8 +60,14 @@ public class GeoUtils {
      *            a second y point of the second line
      * @return the intersection point, or null if one doesn't exist.
      */
-    public static PointUD lineIntersection(final double x1, final double y1, final double x2, final double y2,
-            final double x3, final double y3, final double x4, final double y4) {
+    public static PointUD lineIntersection(final double x1,
+                                           final double y1,
+                                           final double x2,
+                                           final double y2,
+                                           final double x3,
+                                           final double y3,
+                                           final double x4,
+                                           final double y4) {
 
         boolean m1u = (x2 - x1) == 0;
         boolean m2u = (x4 - x3) == 0;
@@ -139,8 +145,10 @@ public class GeoUtils {
      *            an outline should be drawn
      * @return
      */
-    public static Polygon drawPolygon(final Point2D[] points, final Graphics2D g2d, final Paint paint,
-            final boolean fill) {
+    public static Polygon drawPolygon(final Point2D[] points,
+                                      final Graphics2D g2d,
+                                      final Paint paint,
+                                      final boolean fill) {
 
         Polygon poly = new Polygon();
         for (Point2D p : points) {

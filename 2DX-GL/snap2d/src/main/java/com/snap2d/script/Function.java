@@ -20,7 +20,7 @@ import java.util.Arrays;
  * @author Brian Groenke
  *
  */
-public class Function implements Comparable <Function> {
+public class Function implements Comparable<Function> {
 
     private static volatile long idTick = 0x860;
 
@@ -56,8 +56,12 @@ public class Function implements Comparable <Function> {
      *            the number of characters preceding the start of the function
      *            block - the opening delimiter's character position + 1.
      */
-    Function(final String name, final Keyword returnType, final Keyword[] params, final String[] paramNames,
-            final String src, final int srcOffs) {
+    Function(final String name,
+             final Keyword returnType,
+             final Keyword[] params,
+             final String[] paramNames,
+             final String src,
+             final int srcOffs) {
 
         this.name = name;
         this.src = src;
@@ -68,8 +72,8 @@ public class Function implements Comparable <Function> {
         id = idTick++ ;
     }
 
-    Function(final String name, final Class <?> cl, final Class <?>... params) throws SecurityException,
-            NoSuchMethodException {
+    Function(final String name, final Class<?> cl, final Class<?>... params) throws SecurityException,
+                                                                            NoSuchMethodException {
 
         Method method = cl.getDeclaredMethod(name, params);
         this.name = name;
@@ -77,7 +81,7 @@ public class Function implements Comparable <Function> {
         this.paramNames = new String[params.length];
         this.javaMethod = method;
         for (int i = 0; i < params.length; i++ ) {
-            Class <?> c = params[i];
+            Class<?> c = params[i];
             if (isString(c)) {
                 paramTypes[i] = Keyword.STRING;
             } else if (isInt(c) || c.equals(Long.class)) {
@@ -93,7 +97,7 @@ public class Function implements Comparable <Function> {
             }
             paramNames[i] = "arg" + i;
         }
-        Class <?> c = method.getReturnType();
+        Class<?> c = method.getReturnType();
         if (isString(c)) {
             returnType = Keyword.STRING;
         } else if (isInt(c)) {
@@ -219,7 +223,7 @@ public class Function implements Comparable <Function> {
         }
     }
 
-    static boolean isInt(final Class <?> c) {
+    static boolean isInt(final Class<?> c) {
 
         if (c.equals(Integer.class) || c.equals(int.class)) {
             return true;
@@ -228,7 +232,7 @@ public class Function implements Comparable <Function> {
         }
     }
 
-    static boolean isFloat(final Class <?> c) {
+    static boolean isFloat(final Class<?> c) {
 
         if (c.equals(Float.class) || c.equals(float.class) || c.equals(Double.class) || c.equals(double.class)) {
             return true;
@@ -237,7 +241,7 @@ public class Function implements Comparable <Function> {
         }
     }
 
-    static boolean isBool(final Class <?> c) {
+    static boolean isBool(final Class<?> c) {
 
         if (c.equals(Boolean.class) || c.equals(boolean.class)) {
             return true;
@@ -246,7 +250,7 @@ public class Function implements Comparable <Function> {
         }
     }
 
-    static boolean isString(final Class <?> c) {
+    static boolean isString(final Class<?> c) {
 
         if (c.equals(String.class)) {
             return true;
@@ -255,7 +259,7 @@ public class Function implements Comparable <Function> {
         }
     }
 
-    static boolean isVector(final Class <?> c) {
+    static boolean isVector(final Class<?> c) {
 
         if (c.equals(Vec2.class)) {
             return true;
@@ -264,7 +268,7 @@ public class Function implements Comparable <Function> {
         }
     }
 
-    static boolean isVoid(final Class <?> c) {
+    static boolean isVoid(final Class<?> c) {
 
         if (c.equals(Void.class) || c.equals(void.class)) {
             return true;

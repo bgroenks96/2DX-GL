@@ -44,8 +44,8 @@ public final class Flags {
     // ARG_DEF = defined argument - expected argument type is operationally
     // defined by some previous declaration
     public static final int ARG_BOOL = 0xFA00000, ARG_SPEC = 0xFA00001, ARG_NONE = 0xFA00002, ARG_INT = 0xFA00003,
-            ARG_FLOAT = 0xFA00004, ARG_MATCH = 0xFA00005, ARG_NUM = 0xFA00006, ARG_ASSIGN = 0xFA00007,
-            ARG_DEF = 0xFA00008;
+                    ARG_FLOAT = 0xFA00004, ARG_MATCH = 0xFA00005, ARG_NUM = 0xFA00006, ARG_ASSIGN = 0xFA00007,
+                    ARG_DEF = 0xFA00008;
 
     // Define return types:
     // RETURN_BOOL = returns a boolean value (bool)
@@ -55,11 +55,11 @@ public final class Flags {
     // RETURN_MATCH_ARG = the operation will return a value of its argument(s)
     // type
     public static final int RETURN_BOOL = 0xFB00000, RETURN_INT = 0xFB00001, RETURN_FLOAT = 0xFB00002,
-            RETURN_NONE = 0xFB00003, RETURN_MATCH_ARG = 0xFB00004, RETURN_FLOAT_STRICT = 0xFB00005;
+                    RETURN_NONE = 0xFB00003, RETURN_MATCH_ARG = 0xFB00004, RETURN_FLOAT_STRICT = 0xFB00005;
 
     // keyword type flags
     public static final int TYPE_INT = 0xFC00000, TYPE_FLOAT = 0xFC00001, TYPE_STRING = 0xFC00002,
-            TYPE_BOOL = 0xFC00003, TYPE_VEC2 = 0xFC00004, TYPE_ARRAY = 0xF0F0F00;
+                    TYPE_BOOL = 0xFC00003, TYPE_VEC2 = 0xFC00004, TYPE_ARRAY = 0xF0F0F00;
     /*
      * TYPE_ARRAY should be combined with other flags via OR and checked with
      * AND (alternatively, a convenience method for checking is provided below:
@@ -73,7 +73,7 @@ public final class Flags {
      * Pre-compiler signals
      */
     public static final int W_FLUSH = 0xC000000, DELIM_FLUSH = 0xC000001, PC_RETURN = 0xC000002, PC_FUNC = 0xC000003,
-            PC_CONST = 0xC000004;
+                    PC_CONST = 0xC000004;
 
     public static boolean isArrayType(final int type) {
 

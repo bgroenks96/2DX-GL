@@ -28,7 +28,7 @@ import java.util.Random;
  *        respective class representations.
  * @since 2DX 1.0 (1st Edition)
  */
-public class NumberGenerator<T extends Number> implements Generator <T> {
+public class NumberGenerator<T extends Number> implements Generator<T> {
 
     private T lowBound, highBound;
     private final Random rand = new Random();
@@ -79,13 +79,13 @@ public class NumberGenerator<T extends Number> implements Generator <T> {
             return (T) new Float(result.floatValue());
         } else {
             throw (new NumberFormatException(
-                    "NumberGenerator only supports the Java(tm) language Number (java.lang.Number) types."));
+                            "NumberGenerator only supports the Java(tm) language Number (java.lang.Number) types."));
         }
     }
 
     public static void main(final String[] args) {
 
-        Integer i = new NumberGenerator <Integer>(-50, 50).generate();
+        Integer i = new NumberGenerator<Integer>( -50, 50).generate();
         System.out.println(i.intValue());
     }
 }

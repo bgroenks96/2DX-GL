@@ -46,7 +46,7 @@ import com.snap2d.gl.spi.RenderController;
 public class GLRenderControl implements RenderController, GLEventListener {
 
     public static final int DEFAULT_TARGET_FPS = RenderController.DEFAULT_TARGET_FPS,
-            POSITION_LAST = RenderController.POSITION_LAST;
+                    POSITION_LAST = RenderController.POSITION_LAST;
 
     private static final Logger log = Logger.getLogger(GLRenderControl.class.getCanonicalName());
     {
@@ -56,9 +56,9 @@ public class GLRenderControl implements RenderController, GLEventListener {
 
     int wt, ht;
 
-    protected List <GLRenderable> rtasks = new ArrayList <GLRenderable>(), delQueue = new Vector <GLRenderable>(),
-            initQueue = new Vector <GLRenderable>();
-    protected List <QueuedGLRenderable> addQueue = new Vector <QueuedGLRenderable>();
+    protected List<GLRenderable> rtasks = new ArrayList<GLRenderable>(), delQueue = new Vector<GLRenderable>(),
+                    initQueue = new Vector<GLRenderable>();
+    protected List<QueuedGLRenderable> addQueue = new Vector<QueuedGLRenderable>();
     protected GLConfig config;
     protected GLWindow glWin;
     protected GLHandle handle;
@@ -198,7 +198,7 @@ public class GLRenderControl implements RenderController, GLEventListener {
     @Override
     public void stopRenderLoop() throws InterruptedException {
 
-        if (!loop.running) {
+        if ( !loop.running) {
             return;
         }
         loopChk.acquire();
@@ -436,13 +436,14 @@ public class GLRenderControl implements RenderController, GLEventListener {
 
         // Default values
         private static final double TARGET_FPS = 60, TARGET_TIME_BETWEEN_RENDERS = 1000000000.0 / TARGET_FPS,
-                TICK_HERTZ = 30, TIME_BETWEEN_UPDATES = 1000000000.0 / TICK_HERTZ, MAX_UPDATES_BEFORE_RENDER = 3;
+                        TICK_HERTZ = 30, TIME_BETWEEN_UPDATES = 1000000000.0 / TICK_HERTZ,
+                        MAX_UPDATES_BEFORE_RENDER = 3;
 
         private static final long SLEEP_WHILE_INACTIVE = 100;
 
         private double targetFPS = TARGET_FPS, targetTimeBetweenRenders = TARGET_TIME_BETWEEN_RENDERS,
-                tickHertz = TICK_HERTZ, timeBetweenUpdates = TIME_BETWEEN_UPDATES,
-                maxUpdates = MAX_UPDATES_BEFORE_RENDER;
+                        tickHertz = TICK_HERTZ, timeBetweenUpdates = TIME_BETWEEN_UPDATES,
+                        maxUpdates = MAX_UPDATES_BEFORE_RENDER;
 
         volatile int fps, tps;
         volatile boolean running, active, noUpdate, printFrames;
@@ -462,7 +463,7 @@ public class GLRenderControl implements RenderController, GLEventListener {
                     Thread.currentThread().setName("snap2d-sleeper_thread");
                     try {
                         if (Local.getPlatform().toLowerCase().contains("windows")
-                                && Boolean.getBoolean(Property.SNAP2D_WINDOWS_HIGH_RES_TIMER.getProperty())) {
+                                        && Boolean.getBoolean(Property.SNAP2D_WINDOWS_HIGH_RES_TIMER.getProperty())) {
                             System.out.println("[Snap2D] started windows sleeper daemon");
                             Thread.sleep(Long.MAX_VALUE);
                         }
@@ -482,7 +483,7 @@ public class GLRenderControl implements RenderController, GLEventListener {
                         try {
                             Thread.sleep(850);
                             boolean print = Boolean.getBoolean(Property.SNAP2D_PRINT_GLRENDER_STAT.getProperty());
-                            while (!printFrames) {
+                            while ( !printFrames) {
                                 ;
                             }
                             String printStr = fps + " fps " + tps + " ticks";
@@ -556,13 +557,13 @@ public class GLRenderControl implements RenderController, GLEventListener {
 
                     loopChk.release();
                     while (now - lastRenderTime < targetTimeBetweenRenders
-                            && (now - lastUpdateTime < timeBetweenUpdates || noUpdate)) {
+                                    && (now - lastUpdateTime < timeBetweenUpdates || noUpdate)) {
                         Thread.yield();
                         now = System.nanoTime();
                     }
                     loopChk.acquire();
 
-                    if (!active) {
+                    if ( !active) {
                         // preserve CPU if loop is currently is currently
                         // inactive.
                         // the constant can be lowered to reduce latency when
@@ -573,7 +574,7 @@ public class GLRenderControl implements RenderController, GLEventListener {
                     log.warning("snap2d-render_loop interrupted");
                 } catch (Throwable e) {
                     System.err.println("Snap2D: error in rendering loop: " + e.toString()
-                            + "\nTerminating loop execution...");
+                                    + "\nTerminating loop execution...");
                     CrashReportWindow crashDisp = new CrashReportWindow();
                     crashDisp.dumpToLog("Unhandled error detected in rendering loop - aborting execution", e);
                     crashDisp.setVisible(true);
@@ -650,16 +651,16 @@ public class GLRenderControl implements RenderController, GLEventListener {
 
         GLContext ctxt = glWin.getContext();
         boolean isGL32Core = ctxt.getGLVersionNumber().compareTo(GLContext.Version320) >= 0
-                && ctxt.getGLSLVersionNumber().compareTo(new VersionNumber("3.20")) >= 0;
-                if (!isGL32Core) {
-                    log.warning("enabling compatibility mode");
-                    config.set(Property.GL_RENDER_COMPAT, "true");
-                }
+                        && ctxt.getGLSLVersionNumber().compareTo(new VersionNumber("3.20")) >= 0;
+        if ( !isGL32Core) {
+            log.warning("enabling compatibility mode");
+            config.set(Property.GL_RENDER_COMPAT, "true");
+        }
     }
 
     private void printInitReport() {
 
-        if (!Boolean.getBoolean(Property.SNAP2D_PRINT_GL_CONFIG.getProperty())) {
+        if ( !Boolean.getBoolean(Property.SNAP2D_PRINT_GL_CONFIG.getProperty())) {
             return;
         }
         log.info("initialized OpenGL graphics pipeline");

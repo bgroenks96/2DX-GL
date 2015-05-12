@@ -31,8 +31,8 @@ import java.util.List;
  */
 public class Animation implements Drawable {
 
-    LinkedList <Segment> queue = new LinkedList <Segment>();
-    LinkedList <Segment> dump = new LinkedList <Segment>();
+    LinkedList<Segment> queue = new LinkedList<Segment>();
+    LinkedList<Segment> dump = new LinkedList<Segment>();
     private volatile boolean finis = false, loop = false;
     private Segment seg;
 
@@ -52,7 +52,7 @@ public class Animation implements Drawable {
      *            completion, else the responsibility will be left to the
      *            caller.
      */
-    public Animation(final List <Segment> segments, final boolean autoLoop) {
+    public Animation(final List<Segment> segments, final boolean autoLoop) {
 
         this(segments.toArray(new Segment[segments.size()]), autoLoop);
     }
@@ -76,7 +76,7 @@ public class Animation implements Drawable {
         if (segments == null || segments.length <= 0) {
             throw (new IllegalArgumentException("Segment List was null or empty"));
         }
-        queue = new LinkedList <Segment>();
+        queue = new LinkedList<Segment>();
         for (Segment s : segments) {
             queue.add(s);
         }
@@ -118,7 +118,7 @@ public class Animation implements Drawable {
      */
     public void resetAll() {
 
-        if (!finis) {
+        if ( !finis) {
             return;
         }
         for (Segment s : dump) {
@@ -170,7 +170,7 @@ public class Animation implements Drawable {
                 resetAll();
             }
             return;
-        } else if (!seg.isValid() && seg.isStarted()) {
+        } else if ( !seg.isValid() && seg.isStarted()) {
             dump.add(queue.pollFirst());
         } else {
             seg.transform(curr);
