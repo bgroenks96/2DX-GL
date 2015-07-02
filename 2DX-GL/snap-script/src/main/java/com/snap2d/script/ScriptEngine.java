@@ -64,12 +64,12 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.logging.Logger;
 
+import com.snap2d.script.lib.ScriptTimer;
+import com.snap2d.script.lib.VarStore;
+
 import bg.x2d.geo.Vector2d;
 import bg.x2d.utils.Multimap;
 import bg.x2d.utils.Utils;
-
-import com.snap2d.script.lib.ScriptTimer;
-import com.snap2d.script.lib.VarStore;
 
 /**
  * Class responsible for interpreting and executing script function bytecode.
