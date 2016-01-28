@@ -13,7 +13,7 @@
 	<description>Extends 2DX to provide utilities specific to aid in 2D game development.</description>
 	<properties>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-		<jogamp.version>2.1.5</jogamp.version>
+		<jogamp.version>2.3.2</jogamp.version>
 	</properties>
 	<repositories>
 		<repository>
