@@ -1,12 +1,12 @@
 /*
  *  Copyright (C) 2011-2014 Brian Groenke
  *  All rights reserved.
- * 
+ *
  *  This file is part of the 2DX Graphics Library.
  *
  *  This Source Code Form is subject to the terms of the
- *  Mozilla Public License, v. 2.0. If a copy of the MPL 
- *  was not distributed with this file, You can obtain one at 
+ *  Mozilla Public License, v. 2.0. If a copy of the MPL
+ *  was not distributed with this file, You can obtain one at
  *  http://mozilla.org/MPL/2.0/.
  */
 
@@ -19,10 +19,10 @@ import java.io.InputStreamReader;
 import java.net.URL;
 import java.util.ArrayList;
 
-import javax.media.opengl.GL;
-import javax.media.opengl.GL2;
-import javax.media.opengl.GL2ES2;
-import javax.media.opengl.GLContext;
+import com.jogamp.opengl.GL;
+import com.jogamp.opengl.GL2;
+import com.jogamp.opengl.GL2ES2;
+import com.jogamp.opengl.GLContext;
 
 /**
  * Represents an individual OpenGL shader object. GLShader loads and compiles
@@ -33,7 +33,7 @@ import javax.media.opengl.GLContext;
  * desired version should be specified in the constructor. The default GLSL
  * version is 150 (GL 3.2). The minimum required is 130 (GL 3.0), although this
  * is not recommended.
- * 
+ *
  * @author Brian Groenke
  */
 public class GLShader {
@@ -50,7 +50,7 @@ public class GLShader {
      * Convenience constructor using the default GLSL version. Equivalent to
      * calling
      * <code>new GLShader(type, GLShader.DEFAULT_GLSL_VERSION, sources)</code>
-     * 
+     *
      * @param type
      * @param sources
      * @throws GLShaderException
@@ -66,7 +66,7 @@ public class GLShader {
      * Convenience constructor using the default GLSL version. Equivalent to
      * calling
      * <code>new GLShader(type, GLShader.DEFAULT_GLSL_VERSION, sources)</code>
-     * 
+     *
      * @param type
      * @param sources
      * @throws GLShaderException
@@ -81,7 +81,7 @@ public class GLShader {
     /**
      * Initialize and compile a new GLShader of the given type and version from
      * the given sources.
-     * 
+     *
      * @param type
      * @param version
      *            a valid GLSL version string; e.g. for shader version 330 (GL
@@ -99,7 +99,7 @@ public class GLShader {
     /**
      * Create a new GLShader of the given type and version. Sources will be
      * loaded and compiled from the given URLs.
-     * 
+     *
      * @param type
      * @param version
      *            a valid GLSL version string; e.g. for shader version 330 (GL
@@ -192,7 +192,7 @@ public class GLShader {
      * Loads a Snapdragon2D shader from the library's default shader directory
      * on the class-path. This method will automatically attach the vertex
      * shader transform source file to the given file(s).
-     * 
+     *
      * @param shaderFile
      * @param type
      * @return

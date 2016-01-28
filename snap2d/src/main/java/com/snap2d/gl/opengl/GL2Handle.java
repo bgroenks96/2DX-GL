@@ -1,12 +1,12 @@
 /*
  *  Copyright (C) 2011-2013 Brian Groenke
  *  All rights reserved.
- * 
+ *
  *  This file is part of the 2DX Graphics Library.
  *
  *  This Source Code Form is subject to the terms of the
- *  Mozilla Public License, v. 2.0. If a copy of the MPL 
- *  was not distributed with this file, You can obtain one at 
+ *  Mozilla Public License, v. 2.0. If a copy of the MPL
+ *  was not distributed with this file, You can obtain one at
  *  http://mozilla.org/MPL/2.0/.
  */
 
@@ -23,21 +23,20 @@ import java.nio.IntBuffer;
 import java.util.Arrays;
 import java.util.logging.Logger;
 
-import javax.media.opengl.GL;
-import javax.media.opengl.GL2;
-import javax.media.opengl.GL2ES2;
-import javax.media.opengl.GL2GL3;
-import javax.media.opengl.GLContext;
-import javax.media.opengl.GLException;
-import javax.media.opengl.fixedfunc.GLMatrixFunc;
-import javax.media.opengl.fixedfunc.GLPointerFunc;
+import com.jogamp.common.nio.Buffers;
+import com.jogamp.opengl.GL;
+import com.jogamp.opengl.GL2;
+import com.jogamp.opengl.GL2ES2;
+import com.jogamp.opengl.GL2GL3;
+import com.jogamp.opengl.GLContext;
+import com.jogamp.opengl.GLException;
+import com.jogamp.opengl.fixedfunc.GLMatrixFunc;
+import com.jogamp.opengl.fixedfunc.GLPointerFunc;
+import com.jogamp.opengl.util.awt.TextRenderer;
+import com.snap2d.gl.opengl.GLConfig.Property;
 
 import bg.x2d.geo.PointUD;
 import bg.x2d.utils.Utils;
-
-import com.jogamp.common.nio.Buffers;
-import com.jogamp.opengl.util.awt.TextRenderer;
-import com.snap2d.gl.opengl.GLConfig.Property;
 
 /**
  * @author Brian Groenke
@@ -149,7 +148,7 @@ public class GL2Handle implements GLHandle {
 
     /**
      * LINEAR or NEAREST texture filtering for texture down-scaling
-     * 
+     *
      * @param filterType
      *            linear for best quality, nearest for best performance
      * @param mipmapType
@@ -283,7 +282,7 @@ public class GL2Handle implements GLHandle {
      * The default texture coordinate configuration before this method is called
      * is a regular quad texture: 0, 0, 0, 1, 1, 1, 1, 1 (bottom-left, top-left,
      * top-right, bottom-right)
-     * 
+     *
      * @param coords
      *            the alternating x and y texture coordinates
      */
@@ -298,7 +297,7 @@ public class GL2Handle implements GLHandle {
     /**
      * Sets the texture coordinates based on the four corners of the given
      * Texture2D.
-     * 
+     *
      * @param rectCoords
      *            the texture to set texture coordinates from.
      */
@@ -327,7 +326,7 @@ public class GL2Handle implements GLHandle {
     /**
      * Draws the buffer specified by 'buffId' to screen according to parameters
      * set using its associated buffer properties.
-     * 
+     *
      * @param buffId
      *            the id of the vertex buffer to draw
      */
@@ -452,7 +451,7 @@ public class GL2Handle implements GLHandle {
      * This likely WILL NOT happen, and the previously uploaded vertex data will
      * still be at least partially rendered. The only reliable way to do this is
      * by destroying and re-creating the buffer.
-     * 
+     *
      * @param rectBuffId
      *            the id for the quad's vertex buffer
      * @param x
@@ -750,7 +749,7 @@ public class GL2Handle implements GLHandle {
      * This likely WILL NOT happen, and the previously uploaded vertex data will
      * still be at least partially rendered. The only reliable way to do this is
      * by destroying and re-creating the buffer.
-     * 
+     *
      * @param polyBuffId
      *            the id for the polygon's vertex buffer
      * @param colorBuffer
@@ -901,7 +900,7 @@ public class GL2Handle implements GLHandle {
      * previous calls to {@link #putQuad2d(int, double, double, double, double)}
      * will be discarded and overwritten upon the next call. This method can be
      * used to reset a partially filled buffer after it has been drawn.
-     * 
+     *
      * @param buffId
      */
     @Override
@@ -914,7 +913,7 @@ public class GL2Handle implements GLHandle {
      * Allocates a vertex buffer for rendering a given number of quads. The
      * returned id must be stored and used in order write and draw the quad
      * data.
-     * 
+     *
      * @param storeType
      *            a hint for how the graphics driver should treat the buffer
      *            data in VRAM
@@ -943,7 +942,7 @@ public class GL2Handle implements GLHandle {
      * Allocates a vertex buffer for rendering a given number of polygons with a
      * given number of vertices. Ther returned id must be stored and used in
      * order to write and draw the polygon data.
-     * 
+     *
      * @param storeType
      *            a hint for how the graphics driver should treat the buffer
      *            data in VRAM
@@ -983,7 +982,7 @@ public class GL2Handle implements GLHandle {
 
     /**
      * Deletes the VBO held with the given ID from memory.
-     * 
+     *
      * @param id
      *            the id for the buffer returned by
      *            {@link #createRectBuff2f(BufferUsage)} and
@@ -1159,7 +1158,7 @@ public class GL2Handle implements GLHandle {
      * currently enabled, it will be disabled before text is rendered. If a
      * custom shader is enabled, it's up to the caller whether or not it should
      * be disabled.
-     * 
+     *
      * @param text
      * @param color
      * @param x
@@ -1194,7 +1193,7 @@ public class GL2Handle implements GLHandle {
      * Draws the given array of text strings at their respective screen
      * coordinates specified in IntBuffer 'coords' with their respective colors
      * in FloatBuffer colors
-     * 
+     *
      * @param texts
      * @param coords
      * @param colors
@@ -1218,7 +1217,7 @@ public class GL2Handle implements GLHandle {
 
     /**
      * Re-creates the internal TextRenderer with the given Font.
-     * 
+     *
      * @param font
      */
     @Override
@@ -1243,7 +1242,7 @@ public class GL2Handle implements GLHandle {
 
     /**
      * Sets the alpha blending function.
-     * 
+     *
      * @param blendFunc
      */
     @Override

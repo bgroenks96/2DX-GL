@@ -1,12 +1,12 @@
 /*
  *  Copyright (C) 2011-2014 Brian Groenke
  *  All rights reserved.
- * 
+ *
  *  This file is part of the 2DX Graphics Library.
  *
  *  This Source Code Form is subject to the terms of the
- *  Mozilla Public License, v. 2.0. If a copy of the MPL 
- *  was not distributed with this file, You can obtain one at 
+ *  Mozilla Public License, v. 2.0. If a copy of the MPL
+ *  was not distributed with this file, You can obtain one at
  *  http://mozilla.org/MPL/2.0/.
  */
 
@@ -17,7 +17,7 @@ import java.awt.Font;
 import java.nio.FloatBuffer;
 import java.nio.IntBuffer;
 
-import javax.media.opengl.GL;
+import com.jogamp.opengl.GL;
 
 import bg.x2d.geo.PointUD;
 
@@ -27,7 +27,7 @@ import bg.x2d.geo.PointUD;
  * text, as well as allowing configuration of underlying OpenGL functions. You
  * can obtain a GLHandle object from {@link #GLRenderControl} through a
  * {@link #GLRenderable}.
- * 
+ *
  * @author Brian Groenke
  *
  */
@@ -40,7 +40,7 @@ public interface GLHandle {
     /**
      * Sets the 2D coordinate viewport of the OpenGL context according to the
      * dimensions and units specified here.
-     * 
+     *
      * @see {@link #setProgramTransform(GLProgram)}
      * @param x
      * @param y
@@ -55,7 +55,7 @@ public interface GLHandle {
      * Set the size of the display in the current OpenGL context. This should be
      * the current size of the window or panel on which the context is being
      * rendered.
-     * 
+     *
      * @param width
      * @param height
      */
@@ -73,7 +73,7 @@ public interface GLHandle {
 
     /**
      * LINEAR or NEAREST texture filtering for texture down-scaling
-     * 
+     *
      * @param filterType
      *            linear for best quality, nearest for best performance
      * @param mipmapType
@@ -119,7 +119,7 @@ public interface GLHandle {
      * The default texture coordinate configuration before this method is called
      * is a regular quad texture: 0, 0, 0, 1, 1, 1, 1, 1 (bottom-left, top-left,
      * top-right, bottom-right)
-     * 
+     *
      * @param coords
      *            the alternating x and y texture coordinates
      */
@@ -128,7 +128,7 @@ public interface GLHandle {
     /**
      * Sets the texture coordinates based on the four corners of the given
      * Texture2D.
-     * 
+     *
      * @param rectCoords
      *            the texture to set texture coordinates from.
      */
@@ -139,7 +139,7 @@ public interface GLHandle {
     /**
      * Draws the buffer specified by 'buffId' to screen according to parameters
      * set using its associated buffer properties.
-     * 
+     *
      * @param buffId
      *            the id of the vertex buffer to draw
      */
@@ -162,7 +162,7 @@ public interface GLHandle {
      * This likely WILL NOT happen, and the previously uploaded vertex data will
      * still be at least partially rendered. The only reliable way to do this is
      * by destroying and re-creating the buffer.
-     * 
+     *
      * @param rectBuffId
      *            the id for the quad's vertex buffer
      * @param x
@@ -196,7 +196,7 @@ public interface GLHandle {
      * This likely WILL NOT happen, and the previously uploaded vertex data will
      * still be at least partially rendered. The only reliable way to do this is
      * by destroying and re-creating the buffer.
-     * 
+     *
      * @param polyBuffId
      *            the id for the polygon's vertex buffer
      * @param colorBuffer
@@ -218,7 +218,7 @@ public interface GLHandle {
      * previous calls to {@link #putQuad2d(int, double, double, double, double)}
      * will be discarded and overwritten upon the next call. This method can be
      * used to reset a partially filled buffer after it has been drawn.
-     * 
+     *
      * @param buffId
      */
     public void resetBuff(int buffId);
@@ -227,7 +227,7 @@ public interface GLHandle {
      * Allocates a vertex buffer for rendering a given number of quads. The
      * returned id must be stored and used in order write and draw the quad
      * data.
-     * 
+     *
      * @param storeType
      *            a hint for how the graphics driver should treat the buffer
      *            data in VRAM
@@ -246,7 +246,7 @@ public interface GLHandle {
      * Allocates a vertex buffer for rendering a given number of polygons with a
      * given number of vertices. Ther returned id must be stored and used in
      * order to write and draw the polygon data.
-     * 
+     *
      * @param storeType
      *            a hint for how the graphics driver should treat the buffer
      *            data in VRAM
@@ -268,7 +268,7 @@ public interface GLHandle {
 
     /**
      * Deletes the VBO held with the given ID from memory.
-     * 
+     *
      * @param id
      *            the id for the buffer returned by
      *            {@link #createRectBuff2f(BufferUsage)} and
@@ -282,7 +282,7 @@ public interface GLHandle {
      * currently enabled, it will be disabled before text is rendered. If a
      * custom shader is enabled, it's up to the caller whether or not it should
      * be disabled.
-     * 
+     *
      * @param text
      * @param color
      * @param x
@@ -296,7 +296,7 @@ public interface GLHandle {
      * Draws the given array of text strings at their respective screen
      * coordinates specified in IntBuffer 'coords' with their respective colors
      * in FloatBuffer colors
-     * 
+     *
      * @param texts
      * @param coords
      * @param colors
@@ -305,7 +305,7 @@ public interface GLHandle {
 
     /**
      * Re-creates the internal TextRenderer with the given Font.
-     * 
+     *
      * @param font
      */
     public void setFont(Font font);

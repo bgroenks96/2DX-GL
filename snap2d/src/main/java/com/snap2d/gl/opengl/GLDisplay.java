@@ -1,12 +1,12 @@
 /*
  *  Copyright (C) 2011-2014 Brian Groenke
  *  All rights reserved.
- * 
+ *
  *  This file is part of the 2DX Graphics Library.
  *
  *  This Source Code Form is subject to the terms of the
- *  Mozilla Public License, v. 2.0. If a copy of the MPL 
- *  was not distributed with this file, You can obtain one at 
+ *  Mozilla Public License, v. 2.0. If a copy of the MPL
+ *  was not distributed with this file, You can obtain one at
  *  http://mozilla.org/MPL/2.0/.
  */
 
@@ -14,12 +14,7 @@ package com.snap2d.gl.opengl;
 
 import java.util.logging.Logger;
 
-import javax.media.nativewindow.WindowClosingProtocol.WindowClosingMode;
-import javax.media.opengl.GLCapabilities;
-import javax.media.opengl.GLProfile;
-
-import bg.x2d.utils.Utils;
-
+import com.jogamp.nativewindow.WindowClosingProtocol.WindowClosingMode;
 import com.jogamp.newt.Display;
 import com.jogamp.newt.NewtFactory;
 import com.jogamp.newt.Screen;
@@ -28,16 +23,20 @@ import com.jogamp.newt.event.MouseListener;
 import com.jogamp.newt.event.WindowAdapter;
 import com.jogamp.newt.event.WindowEvent;
 import com.jogamp.newt.opengl.GLWindow;
+import com.jogamp.opengl.GLCapabilities;
+import com.jogamp.opengl.GLProfile;
 import com.snap2d.gl.Display.Type;
 import com.snap2d.gl.opengl.GLConfig.Property;
 import com.snap2d.input.GLKeyListener;
 import com.snap2d.input.GLMouseListener;
 import com.snap2d.input.NEWTInputDispatch;
 
+import bg.x2d.utils.Utils;
+
 /**
  * A class representing a native window onto which an OpenGL context can be
  * rendered. GLDisplay is backed internally by the JOGL NEWT windowing system.
- * 
+ *
  * @author Brian Groenke
  *
  */
@@ -62,7 +61,7 @@ public class GLDisplay {
     /**
      * Creates this GLDisplay with the given window properties and GL
      * configuration.
-     * 
+     *
      * @param width
      * @param height
      * @param type
@@ -183,7 +182,7 @@ public class GLDisplay {
 
     /**
      * Initializes this GLDisplay's input system.
-     * 
+     *
      * @param consumeEvents
      *            true if you want this GLDisplay to consume input events.
      */
@@ -201,7 +200,7 @@ public class GLDisplay {
      * Add a GLKeyListener to this GLDisplay. NEWT KeyEvent[s] will be wrapped
      * in a GLKeyEvent and dispatched to registered listeners. You must call
      * {@link #initInputSystem(boolean)} before calling this method.
-     * 
+     *
      * @param key
      */
     public void addKeyListener(final GLKeyListener key) {
@@ -216,7 +215,7 @@ public class GLDisplay {
      * Add a GLMouseListener to this GLDisplay. NEWT MouseEvent[s] will be
      * wrapped in a GLMouseEvent and dispatched to registered listeners. You
      * must call {@link #initInputSystem(boolean)} before calling this method.
-     * 
+     *
      * @param mouse
      */
     public void addMouseListener(final GLMouseListener mouse) {
@@ -246,7 +245,7 @@ public class GLDisplay {
     /**
      * Add a NEWT KeyEvent listener to this GLDisplay. You must have JOGL on
      * your build path to use these interfaces directly.
-     * 
+     *
      * @param key
      */
     public void addNewtKeyListener(final KeyListener key) {
@@ -257,7 +256,7 @@ public class GLDisplay {
     /**
      * Add a NEWT MouseEvent listener to this GLDisplay. You must have JOGL on
      * your build path to use these interfaces directly.
-     * 
+     *
      * @param mouse
      */
     public void addNewtMouseListener(final MouseListener mouse) {

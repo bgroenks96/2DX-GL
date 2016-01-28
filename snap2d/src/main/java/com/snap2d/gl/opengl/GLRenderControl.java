@@ -1,12 +1,12 @@
 /*
  *  Copyright (C) 2011-2014 Brian Groenke
  *  All rights reserved.
- * 
+ *
  *  This file is part of the 2DX Graphics Library.
  *
  *  This Source Code Form is subject to the terms of the
- *  Mozilla Public License, v. 2.0. If a copy of the MPL 
- *  was not distributed with this file, You can obtain one at 
+ *  Mozilla Public License, v. 2.0. If a copy of the MPL
+ *  was not distributed with this file, You can obtain one at
  *  http://mozilla.org/MPL/2.0/.
  */
 
@@ -20,24 +20,23 @@ import java.util.concurrent.Semaphore;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-import javax.media.opengl.GL;
-import javax.media.opengl.GL2;
-import javax.media.opengl.GL2ES2;
-import javax.media.opengl.GLAutoDrawable;
-import javax.media.opengl.GLContext;
-import javax.media.opengl.GLEventListener;
-
-import bg.x2d.Local;
-import bg.x2d.utils.ConfigLogHandler;
-
 import com.jogamp.common.util.VersionNumber;
 import com.jogamp.newt.opengl.GLWindow;
 import com.jogamp.opengl.FBObject;
+import com.jogamp.opengl.GL;
+import com.jogamp.opengl.GL2;
+import com.jogamp.opengl.GL2ES2;
+import com.jogamp.opengl.GLAutoDrawable;
+import com.jogamp.opengl.GLContext;
+import com.jogamp.opengl.GLEventListener;
 import com.jogamp.opengl.util.Gamma;
 import com.snap2d.ThreadManager;
 import com.snap2d.gl.CrashReportWindow;
 import com.snap2d.gl.opengl.GLConfig.Property;
 import com.snap2d.gl.spi.RenderController;
+
+import bg.x2d.Local;
+import bg.x2d.utils.ConfigLogHandler;
 
 /**
  * @author Brian Groenke
@@ -116,7 +115,7 @@ public class GLRenderControl implements RenderController, GLEventListener {
     @Override
     public void dispose(final GLAutoDrawable arg0) {
 
-        Gamma.resetDisplayGamma(arg0.getGL());
+        Gamma.resetDisplayGamma(glWin);
         for (GLRenderable glr : renderables) {
             glr.dispose(handle);
         }
@@ -176,7 +175,7 @@ public class GLRenderControl implements RenderController, GLEventListener {
         for (GLRenderable r : renderables) {
             r.resize(handle, width, height);
         }
-        Gamma.resetDisplayGamma(arg0.getGL());
+        Gamma.resetDisplayGamma(glWin);
     }
 
     @Override
@@ -228,7 +227,7 @@ public class GLRenderControl implements RenderController, GLEventListener {
      * Registers the GLRenderable object with this GLRenderControl to be
      * rendered on screen. The render(GLHandle,float) method will be called to
      * draw to the OpenGL canvas.
-     * 
+     *
      * @param r
      *            the GLRenderable object to be called when rendering.
      * @param pos
@@ -250,7 +249,7 @@ public class GLRenderControl implements RenderController, GLEventListener {
 
     /**
      * Removes the GLRenderable object from the queue, if it exists.
-     * 
+     *
      * @param r
      *            removes the GLRenderable from the queue.
      */
@@ -289,7 +288,7 @@ public class GLRenderControl implements RenderController, GLEventListener {
 
         final GL gl = GLContext.getCurrentGL();
         if (handle.isGL2()) {
-            Gamma.setDisplayGamma(gl, gamma, 0, 1);
+            Gamma.setDisplayGamma(glWin, gamma, 0, 1);
         } else if (handle.isGL3()) {
             int currProg = GLUtils.glGetInteger(gl, GL2ES2.GL_CURRENT_PROGRAM);
             GLProgram.enableDefaultProgram();
@@ -313,7 +312,7 @@ public class GLRenderControl implements RenderController, GLEventListener {
 
     /**
      * Gets the last recorded number of frames rendered per second.
-     * 
+     *
      * @return
      */
     @Override
@@ -324,7 +323,7 @@ public class GLRenderControl implements RenderController, GLEventListener {
 
     /**
      * Gets the last recorded number of updates (ticks) per second.
-     * 
+     *
      * @return
      */
     @Override
@@ -336,7 +335,7 @@ public class GLRenderControl implements RenderController, GLEventListener {
     /**
      * Sets the frame rate that the rendering algorithm will target when
      * interpolating.
-     * 
+     *
      * @param fps
      *            frames per second
      */
@@ -349,7 +348,7 @@ public class GLRenderControl implements RenderController, GLEventListener {
     /**
      * Sets the frequency per second at which the Renderable.update method is
      * called.
-     * 
+     *
      * @param tps
      *            ticks per second
      */
@@ -376,7 +375,7 @@ public class GLRenderControl implements RenderController, GLEventListener {
      * occur. If animations are "chugging" or skipping, it may help to set this
      * value to a very low value (1-2). Higher values will prevent the game
      * updates from freezing.
-     * 
+     *
      * @param maxUpdates
      *            max number of updates to be sent before rendering.
      */
@@ -429,7 +428,7 @@ public class GLRenderControl implements RenderController, GLEventListener {
      * <br/>
      * This class is a modified version of
      * com.snap2d.gl.RenderControl.RenderLoop.
-     * 
+     *
      * @author Brian Groenke
      */
     protected class GLRenderLoop implements Runnable {
@@ -650,7 +649,7 @@ public class GLRenderControl implements RenderController, GLEventListener {
     private void checkCompat() {
 
         GLContext ctxt = glWin.getContext();
-        boolean isGL32Core = ctxt.getGLVersionNumber().compareTo(GLContext.Version320) >= 0
+        boolean isGL32Core = ctxt.getGLVersionNumber().compareTo(GLContext.Version3_2) >= 0
                         && ctxt.getGLSLVersionNumber().compareTo(new VersionNumber("3.20")) >= 0;
         if ( !isGL32Core) {
             log.warning("enabling compatibility mode");

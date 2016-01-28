@@ -1,12 +1,12 @@
 /*
  *  Copyright (C) 2011-2014 Brian Groenke
  *  All rights reserved.
- * 
+ *
  *  This file is part of the 2DX Graphics Library.
  *
  *  This Source Code Form is subject to the terms of the
- *  Mozilla Public License, v. 2.0. If a copy of the MPL 
- *  was not distributed with this file, You can obtain one at 
+ *  Mozilla Public License, v. 2.0. If a copy of the MPL
+ *  was not distributed with this file, You can obtain one at
  *  http://mozilla.org/MPL/2.0/.
  */
 
@@ -16,8 +16,8 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 
-import javax.media.opengl.GLException;
-import javax.media.opengl.GLProfile;
+import com.jogamp.opengl.GLException;
+import com.jogamp.opengl.GLProfile;
 
 /**
  * OpenGL Graphics Library Config - specifies configuration options for the
@@ -29,7 +29,7 @@ import javax.media.opengl.GLProfile;
  * {@link #set(Property, String)} on the GLConfig to change any values that have
  * been modified via system properties (i.e. the System class calls or through a
  * VM -D property value flag).
- * 
+ *
  * @author Brian Groenke
  *
  */
@@ -80,7 +80,7 @@ public class GLConfig {
     /**
      * Sets the system configuration property for Snap2D/OpenGL graphics
      * rendering.<br/>
-     * 
+     *
      * @param property
      *            Property to set
      * @param value
@@ -119,9 +119,9 @@ public class GLConfig {
      * <br/>
      * Take note that most of these properties may only be applied upon the
      * initial creation of the active GLDisplay.
-     * 
+     *
      * @author Brian Groenke
-     * 
+     *
      */
     public enum Property {
 
@@ -161,7 +161,7 @@ public class GLConfig {
          * Values for other JOGL profiles can be found under JOGL's
          * documentation, although it is not guaranteed that Snap2D will
          * function correctly with all of them.
-         * 
+         *
          * @see <a
          *      href="https://jogamp.org/deployment/jogamp-next/javadoc/jogl/javadoc/constant-values.html#javax.media.opengl.GLProfile.GL2">JOGL
          *      GLProfile Constant Values</a>

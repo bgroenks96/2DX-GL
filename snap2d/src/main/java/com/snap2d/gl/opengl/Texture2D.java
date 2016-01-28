@@ -1,20 +1,19 @@
 /*
  *  Copyright (C) 2011-2014 Brian Groenke
  *  All rights reserved.
- * 
+ *
  *  This file is part of the 2DX Graphics Library.
  *
  *  This Source Code Form is subject to the terms of the
- *  Mozilla Public License, v. 2.0. If a copy of the MPL 
- *  was not distributed with this file, You can obtain one at 
+ *  Mozilla Public License, v. 2.0. If a copy of the MPL
+ *  was not distributed with this file, You can obtain one at
  *  http://mozilla.org/MPL/2.0/.
  */
 
 package com.snap2d.gl.opengl;
 
-import javax.media.opengl.GL;
-import javax.media.opengl.GLException;
-
+import com.jogamp.opengl.GL;
+import com.jogamp.opengl.GLException;
 import com.jogamp.opengl.util.texture.Texture;
 import com.jogamp.opengl.util.texture.TextureCoords;
 
@@ -22,7 +21,7 @@ import com.jogamp.opengl.util.texture.TextureCoords;
  * Wrapper for JOGL Texture class. Not all methods are covered. Direct access
  * can be obtained through {@link #getTextureObject()}. <b>JOGL libraries must
  * be in your build path to use the classes directly.</b>
- * 
+ *
  * @author Brian Groenke
  *
  */

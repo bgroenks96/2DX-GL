@@ -1,12 +1,12 @@
 /*
  *  Copyright (C) 2011-2014 Brian Groenke
  *  All rights reserved.
- * 
+ *
  *  This file is part of the 2DX Graphics Library.
  *
  *  This Source Code Form is subject to the terms of the
- *  Mozilla Public License, v. 2.0. If a copy of the MPL 
- *  was not distributed with this file, You can obtain one at 
+ *  Mozilla Public License, v. 2.0. If a copy of the MPL
+ *  was not distributed with this file, You can obtain one at
  *  http://mozilla.org/MPL/2.0/.
  */
 
@@ -21,16 +21,15 @@ import java.nio.FloatBuffer;
 import java.nio.IntBuffer;
 import java.util.ArrayList;
 
-import javax.media.opengl.GL;
-import javax.media.opengl.GL2ES2;
-import javax.media.opengl.GL2GL3;
-import javax.media.opengl.GLContext;
-
 import com.jogamp.common.nio.Buffers;
+import com.jogamp.opengl.GL;
+import com.jogamp.opengl.GL2ES2;
+import com.jogamp.opengl.GL2GL3;
+import com.jogamp.opengl.GLContext;
 
 /**
  * Class representing a GLSL program object.
- * 
+ *
  * @author Brian Groenke
  *
  */
@@ -54,7 +53,7 @@ public class GLProgram {
     /**
      * Get the currently set shader program. Note that this works ONLY with
      * programs created and enabled via GLProgram.
-     * 
+     *
      * @return the current shader program or null if nothing is set
      */
     public static GLProgram getCurrentProgram() {
@@ -66,7 +65,7 @@ public class GLProgram {
      * Enable the currently set shader program. This is effectively the same as
      * GLProgram.getCurrentProgram().enable() but with a null check in case the
      * value has not been set.
-     * 
+     *
      * @return true if current program exists and was enabled, false otherwise
      */
     public static boolean enableCurrentProgram() {
@@ -83,7 +82,7 @@ public class GLProgram {
      * Disable the currently set shader program. This is effectively the same as
      * GLProgram.getCurrentProgram().disable() but with a null check in case the
      * value has not been set.
-     * 
+     *
      * @return true if current program exists and was disabled, false otherwise
      */
     public static boolean disableCurrentProgram() {
@@ -98,7 +97,7 @@ public class GLProgram {
 
     /**
      * Get the default shader program provided by the Snap2D OpenGL API.
-     * 
+     *
      * @return the default shader program, or null if not set (compat mode)
      */
     public static GLProgram getDefaultProgram() {
@@ -110,7 +109,7 @@ public class GLProgram {
      * Enable the default shader program. This is effectively the same as
      * GLProgram.getDefaultProgram().enable() but with a null check in case the
      * value has not been set.
-     * 
+     *
      * @return true if default program exists and was enabled, false otherwise
      */
     public static boolean enableDefaultProgram() {
@@ -127,7 +126,7 @@ public class GLProgram {
      * Disable the default shader program. This is effectively the same as
      * GLProgram.getDefaultProgram().disable() but with a null check in case the
      * value has not been set.
-     * 
+     *
      * @return true if default program exists and was disabled, false otherwise
      */
     public static boolean disableDefaultProgram() {
@@ -418,7 +417,7 @@ public class GLProgram {
      * (IllegalAccessException e) { e.printStackTrace(); } catch
      * (IllegalArgumentException e) { e.printStackTrace(); } catch
      * (InvocationTargetException e) { e.printStackTrace(); } }
-     * 
+     *
      * public void setUniformv(String uniform, int num, UniformType type, int
      * len, Buffer vals) { int loc = uniloc(uniform); String method =
      * "glUniform"+num+type.suffix+"v"; try { Method m =
@@ -464,7 +463,7 @@ public class GLProgram {
 
     /**
      * Fetches the internal OpenGL location for the given uniform.
-     * 
+     *
      * @param uniform
      * @return the uniform location, or -1 if not found
      */

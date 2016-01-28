@@ -1,12 +1,12 @@
 /*
  *  Copyright (C) 2011-2014 Brian Groenke
  *  All rights reserved.
- * 
+ *
  *  This file is part of the 2DX Graphics Library.
  *
  *  This Source Code Form is subject to the terms of the
- *  Mozilla Public License, v. 2.0. If a copy of the MPL 
- *  was not distributed with this file, You can obtain one at 
+ *  Mozilla Public License, v. 2.0. If a copy of the MPL
+ *  was not distributed with this file, You can obtain one at
  *  http://mozilla.org/MPL/2.0/.
  */
 
@@ -20,23 +20,23 @@ import java.io.InputStream;
 import java.net.URL;
 
 import javax.imageio.ImageIO;
-import javax.media.opengl.GLException;
-import javax.media.opengl.GLProfile;
 
-import bg.x2d.ImageUtils;
-import bg.x2d.ImageUtils.ScaleQuality;
-import bg.x2d.utils.Utils;
-
+import com.jogamp.opengl.GLException;
+import com.jogamp.opengl.GLProfile;
 import com.jogamp.opengl.util.texture.Texture;
 import com.jogamp.opengl.util.texture.TextureIO;
 import com.jogamp.opengl.util.texture.awt.AWTTextureIO;
 import com.snap2d.gl.opengl.Texture2D;
 
+import bg.x2d.ImageUtils;
+import bg.x2d.ImageUtils.ScaleQuality;
+import bg.x2d.utils.Utils;
+
 /**
  * Provides static utility methods for loading and scaling image resources.
- * 
+ *
  * @author Brian Groenke
- * 
+ *
  */
 public class ImageLoader {
 
@@ -53,7 +53,7 @@ public class ImageLoader {
     /**
      * Loads a BufferedImage from the given InputStream. The caller is
      * responsible for closing the stream.
-     * 
+     *
      * @param stream
      * @return the loaded BufferedImage, or null if an error occurred.
      */
@@ -73,7 +73,7 @@ public class ImageLoader {
 
     /**
      * Loads a BufferedImage from the given URL.
-     * 
+     *
      * @param location
      * @return
      */
@@ -100,7 +100,7 @@ public class ImageLoader {
      * Scales the given BufferedImage based on display size. The Dimensions
      * <code>prevDisp</code> represents the screen dimensions <code>img</code>
      * is sized for by default.
-     * 
+     *
      * @param img
      *            the BufferedImage to scale
      * @param prevDisp
@@ -136,7 +136,7 @@ public class ImageLoader {
 
     /**
      * Loads a Texture directly from the given URL
-     * 
+     *
      * @param url
      * @param fileType
      * @param mipmap

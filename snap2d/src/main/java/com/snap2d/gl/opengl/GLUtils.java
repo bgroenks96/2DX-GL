@@ -20,9 +20,8 @@ import java.nio.FloatBuffer;
 import java.nio.IntBuffer;
 import java.nio.ShortBuffer;
 
-import javax.media.opengl.GL;
-
 import com.jogamp.common.nio.Buffers;
+import com.jogamp.opengl.GL;
 import com.snap2d.world.GLWorld2D;
 import com.snap2d.world.World2D;
 
