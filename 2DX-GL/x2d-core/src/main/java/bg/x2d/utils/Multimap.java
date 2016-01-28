@@ -13,7 +13,7 @@ import java.util.Set;
  * by a Hashtable that maps a single key to a dynamic array of values. All
  * read/write methods of Multimap are synchronized so objects may be modified
  * asynchronously by multiple threads.
- * 
+ *
  * @author Brian Groenke
  * @param <K>
  *            the type for keys
@@ -22,11 +22,8 @@ import java.util.Set;
  */
 public class Multimap<K, V> extends AbstractMap<K, V> {
 
-    private static final int KEY_INIT = 0, VAL_INIT = 0, IN_VAL_INIT = 1;
+    Hashtable <K, V[]> ktv;
 
-    Hashtable<K, V[]> ktv;
-
-    @SuppressWarnings("unchecked")
     public Multimap() {
 
         ktv = new Hashtable<K, V[]>();
@@ -55,7 +52,7 @@ public class Multimap<K, V> extends AbstractMap<K, V> {
         return prev;
     }
 
-    public synchronized void putAll(final K key, final V... values) {
+    public synchronized void putAll(final K key, @SuppressWarnings("unchecked") final V... values) {
 
         for (V v : values) {
             put(key, v);
@@ -106,7 +103,7 @@ public class Multimap<K, V> extends AbstractMap<K, V> {
         return ktv.remove(key)[0];
     }
 
-    public synchronized V remove(final Object key, final Object val) {
+    public synchronized V removeFrom(final K key, final V val) {
 
         if (key == null) {
             throw (new IllegalArgumentException("null values not accepted"));
@@ -114,7 +111,7 @@ public class Multimap<K, V> extends AbstractMap<K, V> {
         V[] varr = ktv.get(key);
         V prev = null;
         if (varr != null) {
-            int ind = findValueIndex((V) val, varr);
+            int ind = findValueIndex(val, varr);
             if (ind >= 0) {
                 prev = varr[ind];
                 varr[ind] = null;
@@ -220,6 +217,7 @@ public class Multimap<K, V> extends AbstractMap<K, V> {
         if (newSize >= arr.length) {
             throw (new IllegalArgumentException("new size must be less than previous"));
         }
+        @SuppressWarnings("unchecked")
         V[] narr = (V[]) Array.newInstance(type, newSize);
         for (int i = 0; i < narr.length; i++ ) {
             if (arr[i] != null) {
@@ -237,7 +235,7 @@ public class Multimap<K, V> extends AbstractMap<K, V> {
      * == null); if(i + ii < keys.length) { keys[i] = keys[i + ii]; keys[i + ii]
      * = null; } } } } if(keys.length > 0) keys = Utils.resizeArray(keys,
      * keys.length - nulls);
-     * 
+     *
      * nulls = 0; for(V[] varr:vals) if(varr == null) nulls++; for(int
      * i=0;i<vals.length;i++) { if(vals[i] == null) { if(i+1 < vals.length) {
      * int ii = 1; while(i + ii < vals.length && vals[i + ++ii] == null); if(i +
@@ -248,7 +246,7 @@ public class Multimap<K, V> extends AbstractMap<K, V> {
      * varr[ii + iii] == null); if(ii + iii < varr.length) { varr[ii] = varr[ii
      * + iii]; varr[ii + iii] = null; } } } } vals[i] =
      * Utils.resizeArray(vals[i], vals[i].length - nullCount); } }
-     * 
+     *
      * if(vals.length > 0) vals = Utils.resizeArray(vals, vals.length - nulls);
      * }
      */

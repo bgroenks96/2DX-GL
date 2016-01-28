@@ -10,7 +10,7 @@
  *  http://mozilla.org/MPL/2.0/.
  */
 
-package com.snap2d.tests.opengl;
+package com.snap2d.testing.opengl;
 
 import java.awt.Font;
 import java.io.IOException;

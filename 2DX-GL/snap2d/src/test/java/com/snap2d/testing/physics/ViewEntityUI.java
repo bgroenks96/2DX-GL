@@ -10,7 +10,7 @@
  *  http://mozilla.org/MPL/2.0/.
  */
 
-package com.snap2d.physics.testing;
+package com.snap2d.testing.physics;
 
 import java.awt.BorderLayout;
 import java.awt.Dimension;
@@ -28,7 +28,7 @@ import javax.swing.event.ListSelectionListener;
 
 import bg.x2d.geo.Vector2d;
 
-import com.snap2d.physics.testing.PhysicsUI.PUICallback;
+import com.snap2d.testing.physics.PhysicsUI.PUICallback;
 
 /**
  * @author Brian Groenke

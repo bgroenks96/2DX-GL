@@ -10,11 +10,11 @@
  *  http://mozilla.org/MPL/2.0/.
  */
 
-package com.snap2d.physics.testing;
+package com.snap2d.testing.physics;
 
-import static com.snap2d.physics.testing.PhysicsUI.BOOLEAN;
-import static com.snap2d.physics.testing.PhysicsUI.FLOAT;
-import static com.snap2d.physics.testing.PhysicsUI.VECTOR;
+import static com.snap2d.testing.physics.PhysicsUI.BOOLEAN;
+import static com.snap2d.testing.physics.PhysicsUI.FLOAT;
+import static com.snap2d.testing.physics.PhysicsUI.VECTOR;
 import bg.x2d.geo.Vector2d;
 
 /**
